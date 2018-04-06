@@ -1,11 +1,5 @@
 import {Process} from '../../os/process'
 
-interface DismantleMetaData
-{
-  creep: string
-  flagName: string
-}
-
 export class DismantleProcess extends Process
 {
   metaData: DismantleMetaData;

@@ -3,13 +3,6 @@ import {Utils} from '../../lib/utils'
 
 import {DefenderLifetimeProcess} from '../lifetimes/defender'
 
-
-interface DefenseManagementProcessMetaData
-{
-  roomName: string
-  defenderCreeps: string[]
-}
-
 export class DefenseManagementProcess extends Process
 {
   metaData: DefenseManagementProcessMetaData;

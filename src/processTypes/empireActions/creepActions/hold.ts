@@ -25,7 +25,7 @@ export class HoldProcess extends Process
 
     if(Game.time % 10 == 0)
     {
-      let enemies = flag.room.find(FIND_HOSTILE_CREEPS)
+      let enemies = flag.room!.find(FIND_HOSTILE_CREEPS)
 
       enemies = _.filter(enemies, (e: Creep)=> {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
@@ -40,7 +40,7 @@ export class HoldProcess extends Process
         flag.memory.enemies = false;
       }
 
-      let dropped = flag.room.find(FIND_DROPPED_RESOURCES);
+      let dropped = flag.room!.find(FIND_DROPPED_RESOURCES);
 
       let droppedEnergy = <Resource[]>_.filter(dropped, (d: Resource) => {
         return (d.resourceType == RESOURCE_ENERGY && d.amount > 500);

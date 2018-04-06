@@ -11,56 +11,53 @@ export class MinetalTerminalManagementProcess extends Process
 
     this.log('Minteral Terminal');
 
-    let roomsExtraMinerals: {rName: string, mType: string} [] = [];
-    let recievableRooms: {rName: string, mType: string, amount: number } [] = [];
+    let roomsExtraMinerals: {rName: string, mType: ResourceConstant} [] = [];
+    let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
 
     _.forEach(Game.rooms, (r) => {
-      if(r.controller.my && r.terminal && r.controller.level >= 8 && r.terminal.cooldown === 0)
+      if(r.controller!.my && r.terminal && r.controller!.level >= 8 && r.terminal.cooldown === 0)
       {
         let mineral = <Mineral>r.find(FIND_MINERALS)[0]
         if(mineral)
         {
-          if(mineral.room.storage && mineral.room.terminal.store[mineral.mineralType] >= keepAmount)
+          if(mineral.room!.storage && mineral.room!.terminal!.store[mineral.mineralType]! >= keepAmount)
           {
             //console.log('Room ' + mineral.room.name + ' storage ' + mineral.room.storage.store[mineral.mineralType])
             roomsExtraMinerals.push( {
-              rName: mineral.room.name,
+              rName: mineral.room!.name,
               mType: mineral.mineralType
             })
           }
 
-          let lowest = spreadAmount;
+          let lowest: number|undefined = spreadAmount;
           let roomName = "";
           let type = "";
 
           for(let mineralType of MINERALS_RAW)
           {
-            if(r.terminal.store[mineralType] == undefined || r.terminal.store[mineralType] < lowest && mineralType !== mineral.mineralType)
+            if(r.terminal!.store[mineralType] === undefined)
             {
-              if(r.terminal.store[mineralType] == undefined)
-              {
-                lowest = 0;
-              }
-              else
-              {
-                lowest = r.terminal.store[mineralType];
-              }
+              lowest = 0;
+            }
+            else if(r.terminal!.store[mineralType] && (r.terminal!.store[mineralType]! < lowest! && mineralType !== mineral.mineralType))
+            {
+              lowest = r.terminal.store[mineralType];
+            }
               roomName = r.name;
               type = mineralType;
             }
-          }
 
-          if(roomName !== "" && type !== "")
-          {
-            recievableRooms.push ({
-              rName: roomName,
-              mType: type,
-              amount: lowest
-            })
+            if(roomName !== "" && type !== "")
+            {
+              recievableRooms.push ({
+                rName: roomName,
+                mType: type,
+                amount: lowest
+              })
+            }
           }
         }
-      }
-    });
+      });
 
 
     _.forEach(roomsExtraMinerals, (ex) => {
@@ -69,6 +66,7 @@ export class MinetalTerminalManagementProcess extends Process
         {
           return rr.rName;
         }
+        return false;
       });
 
       if(receiveRoom)
@@ -76,15 +74,15 @@ export class MinetalTerminalManagementProcess extends Process
         let terminal = Game.rooms[ex.rName].terminal;
         if(terminal && terminal.cooldown == 0)
         {
-          terminal.send(ex.mType, (spreadAmount - receiveRoom.amount), receiveRoom.rName);
+          terminal.send(ex.mType, (spreadAmount - receiveRoom.amount!), receiveRoom.rName);
         }
       }
     });
   }
 }
 
-export const MINERALS_RAW = ["H", "O", "Z", "U", "K", "L", "X"];
-export const PRODUCT_LIST = ["XGH2O", "UH", "LO", "GO", "G"];
+export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
+export const PRODUCT_LIST = [RESOURCE_UTRIUM_HYDRIDE, RESOURCE_LEMERGIUM_OXIDE, RESOURCE_GHODIUM_OXIDE, RESOURCE_GHODIUM];
 export const PRODUCTION_AMOUNT = 5000;
 
 export const REAGENT_LIST = {

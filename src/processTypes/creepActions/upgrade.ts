@@ -1,9 +1,5 @@
 import {Process} from '../../os/process';
 
-interface UpgradeProcessMetaData{
-  creep: string;
-}
-
 export class UpgradeProcess extends Process{
   metaData: UpgradeProcessMetaData;
   type = 'upgrade';

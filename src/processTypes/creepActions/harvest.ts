@@ -1,10 +1,5 @@
 import {Process} from '../../os/process'
 
-interface HarvestMetaData{
-  source: string
-  creep: string
-}
-
 export class HarvestProcess extends Process{
   metaData: HarvestMetaData
   type = 'harvest'

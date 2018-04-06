@@ -2,6 +2,7 @@ import {LifetimeProcess} from '../../os/process'
 import {HarvestProcess} from '../creepActions/harvest'
 import {DeliverProcess} from '../creepActions/deliver'
 import {MoveProcess} from '../creepActions/move'
+
 export class RemoteMinerLifetimeProcess extends LifetimeProcess
 {
   type = 'rmlf'

@@ -1,10 +1,5 @@
 import {Process} from "../../os/process"
 
-interface BuildProcessMetaData{
-  creep: string;
-  site: string;
-}
-
 export class BuildProcess extends Process {
   metaData: BuildProcessMetaData;
   type = 'build';

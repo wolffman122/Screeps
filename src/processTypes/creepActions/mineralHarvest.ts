@@ -1,12 +1,5 @@
 import { Process } from "os/process";
 
-interface MineralHarvestMetaData
-{
-  extractor: string
-  mineral: string
-  creep: string
-}
-
 export class MineralHarvest extends Process
 {
   type = 'mineral-harvest';

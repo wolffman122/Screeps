@@ -2,11 +2,6 @@ import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { ControllerAttackLifetimeProcess } from "processTypes/lifetimes/controllerAttack";
 
-interface AttackControllerManagementMetaData
-{
-  creeps: string[],
-  flagName: string
-}
 export class  AttackControllerManagementProcess extends Process
 {
   metaData: AttackControllerManagementMetaData;
@@ -38,14 +33,14 @@ export class  AttackControllerManagementProcess extends Process
     this.metaData.creeps = Utils.clearDeadCreeps(this.metaData.creeps);
     if(flag.room)
     {
-      this.log('Attack 1 ' + this.metaData.creeps.length + ' ' + !flag.room.controller.upgradeBlocked);
+      this.log('Attack 1 ' + this.metaData.creeps.length + ' ' + flag.room.controller!.upgradeBlocked);
 
       if(this.metaData.creeps.length == 0 && !flag.memory.rollCall)
       {
         flag.memory.rollCall = 0;
       }
 
-      if(this.metaData.creeps.length < numberAttack && !flag.room.controller.upgradeBlocked)
+      if(this.metaData.creeps.length < numberAttack && flag.room.controller && !flag.room.controller.upgradeBlocked)
       {
         this.log('Attack 2');
         let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;

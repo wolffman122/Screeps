@@ -85,6 +85,35 @@ interface Creep {
     parent: string | undefined
   }
 
+  interface Shortage {
+    mineralType: ResourceConstant;
+    amount: number;
+  }
+
+  interface LabProcess {
+    targetShortage: Shortage;
+    currentShortage: Shortage;
+    reagentLoads: {[mineralType: string]: number};
+    loadProgress: number;
+  }
+
+  interface Command {
+    origin: string;
+    destination: string;
+    resourceType: string;
+    amount?: number;
+    reduceLoad?: boolean;
+  }
+
+  interface BoostRequests
+  {
+    [resourceType: string]:
+    {
+      flagName: string;
+      requesterIds: string[];
+    };
+  }
+
   declare var global: NodeJS.Global;
 
   interface CreepMemory
@@ -92,12 +121,15 @@ interface Creep {
       _trav: {};
       _travel: {};
       storageDelivery: boolean;
+      atPlace: boolean;
   }
 
   interface FlagMemory
   {
       enemies: boolean;
       source: string;
+      droppedResource: boolean;
+      rollCall: number;
   }
 
   interface RoomMemory
@@ -149,3 +181,136 @@ interface Creep {
     repairCreeps: string[]
     dismantleCreeps: string[]
   }
+
+  interface HoldRoomManagementProcessMetaData
+  {
+    roomName: string
+    holdCreeps: string[]
+    harvestCreeps: {
+      [source: string]: string[]
+    }
+    distroCreeps: {
+      [container: string]: string
+    }
+    builderCreeps: string[]
+    workerCreeps: string[]
+    flagName: string
+
+  }
+
+  interface BuildProcessMetaData
+  {
+    creep: string;
+    site: string;
+  }
+
+  interface CollectProcessMetaData
+  {
+    creep: string
+    target: string,
+    resource: ResourceConstant,
+    collectAmount: number
+  }
+
+  interface DismantleMetaData
+  {
+    creep: string
+    flagName: string
+  }
+
+  interface HarvestMetaData
+  {
+    source: string
+    creep: string
+  }
+
+  interface MineralHarvestMetaData
+  {
+    extractor: string
+    mineral: string
+    creep: string
+  }
+
+  interface MoveMetaData
+  {
+    creep: string
+    pos: {
+      x: number
+      y: number
+      roomName: string
+    }
+    range: number
+  }
+
+  interface RepairProcessMetaData
+  {
+    creep: string
+    target: string
+  }
+
+  interface UpgradeProcessMetaData
+  {
+    creep: string;
+  }
+
+  interface HoldBuilderLifetimeProcessMetaData
+  {
+    creep: string
+    flagName: string
+  }
+
+  interface HoldWorkerLifetimeProcessMetaData
+  {
+    creep: string
+    targetRoom: string
+    flagName: string
+  }
+
+  interface DefenderLifetimeProcessMetaData
+  {
+    flagName: string
+  }
+
+  interface AttackControllerManagementMetaData
+  {
+    creeps: string[],
+    flagName: string
+  }
+
+  interface BounceAttackMetaData
+  {
+    creep: string,
+    flagName: string
+  }
+
+  interface DefenseManagementProcessMetaData
+  {
+    roomName: string
+    defenderCreeps: string[]
+  }
+
+  interface HealAttackMetaData
+  {
+    creep: string,
+    flagName: string
+  }
+
+  interface LabManagementProcessMetaData
+  {
+    roomName: string,
+    labDistros: string[],
+  }
+
+  interface LabDistroLifetimeProcessMetaData
+  {
+    creep: string,
+    roomName: string,
+    reagentLabIds: string[]|undefined,
+    productLabIds: string[]|undefined,
+    labProcess?: LabProcess,
+    command: Command,
+    lastCommandTick: number,
+    checkProcessTick: number,
+
+  }
+

@@ -1,5 +1,4 @@
 import {Process} from '../../os/process'
-
 import {RoomDataProcess} from '../roomData'
 import {EnergyManagementProcess} from '../management/energy'
 import {SuspensionProcess} from './suspension'

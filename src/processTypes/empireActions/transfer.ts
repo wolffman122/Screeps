@@ -114,7 +114,7 @@ export class TransferProcess extends Process
           <never[]>[creep.room.terminal]
         );
 
-        pickupTargets = _.filter(targets, function(t: Terminal) {
+        pickupTargets = _.filter(targets, function(t: StructureTerminal) {
           return (t.store.energy > 0);
         });
       }

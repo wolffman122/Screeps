@@ -1,10 +1,5 @@
 import {Process} from '../../os/process'
 
-interface RepairProcessMetaData{
-  creep: string
-  target: string
-}
-
 export class RepairProcess extends Process{
   metaData: RepairProcessMetaData
   type = 'repair'

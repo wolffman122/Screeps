@@ -45,17 +45,11 @@ export class ControllerAttackLifetimeProcess extends LifetimeProcess
       flag.memory.rollCall++;
     }
 
-    if(flag.memory.rollCall === this.metaData.numberAttack && !creep.room.controller.upgradeBlocked)
+    if(flag.memory.rollCall === this.metaData.numberAttack && !creep.room.controller!.upgradeBlocked)
     {
       this.log('Attacking the controller');
-      creep.attackController(creep.room.controller);
+      creep.attackController(creep.room.controller!);
     }
-/*
-    if(creep.room.controller.upgradeBlocked > 0)
-    {
-      this.suspend = creep.room.controller.upgradeBlocked;
-      return;
-    }*/
 
     if(creep.ticksToLive === 1)
     {

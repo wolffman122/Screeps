@@ -8,12 +8,13 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
   metaData: LabDistroLifetimeProcessMetaData;
 
 
-  creep: Creep;
-  reagentLabs: StructureLab[];
-  productLabs: StructureLab[];
-  terminal: StructureTerminal;
-  storage: StructureStorage;
-  labProcess: LabProcess;
+  creep: Creep | undefined;
+  reagentLabs: StructureLab[] | undefined;
+  productLabs: StructureLab[] | undefined;
+  terminal: StructureTerminal | undefined;
+  storage: StructureStorage | undefined;
+  nuker: StructureNuker | undefined;
+  labProcess?: LabProcess;
   room: Room;
 
   run()
@@ -33,14 +34,15 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
     this.room = this.creep.room;
     this.terminal = this.room.terminal;
     this.storage = this.room.storage;
+    this.nuker = this.roomData().nuker;
 
     this.reagentLabs = this.findReagentLabs();
     this.log('Product labs');
     this.productLabs = this.findProductLabs();
 
     this.log('Lab Management');
-    console.log("Reagent Labs", this.reagentLabs.length);
-    console.log("Product Labs", this.productLabs.length);
+    //console.log("Reagent Labs", this.reagentLabs.length);
+    //console.log("Product Labs", this.productLabs.length);
 
     this.labProcess = this.findLabProcess();
 
@@ -61,7 +63,7 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
     this.checkBoostRequests();
   }
 
-  private findReagentLabs(): StructureLab[]
+  private findReagentLabs(): StructureLab[] | undefined
   {
     if(this.metaData.reagentLabIds)
     {
@@ -76,6 +78,7 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
         {
           this.metaData.reagentLabIds = undefined;
         }
+        return;
       }) as StructureLab[];
 
       if(labs.length == 2)
@@ -123,9 +126,13 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
       this.metaData.productLabIds = undefined;
       return reagentLabs;
     }
+    else
+    {
+      return;
+    }
   }
 
-  private findProductLabs(): StructureLab[]
+  private findProductLabs(): StructureLab[] | undefined
   {
     if(this.metaData.productLabIds)
     {
@@ -138,6 +145,7 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
         else
         {
           this.metaData.productLabIds = undefined;
+          return;
         }
       }) as StructureLab[];
 
@@ -170,7 +178,7 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
     return labs;
   }
 
-  private findLabProcess(): LabProcess
+  private findLabProcess(): LabProcess | undefined
   {
     if(!this.reagentLabs)
       return;
@@ -207,20 +215,23 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
     }
 
     this.metaData.labProcess = this.findNewProcess();
+    return this.metaData.labProcess;
   }
 
   private checkProcessFinished(process: LabProcess)
   {
     for(let i = 0; i < 2; i++)
     {
-      let amountInLab = this.reagentLabs[i].mineralAmount;
-      let load = process.reagentLoads[Object.keys(process.reagentLoads)[i]];
-      if(amountInLab === 0 && load === 0)
+      if(this.reagentLabs)
       {
-        return true;
+        let amountInLab = this.reagentLabs[i].mineralAmount;
+        let load = process.reagentLoads[Object.keys(process.reagentLoads)[i]];
+        if(amountInLab === 0 && load === 0)
+        {
+          return true;
+        }
       }
     }
-
     return false;
   }
 
@@ -249,7 +260,7 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
     }
   }
 
-  private findNewProcess(): LabProcess
+  private findNewProcess(): LabProcess | undefined
   {
     let store = this.gatherInventory()
 
@@ -258,39 +269,47 @@ export class LabDistroLifetimeProcess extends LifetimeProcess
       if(store[compound] >= PRODUCTION_AMOUNT)
         continue;
 
-      return this.generateProcess( {mineralType: compound, amount: PRODUCTION_AMOUNT + this.creep.carryCapacity - (this.terminal.store[compound] || 0) });
+      return this.generateProcess( {mineralType: compound, amount: PRODUCTION_AMOUNT + this.creep!.carryCapacity - (this.terminal!.store[compound]! || 0) });
     }
+
+    return
   }
 
   private gatherInventory(): {[key: string]: number}
   {
     let inventory: {[key: string]: number} = {};
-    for(let mineralType in this.terminal.store)
-    {
-      if(!this.terminal.store.hasOwnProperty(mineralType))
-        continue;
+    _.forEach(this.terminal!.store, (mineralType: ResourceConstant) => {
+      if(!this.terminal!.store[mineralType])
+        return;
 
       if(inventory[mineralType] === undefined)
+      {
         inventory[mineralType] = 0;
+      }
 
-      inventory[mineralType] += this.terminal.store[mineralType];
-    }
+      inventory[mineralType] += this.terminal!.store[mineralType]!;
+    });
 
-    for(let lab of this.productLabs)
+    for(let lab of this.productLabs!)
     {
       if(lab.mineralAmount > 0)
       {
-        if(inventory[lab.mineralType] === undefined)
-          inventory[lab.mineralType] = 0;
+        if(lab.mineralType)
+        {
+          let type: string = lab.mineralType;
 
-        inventory[lab.mineralType] += lab.mineralAmount;
+          if(inventory[type] === undefined)
+            inventory[type] = 0;
+
+          inventory[type] += lab.mineralAmount;
+        }
       }
     }
 
     return inventory;
   }
 
-  private generateProcess(targetShortage: Shortage): LabProcess
+  private generateProcess(targetShortage: Shortage): LabProcess | undefined
   {
     let currentShortage = this.recursiveShortageCheck(targetShortage, true);
     if(currentShortage === undefined)

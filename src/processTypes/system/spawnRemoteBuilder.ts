@@ -1,6 +1,5 @@
 import {Process} from '../../os/process'
 import {Utils} from '../../lib/utils'
-
 import {RemoteBuilderLifetimeProcess} from '../lifetimes/remoteBuilder'
 
 export class SpawnRemoteBuilderProcess extends Process{

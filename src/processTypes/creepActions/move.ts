@@ -1,15 +1,5 @@
 import {Process} from '../../os/process'
 
-interface MoveMetaData{
-  creep: string
-  pos: {
-    x: number
-    y: number
-    roomName: string
-  }
-  range: number
-}
-
 export class MoveProcess extends Process{
   metaData: MoveMetaData
   type = 'move'

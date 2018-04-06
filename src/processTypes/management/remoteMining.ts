@@ -1,7 +1,5 @@
 import {Process} from '../../os/process'
-
 import {Utils} from '../../lib/utils'
-
 import {RemoteMinerLifetimeProcess} from '../lifetimes/remoteMiner'
 
 export class RemoteMiningManagementProcess extends Process

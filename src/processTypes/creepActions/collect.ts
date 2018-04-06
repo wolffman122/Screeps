@@ -1,12 +1,5 @@
 import {Process} from '../../os/process'
 
-interface CollectProcessMetaData{
-  creep: string
-  target: string,
-  resource: ResourceConstant,
-  collectAmount: number
-}
-
 export class CollectProcess extends Process{
   metaData: CollectProcessMetaData
   type = 'collect'

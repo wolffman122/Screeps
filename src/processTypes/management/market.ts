@@ -30,13 +30,13 @@ export class MarketManagementProcess extends Process
         }
         else if(mineral)  // Sell minerals if they are over 80000
         {
-          if(terminal && terminal.cooldown == 0 && terminal.store[mineral.mineralType] > 100000)
+          if(terminal && terminal.cooldown == 0 && terminal.store[mineral.mineralType]! > 100000)
           {
             let minOrders = Game.market.getAllOrders({resourceType: mineral.mineralType, type: ORDER_BUY});
 
             _.sortBy(minOrders, ['price']);
 
-            let amount = terminal.store[mineral.mineralType] - 100000;
+            let amount = terminal.store[mineral.mineralType]! - 100000;
             if(Game.market.deal(minOrders[0].id, amount, room.name) == OK)
             {
               console.log('Deal ' + room.name + ' ' + mineral.mineralType);

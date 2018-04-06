@@ -1,5 +1,4 @@
 import {Process} from '../os/process'
-
 //import {MineralManagementProcess} from './management/mineral'
 //import {RoomLayoutProcess} from './management/roomLayout'
 import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'

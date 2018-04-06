@@ -1,7 +1,5 @@
 import {Process} from '../../os/process'
-
 import {Utils} from '../../lib/utils'
-
 import {RemoteDefenderLifetimeProcess} from '../lifetimes/remoteDefender'
 
 export class RemoteDefenseManagementProcess extends Process

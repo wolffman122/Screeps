@@ -2,12 +2,6 @@ import { Process } from "os/process";
 import { MoveProcess } from "processTypes/creepActions/move";
 import { Utils } from "lib/utils";
 
-interface BounceAttackMetaData
-{
-  creep: string,
-  flagName: string
-}
-
 export class BounceAttackProcess extends Process
 {
   metaData: BounceAttackMetaData

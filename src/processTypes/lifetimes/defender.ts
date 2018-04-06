@@ -2,11 +2,6 @@ import {LifetimeProcess} from '../../os/process'
 import {MoveProcess} from '../creepActions/move'
 import {DefendProcess} from '../creepActions/defend'
 
-interface DefenderLifetimeProcessMetaData
-{
-  flagName: string
-}
-
 export class DefenderLifetimeProcess extends LifetimeProcess
 {
   metaData: DefenderLifetimeProcessMetaData;

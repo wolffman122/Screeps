@@ -14,49 +14,52 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(_.sum(creep.carry) === 0 && creep.ticksToLive > 100)
+    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
     {
-      let sourceContainer = <Container>Game.getObjectById(this.metaData.sourceContainer);
+      let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
 
-      if(!creep.pos.inRangeTo(sourceContainer, 1))
+      if(sourceContainer)
       {
-        creep.travelTo(sourceContainer);
-        return;
-      }
-      else
-      {
-        let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
-        if(resource.length > 0)
+        if(!creep.pos.inRangeTo(sourceContainer, 1))
         {
-          let withdrawAmount = creep.carryCapacity - _.sum(creep.carry) - resource[0].amount;
-
-          if(withdrawAmount >= 0)
-          {
-            creep.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
-          }
-
-          creep.pickup(resource[0]);
-          /*creep.pickup(resource[0]);
-
-          let remainingRoom = creep.carryCapacity - resource[0].amount
-
-          if(sourceContainer.store.energy > remainingRoom)
-          {
-            creep.withdraw(sourceContainer, RESOURCE_ENERGY)
-          }
-          else
-          {
-            this.suspend = 10;
-          }*/
-        }
-        else if(sourceContainer.store.energy > creep.carryCapacity)
-        {
-          creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+          creep.travelTo(sourceContainer);
+          return;
         }
         else
         {
-          this.log('Suspend');
-          this.suspend = 20;
+          let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
+          if(resource.length > 0)
+          {
+            let withdrawAmount = creep.carryCapacity - _.sum(creep.carry) - resource[0].amount;
+
+            if(withdrawAmount >= 0)
+            {
+              creep.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
+            }
+
+            creep.pickup(resource[0]);
+            /*creep.pickup(resource[0]);
+
+            let remainingRoom = creep.carryCapacity - resource[0].amount
+
+            if(sourceContainer.store.energy > remainingRoom)
+            {
+              creep.withdraw(sourceContainer, RESOURCE_ENERGY)
+            }
+            else
+            {
+              this.suspend = 10;
+            }*/
+          }
+          else if(sourceContainer.store.energy > creep.carryCapacity)
+          {
+            creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+          }
+          else
+          {
+            this.log('Suspend');
+            this.suspend = 20;
+          }
         }
       }
     }
@@ -111,17 +114,20 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
           {
             let target = Game.rooms[this.metaData.spawnRoom].storage;
 
-            if(!creep.pos.inRangeTo(target, 1))
+            if(target)
             {
-              if(!creep.fixMyRoad())
+              if(!creep.pos.inRangeTo(target, 1))
               {
-                creep.travelTo(target);
+                if(!creep.fixMyRoad())
+                {
+                  creep.travelTo(target);
+                }
               }
-            }
 
-            if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
-            {
-              return;
+              if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
+              {
+                return;
+              }
             }
           }
         }
@@ -134,17 +140,20 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       {
         let target = Game.rooms[this.metaData.spawnRoom].storage;
 
-        if(!creep.pos.inRangeTo(target, 1))
+        if(target)
         {
-          if(!creep.fixMyRoad())
+          if(!creep.pos.inRangeTo(target, 1))
           {
-            creep.travelTo(target);
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(target);
+            }
           }
-        }
 
-        if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
-        {
-          return;
+          if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
+          {
+            return;
+          }
         }
       }
     }

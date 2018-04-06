@@ -40,9 +40,9 @@ export class LinkManagementProcess extends Process
       if(storageLink)
       {
         _.forEach(this.roomData().sourceLinks, (sl) => {
-          if(sl.cooldown == 0 && sl.energy > 700 && storageLink.energy < 100)
+          if(sl.cooldown == 0 && sl.energy > 700 && storageLink!.energy < 100)
           {
-            sl.transferEnergy(storageLink);
+            sl.transferEnergy(storageLink!);
           }
         });
       }
@@ -55,13 +55,9 @@ export class LinkManagementProcess extends Process
       if(storageLink)
       {
         _.forEach(this.roomData().links, (l) => {
-          if(l.cooldown == 0 && l.energy > 200 && storageLink.energy < 100)
+          if(l.cooldown == 0 && l.energy > 200 && storageLink!.energy < 100)
           {
-            let retValue = l.transferEnergy(storageLink);
-            if(storageLink.room.name == 'E43S52')
-            {
-              console.log('Why not sending ' + retValue);
-            }
+            let retValue = l.transferEnergy(storageLink!);
           }
         })
       }

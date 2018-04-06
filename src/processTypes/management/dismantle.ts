@@ -1,7 +1,5 @@
 import {Process} from '../../os/process'
-
 import {Utils} from '../../lib/utils'
-
 import {DismantleLifetimeProcess} from '../lifetimes/dismantler'
 
 export class DismantleManagementProcess extends Process

@@ -2,12 +2,6 @@ import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { MoveProcess } from "processTypes/creepActions/move";
 
-interface HealAttackMetaData
-{
-  creep: string,
-  flagName: string
-}
-
 export class HealAttackProcess extends Process
 {
   metaData: HealAttackMetaData;

@@ -9,18 +9,26 @@ export class TerminalManagementProcess extends Process
     //let start = Game.cpu.getUsed();
 
     let lowRooms = _.filter(Game.rooms, (r) => {
-      if(r.terminal)
+      if(r.terminal && r.storage)
       {
         return (r.storage.store.energy < 300000 &&
           r.terminal.my);
       }
+      else
+      {
+        return false;
+      }
     });
 
     let fullRooms = _.filter(Game.rooms, (r) => {
-      if(r.terminal)
+      if(r.terminal && r.controller && r.storage)
       {
         return (r.controller.level === 8 && r.storage.store.energy > 400000 &&
           r.terminal.cooldown == 0 && r.terminal.store.energy >= 100000);
+      }
+      else
+      {
+        return false;
       }
     });
 
@@ -28,7 +36,10 @@ export class TerminalManagementProcess extends Process
     {
       let lRooms: {name: string, amount: number}[] = [];
       _.forEach(lowRooms, (f) => {
-        lRooms.push({name: f.name, amount: f.storage.store.energy});
+        if(f.storage)
+        {
+          lRooms.push({name: f.name, amount: f.storage.store.energy});
+        }
       });
 
       lRooms = _.sortBy(lRooms, ['amount']);
@@ -37,7 +48,10 @@ export class TerminalManagementProcess extends Process
       {
         let fRooms: {name: string, amount: number}[] = [];
         _.forEach(fullRooms, (f) =>{
-          fRooms.push({name: f.name, amount: f.storage.store.energy});
+          if(f.storage)
+          {
+            fRooms.push({name: f.name, amount: f.storage.store.energy});
+          }
         });
 
         if(fRooms.length > 0)
@@ -50,8 +64,11 @@ export class TerminalManagementProcess extends Process
 
           if(room)
           {
-            let retVal = room.terminal.send(RESOURCE_ENERGY, 50000, lRooms[0].name);
-            this.log('Sending Energy ' + retVal);
+            if(room.terminal)
+            {
+              let retVal = room.terminal.send(RESOURCE_ENERGY, 50000, lRooms[0].name);
+              this.log('Sending Energy ' + retVal);
+            }
           }
         }
       }

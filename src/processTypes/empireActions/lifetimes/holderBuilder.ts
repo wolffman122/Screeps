@@ -1,15 +1,9 @@
 import { LifetimeProcess } from "os/process";
 import { BuildProcess } from "processTypes/creepActions/build";
-//import { Utils } from "lib/utils";
 import { CollectProcess } from "processTypes/creepActions/collect";
 import { HarvestProcess } from "processTypes/creepActions/harvest";
-//import { HarvestProcess } from "processTypes/creepActions/harvest";
 
-interface HoldBuilderLifetimeProcessMetaData
-{
-  creep: string
-  flagName: string
-}
+
 export class HoldBuilderLifetimeProcess extends LifetimeProcess
 {
   type = 'holdBuilderlf';

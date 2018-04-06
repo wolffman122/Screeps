@@ -4,13 +4,6 @@ import { CollectProcess } from "processTypes/creepActions/collect";
 import { BuildProcess } from "processTypes/creepActions/build";
 import { RepairProcess } from "processTypes/creepActions/repair";
 
-interface HoldWorkerLifetimeProcessMetaData
-{
-  creep: string
-  targetRoom: string
-  flagName: string
-}
-
 export class HoldWorkerLifetimeProcess extends LifetimeProcess
 {
   type='holdWorkerlf';
