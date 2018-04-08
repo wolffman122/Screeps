@@ -1,6 +1,8 @@
 import {Kernel} from './kernel'
 
-export class Process{
+export class Process
+{
+  initialized = false;
   /** Has the process been run this tick? */
   ticked = false
   /** Is the process complete? If it is it will not be passed to the next tick */
@@ -36,6 +38,7 @@ export class Process{
     this.kernel = kernel
     this.suspend = entry.suspend
     this.type = '';
+    this.initialized = entry.initialized
 
     if(entry.parent){
       this.parent = this.kernel.getProcessByName(entry.parent)
@@ -62,7 +65,8 @@ export class Process{
       metaData: this.metaData,
       type: this.type,
       suspend: this.suspend,
-      parent: parent
+      parent: parent,
+      initialized: this.initialized
     }
   }
 
@@ -113,4 +117,20 @@ export class LifetimeProcess extends Process{
       return undefined;
     }
   }
+}
+
+export class InitalizationProcess extends Process
+{
+    constructor(entry: SerializedProcess, kernel: Kernel)
+    {
+        super(entry, kernel)
+    }
+
+    initialization(kernel: Kernel)
+    {
+        console.log('Process ' + this.name + ' did not have a type.')
+        this.completed = true
+        kernel.noop()
+    }
+
 }

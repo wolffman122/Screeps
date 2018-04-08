@@ -23,7 +23,7 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(RemoteMiningManagementProcess, 'rnmp-' + flag.name, 40, { flag: flag.name })
   }
 
-remoteDismantleFlag(flag: Flag)
+  remoteDismantleFlag(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(DismantleManagementProcess, 'dmp' + flag.name, 40, {flag: flag.name});
   }

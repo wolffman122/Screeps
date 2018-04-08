@@ -33,7 +33,7 @@ export const Stats = {
     Memory.stats['processes.types.init'] = 0
     Memory.stats['processes.types.flagWatcher'] = 0
 
-    let processCounts = _.reduce(kernel.execOrder, (types, item: {type: string}) => {
+    /*let processCounts = _.reduce(kernel.execOrder, (types, item: {type: string}) => {
       if(!types[item.type])
       {
         types[item.type] = {type: item.type, count: 0};
@@ -51,7 +51,7 @@ export const Stats = {
       let holder = Memory.stats['processes.types.' + p.type] / p.count;
       Memory.stats['processes.average.counts.' + p.type] = p.count;
       Memory.stats['processes.average.types.' + p.type] = holder;
-    })
+    })*/
 
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
@@ -119,7 +119,7 @@ export const Stats = {
           const reduced_resources = _.reduce(ground_resources, (acc, res) => { acc[res.resourceType] = _.get(acc, [res.resourceType], 0) + res.amount; return acc; }, {});
           Memory.stats['rooms.' + roomName + '.ground_resources'] = ground_resources: reduced_resources*/
 
-          const structure_types = new Set(room.find(FIND_STRUCTURES).map((s: Structure) => s.structureType));
+          /*const structure_types = new Set(room.find(FIND_STRUCTURES).map((s: Structure) => s.structureType));
           const structure_info = {};
           for(const s of structure_types)
           {
@@ -135,7 +135,7 @@ export const Stats = {
             };
           }
 
-          Memory.stats['rooms.' + roomName + '.structure_info'] = structure_info;
+          Memory.stats['rooms.' + roomName + '.structure_info'] = structure_info;*/
 
         }
       }

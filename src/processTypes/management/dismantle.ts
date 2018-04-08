@@ -4,6 +4,7 @@ import {DismantleLifetimeProcess} from '../lifetimes/dismantler'
 
 export class DismantleManagementProcess extends Process
 {
+  metaData: DismantleManagementProcessMetaData
   type = 'dmp';
 
   run()
@@ -17,31 +18,31 @@ export class DismantleManagementProcess extends Process
       return;
     }
 
-    let dismantleCreep = Game.creeps[this.metaData.dismantleCreep];
-    let deliverRoom = flag.name.split('-')[0];
+    this.metaData.dismantleCreeps = Utils.clearDeadCreeps(this.metaData.dismantleCreeps);
 
-    if(!dismantleCreep)
+    let deliverRoom = flag.name.split('-')[0];
+    let numberOfDismantlers = +flag.name.split('-')[2];
+
+    if(this.metaData.dismantleCreeps.length < numberOfDismantlers)
     {
+      let creepName = 'dm-' + flag.pos.roomName + '-' + Game.time;
       let spawned = Utils.spawn(
         this.kernel,
         deliverRoom,
         'dismantler',
-        'dm-' + flag.pos.roomName + '-' + Game.time,
+        creepName,
         {}
       )
 
       if(spawned)
       {
-        this.metaData.dismantleCreep = 'dm-' + flag.pos.roomName + '-' + Game.time;
+        this.metaData.dismantleCreeps.push(creepName);
+        this.kernel.addProcessIfNotExist(DismantleLifetimeProcess, 'dislf-' + creepName , this.priority, {
+          creep: creepName,
+          flag: flag.name,
+          deliverRoom: deliverRoom
+        });
       }
-    }
-    else
-    {
-      this.kernel.addProcessIfNotExist(DismantleLifetimeProcess, 'dislf-' + dismantleCreep.name, this.priority, {
-        creep: dismantleCreep.name,
-        flag: flag.name,
-        deliverRoom: deliverRoom
-      })
     }
   }
 }

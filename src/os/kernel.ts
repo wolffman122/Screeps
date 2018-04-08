@@ -1,4 +1,4 @@
-import {Process} from './process'
+import {Process, InitalizationProcess} from './process'
 
 import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
@@ -284,7 +284,22 @@ export class Kernel{
     let faulted = false
 
     try{
-      process.run(this)
+      if(process instanceof InitalizationProcess)
+      {
+          if(process.initialized === false)
+          {
+              let iProcess = process as InitalizationProcess;
+              iProcess.initialization(this);
+          }
+          else
+          {
+              process.run(this);
+          }
+      }
+      else
+      {
+        process.run(this)
+      }
     }catch (e){
       console.log('process ' + process.name + ' failed with error ' + e)
       faulted = true

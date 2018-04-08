@@ -32,7 +32,7 @@ interface Creep {
     containers: StructureContainer[]
     extensions: StructureExtension[]
     extractor: StructureExtractor | undefined
-    nuker: StructureNuker | undefined
+    nuker?: StructureNuker
     generalContainers: StructureContainer[]
     mineral: Mineral | undefined
     labs: StructureLab[]
@@ -83,6 +83,7 @@ interface Creep {
     metaData: object
     suspend: string | number | boolean
     parent: string | undefined
+    initialized: boolean
   }
 
   interface Shortage {
@@ -100,7 +101,7 @@ interface Creep {
   interface Command {
     origin: string;
     destination: string;
-    resourceType: string;
+    resourceType?: _ResourceConstantSansEnergy;
     amount?: number;
     reduceLoad?: boolean;
   }
@@ -212,6 +213,13 @@ interface Creep {
     collectAmount: number
   }
 
+  interface DismantleManagementProcessMetaData
+  {
+      roomName: string
+      flag: string
+      dismantleCreeps: string[]
+  }
+
   interface DismantleMetaData
   {
     creep: string
@@ -305,12 +313,19 @@ interface Creep {
   {
     creep: string,
     roomName: string,
-    reagentLabIds: string[]|undefined,
-    productLabIds: string[]|undefined,
+    reagentLabIds?: string[],
+    productLabIds?: string[],
     labProcess?: LabProcess,
-    command: Command,
+    command?: Command,
     lastCommandTick: number,
     checkProcessTick: number,
 
   }
 
+  interface ClaimProcessMetaData{
+    creep: string
+    targetRoom: string
+    flagName: string
+  }
+
+//// Minerals

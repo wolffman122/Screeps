@@ -2,12 +2,6 @@ import {Process} from '../../os/process'
 import {MoveProcess} from '../creepActions/move'
 import {Utils} from '../../lib/utils'
 
-interface ClaimProcessMetaData{
-  creep: string
-  targetRoom: string
-  flagName: string
-}
-
 export class ClaimProcess extends Process{
   metaData: ClaimProcessMetaData
   type = 'claim'
@@ -53,14 +47,16 @@ export class ClaimProcess extends Process{
       this.suspend = 'move-' + creep.name
     }else{
 
-      if(!creep.pos.inRangeTo(creep.room.controller!, 1))
+      if(!creep.pos.inRangeTo(room.controller!, 1))
       {
-        creep.travelTo(creep.room.controller!);
+        creep.travelTo(room.controller!);
       }
 
-      creep.claimController(creep.room.controller!)
-      this.completed = true
-      flag.remove()
+      if(creep.claimController(room.controller!) === OK)
+      {
+        this.completed = true
+        flag.remove();
+      }
     }
   }
 }

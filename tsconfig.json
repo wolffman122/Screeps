@@ -10,7 +10,8 @@
     "noImplicitReturns": true,
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "suppressImplicitAnyIndexErrors": true,
   },
   "exclude": [
     "node_modules"
