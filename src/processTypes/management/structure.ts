@@ -81,7 +81,7 @@ export class StructureManagementProcess extends Process{
             let spawned: boolean;
             if(controller && controller.my && controller.level >= 8)
             {
-              spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, { max: 32})
+              spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {})
             }
             else
             {
