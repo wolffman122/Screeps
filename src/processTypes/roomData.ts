@@ -103,7 +103,14 @@ export class RoomDataProcess extends Process{
     let mineral = <Mineral>room.find(FIND_MINERALS)[0];
 
     let mineralContainers = _.filter(containers, function(container) {
-      return (container.pos.inRangeTo(mineral, 2));
+      if(container.room.name === 'E43S55')
+      {
+        return container.pos.inRangeTo(mineral, 8);
+      }
+      else
+      {
+        return (container.pos.inRangeTo(mineral, 2));
+      }
     })
 
     let generalContainers = _.filter(containers, function(container){
