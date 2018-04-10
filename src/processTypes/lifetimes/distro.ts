@@ -132,7 +132,7 @@ export class DistroLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    if(deliverTargets.length === 0 && creep.room.storage)
+    if(deliverTargets.length === 0 && creep.room.storage && creep.room.storage.my)
     {
       deliverTargets = <never[]>[creep.room.storage];
     }

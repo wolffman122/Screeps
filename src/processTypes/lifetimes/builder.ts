@@ -14,12 +14,30 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
 
     if(_.sum(creep.carry) === 0){
       let target = Utils.withdrawTarget(creep, this)
-
+      this.log('Target ' + target);
       if(!target)
       {
-        if(creep.room.terminal)
+        if(creep.room.terminal && creep.room.terminal.my)
         {
           target = creep.room.terminal;
+        }
+        else
+        {
+          let structures = creep.room.find(FIND_HOSTILE_STRUCTURES);
+          if(structures.length > 0)
+          {
+            target = _.filter(structures, (s) => {
+              if(s.structureType === STRUCTURE_LAB || s.structureType === STRUCTURE_LINK)
+              {
+                return (s.energy > 0);
+              }
+              else if(s.structureType === STRUCTURE_STORAGE ||  s.structureType === STRUCTURE_TERMINAL)
+              {
+                return (s.store.energy > 0);
+              }
+              return;
+            })[0];
+          }
         }
       }
 

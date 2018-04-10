@@ -52,6 +52,11 @@ export const Utils = {
       <never[]>proc.kernel.data.roomData[creep.room.name].generalContainers
     )
 
+    if(creep.room.name == 'E42S48')
+    {
+      console.log('WTF WTF WTF 1')
+    }
+
     if(proc.kernel.data.roomData[creep.room.name].controllerLink)
     {
       withdraws = [].concat(
@@ -60,7 +65,7 @@ export const Utils = {
       )
     }
 
-    if(creep.room.storage)
+    if(creep.room.storage && creep.room.storage.my)
     {
       withdraws = [].concat(
         <never[]>withdraws,
@@ -68,9 +73,18 @@ export const Utils = {
       )
     }
 
+    if(creep.room.name == 'E42S48')
+    {
+      console.log('WTF WTF WTF ' + withdraws.length);
+    }
+
     if(withdraws.length === 0){
       withdraws = <never[]>proc.kernel.data.roomData[creep.room.name].spawns
       withdraws = <never[]>_.filter(withdraws, function(spawn: StructureSpawn){
+        if(creep.room.name == 'E42S48')
+        {
+          console.log('Spawn Energy ' + spawn.energy + ' Room Energy ' + spawn.room.energyAvailable + ' Total Energy ' + (spawn.room.energyCapacityAvailable -50))
+        }
         let ret = (spawn.energy > 250 && spawn.room.energyAvailable > (spawn.room.energyCapacityAvailable - 50))
         return ret;
       })
@@ -135,7 +149,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 187500;
+      let max = room.controller!.level * 218750;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 

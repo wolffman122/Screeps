@@ -7,7 +7,7 @@ export class LabManagementProcess extends InitalizationProcess
 {
   metaData: LabManagementProcessMetaData
   type = 'labm';
-  igors: Agent[];
+  //igors: Agent[];
   labs: StructureLab[];
   reagentLabs: StructureLab[];
   productLabs: StructureLab[];
@@ -19,7 +19,7 @@ export class LabManagementProcess extends InitalizationProcess
   nuker?: StructureNuker;
   memory: {
       idlePosition: RoomPosition;
-      command: IgorCommand;
+      //command: IgorCommand;
       labCount: number;
       reagentLabIds: string[];
       productLabIds: string[];
@@ -46,9 +46,9 @@ export class LabManagementProcess extends InitalizationProcess
 
 
 
-    Object.keys(COMPOUND_LIST).forEach(key => {
+    /*Object.keys(COMPOUND_LIST).forEach(key => {
         console.log('found property', COMPOUND_LIST[key][0]);
-    })
+    })*/
 
   }
 
@@ -62,7 +62,7 @@ export class LabManagementProcess extends InitalizationProcess
       this.storage = this.room.storage;
       this.nuker = this.roomData().nuker;
 
-      this.reagentLabs = this.findReagentLabs();
+      /*this.reagentLabs = this.findReagentLabs();
       this.productLabs = this.findProductLabs();
 
       this.labProcess = this.findLabProcess();
@@ -71,7 +71,8 @@ export class LabManagementProcess extends InitalizationProcess
       {
         let target = this.labProcess.targetShortage.mineralType;
         if(!Game.memory)
-      }
+      }*/
+    }
   }
 }
 

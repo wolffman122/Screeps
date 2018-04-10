@@ -115,12 +115,14 @@ export const Stats = {
           Memory.stats['rooms.' + roomName + '.mineral_available'] = mineral[0].mineralAmount
           Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = mineral[0].ticksToRegeneration
 
-          /*const ground_resources = <Resource[]>room.find(FIND_DROPPED_RESOURCES);
-          const reduced_resources = _.reduce(ground_resources, (acc, res) => { acc[res.resourceType] = _.get(acc, [res.resourceType], 0) + res.amount; return acc; }, {});
-          Memory.stats['rooms.' + roomName + '.ground_resources'] = ground_resources: reduced_resources*/
+          //const structure_types = new Set(room.find(FIND_STRUCTURES).map((s: Structure) => s.structureType));
 
-          /*const structure_types = new Set(room.find(FIND_STRUCTURES).map((s: Structure) => s.structureType));
-          const structure_info = {};
+          let structure_types = room.find(FIND_STRUCTURES).map((s: Structure) => s.structureType);
+          structure_types = _.unique(structure_types, (h) => {
+            return h;
+          })
+
+          const structure_info: {[s: string]: { count: number, min_hits: number, max_hits: number}} = {};
           for(const s of structure_types)
           {
             const ss = room.find(FIND_STRUCTURES, {filter: str => str.structureType == s});
@@ -135,7 +137,7 @@ export const Stats = {
             };
           }
 
-          Memory.stats['rooms.' + roomName + '.structure_info'] = structure_info;*/
+          Memory.stats['rooms.' + roomName + '.structure_info'] = structure_info;
 
         }
       }
