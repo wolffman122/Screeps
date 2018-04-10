@@ -329,3 +329,16 @@ interface Creep {
   }
 
 //// Minerals
+
+
+interface LabProcess {
+  targetShortage: Shortage;
+  currentShortage: Shortage;
+  reagentLoads: {[mineralType: string]: number};
+  loadProgress: number;
+}
+
+interface Shortage {
+  mineralType: ResourceConstant;
+  amount: number;
+}

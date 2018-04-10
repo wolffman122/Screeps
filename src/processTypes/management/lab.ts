@@ -7,11 +7,12 @@ export class LabManagementProcess extends InitalizationProcess
 {
   metaData: LabManagementProcessMetaData
   type = 'labm';
+  creep: Creep;
   //igors: Agent[];
   labs: StructureLab[];
-  reagentLabs: StructureLab[];
-  productLabs: StructureLab[];
-  labProcess: LabProcess;
+  reagentLabs?: StructureLab[];
+  productLabs?: StructureLab[];
+  labProcess?: LabProcess;
   terminal?: StructureTerminal;
   storage?: StructureStorage;
   powerSpawn?: StructurePowerSpawn;
@@ -19,13 +20,13 @@ export class LabManagementProcess extends InitalizationProcess
   nuker?: StructureNuker;
   memory: {
       idlePosition: RoomPosition;
-      //command: IgorCommand;
+      command?: Command;
       labCount: number;
-      reagentLabIds: string[];
-      productLabIds: string[];
+      reagentLabIds?: string[];
+      productLabIds?: string[];
       lastCommandTick: number;
       checkProcessTick: number;
-      labProcess: LabProcess;
+      labProcess?: LabProcess;
   };
 
   ensureMetaData()
@@ -42,9 +43,29 @@ export class LabManagementProcess extends InitalizationProcess
 
     this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
 
-    this.log('Lab Testing ' + this.metaData.labDistros.length);
+    if(this.metaData.labDistros.length === 0)
+    {
+      this.memory.command = undefined;
+    }
 
+    if(this.metaData.labDistros.length < 1)
+    {
+      let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
+      let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
+      if(spawned)
+      {
+        this.metaData.labDistros.push(creepName);
+      }
+    }
+    else if(this.metaData.labDistros.length === 1)
+    {
+      this.creep = Game.creeps[this.metaData.labDistros[0]];
 
+      if(this.creep)
+      {
+        missionActions();
+      }
+    }
 
     /*Object.keys(COMPOUND_LIST).forEach(key => {
         console.log('found property', COMPOUND_LIST[key][0]);
@@ -62,19 +83,233 @@ export class LabManagementProcess extends InitalizationProcess
       this.storage = this.room.storage;
       this.nuker = this.roomData().nuker;
 
-      /*this.reagentLabs = this.findReagentLabs();
+      this.reagentLabs = this.findReagentLabs();
       this.productLabs = this.findProductLabs();
 
       this.labProcess = this.findLabProcess();
-
       if(this.labProcess)
       {
         let target = this.labProcess.targetShortage.mineralType;
-        if(!Game.memory)
-      }*/
+        if(Memory.labProcesses[target])
+        {
+          Memory.labProcesses[target] = 0;
+        }
+        Memory.labProcesses[target]++;
+      }
+    }
+  }
+
+
+  private missionActions()
+  {
+    let command = this.accessCommand(this.creep);
+    if(!command)
+    {
+      if(_.sum(this.creep.carry) > 0)
+      {
+        console.log(this.name, "is holding resources without a command, putting them in terminal");
+        if(this.creep.pos.isNearTo(this.terminal))
+        {
+          this.creep.transferEvertying(this.terminal);
+        }
+      }
+    }
+  }
+
+  private findReagentLabs(): StructureLab[] | undefined
+  {
+    if(this.memory.reagentLabIds)
+    {
+      let labs = _.map(this.memory.reagentLabIds, (id: string) => {
+        let lab = Game.getObjectById(id);
+        if(lab)
+        {
+          return lab;
+        }
+        else
+        {
+          this.memory.reagentLabIds = undefined;
+        }
+      }) as StructureLab[];
+
+      if(labs.length === 2)
+      {
+        return labs;
+      }
+      else
+      {
+        this.memory.reagentLabIds = undefined;
+      }
+    }
+
+    if(Game.time % 1000 !== 2)
+    {
+      return; // early
+    }
+
+    let structures = this.room.find(FIND_STRUCTURES);
+    let labs = _.filter(structures, (s) => {
+      return (s.structureType === STRUCTURE_LAB);
+    }) as StructureLab[];
+
+
+    if(labs.length < 3)
+    {
+      return; //early
+    }
+
+    let reagentLabs = [];
+    for(let lab of labs)
+    {
+      if(reagentLabs.length === 2)
+      {
+        break;
+      }
+
+      let outOfRange = false;
+      for(let otherLab of labs)
+      {
+        if(lab.pos.inRangeTo(otherLab, 2))
+        {
+          continue;
+        }
+        outOfRange = true;
+        break;
+      }
+
+      if(!outOfRange)
+      {
+        reagentLabs.push(lab);
+      }
+    }
+
+    if(reagentLabs.length === 2)
+    {
+      this.memory.reagentLabIds = _.map(reagentLabs, (lab: StructureLab) => lab.id);
+      this.memory.productLabIds = undefined;
+      return reagentLabs;
+    }
+  }
+
+  private findProductLabs(): StructureLab[] | undefined
+  {
+    if(this.memory.productLabIds)
+    {
+      let labs = _.map(this.memory.productLabIds, (id: string) => {
+        let lab = Game.getObjectById(id);
+        if(lab)
+        {
+          return lab;
+        }
+        else
+        {
+          this.memory.productLabIds = undefined;
+        }
+      }) as StructureLab[];
+
+      if(labs.length > 0)
+      {
+        return labs;
+      }
+      else
+      {
+        return this.memory.productLabIds = undefined;
+      }
+    }
+
+    let structures = this.room.find(FIND_STRUCTURES);
+    let labs = _.filter(structures, (s) => {
+      return (s.structureType === STRUCTURE_LAB);
+    }) as StructureLab[];
+
+    if(labs.length === 0)
+    {
+      return; // early
+    }
+
+    if(this.reagentLabs)
+    {
+      for(let reagentLab of this.reagentLabs)
+      {
+        labs = _.pull(labs, reagentLab);
+      }
+    }
+
+    this.memory.productLabIds = _.map(labs, (lab: StructureLab) => lab.id);
+    return labs;
+  }
+
+  private findLabProcess(): LabProcess | undefined
+  {
+    if(!this.reagentLabs)
+    {
+      return;
+    }
+
+    if(this.memory.labProcess)
+    {
+      let process = this.memory.labProcess;
+      let processFinished = this.checkProcessFinished(process);
+      if(processFinished)
+      {
+        console.log(this.name, "has finished with", process.currentShortage.mineralType);
+        this.memory.labProcess = undefined;
+        return this.findLabProcess();
+      }
+
+      let progress = this.checkProgress(process);
+      if(!progress)
+      {
+        console.log(this.name, "made no progress with", process.currentShortage.mineralType);
+        this.memory.labProcess = undefined;
+        return this.findLabProcess();
+      }
+
+      return process;
+    }
+  }
+
+  private checkProcessFinished(process: LabProcess)
+  {
+    for(let i = 0; i < 2; i++)
+    {
+      let amountInLab = this.reagentLabs![i].mineralAmount;
+      let load = process.reagentLoads[Object.keys(process.reagentLoads)[i]];
+      if(amountInLab === 0 && load === 0)
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private checkProgress(process: LabProcess)
+  {
+    if(Game.time % 1000 !== 2)
+    {
+      return true;
+    }
+
+    let loadStatus = 0;
+    for(let resourcetype in process.reagentLoads)
+    {
+      loadStatus += process.reagentLoads[resourcetype];
+    }
+
+    if(loadStatus !== process.loadProgress)
+    {
+      process.loadProgress = loadStatus;
+      return true;
+    }
+    else
+    {
+      return false;
     }
   }
 }
+
+
 
 const COMPOUND_LIST: {[type: string]: ResourceConstant[]} =
 {

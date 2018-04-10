@@ -76,8 +76,17 @@ export class StructureManagementProcess extends Process{
         {
           if(this.metaData.spareCreeps.length === 0)
           {
-            let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
-            let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {})
+            let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time;
+            let controller = Game.rooms[this.metaData.roomName].controller;
+            let spawned: boolean;
+            if(controller && controller.my && controller.level >= 8)
+            {
+              spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, { max: 32})
+            }
+            else
+            {
+              spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {})
+            }
             if(spawned){
               this.metaData.repairCreeps.push(creepName)
               this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {

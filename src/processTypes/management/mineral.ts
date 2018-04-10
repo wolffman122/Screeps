@@ -67,6 +67,9 @@ export class MineralManagementProcess extends Process
         case 'E41S49':
           harvesters = 2;
           break;
+        case 'E43S55':
+          harvesters = 1;
+          break;
         default:
           harvesters = 0;
           break;
