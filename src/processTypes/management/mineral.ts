@@ -38,37 +38,22 @@ export class MineralManagementProcess extends Process
       switch(proc.metaData.roomName)
       {
         case 'E44S51':
+        case 'E46S52':
+        case 'E48S57':
+        case 'E43S55':
           harvesters = 1;
           break;
         case 'E43S52':
-          harvesters = 2;
-          break;
-        case 'E43S53':
-          harvesters = 3;
-          break;
-        case 'E46S51':
-          harvesters = 3;
-          break;
-        case 'E46S52':
-          harvesters = 1;
-          break;
-        case 'E45S57':
-          harvesters = 3;
-          break;
-        case 'E48S57':
-          harvesters = 1;
-          break;
-        case 'E45S48':
-          harvesters = 3;
-          break;
-        case 'E48S49':
-          harvesters = 3;
-          break;
         case 'E41S49':
           harvesters = 2;
           break;
-        case 'E43S55':
-          harvesters = 1;
+        case 'E43S53':
+        case 'E46S51':
+        case 'E45S57':
+        case 'E45S48':
+        case 'E48S49':
+        case 'E51S49':
+          harvesters = 3;
           break;
         default:
           harvesters = 0;

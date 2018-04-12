@@ -46,7 +46,7 @@ export class RoomDataProcess extends Process{
     {
       if((room.name ==='E45S57' || room.name == 'E43S52' || room.name == 'E44S51' || room.name == 'E43S53' ||
           room.name == 'E46S51' || room.name == 'E46S52' || room.name == 'E48S57' || room.name == 'E45S48' ||
-          room.name == 'E48S49' || room.name == 'E41S49' || room.name == 'E43S55')
+          room.name == 'E48S49' || room.name == 'E41S49' || room.name == 'E43S55' || room.name == 'E51S49')
         && room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
       {
         this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {

@@ -3,8 +3,9 @@
 declare const require: (module: string) => any;
 
 // add your custom typings here
-interface Creep {
+interface Creep extends RoomObject {
     fixMyRoad(): boolean;
+    transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
   }
 
   declare namespace NodeJS{
@@ -101,7 +102,7 @@ interface Creep {
   interface Command {
     origin: string;
     destination: string;
-    resourceType?: _ResourceConstantSansEnergy;
+    resourceType: ResourceConstant;
     amount?: number;
     reduceLoad?: boolean;
   }

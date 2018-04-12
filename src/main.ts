@@ -2,7 +2,7 @@ import { ErrorMapper } from "utils/ErrorMapper";
 import "./lib/Traveler"
 import {Kernel} from './os/kernel'
 import { Traveler } from "./lib/Traveler";
-
+import "creep.extensions";
 
 Creep.prototype.fixMyRoad = function()
 {

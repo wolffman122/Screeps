@@ -63,7 +63,7 @@ export class LabManagementProcess extends InitalizationProcess
 
       if(this.creep)
       {
-        missionActions();
+        this.missionActions();
       }
     }
 
@@ -102,19 +102,217 @@ export class LabManagementProcess extends InitalizationProcess
 
   private missionActions()
   {
-    let command = this.accessCommand(this.creep);
+    let command = this.accessCommand();
     if(!command)
     {
       if(_.sum(this.creep.carry) > 0)
       {
         console.log(this.name, "is holding resources without a command, putting them in terminal");
-        if(this.creep.pos.isNearTo(this.terminal))
+        if(this.creep.pos.isNearTo(this.terminal!))
         {
-          this.creep.transferEvertying(this.terminal);
+          this.creep.transferEverything(this.terminal!);
+        }
+        else
+        {
+          this.creep.travelTo(this.terminal!);
+        }
+        return;
+      }
+
+      let flag = Game.flags['pattern-' + this.creep.room];
+      if(flag)
+      {
+        if (!this.creep.pos.inRangeTo(flag, 1))
+        {
+          this.creep.travelTo(flag);
+        }
+      }
+      return;
+    }
+
+    if(_.sum(this.creep.carry) === 0)
+    {
+      let origin = Game.getObjectById<Structure>(command.origin);
+      if(this.creep.pos.isNearTo(origin!))
+      {
+        if(origin instanceof StructureTerminal)
+        {
+          if(!origin.store[command.resourceType])
+          {
+            console.log("Creep: I can't find that resource in terminal, opName:", this.name);
+            this.memory.command = undefined;
+          }
+        }
+
+        this.creep.withdraw(origin!, command.resourceType, command.amount);
+        let destination = Game.getObjectById<Structure>(command.destination);
+        if(!this.creep.pos.isNearTo(destination!))
+        {
+          this.creep.travelTo(destination!);
+        }
+      }
+      else
+      {
+        this.creep.travelTo(origin!);
+      }
+      return; // early
+    }
+
+    let destination = Game.getObjectById<Structure>(command.destination);
+    if(this.creep.pos.isNearTo(destination!))
+    {
+      let outcome = this.creep.transfer(destination!, command.resourceType!, command.amount);
+      if(outcome === OK && command.reduceLoad && this.labProcess)
+      {
+        this.labProcess.reagentLoads[command.resourceType] -= command.amount!;
+      }
+
+      this.memory.command = undefined;
+    }
+    else
+    {
+      this.creep.travelTo(destination!);
+    }
+  }
+
+  private findCommand(): Command|undefined
+  {
+    let terminal = this.room.terminal;
+    let storage = this.room.storage;
+    let energyInTerminal = 0;
+    let energyInStorage = 0;
+
+    if(terminal && storage)
+    {
+      energyInTerminal = terminal.store.energy;
+      energyInStorage = storage.store.energy;
+    }
+
+
+    let command = this.checkReagentLabs();
+    if(command) return command;
+
+    command = this.checkProductLabs();
+    if(command) return command;
+
+    // load nukers
+    let nuker = this.roomData().nuker;
+    if(nuker)
+    {
+      if(nuker.energy < nuker.energyCapacity && storage!.store.energy > 100000)
+      {
+        let command: Command = {origin: storage!.id, destination: nuker.id, resourceType: RESOURCE_ENERGY };
+        return command;
+      }
+      else if(nuker.ghodium < nuker.ghodiumCapacity && terminal!.store[RESOURCE_GHODIUM])
+      {
+        let command: Command = {origin: terminal!.id, destination: nuker.id, resourceType: RESOURCE_GHODIUM};
+        return command;
+      }
+    }
+    return;
+  }
+
+  private accessCommand(): Command|undefined
+  {
+    if(!this.memory.command && this.creep.ticksToLive! < 40)
+    {
+      this.creep.suicide();
+      return;
+    }
+
+    if(!this.memory.lastCommandTick)
+    {
+      this.memory.lastCommandTick = Game.time - 10;
+    }
+
+    if(!this.memory.command && Game.time > this.memory.lastCommandTick + 10)
+    {
+      if(_.sum(this.creep.carry) === 0)
+      {
+        this.memory.command = this.findCommand();
+      }
+      else
+      {
+        console.log("Creep: can't take new command in:", this.name, "because I'm holding something");
+      }
+
+      if(!this.memory.command)
+      {
+        this.memory.lastCommandTick = Game.time;
+      }
+    }
+
+    return this.memory.command;
+  }
+
+  private checkReagentLabs(): Command|undefined
+  {
+    if(!this.reagentLabs || this.reagentLabs.length < 2)
+    {
+      return; //early
+    }
+
+    for(let i = 0; i < 2; i++)
+    {
+      let lab = this.reagentLabs[i];
+      let mineralType = (this.labProcess ? Object.keys(this.labProcess.reagentLoads)[i] : undefined) as ResourceConstant;
+      if(!mineralType && lab.mineralAmount > 0)
+      {
+        // clear labs when there is no current process
+        let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType!};
+        return command;
+      }
+      else if(mineralType && lab.mineralType && lab.mineralType !== mineralType)
+      {
+        let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType};
+        return command;
+      }
+      else if(mineralType)
+      {
+        let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], this.creep.carryCapacity);
+        if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
+          && lab.mineralAmount <= lab.mineralCapacity - this.creep.carryCapacity)
+        {
+          // bring minerals to lab when amount drops below amount needed
+          let command: Command = {origin: this.terminal!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
+          return command;
         }
       }
     }
+
+    return;
   }
+
+  private checkProductLabs(): Command|undefined
+  {
+    if (!this.productLabs)
+    {
+      return; // early
+    }
+
+    for (let lab of this.productLabs) {
+
+        if (this.terminal!.store.energy >= this.creep.carryCapacity && lab.energy < this.creep.carryCapacity)
+        {
+            // restore boosting energy to lab
+            return { origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
+        }
+
+        let flag = lab.pos.lookFor(LOOK_FLAGS)[0];
+        if (flag) continue;
+
+        if (lab.mineralAmount > 0 && (!this.labProcess || lab.mineralType !== this.labProcess.currentShortage.mineralType)) {
+            // empty wrong mineral type or clear lab when no process
+            return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
+        }
+        else if (this.labProcess && lab.mineralAmount >= this.creep.carryCapacity) {
+            // store product in terminal
+            return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
+        }
+    }
+    return;
+}
 
   private findReagentLabs(): StructureLab[] | undefined
   {
@@ -129,6 +327,7 @@ export class LabManagementProcess extends InitalizationProcess
         else
         {
           this.memory.reagentLabIds = undefined;
+          return;
         }
       }) as StructureLab[];
 
@@ -189,6 +388,7 @@ export class LabManagementProcess extends InitalizationProcess
       this.memory.productLabIds = undefined;
       return reagentLabs;
     }
+    return;
   }
 
   private findProductLabs(): StructureLab[] | undefined
@@ -204,7 +404,9 @@ export class LabManagementProcess extends InitalizationProcess
         else
         {
           this.memory.productLabIds = undefined;
+          return;
         }
+
       }) as StructureLab[];
 
       if(labs.length > 0)
@@ -267,6 +469,7 @@ export class LabManagementProcess extends InitalizationProcess
 
       return process;
     }
+    return;
   }
 
   private checkProcessFinished(process: LabProcess)
