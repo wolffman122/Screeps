@@ -65,25 +65,33 @@ export class EnergyManagementProcess extends Process{
       {
         let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
         let spawned = false;
-        if(sources.length == sourceContainers.length)
+        let room = source.room;
+        if(room)
         {
-          spawned = Utils.spawn(
-            proc.kernel,
-            proc.metaData.roomName,
-            'harvester',
-            creepName,
-            {}
-          )
-        }
-        else
-        {
-          spawned = Utils.spawn(
-            proc.kernel,
-            proc.metaData.roomName,
-            'harvester',
-            creepName,
-            {}
-          )
+          let controller = room.controller;
+          if(controller && controller.level >= 8)
+          {
+            spawned = Utils.spawn(
+              proc.kernel,
+              proc.metaData.roomName,
+              'harvester',
+              creepName,
+              {
+                addition: 'bigHarvester',
+                max: 16
+              }
+            )
+          }
+          else
+          {
+            spawned = Utils.spawn(
+              proc.kernel,
+              proc.metaData.roomName,
+              'harvester',
+              creepName,
+              {}
+            )
+          }
         }
 
         if(spawned){
@@ -150,7 +158,7 @@ export class EnergyManagementProcess extends Process{
     switch(this.metaData.roomName)
     {
       case 'E42S48':
-        upgraders = 1;
+        upgraders = 2;
         break;
       default:
         upgraders = 1;

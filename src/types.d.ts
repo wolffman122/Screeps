@@ -197,6 +197,7 @@ interface Creep extends RoomObject {
     builderCreeps: string[]
     workerCreeps: string[]
     flagName: string
+    increasing: boolean
 
   }
 

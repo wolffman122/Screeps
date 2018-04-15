@@ -69,25 +69,71 @@ export class HoldRoomManagementProcess extends Process
       let proc = this;
 
       this.metaData.holdCreeps = Utils.clearDeadCreeps(this.metaData.holdCreeps);
+      let room = flag.room;
 
-      if(this.metaData.holdCreeps.length < 1)
+      if(room && room.controller)
       {
-        let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
-        let spawned = Utils.spawn(
-          proc.kernel,
-          spawnRoom,
-          'hold',
-          creepName,
-          {}
-        );
-
-        if(spawned)
+        let controller = room.controller;
+        if(controller.reservation)
         {
-          this.metaData.holdCreeps.push(creepName);
-          this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
-            creep: creepName,
-            flagName: this.metaData.flagName
-          })
+          if(controller.reservation.ticksToEnd > 4900)
+          {
+            this.metaData.increasing = false;
+          }
+
+          if(controller.reservation.ticksToEnd < 1000)
+          {
+            this.metaData.increasing = true;
+          }
+        }
+      }
+
+      if(!room)
+      {
+        if(this.metaData.holdCreeps.length < 1)
+        {
+          let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            proc.kernel,
+            spawnRoom,
+            'hold',
+            creepName,
+            {}
+          );
+
+          if(spawned)
+          {
+            this.metaData.holdCreeps.push(creepName);
+            this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
+              creep: creepName,
+              flagName: this.metaData.flagName
+            })
+          }
+        }
+      }
+      else
+      {
+        if(this.metaData.holdCreeps.length < 1 && this.metaData.increasing)
+        {
+          let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            proc.kernel,
+            spawnRoom,
+            'hold',
+            creepName,
+            {
+              max: 12
+            }
+          );
+
+          if(spawned)
+          {
+            this.metaData.holdCreeps.push(creepName);
+            this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
+              creep: creepName,
+              flagName: this.metaData.flagName
+            })
+          }
         }
       }
 

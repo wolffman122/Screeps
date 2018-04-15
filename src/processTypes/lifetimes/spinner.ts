@@ -39,7 +39,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: RESOURCE_ENERGY
           });
         }
-        else if (creep.room.terminal && creep.room.terminal.store.energy > 100000)
+        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 100000)
         {
           let collectAmount = creep.room.terminal.store.energy - 100000;
           if(collectAmount < creep.carryCapacity)
@@ -95,7 +95,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: RESOURCE_ENERGY
           });
         }
-        else if (creep.room.terminal && creep.room.terminal.store.energy > 100000)
+        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 100000)
         {
           let collectAmount = creep.room.terminal.store.energy - 100000;
           if(collectAmount < creep.carryCapacity)
@@ -156,7 +156,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: mineral.mineralType
           });
         }
-        else if(creep.room.terminal.store.energy < 100000)
+        else if(creep.room.terminal.my && creep.room.terminal.store.energy < 100000)
         {
           this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
             creep: creep.name,
@@ -183,7 +183,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: mineral.mineralType
           });
         }
-        else if(creep.room.terminal.store.energy < 100000)
+        else if(creep.room.terminal.my && creep.room.terminal.store.energy < 100000)
         {
           this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
             creep: creep.name,

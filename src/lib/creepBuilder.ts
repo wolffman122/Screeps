@@ -30,6 +30,11 @@ export const CreepBuilder = {
     while(add){
       var creepCost = CreepBuilder.bodyCost(body)
 
+      if(memory.addition)
+      {
+        creepType = memory.addition;
+      }
+
       var nextPart = <BodyPartConstant>CreepBuilder.typeExtends[creepType][extendIndex]
       let maximum = CreepBuilder.typeLengths[creepType];
       if(memory.max)
@@ -81,7 +86,7 @@ export const CreepBuilder = {
   typeStarts: <PartList>{
     'claimer': [TOUGH, MOVE, MOVE, CLAIM],
     'harvester': [WORK, WORK, CARRY, MOVE],
-    'hold': [CLAIM, MOVE],
+    'hold': [CLAIM, CLAIM, MOVE],
     'mover': [CARRY, MOVE],
     'bigMover': [CARRY, MOVE],
     'worker': [WORK, CARRY, MOVE, MOVE],
@@ -90,7 +95,6 @@ export const CreepBuilder = {
     'defender': [MOVE,MOVE,MOVE,ATTACK,ATTACK],
     'spinner': [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
     'holdmover': [CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,WORK],
-    'bigHarvester': [WORK, WORK, CARRY, MOVE, MOVE],
     'mineralHarvester': [MOVE,WORK,WORK,CARRY,CARRY,CARRY],
     'remoteWorker': [TOUGH, TOUGH, WORK, CARRY, MOVE, MOVE],
     'upgrader1': [WORK, CARRY, MOVE,MOVE],
@@ -105,7 +109,8 @@ export const CreepBuilder = {
   typeExtends: <PartList>{
     'claimer': [CLAIM],
     'harvester': [MOVE, WORK],
-    'hold': [CLAIM, MOVE],
+    'bigHarvester': [WORK, WORK, MOVE],
+    'hold': [CLAIM, CLAIM, MOVE],
     'mover': [CARRY, CARRY, MOVE],
     'bigMover': [CARRY, CARRY, MOVE],
     //'worker': [WORK, CARRY, MOVE, MOVE]
@@ -115,7 +120,6 @@ export const CreepBuilder = {
     'defender': [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,ATTACK,ATTACK],
     'spinner': [CARRY],
     'holdmover': [CARRY,CARRY,MOVE],
-    'bigHarvester': [WORK, WORK],
     'mineralHarvester': [WORK,WORK,MOVE],
     'remoteWorker': [CARRY, WORK, MOVE, MOVE],
     'upgrader1': [WORK, WORK, MOVE],
@@ -130,7 +134,7 @@ export const CreepBuilder = {
   typeLengths: <{[name: string]: number}>{
     'claimer': 4,
     'harvester': 14,
-    'hold': 4,
+    'hold': 3,
     'mover': 32,
     'bigMover': 42,
     'worker': 16,
@@ -139,7 +143,6 @@ export const CreepBuilder = {
     'defender': 26,
     'spinner': 14,
     'holdmover': 50,
-    'bigHarvester': 15,
     'mineralHarvester': 48,
     'remoteWorker': 42,
     'upgrader1': 25,

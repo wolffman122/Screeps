@@ -28,7 +28,10 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
         creep.travelTo(container);
       }
 
-      creep.harvest(source);
+      if(creep.harvest(source) === ERR_NOT_ENOUGH_RESOURCES)
+      {
+        this.suspend = source.ticksToRegeneration;
+      }
 
       if(_.sum(creep.carry) == creep.carryCapacity)
       {

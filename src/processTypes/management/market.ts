@@ -6,11 +6,11 @@ export class MarketManagementProcess extends Process
 
   run()
   {
-    if(Game.time % 5 === 0)
+    if(Game.time % 20 === 0)
     {
       let buyOrders = Game.market.getAllOrders({resourceType: RESOURCE_ENERGY, type: ORDER_BUY});
 
-      _.sortBy(buyOrders, ['price']);
+      _.sortBy(buyOrders, 'price').reverse();
 
       let myRooms = _.filter(Game.rooms, r => r.controller && r.controller.my);
 
@@ -30,13 +30,13 @@ export class MarketManagementProcess extends Process
         }
         else if(mineral)  // Sell minerals if they are over 80000
         {
-          if(terminal && terminal.cooldown == 0 && terminal.store[mineral.mineralType]! > 100000)
+          if(terminal && terminal.cooldown == 0 && terminal.store[mineral.mineralType]! > 50000)
           {
             let minOrders = Game.market.getAllOrders({resourceType: mineral.mineralType, type: ORDER_BUY});
 
-            _.sortBy(minOrders, ['price']);
+            _.sortBy(minOrders, 'price').reverse();
 
-            let amount = terminal.store[mineral.mineralType]! - 100000;
+            let amount = terminal.store[mineral.mineralType]! - 50000;
             if(Game.market.deal(minOrders[0].id, amount, room.name) == OK)
             {
               console.log('Deal ' + room.name + ' ' + mineral.mineralType);

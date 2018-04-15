@@ -42,7 +42,7 @@ export class TerminalManagementProcess extends Process
         }
       });
 
-      lRooms = _.sortBy(lRooms, ['amount']);
+      lRooms = _.sortBy(lRooms, 'amount');
 
       if(fullRooms.length > 0)
       {
@@ -56,11 +56,9 @@ export class TerminalManagementProcess extends Process
 
         if(fRooms.length > 0)
         {
-          fRooms = _.sortBy(fRooms, ['amount']).reverse();
+          fRooms = _.sortBy(fRooms, 'amount').reverse();
 
-          let room = _.find(fullRooms, (fr) => {
-            return (fr.name == fRooms[0].name);
-          });
+          let room = Game.rooms[fRooms[0].name];
 
           if(room)
           {
