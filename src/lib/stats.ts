@@ -33,6 +33,14 @@ export const Stats = {
     Memory.stats['processes.types.init'] = 0
     Memory.stats['processes.types.flagWatcher'] = 0
 
+    if(typeof Game.cpu.getHeapStatistics === "function")
+    {
+      let heapStats = Game.cpu.getHeapStatistics();
+      let heapPercent = Math.round(((heapStats.total_heap_size + heapStats.externally_allocated_size) /
+                                      heapStats.heap_size_limit) * 100);
+      Memory.stats['memory.heapPercent'] = heapPercent;
+    }
+
     /*let processCounts = _.reduce(kernel.execOrder, (types, item: {type: string}) => {
       if(!types[item.type])
       {

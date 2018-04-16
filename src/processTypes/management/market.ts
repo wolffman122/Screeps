@@ -6,6 +6,8 @@ export class MarketManagementProcess extends Process
 
   run()
   {
+    this.kernel.sendIpc('market', 'minerals-E48S57', {Message: "Test"});
+
     if(Game.time % 20 === 0)
     {
       let buyOrders = Game.market.getAllOrders({resourceType: RESOURCE_ENERGY, type: ORDER_BUY});

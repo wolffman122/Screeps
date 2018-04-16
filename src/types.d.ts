@@ -59,7 +59,8 @@ interface Creep extends RoomObject {
   interface IPCMessage{
     from: string
     to: string
-    message: object
+    message: object,
+    read: Boolean
   }
 
   interface DeliveryTarget extends Structure{

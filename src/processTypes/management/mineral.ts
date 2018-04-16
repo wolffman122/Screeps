@@ -26,6 +26,11 @@ export class MineralManagementProcess extends Process
       return;
     }
 
+    let ipcMsg: IPCMessage = this.kernel.getIpc(this.name);
+    if(ipcMsg)
+    {
+      this.log('Message sent' + ipcMsg.message.Message);
+    }
 
     if(mineral.mineralAmount > 0)
     {
@@ -60,7 +65,7 @@ export class MineralManagementProcess extends Process
           break;
       }
 
-      if(this.metaData.mineralHarvesters.length < harvesters) // Need to find a way of how many creeps can mine a mineral
+      if(this.metaData.mineralHarvesters.length < 0 )//harvesters) // Need to find a way of how many creeps can mine a mineral
       {
         let creepName = 'min-h-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = Utils.spawn(
@@ -80,7 +85,7 @@ export class MineralManagementProcess extends Process
         }
       }
 
-      if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 1)
+      if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 0)//1)
       {
         let creepName = 'min-m-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = Utils.spawn(

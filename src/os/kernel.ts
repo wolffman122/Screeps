@@ -197,6 +197,7 @@ export class Kernel{
     }
 
     this.loadProcessTable()
+    this.loadIpcMessages();
 
     this.addProcess(InitProcess, 'init', 99, {})
   }
@@ -233,6 +234,20 @@ export class Kernel{
     })
   }
 
+  loadIpcMessages()
+  {
+    let kernel = this;
+    if(kernel.ipc)
+    {
+      kernel.ipc = Memory.wolffOS.ipcMessages;
+      //console.log("IPC Lenght", kernel.ipc.length, kernel.ipc[0].from, kernel.ipc[0].to, kernel.ipc[0].message);
+    }
+    else
+    {
+      console.log("IPC Failed");
+    }
+  }
+
   /** Tear down the OS ready for the end of the tick */
   teardown(stats = true){
     let list: SerializedProcess[] = []
@@ -245,10 +260,14 @@ export class Kernel{
     //  console.log(this.execOrder.length)
     //}
 
-
     if(stats)
     {
       Stats.build(this);
+    }
+
+    if(this.ipc && this.ipc.length > 0)
+    {
+      Memory.wolffOS.ipcMessages = this.ipc;
     }
 
 
@@ -342,18 +361,35 @@ export class Kernel{
 
   /** Send message to another process */
   sendIpc(sourceProcess: string, targetProcess: string, message: object){
-    this.ipc.push({
-      from: sourceProcess,
-      to: targetProcess,
-      message: message
+    let ipcMsg: IPCMessage[] = [];
+    ipcMsg = _.filter(this.ipc, (msg) => {
+      if(msg.from === sourceProcess && msg.to === targetProcess)
+      {
+        return msg;
+      }
+      return;
     })
+
+    if(ipcMsg.length === 0)
+    {
+      this.ipc.push({
+        from: sourceProcess,
+        to: targetProcess,
+        message: message,
+        read: false
+      })
+    }
   }
 
   /** Get ipc messages for the given process */
   getIpc(targetProcess: string){
     return _.filter(this.ipc, function(entry){
-      return (entry.to == targetProcess)
-    })
+      if(entry.to == targetProcess)
+      {
+        return entry;
+      }
+      return;
+    })[0]
   }
 
   /** get a process by name */
