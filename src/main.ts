@@ -3,6 +3,7 @@ import "./lib/Traveler"
 import {Kernel} from './os/kernel'
 import { Traveler } from "./lib/Traveler";
 import "creep.extensions";
+import "utils/constants";
 
 Creep.prototype.fixMyRoad = function()
 {

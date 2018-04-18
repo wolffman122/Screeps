@@ -59,7 +59,7 @@ interface Creep extends RoomObject {
   interface IPCMessage{
     from: string
     to: string
-    message: object,
+    message: any,
     read: Boolean
   }
 
@@ -329,6 +329,21 @@ interface Creep extends RoomObject {
     creep: string
     targetRoom: string
     flagName: string
+  }
+
+  interface MarketManagementProcessMetaData
+  {
+    mining: {[roomName: string]: boolean}
+    amount: number
+    waitingToSell: boolean
+  }
+
+  interface MineralManagementProcessMetaData
+  {
+    roomName: string
+    mineralHarvesters: string[]
+    mineralHaulers: string[]
+    mining: boolean
   }
 
 //// Minerals

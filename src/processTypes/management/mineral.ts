@@ -6,6 +6,7 @@ import { MineralDistroLifetimeProcess } from "processTypes/lifetimes/mineralDist
 export class MineralManagementProcess extends Process
 {
   type = 'minerals';
+  metaData: MineralManagementProcessMetaData
 
   run()
   {
@@ -26,13 +27,31 @@ export class MineralManagementProcess extends Process
       return;
     }
 
-    let ipcMsg: IPCMessage = this.kernel.getIpc(this.name);
+    let ipcMsg: IPCMessage|undefined = this.kernel.getIpc(this.name);
     if(ipcMsg)
     {
-      this.log('Message sent' + ipcMsg.message.Message);
+      this.log('Got a message');
+
+      let value: String = ipcMsg.message.value;
+      let status = value.split('-')[0];
+      let action = value.split('-')[1];
+
+      this.log('Message status ' + status + ' action ' + action);
+
+      if(status == 'Start' && action == 'Mining')
+      {
+        this.metaData.mining = true;
+      }
+      else if(status == 'Stop' && action == 'Mining')
+      {
+        this.metaData.mining = false;
+      }
+
     }
 
-    if(mineral.mineralAmount > 0)
+    this.log('We are mining ' + this.metaData.mining);
+
+    if(this.metaData.mining && mineral.mineralAmount > 0)
     {
 
       this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
@@ -65,7 +84,7 @@ export class MineralManagementProcess extends Process
           break;
       }
 
-      if(this.metaData.mineralHarvesters.length < 0 )//harvesters) // Need to find a way of how many creeps can mine a mineral
+      /*if(this.metaData.mineralHarvesters.length < 0 )//harvesters) // Need to find a way of how many creeps can mine a mineral
       {
         let creepName = 'min-h-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = Utils.spawn(
@@ -105,12 +124,11 @@ export class MineralManagementProcess extends Process
             mineralType: mineral.mineralType
           })
         }
-      }
+      }*/
     }
     else
     {
-      this.completed = true;
-      return;
+      this.suspend = 5;
     }
   }
 }

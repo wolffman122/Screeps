@@ -267,6 +267,10 @@ export class Kernel{
 
     if(this.ipc && this.ipc.length > 0)
     {
+      _.remove(this.ipc, (ip) => {
+        return ip.read;
+      });
+
       Memory.wolffOS.ipcMessages = this.ipc;
     }
 
@@ -360,9 +364,9 @@ export class Kernel{
   noop(){}
 
   /** Send message to another process */
-  sendIpc(sourceProcess: string, targetProcess: string, message: object){
-    let ipcMsg: IPCMessage[] = [];
-    ipcMsg = _.filter(this.ipc, (msg) => {
+  sendIpc(sourceProcess: string, targetProcess: string, message: any)
+  {
+    let ipcMsg = _.find(this.ipc, (msg) => {
       if(msg.from === sourceProcess && msg.to === targetProcess)
       {
         return msg;
@@ -370,7 +374,7 @@ export class Kernel{
       return;
     })
 
-    if(ipcMsg.length === 0)
+    if(ipcMsg == undefined)
     {
       this.ipc.push({
         from: sourceProcess,
@@ -383,13 +387,20 @@ export class Kernel{
 
   /** Get ipc messages for the given process */
   getIpc(targetProcess: string){
-    return _.filter(this.ipc, function(entry){
+    let index =  _.findIndex(this.ipc, function(entry){
       if(entry.to == targetProcess)
       {
         return entry;
       }
       return;
-    })[0]
+    });
+
+    if(index >= 0)
+    {
+      this.ipc[index].read = true;
+      return this.ipc[index];
+    }
+    return;
   }
 
   /** get a process by name */
