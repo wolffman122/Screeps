@@ -4,122 +4,51 @@ import { Process } from "os/process";
 export class MarketManagementProcess extends Process
 {
   metaData: MarketManagementProcessMetaData;
-  type = 'mmp';
+  type = 'market';
 
-
-  run()
+  ensureMetaData()
   {
-    let proc = this;
-    //this.kernel.sendIpc('market', 'minerals-E48S57', {value: "Testing Send"});
-
-
-    // TODO need to make metaData.mining an array to store if it is mining for each room.
-    if(proc.metaData.mining === undefined)
+    if(!this.metaData.mining)
     {
-      proc.metaData.mining = {};
-    }
-
-    proc.log('Beginning');
-    if(Game.time % 5 === 0)
-    {
-      let buyOrders = Game.market.getAllOrders({resourceType: RESOURCE_ENERGY, type: ORDER_BUY});
-
-      _.sortBy(buyOrders, 'price').reverse();
-
-      let myRooms = _.filter(Game.rooms, r => r.controller && r.controller.my);
-
-      _.forEach(myRooms, function(room) {
-
-        if(proc.metaData.mining[room.name] ===  undefined)
-        {
-          proc.metaData.mining[room.name] === false;
-        }
-
-        let mineral = <Mineral>room.find(FIND_MINERALS)[0];
-        let terminal = room.terminal;
-        let storage = room.storage;
-
-        if(storage && (_.sum(storage.store) >= storage.storeCapacity * .8))
-        {
-          proc.log('Energy orders');
-          if(terminal && terminal.cooldown == 0 && terminal.store.energy > 80000)
-          {
-            let dealAmount = terminal.store.energy - 80000;
-            console.log('Deal ' + room.name + ' id ' + buyOrders[0] + ' amount ' + dealAmount);
-            Game.market.deal(buyOrders[0].id, dealAmount, room.name)
-          }
-        }
-        else if(mineral)  // Sell minerals if they are over 50000
-        {
-          proc.log('Into mineral terminal amount ' + terminal!.store[mineral.mineralType]! + ' density ' + MINERAL_DENSITY[mineral.density] + ' Room ' + mineral.room!.name + ' amount ' + mineral.mineralAmount);
-
-          // Generate mine order
-          if(!proc.metaData.mining[room.name] && terminal
-            && terminal.my && terminal.store[mineral.mineralType]! <= MINERAL_KEEP_AMOUNT)
-            //&& mineral.mineralAmount === MINERAL_DENSITY[mineral.density])
-          {
-            proc.log('Sending a message to ' + mineral.room!.name);
-            // Tell Mining to start
-            proc.kernel.sendIpc('market', 'minerals-'+ mineral.room!.name, {value: "Start-Mining"});
-            proc.metaData.mining[room.name] = true;
-            proc.metaData.amount = mineral.mineralAmount;
-            proc.metaData.waitingToSell = false;
-          }
-
-          if(mineral.mineralAmount === 0 && proc.metaData.mining)
-          {
-            proc.log('Mineral Orders');
-            proc.kernel.sendIpc('market', 'minerals-'+ mineral.room!.name, {value: "Stop-Mining"});
-
-            // Stop mining and make sell order
-            proc.metaData.mining[room.name] = false;
-            proc.metaData.waitingToSell = true;
-
-           /* proc.log('Time to sell some shit');
-            let sellOrders = Game.market.getAllOrders({resourceType: mineral.mineralType, type: ORDER_SELL});
-
-            let avgPrice = proc.getSellPrice(sellOrders);
-            let minPrice = _.min(sellOrders, 'price');
-
-            Game.market.createOrder(ORDER_SELL, mineral.mineralType, avgPrice, proc.metaData.amount, mineral.room!.name);*/
-          }
-
-          // Old Buy code trying to change to sell code might be able to remove all of this.
-          /*if(terminal && terminal.cooldown == 0 && terminal.store[mineral.mineralType]! > MINERAL_KEEP_AMOUNT)
-          {
-            let minOrders = Game.market.getAllOrders({resourceType: mineral.mineralType, type: ORDER_BUY});
-
-            _.sortBy(minOrders, 'price').reverse();
-
-            let amount = terminal.store[mineral.mineralType]! - MINERAL_KEEP_AMOUNT;
-            if(Game.market.deal(minOrders[0].id, amount, room.name) == OK)
-            {
-              console.log('Deal ' + room.name + ' ' + mineral.mineralType);
-            }
-          }*/
-        }
-      })
+      this.log('Meta Data Reset');
+      this.metaData.mining = {}
     }
   }
 
-  getSellPrice(orders: Order[]): number
+  run()
   {
-    orders = _.sortBy(orders, 'price');
+    this.ensureMetaData();
 
-    let lowEnd = _.dropRight(orders, (orders.length - 14));
+    this.log('Mining ' + Object.keys(this.metaData.mining).length);
 
-    let amountTotal = 0;
+    let miningRooms = _.filter(Game.rooms, (r)=> {
+      return (r.controller && r.controller.my && r.controller.level >= 8
+        && r.terminal && r.terminal.my);
+    });
 
-    let priceTotal = 0;
-
-    for(let i = 0; i < orders.length; i++)
+    if(miningRooms.length > 0)
     {
-      priceTotal += orders[i].remainingAmount * orders[i].price;
-      amountTotal += orders[i].remainingAmount;
+      this.log('Mining Rooms ' + miningRooms.length);
     }
 
-    return (priceTotal / amountTotal);
+    _.forEach(miningRooms, (mr) =>{
+      let mineral = mr.find(FIND_MINERALS)[0];
+
+      if(mineral)
+      {
+        this.log('Mining length ' + Object.keys(this.metaData.mining).length);
+        this.log('Mining Mr ' + this.metaData.mining[mr.name]);
+        if(!this.metaData.mining[mr.name])
+        {
+          this.metaData.mining[mr.name] = true;
+        }
+        this.log('Mining After Mr ' + this.metaData.mining[mr.name]);
+        this.log('Mining length ' + Object.keys(this.metaData.mining).length);
+
+      }
+    })
   }
 }
 
 const MINERAL_KEEP_AMOUNT = 51000;
+const SELL_AMOUNT = 20000;

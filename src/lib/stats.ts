@@ -148,6 +148,17 @@ export const Stats = {
           Memory.stats['rooms.' + roomName + '.structure_info'] = structure_info;
 
         }
+        else if(room.controller)
+        {
+          if(room.controller.reservation)
+          {
+            Memory.stats['remote_rooms.' + roomName + '.reservation'] = room.controller.reservation.ticksToEnd
+
+            const sources = <Source[]>room.find(FIND_SOURCES);
+            const source_energy = _.sum(sources, s => s.energy);
+            Memory.stats['remote_rooms.' + roomName + '.source_energy'] = source_energy;
+          }
+        }
       }
     })
   }

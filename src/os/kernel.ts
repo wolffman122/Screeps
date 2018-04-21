@@ -128,7 +128,7 @@ const processTypes = <{[type: string]: any}>{
   'mineral-harvest': MineralHarvest,
   'mdlf': MineralDistroLifetimeProcess,
   'acmp': AttackControllerManagementProcess,
-  'mmp': MarketManagementProcess,
+  'market': MarketManagementProcess,
   'terminal' : TerminalManagementProcess,
   'bounce' : BounceAttackProcess,
   'healAttack' : HealAttackProcess,

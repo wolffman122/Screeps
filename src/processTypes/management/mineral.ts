@@ -49,11 +49,9 @@ export class MineralManagementProcess extends Process
 
     }
 
-    this.log('We are mining ' + this.metaData.mining);
-
     if(this.metaData.mining && mineral.mineralAmount > 0)
     {
-
+      this.log('Into the mine code');
       this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
       this.metaData.mineralHaulers = Utils.clearDeadCreeps(this.metaData.mineralHaulers);
 
