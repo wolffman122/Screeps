@@ -86,11 +86,11 @@ export class InitProcess extends Process{
       }
     })
 
-    this.kernel.addProcess(SuspensionProcess, 'suspension-master', 99, {master: true})
-    this.kernel.addProcess(FlagWatcherProcess, 'flag-watcher', 98, {})
+    this.kernel.addProcessIfNotExist(SuspensionProcess, 'suspension-master', 99, {master: true})
+    this.kernel.addProcessIfNotExist(FlagWatcherProcess, 'flag-watcher', 98, {})
     this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
-    this.kernel.addProcess(TerminalManagementProcess, 'terminal', 15, {});
-    this.kernel.addProcess(MinetalTerminalManagementProcess, 'mineralTerminal', 14,  {});
+    this.kernel.addProcessIfNotExist(TerminalManagementProcess, 'terminal', 15, {});
+    this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 14,  {});
 
     this.completed = true
   }

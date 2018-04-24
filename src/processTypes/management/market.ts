@@ -13,40 +13,28 @@ export class MarketManagementProcess extends Process
       this.log('Meta Data Reset');
       this.metaData.mining = {}
     }
+
+    if(this.metaData.waitingToSell === undefined)
+    {
+      this.metaData.waitingToSell = false;
+    }
   }
 
   run()
   {
     this.ensureMetaData();
 
-    this.log('Mining ' + Object.keys(this.metaData.mining).length);
+    this.metaData.waitingToSell = !this.metaData.waitingToSell;
+    this.log('Waiting to sell ' + this.metaData.waitingToSell);
 
-    let miningRooms = _.filter(Game.rooms, (r)=> {
-      return (r.controller && r.controller.my && r.controller.level >= 8
-        && r.terminal && r.terminal.my);
-    });
-
-    if(miningRooms.length > 0)
+    if(this.metaData.mining['E48S52'] === undefined)
     {
-      this.log('Mining Rooms ' + miningRooms.length);
+      this.metaData.mining['E48S52'] = false;
     }
 
-    _.forEach(miningRooms, (mr) =>{
-      let mineral = mr.find(FIND_MINERALS)[0];
+    this.metaData.mining['E48S52'] = !this.metaData.mining['E48S52'];
+    this.log('Mining status ' + this.metaData.mining['E48S52']);
 
-      if(mineral)
-      {
-        this.log('Mining length ' + Object.keys(this.metaData.mining).length);
-        this.log('Mining Mr ' + this.metaData.mining[mr.name]);
-        if(!this.metaData.mining[mr.name])
-        {
-          this.metaData.mining[mr.name] = true;
-        }
-        this.log('Mining After Mr ' + this.metaData.mining[mr.name]);
-        this.log('Mining length ' + Object.keys(this.metaData.mining).length);
-
-      }
-    })
   }
 }
 
