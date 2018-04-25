@@ -51,7 +51,6 @@ export class MineralManagementProcess extends Process
 
     if(this.metaData.mining && mineral.mineralAmount > 0)
     {
-      this.log('Into the mine code');
       this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
       this.metaData.mineralHaulers = Utils.clearDeadCreeps(this.metaData.mineralHaulers);
 
@@ -82,47 +81,51 @@ export class MineralManagementProcess extends Process
           break;
       }
 
-      /*if(this.metaData.mineralHarvesters.length < 0 )//harvesters) // Need to find a way of how many creeps can mine a mineral
+      if(this.metaData.roomName === 'E41S49' || this.metaData.roomName == 'E51S49')
       {
-        let creepName = 'min-h-' + proc.metaData.roomName + '-' + Game.time;
-        let spawned = Utils.spawn(
-          proc.kernel,
-          proc.metaData.roomName,
-          'mineralHarvester',
-          creepName,
-          {}
-        );
-
-        if(spawned)
+        this.log('Room is mining');
+        if(this.metaData.mineralHarvesters.length < harvesters) // Need to find a way of how many creeps can mine a mineral
         {
-          this.metaData.mineralHarvesters.push(creepName)
-          this.kernel.addProcess(MineralHarvesterLifetimeProcess, 'mhlf-' + creepName, 25, {
-            creep: creepName
-          });
+          let creepName = 'min-h-' + proc.metaData.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            proc.kernel,
+            proc.metaData.roomName,
+            'mineralHarvester',
+            creepName,
+            {}
+          );
+
+          if(spawned)
+          {
+            this.metaData.mineralHarvesters.push(creepName)
+            this.kernel.addProcess(MineralHarvesterLifetimeProcess, 'mhlf-' + creepName, 25, {
+              creep: creepName
+            });
+          }
+        }
+
+        if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 1)
+        {
+          let creepName = 'min-m-' + proc.metaData.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            proc.kernel,
+            proc.metaData.roomName,
+            'mover',
+            creepName,
+            {}
+          );
+
+          if(spawned)
+          {
+            this.metaData.mineralHaulers.push(creepName);
+            this.kernel.addProcess(MineralDistroLifetimeProcess, 'mdlf-' + creepName, 22, {
+              creep: creepName,
+              container: container.id,
+              mineralType: mineral.mineralType
+            })
+          }
         }
       }
-
-      if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 0)//1)
-      {
-        let creepName = 'min-m-' + proc.metaData.roomName + '-' + Game.time;
-        let spawned = Utils.spawn(
-          proc.kernel,
-          proc.metaData.roomName,
-          'mover',
-          creepName,
-          {}
-        );
-
-        if(spawned)
-        {
-          this.metaData.mineralHaulers.push(creepName);
-          this.kernel.addProcess(MineralDistroLifetimeProcess, 'mdlf-' + creepName, 22, {
-            creep: creepName,
-            container: container.id,
-            mineralType: mineral.mineralType
-          })
-        }
-      }*/
     }
     else
     {

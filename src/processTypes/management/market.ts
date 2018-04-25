@@ -62,7 +62,7 @@ export class MarketManagementProcess extends Process
           {
             if(!this.metaData.data[room.name].mining && !this.metaData.data[room.name].waitingToSell)
             {
-              if(terminal.store[mineral.mineralType]! <= MINERAL_KEEP_AMOUNT)
+              if(terminal.store[mineral.mineralType]! <= (mineral.mineralAmount + MINERAL_KEEP_AMOUNT))
               {
                 this.log('Sending a messate to ' + mineral.room!.name);
 
@@ -78,23 +78,20 @@ export class MarketManagementProcess extends Process
               this.log('Mineral Order Creation');
               // Not sure if we want to send another message to Mineral process thinking not
 
+              this.kernel.sendIpc('market', 'minerals-'+mineral.room!.name, {value: "Stop-Mining"});
+
               this.metaData.data[room.name].mining = false;
               this.metaData.data[room.name].waitingToSell = true;
-            }
-            else if(terminal.store[mineral.mineralType]! > MINERAL_KEEP_AMOUNT)
-            {
-              this.metaData.data[room.name].mining = false;
-              this.metaData.data[room.name].waitingToSell = true;
-              this.metaData.data[room.name].amount = terminal.store[mineral.mineralType]! - MINERAL_KEEP_AMOUNT;
             }
 
-            if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].amount !== 0)
+            if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].amount > 0)
             {
               let sellOrders = Game.market.getAllOrders({resourceType: mineral.mineralType, type: ORDER_SELL});
 
               let avgPrice = this.getSellPrice(sellOrders);
               let minPrice = _.min(sellOrders, 'price');
 
+              this.log("Should make an order " + avgPrice);
               if(Game.market.createOrder(ORDER_SELL, mineral.mineralType, avgPrice, this.metaData.data[room.name].amount, mineral.room!.name) === OK)
               {
                 this.metaData.data[room.name].amount = 0;
@@ -102,20 +99,22 @@ export class MarketManagementProcess extends Process
             }
             else if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].orderId === undefined)
             {
+              this.log("Getting the order number");
               let orders = Game.market.getAllOrders({roomName: room.name, resourceType: mineral.mineralType});
               if(orders.length === 1)
               {
                 this.metaData.data[room.name].orderId = orders[0].id;
               }
             }
-            else if(this.metaData[room.name].waitingToSell)
+            else if(this.metaData.data[room.name].waitingToSell)
             {
+              this.log("Waiting for the sale");
               let orders = Game.market.getAllOrders({id: this.metaData.data[room.name].orderId});
               if(orders.length === 1)
               {
                 if(orders[0].remainingAmount === 0)
                 {
-                  this.metaData[room.name].waitingToSell = false;
+                  //this.metaData[room.name].waitingToSell = false;
                 }
               }
             }
@@ -146,5 +145,5 @@ export class MarketManagementProcess extends Process
   }
 }
 
-const MINERAL_KEEP_AMOUNT = 51000;
+const MINERAL_KEEP_AMOUNT = 5000;
 const SELL_AMOUNT = 20000;
