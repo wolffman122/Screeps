@@ -204,11 +204,14 @@ interface Creep extends RoomObject {
 
   interface MarketManagementProcessMetaData
   {
-    mining: {
-      [roomName: string]: boolean
-    },
-    amount: number,
-    waitingToSell: boolean,
+    data: {
+      [roomName: string]: {
+        mining: boolean,
+        amount: number,
+        waitingToSell: boolean,
+        orderId?: string,
+      }
+    }
   }
 
   interface BuildProcessMetaData

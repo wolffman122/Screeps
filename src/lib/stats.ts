@@ -61,6 +61,8 @@ export const Stats = {
       Memory.stats['processes.average.types.' + p.type] = holder;
     })*/
 
+    let remoteIndex = 0;
+
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
 
@@ -148,7 +150,7 @@ export const Stats = {
           Memory.stats['rooms.' + roomName + '.structure_info'] = structure_info;
 
         }
-        else if(room.controller)
+        else if(room.controller && remoteIndex < 5)
         {
           if(room.controller.reservation)
           {
@@ -157,6 +159,8 @@ export const Stats = {
             const sources = <Source[]>room.find(FIND_SOURCES);
             const source_energy = _.sum(sources, s => s.energy);
             Memory.stats['remote_rooms.' + roomName + '.source_energy'] = source_energy;
+
+            remoteIndex++;
           }
         }
       }
