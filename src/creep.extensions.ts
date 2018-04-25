@@ -11,3 +11,18 @@ Creep.prototype.transferEverything = function(target: Creep|StructureContainer|S
   }
   return ERR_NOT_ENOUGH_RESOURCES;
 }
+
+Creep.prototype.withdrawEverything = function(target: StructureContainer|StructureStorage|StructureTerminal)
+{
+  for(let t in target.store)
+  {
+    let resourceType = t as ResourceConstant;
+    let amount = target.store[resourceType];
+    if(amount && amount > 0)
+    {
+      return this.withdraw(target, resourceType);
+    }
+  }
+
+  return ERR_NOT_ENOUGH_RESOURCES;
+}

@@ -6,7 +6,10 @@ declare const require: (module: string) => any;
 interface Creep extends RoomObject {
     fixMyRoad(): boolean;
     transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
+    withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
   }
+
+
 
   declare namespace NodeJS{
     interface Global {
@@ -210,6 +213,8 @@ interface Creep extends RoomObject {
         amount: number,
         waitingToSell: boolean,
         orderId?: string,
+        tickLastPriceChange: number,
+        sellPrice: number
       }
     }
   }

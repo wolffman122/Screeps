@@ -104,7 +104,7 @@ export class MineralManagementProcess extends Process
           }
         }
 
-        if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 1)
+        if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 0)//1)
         {
           let creepName = 'min-m-' + proc.metaData.roomName + '-' + Game.time;
           let spawned = Utils.spawn(

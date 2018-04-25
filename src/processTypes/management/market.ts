@@ -53,7 +53,7 @@ export class MarketManagementProcess extends Process
         {
           if(this.metaData.data[room.name] === undefined)
           {
-            this.metaData.data[room.name] = { mining: false, amount: 0, waitingToSell: false, orderId: undefined};
+            this.metaData.data[room.name] = { mining: false, amount: 0, waitingToSell: false, orderId: undefined, tickLastPriceChange: 0, sellPrice: 0};
             this.log('Initial Set');
           }
 
@@ -95,6 +95,7 @@ export class MarketManagementProcess extends Process
               if(Game.market.createOrder(ORDER_SELL, mineral.mineralType, avgPrice, this.metaData.data[room.name].amount, mineral.room!.name) === OK)
               {
                 this.metaData.data[room.name].amount = 0;
+                this.metaData.data[room.name].sellPrice = avgPrice
               }
             }
             else if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].orderId === undefined)
@@ -104,7 +105,13 @@ export class MarketManagementProcess extends Process
               if(orders.length === 1)
               {
                 this.metaData.data[room.name].orderId = orders[0].id;
+                this.metaData.data[room.name].tickLastPriceChange = Game.time;
               }
+            }
+            else if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].tickLastPriceChange === (Game.time - WAIT_FOR_PRICE_CHANGE))
+            {
+              this.metaData.data[room.name].sellPrice = this.metaData.data[room.name].sellPrice * 0.90
+              Game.market.changeOrderPrice(this.metaData.data[room.name].orderId!, this.metaData.data[room.name].sellPrice);
             }
             else if(this.metaData.data[room.name].waitingToSell)
             {
@@ -147,3 +154,4 @@ export class MarketManagementProcess extends Process
 
 const MINERAL_KEEP_AMOUNT = 5000;
 const SELL_AMOUNT = 20000;
+const WAIT_FOR_PRICE_CHANGE = 1000;

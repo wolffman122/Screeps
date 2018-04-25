@@ -150,7 +150,7 @@ export const Stats = {
           Memory.stats['rooms.' + roomName + '.structure_info'] = structure_info;
 
         }
-        else if(room.controller && remoteIndex < 5)
+        else if(room.controller && !room.controller.my)
         {
           if(room.controller.reservation)
           {

@@ -46,6 +46,25 @@ export class DistroLifetimeProcess extends LifetimeProcess{
 
           return;
         }
+
+        // Pickup up extra from mineral container only if the room is full on energy.
+        if(creep.room.energyAvailable === creep.room.energyCapacityAvailable && this.roomData().mineralContainer)
+        {
+          let container = this.roomData().mineralContainer;
+          if(container && _.sum(container.store) > 0)
+          {
+            if(creep.pos.isNearTo(container))
+            {
+              creep.withdrawEverything(container);
+            }
+            else
+            {
+              creep.travelTo(container);
+            }
+
+            return;
+          }
+        }
       }
       else
       {
@@ -107,6 +126,19 @@ export class DistroLifetimeProcess extends LifetimeProcess{
       }
     })
 
+    // Drop off at terminal if creep is carrying anything but energy.
+    if(creep.room.terminal && _.sum(creep.carry) != creep.carry.energy)
+    {
+      if(creep.pos.isNearTo(creep.room.terminal!))
+      {
+        creep.transferEverything(creep.room.terminal);
+      }
+      else
+      {
+        creep.travelTo(creep.room.terminal);
+      }
+      return;
+    }
 
     if(deliverTargets.length === 0){
       targets = [].concat(
