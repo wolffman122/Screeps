@@ -139,6 +139,42 @@ export const Utils = {
     return bestRoom
   },
 
+  pathFind(startPos: RoomPosition, targetPos: RoomPosition)
+  {
+    let options: PathFinderOpts = {
+      plainCost: 2,
+      swampCost: 10,
+      
+      roomCallback: function(roomName: string) {
+        let room = Game.rooms[roomName];
+
+        if(!room)
+          return false;
+
+        let costs = new PathFinder.CostMatrix;
+
+        room.find(FIND_STRUCTURES).forEach(function(struct) {
+          if (struct.structureType === STRUCTURE_ROAD) {
+            // Favor roads over plain tiles
+            costs.set(struct.pos.x, struct.pos.y, 1);
+          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                     (struct.structureType !== STRUCTURE_RAMPART ||
+                      !struct.my)) {
+            // Can't walk through non-walkable buildings
+            costs.set(struct.pos.x, struct.pos.y, 0xff);
+          }
+        });
+
+        // Avoid creeps in the room
+        room.find(FIND_CREEPS).forEach(function(creep) {
+          costs.set(creep.pos.x, creep.pos.y, 0xff);
+        });
+
+        return costs;
+      },
+    }
+  },
+
   rampartHealth(kernel: Kernel, roomName: string)
   {
     let room = Game.rooms[roomName];
