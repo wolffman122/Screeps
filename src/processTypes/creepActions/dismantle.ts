@@ -38,13 +38,36 @@ export class DismantleProcess extends Process
       let target = targets[0];
       let targetPos = targets[0].pos;
 
-      if(!creep.pos.inRangeTo(targetPos, 1))
+      if(_.sum(creep.carry) < creep.carryCapacity)
       {
-        creep.travelTo(targetPos);
+        if(!creep.pos.inRangeTo(targetPos, 1))
+        {
+          creep.travelTo(targetPos);
+        }
+        else
+        {
+          creep.dismantle(target);
+        }
+        return;
       }
       else
       {
-        creep.dismantle(target);
+        let storage = creep.room.storage;
+        if(storage && storage.my)
+        {
+          if(creep.pos.isNearTo(storage))
+          {
+            creep.transferEverything(storage);
+          }
+          else
+          {
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(storage);
+            }
+          }
+          return;
+        }
       }
     }
   }

@@ -144,7 +144,7 @@ export const Utils = {
     let options: PathFinderOpts = {
       plainCost: 2,
       swampCost: 10,
-      
+
       roomCallback: function(roomName: string) {
         let room = Game.rooms[roomName];
 
@@ -185,7 +185,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 500000;
+      let max = room.controller!.level * 625000;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 
@@ -225,5 +225,88 @@ export const Utils = {
         return target;
       }
     }
+  },
+
+  roomPath(from: RoomPosition, to: RoomPosition)
+  {
+    let startCpu = Game.cpu.getUsed();
+    let allowedRooms = { [from.roomName]: true };
+
+    let retValue = Game.map.findRoute(from.roomName, to.roomName, {
+      routeCallback(roomName) {
+        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+
+        let isHighway = false;
+        let isSKRoom = false;
+        let isMyRoom : boolean | undefined = false;
+        if(parsed)
+        {
+          let coordinates = parsed.map(Number);
+          isHighway = (coordinates[1] % 10 === 0) ||
+                      (coordinates[2] % 10 === 0);
+          isSKRoom = ((coordinates[1] % 4 === 0 || coordinates[1] % 5 === 0 || coordinates[1] % 6 === 0)) ||
+                         ((coordinates[2] % 4 === 0 || coordinates[2] % 5 === 0 || coordinates[2] % 6 === 0));
+          isMyRoom = Game.rooms[roomName] &&
+                     Game.rooms[roomName].controller &&
+                     Game.rooms[roomName].controller!.my;
+        }
+        if(isHighway || isMyRoom)
+        {
+          return 1;
+        }
+        else if(isSKRoom)
+        {
+          return 2;
+        }
+        else
+        {
+          return 2.5;
+        }
+      }
+    });
+
+    _.forEach(retValue, (r) => {
+      allowedRooms[r.room] = true;
+      console.log("Room Name",r.room);
+    });
+
+    let options: PathFinderOpts = {
+      plainCost: 2,
+      swampCost: 10,
+      roomCallback(roomName: string)
+      {
+
+        if(allowedRooms[roomName] !== undefined)
+        {
+          let room = Game.rooms[roomName];
+
+          let costs = new PathFinder.CostMatrix;
+
+          room.find(FIND_STRUCTURES).forEach((s) => {
+            if(s.structureType === STRUCTURE_ROAD)
+            {
+              costs.set(s.pos.x, s.pos.y, 1);
+            }
+            else if(s.structureType !== STRUCTURE_CONTAINER &&
+                  (s.structureType !== STRUCTURE_RAMPART || !s.my))
+            {
+              costs.set(s.pos.x, s.pos.y, 0xff);
+            }
+          });
+
+          room.find(FIND_HOSTILE_CREEPS).forEach((c) => {
+            if()
+          })
+
+        }
+
+        return false;
+      }
+    }
+
+    let ret = PathFinder.search(from, to, options);
+
+    console.log("See how this works", ret.path);
+    console.log("Used CPU", Game.cpu.getUsed() - startCpu);
   }
 }

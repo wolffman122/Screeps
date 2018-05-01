@@ -32,6 +32,7 @@ export const CreepBuilder = {
 
       if(memory.addition)
       {
+
         creepType = memory.addition;
       }
 
@@ -102,7 +103,7 @@ export const CreepBuilder = {
     'healer': [HEAL, HEAL, MOVE],
     'attack': [TOUGH, TOUGH, ATTACK, ATTACK, MOVE, MOVE],
     'attackController': [CLAIM, MOVE],
-    'dismantler': [WORK,WORK, WORK, MOVE,MOVE],
+    'dismantler': [WORK,WORK,MOVE],
     'labDistro': [CARRY,MOVE],
   },
 
@@ -128,6 +129,7 @@ export const CreepBuilder = {
     'attack': [TOUGH, TOUGH, ATTACK, ATTACK, MOVE, MOVE],
     'attackController': [CLAIM, MOVE],
     'dismantler': [WORK, WORK, MOVE],
+    'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
     'labDistro': [CARRY,MOVE]
   },
 

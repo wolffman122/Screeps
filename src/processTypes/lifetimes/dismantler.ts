@@ -10,6 +10,8 @@ export class DismantleLifetimeProcess extends LifetimeProcess
   {
     let creep = this.getCreep();
 
+    this.log('Creep ' + creep);
+    
     if(!creep)
     {
       return;

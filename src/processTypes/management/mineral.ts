@@ -10,6 +10,8 @@ export class MineralManagementProcess extends Process
 
   run()
   {
+    //Utils.roomPath(new RoomPosition(25,25, 'E45S48'), new RoomPosition(25,25, 'E44S42'));
+
     if(!this.kernel.data.roomData[this.metaData.roomName])
     {
       this.completed = true;
@@ -81,7 +83,7 @@ export class MineralManagementProcess extends Process
           break;
       }
 
-      if(this.metaData.roomName === 'E41S49' || this.metaData.roomName == 'E51S49')
+      if(this.metaData.roomName === 'E41S49' || this.metaData.roomName == 'E51S49' || this.metaData.roomName == 'E45S48')
       {
         this.log('Room is mining');
         if(this.metaData.mineralHarvesters.length < harvesters) // Need to find a way of how many creeps can mine a mineral
@@ -104,7 +106,7 @@ export class MineralManagementProcess extends Process
           }
         }
 
-        if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 0)//1)
+        if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 1)
         {
           let creepName = 'min-m-' + proc.metaData.roomName + '-' + Game.time;
           let spawned = Utils.spawn(

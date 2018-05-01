@@ -24,11 +24,21 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(mineral.mineralAmount === 0 && _.sum(creep.carry) > 0)
+    let roomInContainer = container.storeCapacity - _.sum(container.store);
+
+    if(mineral.mineralAmount === 0 && _.sum(creep.carry) > 0 && roomInContainer >= _.sum(creep.carry))
     {
       this.fork(DeliverProcess, creep.name + '-deliver', this.priority - 1, {
         creep: creep.name,
         target: container.id,
+        resource: mineral.mineralType
+      })
+    }
+    else
+    {
+      this.fork(DeliverProcess, creep.name + '-deliver', this.priority - 1, {
+        creep: creep.name,
+        target: creep.room.terminal!.id,
         resource: mineral.mineralType
       })
     }
@@ -54,11 +64,11 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
         resource: mineral.mineralType
       })
     }
-    else
+    else if(_.sum(creep.carry) === creep.carryCapacity)
     {
       this.fork(DeliverProcess, creep.name + '-deliver', this.priority - 1, {
         creep: creep.name,
-        target: creep.room.storage,
+        target: creep.room.terminal!.id,
         resource: mineral.mineralType
       })
     }
