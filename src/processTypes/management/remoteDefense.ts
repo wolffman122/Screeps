@@ -5,6 +5,7 @@ import {RemoteDefenderLifetimeProcess} from '../lifetimes/remoteDefender'
 export class RemoteDefenseManagementProcess extends Process
 {
   type = 'rdmp';
+  metaData: RemoteDefenseManagementProcessMetaData;
 
   run()
   {
@@ -18,31 +19,29 @@ export class RemoteDefenseManagementProcess extends Process
 
     if(flag.memory.enemies)
     {
-      let defendingCreep  = Game.creeps[this.metaData.defendingCreep];
+      this.metaData.defendingCreep = Utils.clearDeadCreeps(this.metaData.defendingCreep);
       let deliverRoom = flag.name.split('-')[0];
 
-      if(!defendingCreep)
+      if(this.metaData.defendingCreep.length < 1)
       {
+        let creepName = 'rd-' + flag.pos.roomName + '-' + Game.time;
         let spawned = Utils.spawn(
           this.kernel,
           deliverRoom,
           'defender',
-          'rd-' + flag.pos.roomName + '-' + Game.time,
+          creepName,
           {}
         );
 
         if(spawned)
         {
-          this.metaData.defendingCreep = 'rd-' + flag.pos.roomName + '-' + Game.time;
+          this.metaData.defendingCreep.push(creepName);
+          this.kernel.addProcessIfNotExist(RemoteDefenderLifetimeProcess, creepName, this.priority, {
+            creep: creepName,
+            flag: flag.name,
+            deliverRoom: deliverRoom
+          });
         }
-      }
-      else
-      {
-        this.kernel.addProcessIfNotExist(RemoteDefenderLifetimeProcess, 'rdlf-' + defendingCreep.name, this.priority, {
-          creep: defendingCreep.name,
-          flag: flag.name,
-          deliverRoom: deliverRoom
-        });
       }
     }
   }

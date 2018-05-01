@@ -19,15 +19,27 @@ export class DefenderLifetimeProcess extends LifetimeProcess
     //let room = Game.rooms[creep.room.name];
 
     let flag = Game.flags[this.metaData.flagName];
-    let enemies  = <Creep[]>flag.pos.findInRange(FIND_HOSTILE_CREEPS, 25);
+    let enemies  = <Creep[]>flag.pos.findInRange(FIND_HOSTILE_CREEPS, 14);
 
     if(enemies.length > 0)
     {
-      let enemy = creep.pos.findClosestByRange(enemies);
+      let targets = _.filter(enemies, e => {
+        return (e.getActiveBodyparts(HEAL) > 0);
+      });
+
+      let target;
+      if(targets.length > 0)
+      {
+        target = creep.pos.findClosestByRange(targets);
+      }
+      else
+      {
+        target  = creep.pos.findClosestByRange(enemies);
+      }
 
       this.fork(DefendProcess, 'defend-' + creep.name, this.priority - 1, {
         creep: creep.name,
-        target: enemy.id,
+        target: target.id,
       });
     }
     else

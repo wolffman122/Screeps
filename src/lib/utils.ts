@@ -230,7 +230,7 @@ export const Utils = {
   roomPath(from: RoomPosition, to: RoomPosition)
   {
     let startCpu = Game.cpu.getUsed();
-    let allowedRooms = { [from.roomName]: true };
+    //let allowedRooms = { [from.roomName]: true };
 
     let retValue = Game.map.findRoute(from.roomName, to.roomName, {
       routeCallback(roomName) {
@@ -244,8 +244,8 @@ export const Utils = {
           let coordinates = parsed.map(Number);
           isHighway = (coordinates[1] % 10 === 0) ||
                       (coordinates[2] % 10 === 0);
-          isSKRoom = ((coordinates[1] % 4 === 0 || coordinates[1] % 5 === 0 || coordinates[1] % 6 === 0)) ||
-                         ((coordinates[2] % 4 === 0 || coordinates[2] % 5 === 0 || coordinates[2] % 6 === 0));
+          //isSKRoom = ((coordinates[1] % 4 === 0 || coordinates[1] % 5 === 0 || coordinates[1] % 6 === 0)) ||
+          //               ((coordinates[2] % 4 === 0 || coordinates[2] % 5 === 0 || coordinates[2] % 6 === 0));
           isMyRoom = Game.rooms[roomName] &&
                      Game.rooms[roomName].controller &&
                      Game.rooms[roomName].controller!.my;
@@ -254,10 +254,10 @@ export const Utils = {
         {
           return 1;
         }
-        else if(isSKRoom)
+        /*else if(isSKRoom)
         {
           return 2;
-        }
+        }*/
         else
         {
           return 2.5;
@@ -265,20 +265,25 @@ export const Utils = {
       }
     });
 
-    _.forEach(retValue, (r) => {
+    /*_.forEach(retValue, (r) => {
       allowedRooms[r.room] = true;
       console.log("Room Name",r.room);
-    });
+    });*/
+
+    return retValue;
+  }
+  /*
 
     let options: PathFinderOpts = {
       plainCost: 2,
       swampCost: 10,
       roomCallback(roomName: string)
       {
-
-        if(allowedRooms[roomName] !== undefined)
+        if(allowedRooms[roomName])
         {
-          let room = Game.rooms[roomName];
+          let room = Game.rooms[roomName]
+          if(!room)
+            return false;
 
           let costs = new PathFinder.CostMatrix;
 
@@ -287,17 +292,19 @@ export const Utils = {
             {
               costs.set(s.pos.x, s.pos.y, 1);
             }
-            else if(s.structureType !== STRUCTURE_CONTAINER &&
-                  (s.structureType !== STRUCTURE_RAMPART || !s.my))
+            else if (s.structureType !== STRUCTURE_CONTAINER &&
+                    (s.structureType !== STRUCTURE_RAMPART ||
+                     !s.my))
             {
               costs.set(s.pos.x, s.pos.y, 0xff);
             }
           });
 
-          room.find(FIND_HOSTILE_CREEPS).forEach((c) => {
-            if()
-          })
+          room.find(FIND_CREEPS).forEach(function(creep) {
+            costs.set(creep.pos.x, creep.pos.y, 0xff);
+          });
 
+          return costs;
         }
 
         return false;
@@ -308,5 +315,5 @@ export const Utils = {
 
     console.log("See how this works", ret.path);
     console.log("Used CPU", Game.cpu.getUsed() - startCpu);
-  }
+  }*/
 }

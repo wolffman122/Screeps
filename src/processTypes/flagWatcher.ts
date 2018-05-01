@@ -51,8 +51,11 @@ export class FlagWatcherProcess extends Process
     {
       this.kernel.addProcessIfNotExist(RemoteDefenseManagementProcess, 'rdmp-' + flag.name, 45,  { flag: flag.name })
     }
-    //console.log('Hold Management Process ' + flag.name);
-    this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name});
+    else
+    {
+      //console.log('Hold Management Process ' + flag.name);
+      this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name});
+    }
   }
 
   transferFlag(flag: Flag)

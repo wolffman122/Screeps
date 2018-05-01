@@ -128,6 +128,8 @@ interface Creep extends RoomObject {
       _travel: {};
       storageDelivery: boolean;
       atPlace: boolean;
+      currentRoom: string;
+      roomPath: -2 | { exit: ExitConstant, room: string}[],
   }
 
   interface FlagMemory
@@ -356,6 +358,13 @@ interface Creep extends RoomObject {
     mineralHarvesters: string[]
     mineralHaulers: string[]
     mining: boolean
+  }
+
+  interface RemoteDefenseManagementProcessMetaData
+  {
+    roomName: string,
+    defendingCreep: string[],
+    flag: string,
   }
 
 //// Minerals
