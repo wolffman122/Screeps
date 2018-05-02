@@ -4,6 +4,7 @@ interface DefendProcessMetaData
 {
   creep: string
   target: string
+  flagName: string
 }
 
 export class DefendProcess extends Process
@@ -23,13 +24,29 @@ export class DefendProcess extends Process
       return;
     }
 
-    if(!creep.pos.inRangeTo(enemy, 1))
+    let flag = Game.flags[this.metaData.flagName];
+
+    if(flag)
     {
-      creep.travelTo(enemy);
+      if(!creep.pos.inRangeTo(enemy, 1) && flag.pos.inRangeTo(enemy, 13))
+      {
+        creep.travelTo(enemy);
+      }
+      else
+      {
+        creep.attack(enemy);
+      }
     }
     else
     {
-      creep.attack(enemy);
+      if(!creep.pos.inRangeTo(enemy, 1))
+      {
+        creep.travelTo(enemy);
+      }
+      else
+      {
+        creep.attack(enemy);
+      }
     }
   }
 }

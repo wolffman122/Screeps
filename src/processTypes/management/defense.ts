@@ -34,7 +34,7 @@ export class DefenseManagementProcess extends Process
       let creepName = 'dm-' + this.metaData.roomName + '-' + Game.time;
       let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'defender', creepName, {});
 
-      let flagName = 'Defense-' + this.metaData.roomName;
+      let flagName = 'Center-' + this.metaData.roomName;
       if(spawned)
       {
         this.metaData.defenderCreeps.push(creepName);

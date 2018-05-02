@@ -81,10 +81,6 @@ export const Utils = {
     if(withdraws.length === 0){
       withdraws = <never[]>proc.kernel.data.roomData[creep.room.name].spawns
       withdraws = <never[]>_.filter(withdraws, function(spawn: StructureSpawn){
-        if(creep.room.name == 'E42S48')
-        {
-          console.log('Spawn Energy ' + spawn.energy + ' Room Energy ' + spawn.room.energyAvailable + ' Total Energy ' + (spawn.room.energyCapacityAvailable -50))
-        }
         let ret = (spawn.energy > 250 && spawn.room.energyAvailable > (spawn.room.energyCapacityAvailable - 50))
         return ret;
       })
@@ -211,7 +207,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 250000;
+      let max = room.controller!.level * 312500;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].walls, 'hits') / kernel.data.roomData[roomName].walls.length);
 

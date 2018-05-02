@@ -40,6 +40,7 @@ export class DefenderLifetimeProcess extends LifetimeProcess
       this.fork(DefendProcess, 'defend-' + creep.name, this.priority - 1, {
         creep: creep.name,
         target: target.id,
+        flagName: flag.name
       });
     }
     else
