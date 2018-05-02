@@ -31,6 +31,8 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
       if(enemies.length > 0)
       {
         flag.memory.enemies = true;
+        let fleeRoom = this.metaData.flagName.split('-')[1];
+        creep.travelTo(RoomPosition(10,10, fleeRoom));
       }
       else
       {
@@ -43,7 +45,7 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
     if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id])
     {
       let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
-      if(!creep.pos.inRangeTo(container, 0))
+      if(!creep.pos.inRangeTo(container, 0) && !flag.memory.enemies)
       {
         creep.travelTo(container);
       }

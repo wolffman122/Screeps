@@ -9,7 +9,7 @@ export class DismantleManagementProcess extends Process
 
   run()
   {
-    let flag = Game.flags[this.metaData.flag];
+    let flag = Game.flags[this.metaData.flagName];
 
     this.log('Dismantle ' + flag);
     if(!flag)

@@ -23,8 +23,11 @@ interface Creep extends RoomObject {
       keepAmount: Number
       spreadAmount: Number
       sellAbove: Number
+      conLog: (message: string) => void;
     }
   }
+
+  declare var global: NodeJS.Global;
 
   interface RawMemory{
     _parsed: Memory
@@ -120,7 +123,7 @@ interface Creep extends RoomObject {
     };
   }
 
-  declare var global: NodeJS.Global;
+
 
   interface CreepMemory
   {
@@ -238,7 +241,7 @@ interface Creep extends RoomObject {
   interface DismantleManagementProcessMetaData
   {
       roomName: string
-      flag: string
+      flagName: string
       dismantleCreeps: string[]
   }
 
@@ -364,7 +367,14 @@ interface Creep extends RoomObject {
   {
     roomName: string,
     defendingCreep: string[],
-    flag: string,
+    flagName: string,
+  }
+
+  interface HoldDistroLifetimeProcessMetaData
+  {
+    flagName: string,
+    sourceContainer: string
+    spawnRoom: string
   }
 
 //// Minerals

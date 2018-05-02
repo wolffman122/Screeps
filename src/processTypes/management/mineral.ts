@@ -10,8 +10,6 @@ export class MineralManagementProcess extends Process
 
   run()
   {
-    //Utils.roomPath(new RoomPosition(25,25, 'E45S48'), new RoomPosition(25,25, 'E44S42'));
-
     if(!this.kernel.data.roomData[this.metaData.roomName])
     {
       this.completed = true;

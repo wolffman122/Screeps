@@ -18,7 +18,8 @@ export class FlagWatcherProcess extends Process
   {
     if(flag.memory.enemies)
     {
-      this.kernel.addProcessIfNotExist(RemoteDefenseManagementProcess, 'rdmp-' + flag.name, 45,  { flag: flag.name })
+      // Might add this back once I have boosted creeps.
+      //this.kernel.addProcessIfNotExist(RemoteDefenseManagementProcess, 'rdmp-' + flag.name, 45,  { flagName: flag.name })
     }
     else
     {
@@ -28,7 +29,7 @@ export class FlagWatcherProcess extends Process
 
   remoteDismantleFlag(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(DismantleManagementProcess, 'dmp' + flag.name, 40, {flag: flag.name});
+    this.kernel.addProcessIfNotExist(DismantleManagementProcess, 'dmp' + flag.name, 40, {flagName: flag.name});
   }
 
   AttackController(flag: Flag)
@@ -52,7 +53,8 @@ export class FlagWatcherProcess extends Process
   {
     if(flag.memory.enemies)
     {
-      this.kernel.addProcessIfNotExist(RemoteDefenseManagementProcess, 'rdmp-' + flag.name, 45,  { flag: flag.name })
+      //******** Might add back once I get boosted creeps ************/
+      //this.kernel.addProcessIfNotExist(RemoteDefenseManagementProcess, 'rdmp-' + flag.name, 45,  { flagName: flag.name })
     }
     else
     {

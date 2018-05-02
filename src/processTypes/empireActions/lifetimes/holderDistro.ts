@@ -4,17 +4,46 @@ import { LifetimeProcess } from "os/process";
 export class HoldDistroLifetimeProcess extends LifetimeProcess
 {
   type = 'holdDistrolf';
+  metaData: HoldDistroLifetimeProcessMetaData;
 
   run()
   {
     let creep = this.getCreep();
+    let flag = Game.flags[this.metaData.flagName];
+
+    if(!flag)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(!creep)
     {
       return;
     }
 
-    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
+    if(Game.time % 10 === 5)
+    {
+      let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
+
+      enemies = _.filter(enemies, (e: Creep)=> {
+        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+      });
+
+      if(enemies.length > 0)
+      {
+        flag.memory.enemies = true;
+        let fleeRoom = this.metaData.flagName.split('-')[1];
+        creep.travelTo(RoomPosition(10,10, fleeRoom));
+        return;
+      }
+      else
+      {
+        flag.memory.enemies = false;
+      }
+    }
+
+    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100 && !flag.memory.enemies)
     {
       let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
 
@@ -98,7 +127,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
               }
             }
 
-            if(creep.transfer(link, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
+            if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
             {
               return;
             }
@@ -124,7 +153,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
                 }
               }
 
-              if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
+              if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
               {
                 return;
               }
@@ -150,7 +179,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
             }
           }
 
-          if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
+          if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
           {
             return;
           }

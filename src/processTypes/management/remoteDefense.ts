@@ -9,7 +9,7 @@ export class RemoteDefenseManagementProcess extends Process
 
   run()
   {
-    let flag = Game.flags[this.metaData.flag];
+    let flag = Game.flags[this.metaData.flagName];
 
     if(!flag)
     {
