@@ -12,9 +12,10 @@ export class  AttackControllerManagementProcess extends Process
     if(!this.metaData.creeps)
       this.metaData.creeps = [];
   }
+
   run()
   {
-    this.log('Attack Management');
+    this.log('Attack Management 1');
 
     this.ensureMetaData();
 
@@ -22,14 +23,18 @@ export class  AttackControllerManagementProcess extends Process
 
     if(!flag)
     {
+      this.log('Completing early');
       this.completed = true;
       return;
     }
+
+    this.log('WTF 1');
 
     let spawnRoom = this.metaData.flagName.split('-')[0];
     let numberAttack = Number(this.metaData.flagName.split('-')[1]);
 
 
+    this.log('TEst 1');
     this.metaData.creeps = Utils.clearDeadCreeps(this.metaData.creeps);
 
     //this.log('Attack 1 ' + this.metaData.creeps.length + ' ' + flag.room!.controller!.upgradeBlocked);
@@ -39,27 +44,57 @@ export class  AttackControllerManagementProcess extends Process
       flag.memory.rollCall = 0;
     }
 
-    if(this.metaData.creeps.length < numberAttack && flag.room!.controller && !flag.room!.controller!.upgradeBlocked)
+    if(flag.room)
     {
-      this.log('Attack 2');
-      let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;
-      let spawned = Utils.spawn(
-        this.kernel,
-        spawnRoom,
-        'attackController',
-        creepName,
-        {}
-      );
-
-      if(spawned)
+      this.log('Controller problem');
+      if(this.metaData.creeps.length < numberAttack && flag.room!.controller && !flag.room!.controller!.upgradeBlocked)
       {
-        this.metaData.creeps.push(creepName);
-        flag.memory.rollCall == this.metaData.creeps.length;
-        this.kernel.addProcessIfNotExist(ControllerAttackLifetimeProcess, 'calf-' + creepName, 29, {
-          creep: creepName,
-          flagName: flag.name,
-          numberAttack: numberAttack
-        });
+        this.log('Attack 2');
+        let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(
+          this.kernel,
+          spawnRoom,
+          'attackController',
+          creepName,
+          {}
+        );
+
+        if(spawned)
+        {
+          this.metaData.creeps.push(creepName);
+          flag.memory.rollCall == this.metaData.creeps.length;
+          this.kernel.addProcessIfNotExist(ControllerAttackLifetimeProcess, 'calf-' + creepName, 29, {
+            creep: creepName,
+            flagName: flag.name,
+            numberAttack: numberAttack
+          });
+        }
+      }
+    }
+    else
+    {
+      if(this.metaData.creeps.length < numberAttack)
+      {
+        this.log('Attack 2');
+        let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(
+          this.kernel,
+          spawnRoom,
+          'attackController',
+          creepName,
+          {}
+        );
+
+        if(spawned)
+        {
+          this.metaData.creeps.push(creepName);
+          flag.memory.rollCall == this.metaData.creeps.length;
+          this.kernel.addProcessIfNotExist(ControllerAttackLifetimeProcess, 'calf-' + creepName, 29, {
+            creep: creepName,
+            flagName: flag.name,
+            numberAttack: numberAttack
+          });
+        }
       }
     }
 
