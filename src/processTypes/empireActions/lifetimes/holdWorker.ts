@@ -38,6 +38,11 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
       if(enemies.length > 0)
       {
         flag.memory.enemies = true;
+        if(flag.memory.timeEnemies === undefined)
+        {
+          flag.memory.timeEnemies = Game.time;
+        }
+        
         let fleeRoom = this.metaData.flagName.split('-')[1];
         creep.travelTo(RoomPosition(10,10, fleeRoom));
         return;

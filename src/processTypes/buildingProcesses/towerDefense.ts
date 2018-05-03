@@ -4,7 +4,7 @@ export class TowerDefenseProcess extends Process{
   type = 'td'
 
   run(){
-    this.log('Tower Defense');
+    //this.log('Tower Defense');
     let room = Game.rooms[this.metaData.roomName]
     let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
     let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.hits < cp.hitsMax});

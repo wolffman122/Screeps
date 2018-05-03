@@ -20,46 +20,59 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(Game.time % 10 === 5)
+    if(Game.time % 10 === 0)
     {
-      let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
 
-      enemies = _.filter(enemies, (e: Creep)=> {
-        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
-      });
+      if(flag.room)
+      {
+        let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
 
-      if(enemies.length > 0)
-      {
-        flag.memory.enemies = true;
-        let fleeRoom = this.metaData.flagName.split('-')[1];
-        creep.travelTo(RoomPosition(10,10, fleeRoom));
-      }
-      else
-      {
-        flag.memory.enemies = false;
+        enemies = _.filter(enemies, (e: Creep)=> {
+          return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+        });
+
+        if(enemies.length > 0)
+        {
+          flag.memory.enemies = true;
+          if(flag.memory.timeEnemies === undefined)
+          {
+            flag.memory.timeEnemies = Game.time;
+          }
+
+          let fleeRoom = this.metaData.flagName.split('-')[1];
+          creep.travelTo(RoomPosition(10,10, fleeRoom));
+        }
+        else
+        {
+          flag.memory.enemies = false;
+        }
       }
     }
 
-    let source = <Source>Game.getObjectById(this.metaData.source);
-
-    if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id])
+    if(flag.memory.enemies === false)
     {
-      let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
-      if(!creep.pos.inRangeTo(container, 0) && !flag.memory.enemies)
-      {
-        creep.travelTo(container);
-      }
+      let source = <Source>Game.getObjectById(this.metaData.source);
 
-      creep.harvest(source);
-
-      if(container.hits <= container.hitsMax * .95 && _.sum(creep.carry) > 0)
+      if(source && this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id])
       {
-        creep.repair(container);
-      }
 
-      if(container.store.energy < container.storeCapacity && _.sum(creep.carry) == creep.carryCapacity )
-      {
-        creep.transfer(container, RESOURCE_ENERGY);
+        let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
+        if(!creep.pos.inRangeTo(container, 0) && !flag.memory.enemies)
+        {
+          creep.travelTo(container);
+        }
+
+        creep.harvest(source);
+
+        if(container.hits <= container.hitsMax * .95 && _.sum(creep.carry) > 0)
+        {
+          creep.repair(container);
+        }
+
+        if(container.store.energy < container.storeCapacity && _.sum(creep.carry) == creep.carryCapacity )
+        {
+          creep.transfer(container, RESOURCE_ENERGY);
+        }
       }
     }
   }

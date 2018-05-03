@@ -117,12 +117,9 @@ export class MarketManagementProcess extends Process
             {
               this.log("Waiting for the sale");
               let orders = Game.market.getAllOrders({id: this.metaData.data[room.name].orderId});
-              if(orders.length === 1)
+              if(orders.length === 0)
               {
-                if(orders[0].remainingAmount === 0)
-                {
-                  //this.metaData[room.name].waitingToSell = false;
-                }
+                this.metaData.data[room.name].waitingToSell = false;
               }
             }
           }

@@ -24,9 +24,6 @@ import {DefenseManagementProcess} from '../processTypes/management/defense'
 import {DefenderLifetimeProcess} from '../processTypes/lifetimes/defender'
 import {DefendProcess} from '../processTypes/creepActions/defend'
 
-import {RemoteMinerLifetimeProcess} from '../processTypes/lifetimes/remoteMiner'
-import {RemoteMiningManagementProcess} from '../processTypes/management/remoteMining'
-
 import {RemoteDefenseManagementProcess} from '../processTypes/management/remoteDefense'
 import {RemoteDefenderLifetimeProcess} from '../processTypes/lifetimes/remoteDefender'
 
@@ -103,8 +100,6 @@ const processTypes = <{[type: string]: any}>{
   'dm': DefenseManagementProcess,
   'deflf': DefenderLifetimeProcess,
   'defend': DefendProcess,
-  'rmlf': RemoteMinerLifetimeProcess,
-  'rmmp': RemoteMiningManagementProcess,
   'rdmp': RemoteDefenseManagementProcess,
   'rdlf': RemoteDefenderLifetimeProcess,
   'dmp': DismantleManagementProcess,

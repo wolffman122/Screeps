@@ -9,6 +9,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
   run()
   {
     let creep = this.getCreep();
+
     let flag = Game.flags[this.metaData.flagName];
 
     if(!flag)
@@ -33,13 +34,31 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       if(enemies.length > 0)
       {
         flag.memory.enemies = true;
-        let fleeRoom = this.metaData.flagName.split('-')[1];
-        creep.travelTo(RoomPosition(10,10, fleeRoom));
-        return;
+        if(flag.memory.timeEnemies === undefined)
+        {
+          flag.memory.timeEnemies = Game.time;
+        }
       }
       else
       {
         flag.memory.enemies = false;
+        flag.memory.timeEnemies = undefined;
+      }
+    }
+
+    if(flag.memory.enemies)
+    {
+      let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
+      if(fleeFlag)
+      {
+        this.log('Flee Room');
+        creep.travelTo(fleeFlag.pos);
+        return;
+      }
+      else
+      {
+        creep.travelTo(RoomPosition(10,10, this.metaData.spawnRoom));
+        return;
       }
     }
 

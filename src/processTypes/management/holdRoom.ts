@@ -43,11 +43,8 @@ export class HoldRoomManagementProcess extends Process
 
   run()
   {
-    //this.log('Run Remote Hold');
-
     if(Game.time % 5 === 0)
     {
-
       this.ensureMetaData()
 
       let flag = Game.flags[this.metaData.flagName];
@@ -90,7 +87,7 @@ export class HoldRoomManagementProcess extends Process
 
       if(!room)
       {
-        if(this.metaData.holdCreeps.length < 1)
+        if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
         {
           let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
           let spawned = Utils.spawn(
@@ -275,7 +272,8 @@ export class HoldRoomManagementProcess extends Process
                 proc.kernel.addProcess(HoldDistroLifetimeProcess, 'holdDistrolf-' + creepName, 26, {
                   sourceContainer: container.id,
                   spawnRoom: spawnRoom,
-                  creep: creepName
+                  creep: creepName,
+                  flagName: flag.name
                 })
               }
             }

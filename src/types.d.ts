@@ -138,6 +138,7 @@ interface Creep extends RoomObject {
   interface FlagMemory
   {
       enemies: boolean;
+      timeEnemies?: number;
       source: string;
       droppedResource: boolean;
       rollCall: number;

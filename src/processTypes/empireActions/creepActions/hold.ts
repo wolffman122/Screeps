@@ -34,6 +34,10 @@ export class HoldProcess extends Process
       if(enemies.length > 1)
       {
         flag.memory.enemies = true;
+        if(flag.memory.timeEnemies === undefined)
+        {
+          flag.memory.timeEnemies = Game.time;
+        }
       }
       else if (enemies.length == 0)
       {

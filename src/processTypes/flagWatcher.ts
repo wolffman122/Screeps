@@ -1,5 +1,4 @@
 import {Process} from '../os/process'
-import {RemoteMiningManagementProcess} from './management/remoteMining'
 import {DismantleManagementProcess} from './management/dismantle'
 import {ClaimProcess} from '../processTypes/empireActions/claim'
 //import {HoldProcess} from '../processTypes/empireActions/hold'
@@ -13,19 +12,6 @@ import { HealAttackProcess } from 'processTypes/management/healAttack';
 export class FlagWatcherProcess extends Process
 {
   type='flagWatcher';
-
-  remoteMiningFlag(flag: Flag)
-  {
-    if(flag.memory.enemies)
-    {
-      // Might add this back once I have boosted creeps.
-      //this.kernel.addProcessIfNotExist(RemoteDefenseManagementProcess, 'rdmp-' + flag.name, 45,  { flagName: flag.name })
-    }
-    else
-    {
-      this.kernel.addProcessIfNotExist(RemoteMiningManagementProcess, 'rnmp-' + flag.name, 40, { flag: flag.name })
-    }
-  }
 
   remoteDismantleFlag(flag: Flag)
   {
@@ -53,8 +39,11 @@ export class FlagWatcherProcess extends Process
   {
     if(flag.memory.enemies)
     {
-      //******** Might add back once I get boosted creeps ************/
-      //this.kernel.addProcessIfNotExist(RemoteDefenseManagementProcess, 'rdmp-' + flag.name, 45,  { flagName: flag.name })
+      if(flag.memory.timeEnemies! + 1500 === Game.time)
+      {
+        flag.memory.enemies = false;
+        flag.memory.timeEnemies = undefined;
+      }
     }
     else
     {
@@ -87,9 +76,6 @@ export class FlagWatcherProcess extends Process
       {
         case COLOR_BLUE:
           proc.claimFlag(flag);
-          break;
-        case COLOR_YELLOW:
-          proc.remoteMiningFlag(flag);
           break;
         case COLOR_RED:
           proc.remoteHoldFlag(flag);
