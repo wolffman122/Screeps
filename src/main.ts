@@ -43,7 +43,7 @@ Creep.prototype.fixMyRoad = function()
 }
 
 global.conLog = (message: string) => {
-  console.log("Into the function");
+  global.displayOldProcesses = true;
 }
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
@@ -68,6 +68,13 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
   // Create a new Kernel
   let kernel = new Kernel
+
+  if(global.displayOldProcesses)
+  {
+    console.log("Testing");
+    global.displayOldProcesses = false;
+    //kernel.removeOldProcesses();
+  }
 
   console.log('Start Kernel run process');
   // While the kernel is under the CPU limit

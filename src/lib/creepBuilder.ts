@@ -105,6 +105,7 @@ export const CreepBuilder = {
     'attackController': [CLAIM, MOVE],
     'dismantler': [WORK,WORK,MOVE],
     'labDistro': [CARRY,MOVE],
+    'special': [MOVE],
   },
 
   typeExtends: <PartList>{
@@ -130,7 +131,8 @@ export const CreepBuilder = {
     'attackController': [CLAIM, MOVE],
     'dismantler': [WORK, WORK, MOVE],
     'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
-    'labDistro': [CARRY,MOVE]
+    'labDistro': [CARRY,MOVE],
+    'special': [MOVE],
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -153,6 +155,7 @@ export const CreepBuilder = {
     'attack': 30,
     'attackController': 10,
     'dismantler': 50,
-    'labDistro': 40
+    'labDistro': 40,
+    'special': 2
   }
 }

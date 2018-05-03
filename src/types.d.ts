@@ -23,6 +23,7 @@ interface Creep extends RoomObject {
       keepAmount: Number
       spreadAmount: Number
       sellAbove: Number
+      displayOldProcesses: boolean
       conLog: (message: string) => void;
     }
   }
@@ -378,6 +379,20 @@ interface Creep extends RoomObject {
     spawnRoom: string
   }
 
+  interface GeneralAttackManagementProcessMetaData
+  {
+    flagName: string,
+    attackers: string[],
+    healers: string[]
+  }
+
+  interface AttackerLifetimeProcessMetaData
+  {
+    creep: string[],
+    flagName: string,
+
+  }
+
 //// Minerals
 
 
@@ -391,4 +406,13 @@ interface LabProcess {
 interface Shortage {
   mineralType: ResourceConstant;
   amount: number;
+}
+
+interface TravelOptions {
+  avoidSK: boolean,          //Avoid SK rooms
+  avoidHostile: boolean,     //Avoid rooms that have been blacklisted
+  preferOwn: boolean,        //Prefer to path through claimed/reserved rooms
+  preferHW: boolean,         //Prefer to path through Highways
+  preferRooms: string[],        //Prefer to path through a specific list of rooms
+  avoidRooms: string[],         //Avoid pathing through a specific list of rooms
 }

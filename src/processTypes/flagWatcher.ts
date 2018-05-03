@@ -8,6 +8,8 @@ import { RemoteDefenseManagementProcess } from 'processTypes/management/remoteDe
 import { AttackControllerManagementProcess } from 'processTypes/management/attackController';
 import { BounceAttackProcess } from 'processTypes/management/bounceAttack';
 import { HealAttackProcess } from 'processTypes/management/healAttack';
+import { SignControllerProcess } from './management/sign';
+import { GeneralAttackManagementProcess } from './management/generalAttack';
 
 export class FlagWatcherProcess extends Process
 {
@@ -66,6 +68,17 @@ export class FlagWatcherProcess extends Process
   {
     this.kernel.addProcessIfNotExist(HealAttackProcess, 'healAttack-' + flag.name, 29, {flagName: flag.name});
   }
+
+  SignController(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(SignControllerProcess, 'sign-' + flag.name, 35, {flagName: flag.name});
+  }
+
+  GeneralAttack(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(GeneralAttackManagementProcess, 'gamp-' + flag.name, 40, {flagName: flag.name});
+  }
+
   run()
   {
     this.completed = true;
@@ -95,13 +108,22 @@ export class FlagWatcherProcess extends Process
         case COLOR_BROWN:
           switch(flag.secondaryColor)
           {
+            case COLOR_RED:
+              proc.GeneralAttack(flag);
+              break;
             case COLOR_BROWN:
               proc.BounceAttack(flag);
               break;
             case COLOR_GREY:
               proc.HealAttack(flag);
               break;
+            case COLOR_BLUE:
+              proc.AttackController(flag);
+              break;
           }
+          break;
+        case COLOR_WHITE:
+          proc.SignController(flag);
           break;
       }
     })

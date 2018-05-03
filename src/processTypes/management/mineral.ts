@@ -81,7 +81,8 @@ export class MineralManagementProcess extends Process
           break;
       }
 
-      if(this.metaData.roomName === 'E41S49' || this.metaData.roomName == 'E51S49' || this.metaData.roomName == 'E45S48')
+      if(this.metaData.roomName === 'E41S49' || this.metaData.roomName == 'E51S49' || this.metaData.roomName == 'E45S48' ||
+         this.metaData.roomName === 'E46S52')
       {
         this.log('Room is mining');
         if(this.metaData.mineralHarvesters.length < harvesters) // Need to find a way of how many creeps can mine a mineral

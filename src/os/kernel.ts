@@ -74,6 +74,9 @@ import { ControllerAttackLifetimeProcess } from 'processTypes/lifetimes/controll
 import { MinetalTerminalManagementProcess } from 'processTypes/buildingProcesses/mineralTerminal';
 import { LabManagementProcess } from 'processTypes/management/lab';
 import { LabDistroLifetimeProcess } from 'processTypes/lifetimes/labDistro';
+import { SignControllerProcess } from 'processTypes/management/sign';
+import { GeneralAttackManagementProcess } from 'processTypes/management/generalAttack';
+import { AttackerLifetimeProcess } from 'processTypes/lifetimes/attacker';
 
 
 
@@ -130,7 +133,10 @@ const processTypes = <{[type: string]: any}>{
   'calf' : ControllerAttackLifetimeProcess,
   'mineralTerminal': MinetalTerminalManagementProcess,
   'labm': LabManagementProcess,
-  'labdlf': LabDistroLifetimeProcess
+  'labdlf': LabDistroLifetimeProcess,
+  'sign': SignControllerProcess,
+  'gamp': GeneralAttackManagementProcess,
+  'attacklf': AttackerLifetimeProcess
   /*
 
 

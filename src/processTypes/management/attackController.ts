@@ -31,38 +31,37 @@ export class  AttackControllerManagementProcess extends Process
 
 
     this.metaData.creeps = Utils.clearDeadCreeps(this.metaData.creeps);
-    if(flag.room)
+
+    //this.log('Attack 1 ' + this.metaData.creeps.length + ' ' + flag.room!.controller!.upgradeBlocked);
+
+    if(this.metaData.creeps.length == 0 && !flag.memory.rollCall)
     {
-      this.log('Attack 1 ' + this.metaData.creeps.length + ' ' + flag.room.controller!.upgradeBlocked);
+      flag.memory.rollCall = 0;
+    }
 
-      if(this.metaData.creeps.length == 0 && !flag.memory.rollCall)
+    if(this.metaData.creeps.length < numberAttack && flag.room!.controller && !flag.room!.controller!.upgradeBlocked)
+    {
+      this.log('Attack 2');
+      let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;
+      let spawned = Utils.spawn(
+        this.kernel,
+        spawnRoom,
+        'attackController',
+        creepName,
+        {}
+      );
+
+      if(spawned)
       {
-        flag.memory.rollCall = 0;
-      }
-
-      if(this.metaData.creeps.length < numberAttack && flag.room.controller && !flag.room.controller.upgradeBlocked)
-      {
-        this.log('Attack 2');
-        let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;
-        let spawned = Utils.spawn(
-          this.kernel,
-          spawnRoom,
-          'attackController',
-          creepName,
-          {}
-        );
-
-        if(spawned)
-        {
-          this.metaData.creeps.push(creepName);
-          flag.memory.rollCall == this.metaData.creeps.length;
-          this.kernel.addProcessIfNotExist(ControllerAttackLifetimeProcess, 'calf-' + creepName, 29, {
-            creep: creepName,
-            flagName: flag.name,
-            numberAttack: numberAttack
-          });
-        }
+        this.metaData.creeps.push(creepName);
+        flag.memory.rollCall == this.metaData.creeps.length;
+        this.kernel.addProcessIfNotExist(ControllerAttackLifetimeProcess, 'calf-' + creepName, 29, {
+          creep: creepName,
+          flagName: flag.name,
+          numberAttack: numberAttack
+        });
       }
     }
+
   }
 }
