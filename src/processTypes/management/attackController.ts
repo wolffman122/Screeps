@@ -23,18 +23,13 @@ export class  AttackControllerManagementProcess extends Process
 
     if(!flag)
     {
-      this.log('Completing early');
       this.completed = true;
       return;
     }
 
-    this.log('WTF 1');
-
     let spawnRoom = this.metaData.flagName.split('-')[0];
     let numberAttack = Number(this.metaData.flagName.split('-')[1]);
 
-
-    this.log('TEst 1');
     this.metaData.creeps = Utils.clearDeadCreeps(this.metaData.creeps);
 
     //this.log('Attack 1 ' + this.metaData.creeps.length + ' ' + flag.room!.controller!.upgradeBlocked);
@@ -46,10 +41,8 @@ export class  AttackControllerManagementProcess extends Process
 
     if(flag.room)
     {
-      this.log('Controller problem');
       if(this.metaData.creeps.length < numberAttack && flag.room!.controller && !flag.room!.controller!.upgradeBlocked)
       {
-        this.log('Attack 2');
         let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;
         let spawned = Utils.spawn(
           this.kernel,
@@ -75,7 +68,6 @@ export class  AttackControllerManagementProcess extends Process
     {
       if(this.metaData.creeps.length < numberAttack)
       {
-        this.log('Attack 2');
         let creepName = 'attackC-' + flag.pos.roomName + '-' + Game.time;
         let spawned = Utils.spawn(
           this.kernel,
