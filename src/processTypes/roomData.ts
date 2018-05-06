@@ -162,6 +162,11 @@ export class RoomDataProcess extends Process{
     if(room.storage)
     {
       storageLink = <StructureLink>room.storage.pos.findInRange(links, 2)[0];
+
+      if(!storageLink && room.controller && room.controller.my)
+      {
+        storageLink = <StructureLink>room.controller.pos.findInRange(links, 2)[0];
+      }
     }
 
 

@@ -8,6 +8,7 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
   {
     let creep = this.getCreep();
     let flag = Game.flags[this.metaData.flagName];
+    let spawnRoom = this.metaData.flagName.split('-')[0];
 
     if(!flag)
     {
@@ -38,15 +39,23 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
           {
             flag.memory.timeEnemies = Game.time;
           }
-
-          let fleeRoom = this.metaData.flagName.split('-')[1];
-          creep.travelTo(RoomPosition(10,10, fleeRoom));
         }
         else
         {
           flag.memory.enemies = false;
         }
       }
+    }
+
+    if(flag.memory.enemies)
+    {
+      let fleeFlag = Game.flags['RemoteFlee-'+spawnRoom];
+      if(!creep.pos.inRangeTo(fleeFlag, 5))
+      {
+        creep.travelTo(fleeFlag);
+        return;
+      }
+      return;
     }
 
     if(flag.memory.enemies === false)

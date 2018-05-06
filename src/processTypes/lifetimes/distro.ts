@@ -47,6 +47,31 @@ export class DistroLifetimeProcess extends LifetimeProcess{
           return;
         }
 
+        let dropped = creep.room.find(FIND_DROPPED_RESOURCES);
+        if(dropped.length > 0)
+        {
+          dropped = _.filter(dropped, (d) =>{
+            if(d.resourceType === RESOURCE_ENERGY && d.amount >= creep!.carryCapacity)
+            {
+              return d;
+            }
+            return;
+          });
+
+          if(dropped.length > 0)
+          {
+            let target = creep.pos.findClosestByPath(dropped);
+
+            if(!creep.pos.inRangeTo(target, 1))
+            {
+              creep.travelTo(target);
+              return;
+            }
+            creep.pickup(target);
+          }
+
+        }
+
         // Pickup up extra from mineral container only if the room is full on energy.
         if(creep.room.energyAvailable === creep.room.energyCapacityAvailable && this.roomData().mineralContainer)
         {

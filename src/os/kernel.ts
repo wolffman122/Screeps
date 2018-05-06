@@ -77,6 +77,8 @@ import { LabDistroLifetimeProcess } from 'processTypes/lifetimes/labDistro';
 import { SignControllerProcess } from 'processTypes/management/sign';
 import { GeneralAttackManagementProcess } from 'processTypes/management/generalAttack';
 import { AttackerLifetimeProcess } from 'processTypes/lifetimes/attacker';
+import { HelperLifetimeProcess } from 'processTypes/lifetimes/Helper';
+import { HelpManagementProcess } from 'processTypes/management/help';
 
 
 
@@ -136,7 +138,10 @@ const processTypes = <{[type: string]: any}>{
   'labdlf': LabDistroLifetimeProcess,
   'sign': SignControllerProcess,
   'gamp': GeneralAttackManagementProcess,
-  'attacklf': AttackerLifetimeProcess
+  'attacklf': AttackerLifetimeProcess,
+  'hmp': HelpManagementProcess,
+  'hlp': HelperLifetimeProcess,
+
   /*
 
 

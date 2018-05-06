@@ -10,6 +10,8 @@ import { BounceAttackProcess } from 'processTypes/management/bounceAttack';
 import { HealAttackProcess } from 'processTypes/management/healAttack';
 import { SignControllerProcess } from './management/sign';
 import { GeneralAttackManagementProcess } from './management/generalAttack';
+import { RemoteBuilderLifetimeProcess } from './lifetimes/remoteBuilder';
+import { HelpManagementProcess } from './management/help';
 
 export class FlagWatcherProcess extends Process
 {
@@ -79,6 +81,11 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(GeneralAttackManagementProcess, 'gamp-' + flag.name, 40, {flagName: flag.name});
   }
 
+  helpRoom(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + flag.name, 35, {flagName: flag.name});
+  }
+
   run()
   {
     this.completed = true;
@@ -88,7 +95,15 @@ export class FlagWatcherProcess extends Process
       switch(flag.color)
       {
         case COLOR_BLUE:
-          proc.claimFlag(flag);
+          switch(flag.secondaryColor)
+          {
+            case COLOR_BLUE:
+              proc.claimFlag(flag);
+              break;
+            case COLOR_RED:
+              proc.helpRoom(flag);
+              break;
+          }
           break;
         case COLOR_RED:
           proc.remoteHoldFlag(flag);
