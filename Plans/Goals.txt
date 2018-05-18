@@ -1,0 +1,11 @@
+New Development Goals for Screeps
+1. Labs
+2. Boosts
+3. Harrasment Attacking
+4. Brute force Attacking
+5. Defense System for claimed rooms / remote rooms
+
+
+Expanding Goals
+1.  Spread out more and claim more rooms
+2.
