@@ -66,7 +66,7 @@ export class DefenderLifetimeProcess extends LifetimeProcess
     else
     {
       /// Non Bunker rooms --- TODO need to find better way to do this.
-      let enemies  = <Creep[]>flag.pos.findInRange(FIND_HOSTILE_CREEPS, 14);
+      let enemies  = <Creep[]>flag.pos.findInRange(FIND_HOSTILE_CREEPS, 20);
       if(enemies.length > 0)
       {
         let targets = _.filter(enemies, e => {

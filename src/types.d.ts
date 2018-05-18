@@ -393,6 +393,24 @@ interface Creep extends RoomObject {
 
   }
 
+  interface RemoteBuilderLifetimeProcessMetaData
+  {
+    flagName: string,
+    site: string,
+  }
+
+  interface HelpManagementProcessMetaData
+  {
+    flagName: string,
+    creeps: string[],
+  }
+  
+  interface HelperLifetimeProcessMetaData
+  {
+    flagName: string,
+    site: string,
+  }
+
 //// Minerals
 
 

@@ -3,6 +3,7 @@ import {Utils} from '../../lib/utils'
 
 import {CollectProcess} from '../creepActions/collect'
 import {RepairProcess} from '../creepActions/repair'
+import { BuildProcess } from '../creepActions/build';
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
   type = 'rlf'
@@ -110,8 +111,20 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
       else
       {
-        this.suspend = shortestDecay;
-        return;
+        let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
+
+        if(target)
+        {
+          this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
+            creep: creep.name,
+            site: target.id
+          })
+        }
+        else
+        {
+          this.suspend = shortestDecay;
+          return;
+        }
       }
     }
   }

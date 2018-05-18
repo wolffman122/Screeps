@@ -19,10 +19,15 @@ export class HarvestProcess extends Process{
     let targetPos = source.pos
     let targetRange = 1
 
-    if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id]){
-      targetPos = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id].pos
-      targetRange = 0
+    if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id])
+    {
+      if(creep.getActiveBodyparts(WORK) >= 6)
+      {
+        targetPos = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id].pos
+        targetRange = 1
+      }
     }
+    
 
     if(!creep.pos.inRangeTo(targetPos, targetRange)){
       creep.travelTo(targetPos);
