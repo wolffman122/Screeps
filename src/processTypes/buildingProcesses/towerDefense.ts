@@ -1,4 +1,5 @@
 import {Process} from '../../os/process'
+import { HealAttackProcess } from '../management/healAttack';
 
 export class TowerDefenseProcess extends Process{
   type = 'td'
@@ -14,27 +15,73 @@ export class TowerDefenseProcess extends Process{
     {
       if(enemies.length > 0)
       {
-        _.forEach(this.roomData().towers, (t) => {
-          let rangedEnemies = flag.pos.findInRange(enemies, 10);
-          if(rangedEnemies.length > 0)
-          {
-            let targets = _.filter(rangedEnemies, e => {
-              return (e.getActiveBodyparts(HEAL) > 0);
-            });
+        if(flag.memory.timeEnemies === undefined || flag.memory.timeEnemies === 0)
+        {
+          flag.memory.timeEnemies = Game.time;
+        }
 
-            if(targets.length > 0)
+        _.forEach(this.roomData().towers, (t) => {
+          let invaders = _.filter(enemies, (e) => {
+            return (e.owner.username === 'invader' || e.owner.username === 'Invader');
+          });
+
+
+          let target;
+          if(invaders.length === 0)
+          {
+            // Players attack
+            let rangedEnemies;
+            rangedEnemies = flag.pos.findInRange(enemies, 10);
+            if(rangedEnemies.length > 0)
             {
-              t.attack(targets[0]);
+              let targets = _.filter(rangedEnemies, e => {
+                return (e.getActiveBodyparts(HEAL) > 0);
+              });
+
+              if(targets.length > 0)
+              {
+                target = targets[0];
+              }
+              else
+              {
+                target = rangedEnemies[0];
+              }
+            }
+          }
+          else
+          {
+            if(flag.memory.timeEnemies! <= Game.time - 400)
+            {
+              this.log('Invaders around for a long time stop attacking them');
             }
             else
             {
-              t.attack(rangedEnemies[0]);
+              this.log('Attacking invaders for ' + (flag.memory.timeEnemies! - Game.time + 400));
+              // Invaders attack
+              let healTargets = _.filter(invaders, e => {
+                return (e.getActiveBodyparts(HEAL) > 0);
+              });
+
+              if(healTargets.length > 0)
+              {
+                target = flag.pos.findClosestByRange(healTargets);
+              }
+              else
+              {
+                target = flag.pos.findClosestByRange(invaders);
+              }
             }
+          }
+
+          if(target)
+          {
+            t.attack(target);
           }
         });
       }
       else if(damagedCreeps.length > 0)
       {
+        flag.memory.timeEnemies = 0;
         _.forEach(this.kernel.data.roomData[this.metaData.roomName].towers, function(tower)
         {
           let rangeDamage = tower.pos.findInRange(damagedCreeps, 30);
@@ -51,6 +98,7 @@ export class TowerDefenseProcess extends Process{
       }
       else
       {
+        flag.memory.timeEnemies = 0;
         this.suspend = 5;
       }
 

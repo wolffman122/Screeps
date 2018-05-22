@@ -46,6 +46,7 @@ export class HoldRoomManagementProcess extends Process
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
     let spawnRoom = this.metaData.flagName.split('-')[0];
+    let centerFlag = Game.flags['Center-'+spawnRoom];
 
     if(!flag)
     {
@@ -70,72 +71,15 @@ export class HoldRoomManagementProcess extends Process
     }
     else
     {
-      let room = flag.room;
-
-      this.metaData.holdCreeps = Utils.clearDeadCreeps(this.metaData.holdCreeps);
-
-      if(!room)
+      if(centerFlag && !centerFlag.memory.timeEnemies)
       {
-        // No vision in room.
-        if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
-        {
-          let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
-          let spawned = Utils.spawn(
-            this.kernel,
-            spawnRoom,
-            'hold',
-            creepName,
-            {}
-          );
+        let room = flag.room;
 
-          if(spawned)
-          {
-            this.metaData.holdCreeps.push(creepName);
-            this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
-              creep: creepName,
-              flagName: this.metaData.flagName
-            })
-          }
-        }
-      }
-      else
-      {
-        //Spawn big holder
-        if(room.controller && room.controller.level >= 8 &&
-           (room.controller.reservation === undefined || (room.controller.reservation && room.controller.reservation.ticksToEnd < 1000)))
-        {
-          if(this.metaData.holdCreeps.length < 1)
-          {
-            let sRoom = Game.rooms[spawnRoom];
-            let max = 12;
-            if(sRoom.energyAvailable < sRoom.energyCapacityAvailable * 0.50)
-            {
-              max = 3;
-            }
+        this.metaData.holdCreeps = Utils.clearDeadCreeps(this.metaData.holdCreeps);
 
-            let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
-            let spawned = Utils.spawn(
-              this.kernel,
-              spawnRoom,
-              'hold',
-              creepName,
-              {
-                max: max
-              }
-            );
-
-            if(spawned)
-            {
-              this.metaData.holdCreeps.push(creepName);
-              this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
-                creep: creepName,
-                flagName: this.metaData.flagName
-              })
-            }
-          }
-        }
-        else
+        if(!room)
         {
+          // No vision in room.
           if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
           {
             let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
@@ -157,140 +101,204 @@ export class HoldRoomManagementProcess extends Process
             }
           }
         }
-
-
-        this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
-
-        // Construction Code
-        if(!this.roomData().sourceContainers || (this.roomData().sourceContainers.length < this.roomData().sources.length))
+        else
         {
-          if(this.metaData.builderCreeps.length < this.roomData().sources.length)
+          //Spawn big holder
+          if(room.controller && room.controller.level >= 8 &&
+            (room.controller.reservation === undefined || (room.controller.reservation && room.controller.reservation.ticksToEnd < 1000)))
           {
-            let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
-            let spawned = Utils.spawn(
-              this.kernel,
-              spawnRoom,
-              'worker',
-              creepName,
-              {}
-            );
-
-            if(spawned)
+            if(this.metaData.holdCreeps.length < 1)
             {
-              // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
-              this.metaData.builderCreeps.push(creepName);
-              this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
-                creep: creepName,
-                flagName: this.metaData.flagName
-              })
-            }
-          }
-        }
-        else if(this.roomData().constructionSites.length > 0)
-        {
-          if(this.metaData.builderCreeps.length < this.roomData().sources.length)
-          {
-            let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
-            let spawned = Utils.spawn(
-              this.kernel,
-              spawnRoom,
-              'worker',
-              creepName,
-              {}
-            );
+              let sRoom = Game.rooms[spawnRoom];
+              let max = 12;
+              if(sRoom.energyAvailable < sRoom.energyCapacityAvailable * 0.50)
+              {
+                max = 3;
+              }
 
-            if(spawned)
-            {
-              // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
-              this.metaData.builderCreeps.push(creepName);
-              this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
-                creep: creepName,
-                flagName: this.metaData.flagName
-              })
-            }
-          }
-        }
-
-
-        if(this.roomData().sourceContainers.length > 0)
-        {
-          // Havester code
-          let containers = this.roomData().sourceContainers;
-          let sources = this.roomData().sources;
-
-          _.forEach(sources, (s) => {
-            if(!this.metaData.harvestCreeps[s.id])
-            {
-              this.metaData.harvestCreeps[s.id] = [];
-            }
-
-            let creepNames = Utils.clearDeadCreeps(this.metaData.harvestCreeps[s.id]);
-            this.metaData.harvestCreeps[s.id] = creepNames;
-            let creeps = Utils.inflateCreeps(creepNames);
-
-            if(this.metaData.harvestCreeps[s.id].length < 1)
-            {
-              console.log("Need to make some harvesting creeps " + s.id);
-                let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
-                let spawned = Utils.spawn(
-                  this.kernel,
-                  spawnRoom,
-                  'harvester',
-                  creepName,
-                  {}
-                )
+              let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+              let spawned = Utils.spawn(
+                this.kernel,
+                spawnRoom,
+                'hold',
+                creepName,
+                {
+                  max: max
+                }
+              );
 
               if(spawned)
               {
-                this.metaData.harvestCreeps[s.id].push(creepName);
+                this.metaData.holdCreeps.push(creepName);
+                this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
+                  creep: creepName,
+                  flagName: this.metaData.flagName
+                })
               }
             }
+          }
+          else
+          {
+            if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
+            {
+              let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+              let spawned = Utils.spawn(
+                this.kernel,
+                spawnRoom,
+                'hold',
+                creepName,
+                {}
+              );
 
-            _.forEach(creeps, (c) => {
-              this.kernel.addProcessIfNotExist(HoldHarvesterLifetimeProcess, 'holdHarvesterlf-' + c.name, 27, {
-                creep: c.name,
-                source: s.id,
-                flagName: flag.name
-              });
-            });
-          });
-
-
-          // Hauling code
-          _.forEach(this.roomData().sourceContainers, (sc) => {
-              if(this.metaData.distroCreeps[sc.id])
+              if(spawned)
               {
-                let creep = Game.creeps[this.metaData.distroCreeps[sc.id]];
-                if(!creep)
-                {
-                  delete this.metaData.distroCreeps[sc.id];
-                  return;
-                }
+                this.metaData.holdCreeps.push(creepName);
+                this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
+                  creep: creepName,
+                  flagName: this.metaData.flagName
+                })
               }
-              else
+            }
+          }
+
+
+          this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
+
+          // Construction Code
+          if(!this.roomData().sourceContainers || (this.roomData().sourceContainers.length < this.roomData().sources.length))
+          {
+            if(this.metaData.builderCreeps.length < this.roomData().sources.length)
+            {
+              let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
+              let spawned = Utils.spawn(
+                this.kernel,
+                spawnRoom,
+                'worker',
+                creepName,
+                {}
+              );
+
+              if(spawned)
               {
-                let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
-                let spawned = Utils.spawn(
-                  this.kernel,
-                  spawnRoom,
-                  'holdmover',
-                  creepName,
-                  {}
-                );
+                // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
+                this.metaData.builderCreeps.push(creepName);
+                this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
+                  creep: creepName,
+                  flagName: this.metaData.flagName
+                })
+              }
+            }
+          }
+          else if(this.roomData().constructionSites.length > 0)
+          {
+            if(this.metaData.builderCreeps.length < this.roomData().sources.length)
+            {
+              let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
+              let spawned = Utils.spawn(
+                this.kernel,
+                spawnRoom,
+                'worker',
+                creepName,
+                {}
+              );
+
+              if(spawned)
+              {
+                // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
+                this.metaData.builderCreeps.push(creepName);
+                this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
+                  creep: creepName,
+                  flagName: this.metaData.flagName
+                })
+              }
+            }
+          }
+
+
+          if(this.roomData().sourceContainers.length > 0)
+          {
+            // Havester code
+            let containers = this.roomData().sourceContainers;
+            let sources = this.roomData().sources;
+
+            _.forEach(sources, (s) => {
+              if(!this.metaData.harvestCreeps[s.id])
+              {
+                this.metaData.harvestCreeps[s.id] = [];
+              }
+
+              let creepNames = Utils.clearDeadCreeps(this.metaData.harvestCreeps[s.id]);
+              this.metaData.harvestCreeps[s.id] = creepNames;
+              let creeps = Utils.inflateCreeps(creepNames);
+
+              if(this.metaData.harvestCreeps[s.id].length < 1)
+              {
+                console.log("Need to make some harvesting creeps " + s.id);
+                  let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
+                  let spawned = Utils.spawn(
+                    this.kernel,
+                    spawnRoom,
+                    'harvester',
+                    creepName,
+                    {}
+                  )
 
                 if(spawned)
                 {
-                  this.metaData.distroCreeps[sc.id] = creepName;
-                  this.kernel.addProcessIfNotExist(HoldDistroLifetimeProcess, 'holdDistrolf-' + creepName, 26, {
-                    sourceContainer: sc.id,
-                    spawnRoom: spawnRoom,
-                    creep: creepName,
-                    flagName: flag.name
-                  });
+                  this.metaData.harvestCreeps[s.id].push(creepName);
                 }
               }
-          });
+
+              _.forEach(creeps, (c) => {
+                this.kernel.addProcessIfNotExist(HoldHarvesterLifetimeProcess, 'holdHarvesterlf-' + c.name, 27, {
+                  creep: c.name,
+                  source: s.id,
+                  flagName: flag.name
+                });
+              });
+            });
+
+
+            // Hauling code
+            _.forEach(this.roomData().sourceContainers, (sc) => {
+                if(this.metaData.distroCreeps[sc.id])
+                {
+                  let creep = Game.creeps[this.metaData.distroCreeps[sc.id]];
+                  if(!creep)
+                  {
+                    delete this.metaData.distroCreeps[sc.id];
+                    return;
+                  }
+                }
+                else
+                {
+                  let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
+                  let spawned = Utils.spawn(
+                    this.kernel,
+                    spawnRoom,
+                    'holdmover',
+                    creepName,
+                    {}
+                  );
+
+                  if(spawned)
+                  {
+                    this.metaData.distroCreeps[sc.id] = creepName;
+                    this.kernel.addProcessIfNotExist(HoldDistroLifetimeProcess, 'holdDistrolf-' + creepName, 26, {
+                      sourceContainer: sc.id,
+                      spawnRoom: spawnRoom,
+                      creep: creepName,
+                      flagName: flag.name
+                    });
+                  }
+                }
+            });
+          }
         }
+      }
+      else
+      {
+        this.log('Need to place a center flag in ' + spawnRoom);
       }
     }
   }

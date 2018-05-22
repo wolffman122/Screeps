@@ -1,0 +1,15 @@
+New Development Goals for Screeps
+- Retreat or stop spawning out of bunker guys to draw in swarm and have towers and defenders do their job.
+- LF process have them do everything for LF and get rid of Actions
+-
+- Profile and CPU reductions
+- Labs
+- Boosts
+- Harrasment Attacking
+- Brute force Attacking
+- Defense System for claimed rooms / remote rooms
+
+
+Expanding Goals
+1.  Spread out more and claim more rooms
+2.
