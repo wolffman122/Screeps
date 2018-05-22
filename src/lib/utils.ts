@@ -52,11 +52,6 @@ export const Utils = {
       <never[]>proc.kernel.data.roomData[creep.room.name].generalContainers
     )
 
-    if(creep.room.name == 'E42S48')
-    {
-      console.log('WTF WTF WTF 1')
-    }
-
     if(proc.kernel.data.roomData[creep.room.name].controllerLink)
     {
       withdraws = [].concat(
@@ -71,11 +66,6 @@ export const Utils = {
         <never[]>withdraws,
         <never[]>[creep.room.storage]
       )
-    }
-
-    if(creep.room.name == 'E42S48')
-    {
-      console.log('WTF WTF WTF ' + withdraws.length);
     }
 
     if(withdraws.length === 0){
@@ -181,7 +171,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 625000;
+      let max = room.controller!.level * 500000;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 

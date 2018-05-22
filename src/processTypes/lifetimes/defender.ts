@@ -65,53 +65,56 @@ export class DefenderLifetimeProcess extends LifetimeProcess
     }
     else
     {
-      /// Non Bunker rooms --- TODO need to find better way to do this.
-      let enemies  = <Creep[]>flag.pos.findInRange(FIND_HOSTILE_CREEPS, 20);
-      if(enemies.length > 0)
+      if(flag)
       {
-        let targets = _.filter(enemies, e => {
-          return (e.getActiveBodyparts(HEAL) > 0);
-        });
-
-        let target;
-        if(targets.length > 0)
+        /// Non Bunker rooms --- TODO need to find better way to do this.
+        let enemies  = <Creep[]>flag.pos.findInRange(FIND_HOSTILE_CREEPS, 14);
+        if(enemies.length > 0)
         {
-          target = creep.pos.findClosestByRange(targets);
-        }
-        else
-        {
-          target  = creep.pos.findClosestByRange(enemies);
-        }
+          let targets = _.filter(enemies, e => {
+            return (e.getActiveBodyparts(HEAL) > 0);
+          });
 
-        this.fork(DefendProcess, 'defend-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          target: target.id,
-          flagName: flag.name
-        });
-      }
-      else
-      {
-        let flag = Game.flags[this.metaData.flagName];
-
-        if(flag)
-        {
-          if(!creep.pos.inRangeTo(flag.pos, 2))
+          let target;
+          if(targets.length > 0)
           {
-            this.fork(MoveProcess, 'move-' + creep.name,this.priority - 1, {
-              creep: creep.name,
-              pos: {
-                x: flag.pos.x,
-                y: flag.pos.y,
-                roomName: flag.room!.name
-              },
-              range: 2
-            });
-            this.suspend = 'move-' + creep.name;
+            target = creep.pos.findClosestByRange(targets);
           }
+          else
+          {
+            target  = creep.pos.findClosestByRange(enemies);
+          }
+
+          this.fork(DefendProcess, 'defend-' + creep.name, this.priority - 1, {
+            creep: creep.name,
+            target: target.id,
+            flagName: flag.name
+          });
         }
         else
         {
-          this.suspend = 10;
+          let flag = Game.flags[this.metaData.flagName];
+
+          if(flag)
+          {
+            if(!creep.pos.inRangeTo(flag.pos, 2))
+            {
+              this.fork(MoveProcess, 'move-' + creep.name,this.priority - 1, {
+                creep: creep.name,
+                pos: {
+                  x: flag.pos.x,
+                  y: flag.pos.y,
+                  roomName: flag.room!.name
+                },
+                range: 2
+              });
+              this.suspend = 'move-' + creep.name;
+            }
+          }
+          else
+          {
+            this.suspend = 10;
+          }
         }
       }
     }

@@ -16,13 +16,13 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
     if(!creep || !flag)
     {
+      this.completed = true;
       return;
     }
 
     if(flag.pos.roomName != creep.pos.roomName)
     {
-      this.log('Go to the flag ' + creep.name);
-      creep.travelTo(new RoomPosition(25, 25, flag.pos.roomName));
+      creep.travelTo(flag);
     }
     else
     {
@@ -36,14 +36,16 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
           let target = creep.pos.findClosestByPath(targets);
 
+
           if(target)
           {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              creep: creep.name,
-              target: target.id,
-              resource: RESOURCE_ENERGY
-            });
+            if(!creep.pos.inRangeTo(target, 1))
+            {
+              creep.travelTo(target);
+              return;
+            }
 
+            creep.withdraw(target, RESOURCE_ENERGY);
             return;
           }
         }
@@ -55,31 +57,69 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
             if(source)
             {
-              this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-                creep: creep.name,
-                source: source.id
-              })
+              if(!creep.pos.inRangeTo(source, 1))
+              {
+                creep.travelTo(source);
+                return;
+              }
 
-              return;
+              if(creep.pos.inRangeTo(source, 1))
+              {
+                let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                if(sites.length > 0)
+                {
+                  let site = _.filter(sites, (s) => {
+                    if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
+                    {
+                      return s;
+                    }
+                    return;
+                  });
+
+                  this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+                    creep: creep.name,
+                    source: source.id,
+                    resource: RESOURCE_ENERGY
+                  });
+
+                  return;
+                }
+
+                this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+                  creep: creep.name,
+                  source: source.id,
+                  resource: RESOURCE_ENERGY
+                });
+
+                return;
+              }
             }
           }
         }
       }
 
-      let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.pos.roomName].constructionSites);
-
-      if(target)
+      if(_.sum(creep.carry) != 0)
       {
-        this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          site: target.id
-        });
+        let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.pos.roomName].constructionSites);
 
-        return;
-      }
-      else
-      {
-        creep.say('spare');
+        if(target)
+        {
+          this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
+            creep: creep.name,
+            site: target.id
+          });
+
+          return;
+        }
+        else
+        {
+          if(!creep.pos.inRangeTo(creep.room.controller!, 1))
+          {
+            creep.travelTo(creep.room.controller!);
+          }
+
+          creep.say('spare');
+        }
       }
   }
   }

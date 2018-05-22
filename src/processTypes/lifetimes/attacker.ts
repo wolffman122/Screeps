@@ -32,7 +32,7 @@ export class AttackerLifetimeProcess extends LifetimeProcess
         }
 
         let hostileSpawns = creep.room.find(FIND_HOSTILE_SPAWNS);
-        let hostileCreeps = creep.room.find(FIND_HOSTILE_CREEPS);
+        let hostileCreeps = creep.room.find(FIND_HOSTILE_CREEPS, {filter: cr => cr.getActiveBodyparts(ATTACK) > 0});
 
         let spawnTarget;
         let spawnRange;
@@ -56,5 +56,21 @@ export class AttackerLifetimeProcess extends LifetimeProcess
 
             creep.attack(spawnTarget);
         }
+        else
+        {
+            hostileCreeps = creep.room.find(FIND_HOSTILE_CREEPS);
+            if(hostileCreeps)
+            {
+                let target = creep.pos.findClosestByPath(hostileCreeps);
+                if(!creep.pos.inRangeTo(target, 1))
+                {
+                    creep.travelTo(target);
+                    return;
+                }
+                creep.attack(target);
+                return;
+            }
+        }
+
     }
 }

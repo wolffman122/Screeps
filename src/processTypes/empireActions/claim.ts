@@ -19,7 +19,7 @@ export class ClaimProcess extends Process{
     }
 
     let startRoom = this.metaData.flagName.split('-')[1];
-
+    console.log("Location", flag.pos.roomName);
     console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Start Room", startRoom);
     if(!creep)
     {

@@ -43,7 +43,7 @@ export class HolderLifetimeProcess extends LifetimeProcess
 
     if(creep.pos.roomName == flag.pos.roomName)
     {
-      let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
+      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
 
       enemies = _.filter(enemies, (e: Creep)=> {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
@@ -60,7 +60,7 @@ export class HolderLifetimeProcess extends LifetimeProcess
       else if (enemies.length == 0)
       {
         flag.memory.enemies = false;
-      }
+      }*/
     }
 
     this.fork(HoldProcess, 'hold-' + creep.name, this.priority - 1, {

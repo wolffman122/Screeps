@@ -35,7 +35,7 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
         if(enemies.length > 0)
         {
           flag.memory.enemies = true;
-          if(flag.memory.timeEnemies === undefined)
+          if(flag.memory.timeEnemies === undefined || flag.memory.timeEnemies === 0)
           {
             flag.memory.timeEnemies = Game.time;
           }
@@ -50,10 +50,13 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
     if(flag.memory.enemies)
     {
       let fleeFlag = Game.flags['RemoteFlee-'+spawnRoom];
-      if(!creep.pos.inRangeTo(fleeFlag, 5))
+      if(fleeFlag)
       {
-        creep.travelTo(fleeFlag);
-        return;
+        if(!creep.pos.inRangeTo(fleeFlag, 5))
+        {
+          creep.travelTo(fleeFlag);
+          return;
+        }
       }
       return;
     }
@@ -66,6 +69,7 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
       {
 
         let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
+
         if(!creep.pos.inRangeTo(container, 0) && !flag.memory.enemies)
         {
           creep.travelTo(container);

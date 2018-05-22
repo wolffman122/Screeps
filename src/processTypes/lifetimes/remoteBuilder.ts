@@ -32,7 +32,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
           if(targets.length > 0)
           {
             let target = <Structure>creep.pos.findClosestByPath(targets);
-            this.log('Target ' + target.structureType);
+
             if(target)
             {
                 this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {

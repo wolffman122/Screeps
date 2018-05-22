@@ -41,19 +41,7 @@ export class FlagWatcherProcess extends Process
 
   remoteHoldFlag(flag: Flag)
   {
-    if(flag.memory.enemies)
-    {
-      if(flag.memory.timeEnemies! + 1500 === Game.time)
-      {
-        flag.memory.enemies = false;
-        flag.memory.timeEnemies = undefined;
-      }
-    }
-    else
-    {
-      //console.log('Hold Management Process ' + flag.name);
-      this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name});
-    }
+    this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
   }
 
   transferFlag(flag: Flag)

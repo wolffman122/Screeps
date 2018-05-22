@@ -23,6 +23,19 @@ export class DistroLifetimeProcess extends LifetimeProcess{
       {
         let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
 
+        let storage = creep.room.storage;
+
+        if(storage && storage.store.energy > 0 && sourceContainer && sourceContainer.store.energy !== sourceContainer.storeCapacity)
+        {
+          this.fork(CollectProcess, 'collect-' + creep.name, this.priority -1, {
+            target: storage.id,
+            creep: creep.name,
+            resource: RESOURCE_ENERGY
+          })
+
+          return;
+        }
+
         if(sourceContainer && sourceContainer.store.energy > creep.carryCapacity)
         {
           this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
@@ -34,18 +47,7 @@ export class DistroLifetimeProcess extends LifetimeProcess{
           return;
         }
 
-        let storage = creep.room.storage;
 
-        if(storage && storage.store.energy > 0)
-        {
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority -1, {
-            target: storage.id,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          })
-
-          return;
-        }
 
         let dropped = creep.room.find(FIND_DROPPED_RESOURCES);
         if(dropped.length > 0)
