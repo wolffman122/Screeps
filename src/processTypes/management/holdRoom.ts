@@ -45,8 +45,8 @@ export class HoldRoomManagementProcess extends Process
   {
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
-    let spawnRoom = this.metaData.flagName.split('-')[0];
-    let centerFlag = Game.flags['Center-'+spawnRoom];
+    let spawnRoomName = this.metaData.flagName.split('-')[0];
+    let centerFlag = Game.flags['Center-'+spawnRoomName];
 
     if(!flag)
     {
@@ -85,7 +85,7 @@ export class HoldRoomManagementProcess extends Process
             let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
             let spawned = Utils.spawn(
               this.kernel,
-              spawnRoom,
+              spawnRoomName,
               'hold',
               creepName,
               {}
@@ -103,13 +103,14 @@ export class HoldRoomManagementProcess extends Process
         }
         else
         {
+          let sRoom = Game.rooms[spawnRoomName];
+
           //Spawn big holder
-          if(room.controller && room.controller.level >= 8 &&
+          if(room.controller && sRoom.controller!.level >= 8 &&
             (room.controller.reservation === undefined || (room.controller.reservation && room.controller.reservation.ticksToEnd < 1000)))
           {
             if(this.metaData.holdCreeps.length < 1)
             {
-              let sRoom = Game.rooms[spawnRoom];
               let max = 12;
               if(sRoom.energyAvailable < sRoom.energyCapacityAvailable * 0.50)
               {
@@ -119,7 +120,7 @@ export class HoldRoomManagementProcess extends Process
               let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
               let spawned = Utils.spawn(
                 this.kernel,
-                spawnRoom,
+                spawnRoomName,
                 'hold',
                 creepName,
                 {
@@ -137,30 +138,6 @@ export class HoldRoomManagementProcess extends Process
               }
             }
           }
-          else
-          {
-            if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
-            {
-              let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
-              let spawned = Utils.spawn(
-                this.kernel,
-                spawnRoom,
-                'hold',
-                creepName,
-                {}
-              );
-
-              if(spawned)
-              {
-                this.metaData.holdCreeps.push(creepName);
-                this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
-                  creep: creepName,
-                  flagName: this.metaData.flagName
-                })
-              }
-            }
-          }
-
 
           this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
 
@@ -172,7 +149,7 @@ export class HoldRoomManagementProcess extends Process
               let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
               let spawned = Utils.spawn(
                 this.kernel,
-                spawnRoom,
+                spawnRoomName,
                 'worker',
                 creepName,
                 {}
@@ -196,7 +173,7 @@ export class HoldRoomManagementProcess extends Process
               let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
               let spawned = Utils.spawn(
                 this.kernel,
-                spawnRoom,
+                spawnRoomName,
                 'worker',
                 creepName,
                 {}
@@ -237,7 +214,7 @@ export class HoldRoomManagementProcess extends Process
                   let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
                   let spawned = Utils.spawn(
                     this.kernel,
-                    spawnRoom,
+                    spawnRoomName,
                     'harvester',
                     creepName,
                     {}
@@ -275,7 +252,7 @@ export class HoldRoomManagementProcess extends Process
                   let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
                   let spawned = Utils.spawn(
                     this.kernel,
-                    spawnRoom,
+                    spawnRoomName,
                     'holdmover',
                     creepName,
                     {}
@@ -286,7 +263,7 @@ export class HoldRoomManagementProcess extends Process
                     this.metaData.distroCreeps[sc.id] = creepName;
                     this.kernel.addProcessIfNotExist(HoldDistroLifetimeProcess, 'holdDistrolf-' + creepName, 26, {
                       sourceContainer: sc.id,
-                      spawnRoom: spawnRoom,
+                      spawnRoom: spawnRoomName,
                       creep: creepName,
                       flagName: flag.name
                     });
@@ -298,7 +275,7 @@ export class HoldRoomManagementProcess extends Process
       }
       else
       {
-        this.log('Need to place a center flag in ' + spawnRoom);
+        this.log('Need to place a center flag in ' + spawnRoomName);
       }
     }
   }

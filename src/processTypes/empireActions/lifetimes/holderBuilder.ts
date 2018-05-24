@@ -113,7 +113,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(!creep.pos.inRangeTo(creep.room.controller!, 1))
+          if(!creep.pos.inRangeTo(creep.room.controller!, 5))
           {
             creep.travelTo(creep.room.controller!);
           }
