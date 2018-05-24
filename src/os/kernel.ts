@@ -37,19 +37,6 @@ import {ClaimProcess} from '../processTypes/empireActions/claim'
 import { HoldRoomManagementProcess } from 'processTypes/management/holdRoom';
 import { TransferProcess} from '../processTypes/empireActions/transfer'
 
-/*
-import {HoldRoomProcess} from '../processTypes/empireActions/hold'
-import {HoldProcess} from '../processTypes/creepActions/hold'
-import {MineralHarvestProcess} from '../processTypes/creepActions/mineralHarvest'
-import {MineralharvesterLifetimeProcess} from '../processTypes/lifetimes/mineralHarvester'
-import {MineralManagementProcess} from '../processTypes/management/mineral'
-
-
-
-import {RoomLayoutProcess} from '../processTypes/management/roomLayout'
-*/
-
-
 import {Stats} from '../lib/stats'
 import { HolderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holder';
 import { HoldProcess } from 'processTypes/empireActions/creepActions/hold';
@@ -141,25 +128,6 @@ const processTypes = <{[type: string]: any}>{
   'attacklf': AttackerLifetimeProcess,
   'hmp': HelpManagementProcess,
   'hlp': HelperLifetimeProcess,
-
-  /*
-
-
-
-  'holdRoom': HoldRoomProcess,
-  'hold': HoldProcess,
-  'mh': MineralHarvestProcess,
-  'mhlf': MineralharvesterLifetimeProcess,
-  'mineralManagement': MineralManagementProcess,
-
-
-
-
-
-
-  'roomLayout': RoomLayoutProcess,
-
-  */
 }
 
 interface KernelData{
