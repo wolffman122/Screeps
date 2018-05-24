@@ -159,7 +159,7 @@ export class Kernel{
     usedSpawns: []
   }
 
-  execOrder: {}[] = []
+  execOrder: ExecOrder[] = []
   suspendCount = 0
   schedulerUsage = 0;
 

@@ -6,6 +6,7 @@ export const Stats = {
   build(kernel: Kernel){
     if(!Memory.stats){ Memory.stats = {}}
 
+    console.log("Stats")
     Memory.stats['gcl.progress'] = Game.gcl.progress
     Memory.stats['gcl.progressTotal'] = Game.gcl.progressTotal
     Memory.stats['gcl.level'] = Game.gcl.level
@@ -41,7 +42,9 @@ export const Stats = {
       Memory.stats['memory.heapPercent'] = heapPercent;
     }
 
-    /*let processCounts = _.reduce(kernel.execOrder, (types, item: {type: string}) => {
+    console.log("Stats 2");
+
+    let processCounts = _.reduce(kernel.execOrder, (types: {type: string, count: number}[], item: {type: string}) => {
       if(!types[item.type])
       {
         types[item.type] = {type: item.type, count: 0};
@@ -49,17 +52,23 @@ export const Stats = {
 
       types[item.type].count++;
       return types;
-    }, {})
+    })
+
+    console.log("Process Counts", processCounts)
 
     _.forEach(kernel.execOrder, function(execed: {type: string, cpu: number}){
       Memory.stats['processes.types.' + execed.type] += execed.cpu
     })
 
+    console.log("Stats 3");
+
     _.forEach(processCounts, function(p: {type: string, count: number}) {
-      let holder = Memory.stats['processes.types.' + p.type] / p.count;
+      /*let holder = Memory.stats['processes.types.' + p.type] / p.count;
       Memory.stats['processes.average.counts.' + p.type] = p.count;
-      Memory.stats['processes.average.types.' + p.type] = holder;
-    })*/
+      Memory.stats['processes.average.types.' + p.type] = holder;*/
+
+      console.log(p.type);
+    })
 
     let remoteIndex = 0;
 

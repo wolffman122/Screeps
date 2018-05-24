@@ -404,7 +404,7 @@ interface Creep extends RoomObject {
     flagName: string,
     creeps: string[],
   }
-  
+
   interface HelperLifetimeProcessMetaData
   {
     flagName: string,
@@ -433,4 +433,12 @@ interface TravelOptions {
   preferHW: boolean,         //Prefer to path through Highways
   preferRooms: string[],        //Prefer to path through a specific list of rooms
   avoidRooms: string[],         //Avoid pathing through a specific list of rooms
+}
+
+
+interface ExecOrder {
+  name: string,
+  cpu: number,
+  type: string,
+  faulted: boolean
 }
