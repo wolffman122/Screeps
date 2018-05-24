@@ -25,7 +25,7 @@ export class DistroLifetimeProcess extends LifetimeProcess{
 
         let storage = creep.room.storage;
 
-        if(storage && storage.store.energy > 0 && sourceContainer && sourceContainer.store.energy !== sourceContainer.storeCapacity)
+        if(storage && storage.store.energy > 0 && sourceContainer && sourceContainer.store.energy <= sourceContainer.storeCapacity * .9)
         {
           this.fork(CollectProcess, 'collect-' + creep.name, this.priority -1, {
             target: storage.id,

@@ -145,7 +145,27 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          this.suspend = 2;
+          let storage = creep.room.storage;
+          if(storage)
+          {
+            if(!creep.pos.inRangeTo(storage,1))
+            {
+              if(!creep.fixMyRoad())
+              {
+                creep.travelTo(storage);
+                return;
+              }
+            }
+
+            if(creep.transfer(storage, RESOURCE_ENERGY) === ERR_FULL)
+            {
+              return;
+            }
+          }
+          else
+          {
+            this.suspend = 2;
+          }
         }
       }
       else
