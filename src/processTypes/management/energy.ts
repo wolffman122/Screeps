@@ -7,6 +7,7 @@ import {UpgraderLifetimeProcess} from '../lifetimes/upgrader'
 import { SpinnerLifetimeProcess } from 'processTypes/lifetimes/spinner';
 import { LinkHarvesterLifetimeProcess } from 'processTypes/lifetimes/linkHarvester';
 import { UpgradeDistroLifetimeProcess } from 'processTypes/lifetimes/upgradeDistro';
+import { DistroLifetimeOptProcess } from '../lifetimes/distroOpt';
 
 export class EnergyManagementProcess extends Process{
   metaData: EnergyManagementMetaData
@@ -144,7 +145,7 @@ export class EnergyManagementProcess extends Process{
 
         if(spawned){
           proc.metaData.distroCreeps[container.id] = creepName
-          proc.kernel.addProcess(DistroLifetimeProcess, 'dlf-' + creepName, 48, {
+          proc.kernel.addProcess(DistroLifetimeOptProcess, 'dlf-' + creepName, 48, {
             sourceContainer: container.id,
             creep: creepName
           })

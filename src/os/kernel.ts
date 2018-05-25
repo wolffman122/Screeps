@@ -66,6 +66,8 @@ import { GeneralAttackManagementProcess } from 'processTypes/management/generalA
 import { AttackerLifetimeProcess } from 'processTypes/lifetimes/attacker';
 import { HelperLifetimeProcess } from 'processTypes/lifetimes/Helper';
 import { HelpManagementProcess } from 'processTypes/management/help';
+import { DistroLifetimeOptProcess } from 'processTypes/lifetimes/distroOpt';
+import { UpgradeDistroLifetimeOptProcess } from 'processTypes/lifetimes/upgradeDistroOpt';
 
 
 
@@ -128,6 +130,8 @@ const processTypes = <{[type: string]: any}>{
   'attacklf': AttackerLifetimeProcess,
   'hmp': HelpManagementProcess,
   'hlp': HelperLifetimeProcess,
+  'dlfOpt': DistroLifetimeOptProcess,
+  'udlfOpt': UpgradeDistroLifetimeOptProcess
 }
 
 interface KernelData{
