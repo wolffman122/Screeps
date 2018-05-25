@@ -77,40 +77,41 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
           creep.travelTo(sourceContainer);
           return;
         }
-        else
+
+        let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
+        if(resource.length > 0)
         {
-          let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
-          if(resource.length > 0)
+          let withdrawAmount = creep.carryCapacity - _.sum(creep.carry) - resource[0].amount;
+
+          if(withdrawAmount >= 0)
           {
-            let withdrawAmount = creep.carryCapacity - _.sum(creep.carry) - resource[0].amount;
-
-            if(withdrawAmount >= 0)
-            {
-              creep.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
-            }
-
-            creep.pickup(resource[0]);
-            /*creep.pickup(resource[0]);
-
-            let remainingRoom = creep.carryCapacity - resource[0].amount
-
-            if(sourceContainer.store.energy > remainingRoom)
-            {
-              creep.withdraw(sourceContainer, RESOURCE_ENERGY)
-            }
-            else
-            {
-              this.suspend = 10;
-            }*/
+            creep.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
           }
-          else if(sourceContainer.store.energy > creep.carryCapacity)
+
+          creep.pickup(resource[0]);
+          return;
+          /*creep.pickup(resource[0]);
+
+          let remainingRoom = creep.carryCapacity - resource[0].amount
+
+          if(sourceContainer.store.energy > remainingRoom)
           {
-            creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+            creep.withdraw(sourceContainer, RESOURCE_ENERGY)
           }
           else
           {
-            this.suspend = 20;
-          }
+            this.suspend = 10;
+          }*/
+        }
+        else if(sourceContainer.store.energy > creep.carryCapacity)
+        {
+          creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+          return;
+        }
+        else
+        {
+          this.suspend = 20;
+          return;
         }
       }
     }

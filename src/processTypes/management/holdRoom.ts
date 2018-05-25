@@ -138,6 +138,29 @@ export class HoldRoomManagementProcess extends Process
               }
             }
           }
+          else if(sRoom.controller!.level < 8)
+          {
+            if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
+            {
+              let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+              let spawned = Utils.spawn(
+                this.kernel,
+                spawnRoomName,
+                'hold',
+                creepName,
+                {}
+              );
+
+              if(spawned)
+              {
+                this.metaData.holdCreeps.push(creepName);
+                this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
+                  creep: creepName,
+                  flagName: this.metaData.flagName
+                })
+              }
+            }
+          }
 
           this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
 

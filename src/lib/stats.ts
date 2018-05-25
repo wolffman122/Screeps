@@ -63,11 +63,11 @@ export const Stats = {
     console.log("Stats 3");
 
     _.forEach(processCounts, function(p: {type: string, count: number}) {
-      /*let holder = Memory.stats['processes.types.' + p.type] / p.count;
+      let holder = Memory.stats['processes.types.' + p.type] / p.count;
       Memory.stats['processes.average.counts.' + p.type] = p.count;
-      Memory.stats['processes.average.types.' + p.type] = holder;*/
+      Memory.stats['processes.average.types.' + p.type] = holder;
 
-      console.log(p.type);
+      //console.log(p.type, "average", Memory.stats['processes.average.types.' + p.type]);
     })
 
     let remoteIndex = 0;
