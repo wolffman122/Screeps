@@ -212,6 +212,22 @@ interface Creep extends RoomObject {
 
   }
 
+  interface HoldRoomOptManagementProcessMetaData
+  {
+    roomName: string
+    holdCreeps: string[]
+    harvestCreeps: {
+      [source: string]: string[]
+    }
+    distroCreeps: {
+      [container: string]: string[]
+    }
+    builderCreeps: string[]
+    workerCreeps: string[]
+    flagName: string
+    increasing: boolean
+  }
+
   interface MarketManagementProcessMetaData
   {
     data: {

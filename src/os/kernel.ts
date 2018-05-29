@@ -68,6 +68,8 @@ import { HelperLifetimeProcess } from 'processTypes/lifetimes/Helper';
 import { HelpManagementProcess } from 'processTypes/management/help';
 import { DistroLifetimeOptProcess } from 'processTypes/lifetimes/distroOpt';
 import { UpgradeDistroLifetimeOptProcess } from 'processTypes/lifetimes/upgradeDistroOpt';
+import { HoldRoomOptManagementProcess } from 'processTypes/management/holdRoomOpt';
+import { HoldHarvesterOptLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderHarvesterOpt';
 
 
 
@@ -131,7 +133,9 @@ const processTypes = <{[type: string]: any}>{
   'hmp': HelpManagementProcess,
   'hlp': HelperLifetimeProcess,
   'dlfOpt': DistroLifetimeOptProcess,
-  'udlfOpt': UpgradeDistroLifetimeOptProcess
+  'udlfOpt': UpgradeDistroLifetimeOptProcess,
+  'hrmOpt': HoldRoomOptManagementProcess,
+  'holdHarvesterlfOpt': HoldHarvesterOptLifetimeProcess
 }
 
 interface KernelData{

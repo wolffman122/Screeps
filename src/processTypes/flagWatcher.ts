@@ -12,6 +12,7 @@ import { SignControllerProcess } from './management/sign';
 import { GeneralAttackManagementProcess } from './management/generalAttack';
 import { RemoteBuilderLifetimeProcess } from './lifetimes/remoteBuilder';
 import { HelpManagementProcess } from './management/help';
+import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
 
 export class FlagWatcherProcess extends Process
 {
@@ -42,6 +43,11 @@ export class FlagWatcherProcess extends Process
   remoteHoldFlag(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
+  }
+
+  remoteHoldOptFlag(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(HoldRoomOptManagementProcess, 'hrmOpt-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
   }
 
   transferFlag(flag: Flag)
@@ -94,7 +100,15 @@ export class FlagWatcherProcess extends Process
           }
           break;
         case COLOR_RED:
-          proc.remoteHoldFlag(flag);
+          switch(flag.secondaryColor)
+          {
+            case COLOR_RED:
+              proc.remoteHoldFlag(flag);
+              break;
+            case COLOR_GREEN:
+              proc.remoteHoldOptFlag(flag);
+              break;
+          }
           break;
         case COLOR_PURPLE:
           proc.remoteDismantleFlag(flag);

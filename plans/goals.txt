@@ -1,4 +1,7 @@
 New Development Goals for Screeps
+- Remote harvest stop dumping on ground
+- Put 2 distro's per remote source.
+- Prespawn harvesters for main and remote sources.
 - Retreat or stop spawning out of bunker guys to draw in swarm and have towers and defenders do their job.
 - LF process have them do everything for LF and get rid of Actions
     - Compare pos.inrangeto and pos.isnear to see which is more efficient

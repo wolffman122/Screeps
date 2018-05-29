@@ -1,7 +1,8 @@
 import { Utils } from "lib/utils";
 import { LabDistroLifetimeProcess } from "../lifetimes/labDistro";
 import { InitalizationProcess } from "os/process";
-import { REAGENT_LIST } from "processTypes/buildingProcesses/mineralTerminal";
+import { REAGENT_LIST, PRODUCT_LIST, PRODUCTION_AMOUNT, MINERALS_RAW } from "processTypes/buildingProcesses/mineralTerminal";
+import { LoDashImplicitNumberArrayWrapper } from "lodash";
 
 export class LabManagementProcess extends InitalizationProcess
 {
@@ -65,6 +66,11 @@ export class LabManagementProcess extends InitalizationProcess
       {
         this.missionActions();
       }
+    }
+
+    if(this.labProcess)
+    {
+      this.doSynthesis();
     }
 
     /*Object.keys(COMPOUND_LIST).forEach(key => {
@@ -441,6 +447,28 @@ export class LabManagementProcess extends InitalizationProcess
     return labs;
   }
 
+  private doSynthesis()
+  {
+    for(let i = 0; i < this.productLabs!.length; i++)
+    {
+      // So that they don't all activate on the same tick and make bucket sad
+      if(Game.time % 10 !== i)
+      {
+        continue;
+      }
+      let lab = this.productLabs![i];
+      if(lab.pos.lookFor(LOOK_FLAGS).length > 0)
+      {
+        continue;
+      }
+      if(!lab.mineralType || lab.mineralType === this.labProcess!.currentShortage.mineralType)
+      {
+        let outcome = lab.runReaction(this.reagentLabs![0], this.reagentLabs![1]);
+      }
+
+    }
+  }
+
   private findLabProcess(): LabProcess | undefined
   {
     if(!this.reagentLabs)
@@ -469,6 +497,20 @@ export class LabManagementProcess extends InitalizationProcess
 
       return process;
     }
+
+    // avoid checking for anew process every tick
+    if(!this.memory.checkProcessTick)
+    {
+      this.memory.checkProcessTick = Game.time - 100;
+    }
+
+    if(Game.time < this.memory.checkProcessTick+100)
+    {
+      return; // early
+    }
+
+    this.memory.labProcess = this.findNewProcess();
+
     return;
   }
 
@@ -510,9 +552,118 @@ export class LabManagementProcess extends InitalizationProcess
       return false;
     }
   }
+
+
+  private findNewProcess(): LabProcess|undefined
+  {
+    let store = this.gatherInventory();
+
+    for (let compound of PRODUCT_LIST)
+    {
+      if(store[compound] >= PRODUCTION_AMOUNT)
+      {
+        continue;
+      }
+      return this.generateProcess({mineralType: compound, amount: PRODUCTION_AMOUNT + this.creep.carryCapacity - (this.terminal!.store[compound] || 0) });
+    }
+
+  /*  if(store[RESOURCE_CATALYZED_GHODIUM_ACID] < PRODUCTION_AMOUNT + 5000)
+    {
+      return this.generateProcess({mineralType: RESOURCE_CATALYZED_GHODIUM_ACID, amount: 5000});
+    }*/
+
+    return;
+  }
+
+  private recursiveShortageCheck(shortage: Shortage, fullAmount = false): Shortage|undefined
+  {
+    // gather amounts of compounds in terminal and labs
+    let store = this.gatherInventory();
+    if(store[shortage.mineralType] === undefined)
+    {
+      store[shortage.mineralType] = 0;
+    }
+    let amountNeeded = shortage.amount - Math.floor(store[shortage.mineralType] / 10) * 10;
+    if(fullAmount)
+    {
+      amountNeeded = shortage.amount;
+    }
+
+    if(amountNeeded > 0)
+    {
+      // remove raw minerals from list, no need to make those
+      let reagents = _.filter(REAGENT_LIST[shortage.mineralType], (mineralType: ResourceConstant) => !_.include(MINERALS_RAW, mineralType));
+      let shortageFound;
+      for(let reagent of reagents)
+      {
+        shortageFound = this.recursiveShortageCheck({mineralType: reagent, amount: amountNeeded});
+        if(shortageFound)
+          break;
+      }
+      if(shortageFound)
+      {
+        return shortageFound;
+      }
+      else
+      {
+        return { mineralType: shortage.mineralType, amount: amountNeeded };
+      }
+    }
+    return;
+  }
+
+  private gatherInventory(): {[key: string]: number}
+  {
+    let inventory: {[key: string]: number} = {};
+    for(let mineralType in this.terminal!.store)
+    {
+      if(!this.terminal!.store.hasOwnProperty(mineralType)) continue;
+      if(inventory[mineralType] === undefined)
+      {
+        inventory[mineralType] = 0;
+      }
+
+      inventory[mineralType] += this.terminal!.store[mineralType];
+    }
+
+    for(let lab of this.productLabs!)
+    {
+      if(lab.mineralAmount > 0)
+      {
+        if(inventory[lab.mineralType!] === undefined)
+        {
+          inventory[lab.mineralType!] = 0;
+        }
+
+        inventory[lab.mineralType!] += lab.mineralAmount;
+      }
+    }
+
+    return inventory;
+  }
+
+  private generateProcess(targetShortage: Shortage): LabProcess|undefined
+  {
+    let currentShortage = this.recursiveShortageCheck(targetShortage, true);
+    if(currentShortage === undefined)
+    {
+      console.log(this.name, "Lab Distro: error finding current shortage");
+      return;
+    }
+    let reagentLoads = {};
+    for(let mineralType of REAGENT_LIST[currentShortage.mineralType])
+    {
+      reagentLoads[mineralType] = currentShortage.amount;
+    }
+    let loadProgress = currentShortage.amount * 2;
+    return {
+      targetShortage: targetShortage,
+      currentShortage: currentShortage,
+      reagentLoads: reagentLoads,
+      loadProgress: loadProgress
+    };
+  }
 }
-
-
 
 const COMPOUND_LIST: {[type: string]: ResourceConstant[]} =
 {
