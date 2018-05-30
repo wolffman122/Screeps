@@ -5,6 +5,7 @@ import { HolderLifetimeProcess } from 'processTypes/empireActions/lifetimes/hold
 import { HoldBuilderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderBuilder';
 import { HoldHarvesterLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderHarvester';
 import { HoldDistroLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDistro';
+import { HoldHarvesterOptLifetimeProcess } from '../empireActions/lifetimes/holderHarvesterOpt';
 
 
 
@@ -111,10 +112,10 @@ export class HoldRoomOptManagementProcess extends Process
           {
             if(this.metaData.holdCreeps.length < 1)
             {
-              let max = 12;
+              let max = 16;
               if(sRoom.energyAvailable < sRoom.energyCapacityAvailable * 0.50)
               {
-                max = 3;
+                max = 4;
               }
 
               let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
@@ -232,10 +233,14 @@ export class HoldRoomOptManagementProcess extends Process
               let creeps = Utils.inflateCreeps(creepNames);
 
               let dieingCreeps = _.filter(creeps, (cr) => {
-                return (cr.ticksToLive && cr.ticksToLive > (cr.body.length * 3));
+                return (cr.ticksToLive && cr.ticksToLive < (cr.body.length * 3));
               })
 
-              if(this.metaData.harvestCreeps[s.id].length < 1 || (dieingCreeps.length !== this.metaData.harvestCreeps[s.id].length))
+              _.forEach(dieingCreeps, (dc) => {
+                console.log('Die Creep', dc.name, dc.ticksToLive!);
+              })
+
+              if(this.metaData.harvestCreeps[s.id].length < 1 || (dieingCreeps.length > 0 && this.metaData.harvestCreeps[s.id].length === 1))
               {
                 console.log("Need to make some harvesting creeps " + s.id);
                   let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
@@ -254,7 +259,7 @@ export class HoldRoomOptManagementProcess extends Process
               }
 
               _.forEach(creeps, (c) => {
-                this.kernel.addProcessIfNotExist(HoldHarvesterLifetimeProcess, 'holdHarvesterlf-' + c.name, 27, {
+                this.kernel.addProcessIfNotExist(HoldHarvesterOptLifetimeProcess, 'holdHarvesterlfOpt-' + c.name, 27, {
                   creep: c.name,
                   source: s.id,
                   flagName: flag.name

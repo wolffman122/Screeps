@@ -34,19 +34,54 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
             return (c.store.energy > 0);
           })
 
-          let target = creep.pos.findClosestByPath(targets);
-
-
-          if(target)
+          if(targets.length)
           {
-            if(!creep.pos.inRangeTo(target, 1))
+            let target = creep.pos.findClosestByPath(targets);
+
+
+            if(target)
             {
-              creep.travelTo(target);
+              if(!creep.pos.inRangeTo(target, 1))
+              {
+                creep.travelTo(target);
+                return;
+              }
+
+              creep.withdraw(target, RESOURCE_ENERGY);
               return;
             }
+          }
+          else
+          {
+            let source = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.pos.roomName].sources);
 
-            creep.withdraw(target, RESOURCE_ENERGY);
-            return;
+            if(source)
+            {
+              if(!creep.pos.inRangeTo(source, 1))
+              {
+                creep.travelTo(source);
+                return;
+              }
+
+              if(creep.pos.inRangeTo(source, 1))
+              {
+                let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                if(sites.length > 0)
+                {
+                  let site = _.filter(sites, (s) => {
+                    if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
+                    {
+                      return s;
+                    }
+                    return;
+                  });
+
+                  
+
+                  return;
+                }
+              }
+            }
           }
         }
         else

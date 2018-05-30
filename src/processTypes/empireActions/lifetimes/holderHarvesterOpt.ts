@@ -75,7 +75,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
           creep.travelTo(container);
         }
 
-        if((container.storeCapacity - _.sum(container.store) >= (creep.getActiveBodyparts(WORK) * 2)
+        if((container.storeCapacity - _.sum(container.store)) >= (creep.getActiveBodyparts(WORK) * 2))
         {
             creep.harvest(source);
         }
