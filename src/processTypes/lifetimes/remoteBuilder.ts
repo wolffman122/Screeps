@@ -17,6 +17,18 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       return
     }
 
+    if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
+    {
+      if(creep.pos.isNearTo(creep.room.storage))
+      {
+        creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+        return;
+      }
+
+      creep.travelTo(creep.room.storage);
+      return;
+    }
+
     if(_.sum(creep.carry) === 0)
     {
       if(creep.pos.roomName == site.pos.roomName)

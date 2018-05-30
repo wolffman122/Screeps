@@ -18,6 +18,18 @@ export class HelperLifetimeProcess extends LifetimeProcess
         return;
       }
 
+      if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
+      {
+        if(creep.pos.isNearTo(creep.room.storage))
+        {
+          creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+          return;
+        }
+
+        creep.travelTo(creep.room.storage);
+        return;
+      }
+
       let sites = flag.room!.find(FIND_CONSTRUCTION_SITES);
       if(sites.length > 0)
       {
@@ -48,6 +60,42 @@ export class HelperLifetimeProcess extends LifetimeProcess
             creep: creep.name,
             site: site.id
           });
+      }
+      else
+      {
+        if(_.sum(creep.carry) === 0)
+        {
+          let source = creep.pos.findClosestByPath(this.roomData().sources);
+
+          if(source)
+          {
+            if(creep.pos.isNearTo(source))
+            {
+              creep.harvest(source);
+              return;
+            }
+
+            creep.travelTo(source);
+            return;
+          }
+        }
+
+        if(_.sum(creep.carry) !== 0)
+        {
+          let controller = creep.room.controller;
+
+          if(controller)
+          {
+            if(creep.pos.isNearTo(controller))
+            {
+              creep.upgradeController(controller);
+              return;
+            }
+
+            creep.travelTo(controller);
+            return;
+          }
+        }
       }
     }
 }
