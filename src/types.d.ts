@@ -134,6 +134,7 @@ interface Creep extends RoomObject {
       atPlace: boolean;
       currentRoom: string;
       roomPath: -2 | { exit: ExitConstant, room: string}[],
+      flagIndex: number;
   }
 
   interface FlagMemory

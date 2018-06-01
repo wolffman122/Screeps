@@ -1,6 +1,7 @@
 import { LifetimeProcess } from "os/process";
 import { HarvestProcess } from "../creepActions/harvest";
 import { BuildProcess } from "../creepActions/build";
+import { UpgradeProcess } from "../creepActions/upgrade";
 
 export class HelperLifetimeProcess extends LifetimeProcess
 {
@@ -65,36 +66,25 @@ export class HelperLifetimeProcess extends LifetimeProcess
       {
         if(_.sum(creep.carry) === 0)
         {
-          let source = creep.pos.findClosestByPath(this.roomData().sources);
+          let sources = _.filter(this.roomData().sources, (s)=>{
+            return (s.energy > 0);
+          })
+          let source = creep.pos.findClosestByPath(sources);
 
           if(source)
           {
-            if(creep.pos.isNearTo(source))
-            {
-              creep.harvest(source);
-              return;
-            }
-
-            creep.travelTo(source);
-            return;
+            this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+              source: source.id,
+              creep: creep.name
+            })
           }
         }
 
         if(_.sum(creep.carry) !== 0)
         {
-          let controller = creep.room.controller;
-
-          if(controller)
-          {
-            if(creep.pos.isNearTo(controller))
-            {
-              creep.upgradeController(controller);
-              return;
-            }
-
-            creep.travelTo(controller);
-            return;
-          }
+          this.fork(UpgradeProcess, 'upgrade-' + creep.name, this.priority - 1, {
+            creep: creep.name
+          })
         }
       }
     }
