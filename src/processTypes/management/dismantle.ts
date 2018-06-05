@@ -13,7 +13,7 @@ export class DismantleManagementProcess extends Process
 
     this.log('Dismantle ' + flag);
     if(this.name == 'dmpE42S48-Dismantle-2')
-    
+
     if(!flag)
     {
       this.completed = true;
@@ -24,7 +24,7 @@ export class DismantleManagementProcess extends Process
     this.metaData.dismantleCreeps = Utils.clearDeadCreeps(this.metaData.dismantleCreeps);
 
     let deliverRoom = flag.name.split('-')[0];
-    let numberOfDismantlers = +flag.name.split('-')[2];
+    let numberOfDismantlers = +flag.name.split('-')[1];
 
     numberOfDismantlers = Math.min(numberOfDismantlers, 3);
 

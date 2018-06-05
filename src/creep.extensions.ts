@@ -1,3 +1,5 @@
+import { WHITE_LIST } from "processTypes/buildingProcesses/mineralTerminal";
+
 Creep.prototype.transferEverything = function(target: Creep|StructureContainer|StructureStorage|StructureTerminal)
 {
   for(let t in this.carry)
@@ -25,4 +27,14 @@ Creep.prototype.withdrawEverything = function(target: StructureContainer|Structu
   }
 
   return ERR_NOT_ENOUGH_RESOURCES;
+}
+
+Room.prototype.findEnemies = function(): Creep[]
+{
+  let hostileCreeps = this.find(FIND_HOSTILE_CREEPS);
+  hostileCreeps = _.filter(hostileCreeps, (hc: Creep) => {
+    return !_.contains(WHITE_LIST, hc.owner.username);
+  });
+
+  return hostileCreeps;
 }

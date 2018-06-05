@@ -9,6 +9,9 @@ interface Creep extends RoomObject {
     withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
   }
 
+interface Room extends Room {
+  findEnemies(): Creep[];
+}
 
 
   declare namespace NodeJS{
@@ -135,6 +138,7 @@ interface Creep extends RoomObject {
       currentRoom: string;
       roomPath: -2 | { exit: ExitConstant, room: string}[],
       flagIndex: number;
+      dieing: boolean;
   }
 
   interface FlagMemory
@@ -227,6 +231,7 @@ interface Creep extends RoomObject {
     workerCreeps: string[]
     flagName: string
     increasing: boolean
+    prespawn: boolean
   }
 
   interface MarketManagementProcessMetaData
@@ -308,7 +313,8 @@ interface Creep extends RoomObject {
   interface HoldBuilderLifetimeProcessMetaData
   {
     creep: string
-    flagName: string
+    flagName: string,
+    site: string
   }
 
   interface HoldWorkerLifetimeProcessMetaData
@@ -351,6 +357,26 @@ interface Creep extends RoomObject {
   {
     roomName: string,
     labDistros: string[],
+    idlePosition: RoomPosition;
+    command?: Command;
+    labCount: number;
+    reagentLabIds?: string[];
+    productLabIds?: string[];
+    lastCommandTick: number;
+    checkProcessTick: number;
+    labProcess?: LabProcess;
+  }
+
+  interface LabMemory
+  {
+    idlePosition: RoomPosition;
+    command?: Command;
+    labCount: number;
+    reagentLabIds?: string[];
+    productLabIds?: string[];
+    lastCommandTick: number;
+    checkProcessTick: number;
+    labProcess?: LabProcess;
   }
 
   interface LabDistroLifetimeProcessMetaData

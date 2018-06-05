@@ -1,10 +1,10 @@
 import { Utils } from "lib/utils";
 import { LabDistroLifetimeProcess } from "../lifetimes/labDistro";
-import { InitalizationProcess } from "os/process";
+import { Process } from "os/process";
 import { REAGENT_LIST, PRODUCT_LIST, PRODUCTION_AMOUNT, MINERALS_RAW } from "processTypes/buildingProcesses/mineralTerminal";
 import { LoDashImplicitNumberArrayWrapper } from "lodash";
 
-export class LabManagementProcess extends InitalizationProcess
+export class LabManagementProcess extends Process
 {
   metaData: LabManagementProcessMetaData
   type = 'labm';
@@ -19,16 +19,6 @@ export class LabManagementProcess extends InitalizationProcess
   powerSpawn?: StructurePowerSpawn;
   room: Room;
   nuker?: StructureNuker;
-  memory: {
-      idlePosition: RoomPosition;
-      command?: Command;
-      labCount: number;
-      reagentLabIds?: string[];
-      productLabIds?: string[];
-      lastCommandTick: number;
-      checkProcessTick: number;
-      labProcess?: LabProcess;
-  };
 
   ensureMetaData()
   {
@@ -40,16 +30,42 @@ export class LabManagementProcess extends InitalizationProcess
 
   run()
   {
-    this.ensureMetaData();
+    this.room = Game.rooms[this.metaData.roomName];
 
-    this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
-
-    if(this.metaData.labDistros.length === 0)
+    if(this.room)
     {
-      this.memory.command = undefined;
-    }
+      this.labs = this.roomData().labs;
+      this.terminal = this.room.terminal;
+      this.storage = this.room.storage;
+      this.nuker = this.roomData().nuker;
 
-    if(this.metaData.labDistros.length < 1)
+      if(!this.productLabs || !this.reagentLabs)
+      {
+        this.reagentLabs = this.findReagentLabs();
+        this.productLabs = this.findProductLabs();
+        //console.log(this.name, this.reagentLabs!.length, this.productLabs!.length);
+      }
+
+      this.labProcess = this.findLabProcess();
+      if(this.labProcess)
+      {
+        console.log(this.name, "Found a Process Current Shortage", this.labProcess.currentShortage.mineralType, this.labProcess.currentShortage.amount,
+          "Load Porgress", this.labProcess.loadProgress, "Target Shortage", this.labProcess.targetShortage.mineralType, this.labProcess.targetShortage.amount)
+      }
+
+      this.ensureMetaData();
+
+      this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
+
+      if(this.metaData.labDistros.length === 0)
+      {
+        if(this.metaData)
+        {
+          this.metaData.command == undefined;
+        }
+      }
+
+    if(this.metaData.labDistros.length < 1 && this.labProcess)
     {
       let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
       let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
@@ -77,11 +93,12 @@ export class LabManagementProcess extends InitalizationProcess
         console.log('found property', COMPOUND_LIST[key][0]);
     })*/
 
+    }
   }
 
   initialization()
   {
-    this.room = Game.rooms[this.metaData.roomName];
+    /*(this.room = Game.rooms[this.metaData.roomName];
     if(this.room)
     {
       this.labs = this.roomData().labs;
@@ -89,10 +106,13 @@ export class LabManagementProcess extends InitalizationProcess
       this.storage = this.room.storage;
       this.nuker = this.roomData().nuker;
 
+      console.log(this.name, 1);
       this.reagentLabs = this.findReagentLabs();
+      console.log(this.name, 2);
       this.productLabs = this.findProductLabs();
 
-      this.labProcess = this.findLabProcess();
+      console.log(this.name, this.reagentLabs!.length, this.productLabs!.length);
+      /*this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
         let target = this.labProcess.targetShortage.mineralType;
@@ -102,9 +122,9 @@ export class LabManagementProcess extends InitalizationProcess
         }
         Memory.labProcesses[target]++;
       }
-    }
+    //}
+    }*/
   }
-
 
   private missionActions()
   {
@@ -146,7 +166,7 @@ export class LabManagementProcess extends InitalizationProcess
           if(!origin.store[command.resourceType])
           {
             console.log("Creep: I can't find that resource in terminal, opName:", this.name);
-            this.memory.command = undefined;
+            this.metaData.command = undefined;
           }
         }
 
@@ -173,7 +193,7 @@ export class LabManagementProcess extends InitalizationProcess
         this.labProcess.reagentLoads[command.resourceType] -= command.amount!;
       }
 
-      this.memory.command = undefined;
+      this.metaData.command = undefined;
     }
     else
     {
@@ -221,35 +241,35 @@ export class LabManagementProcess extends InitalizationProcess
 
   private accessCommand(): Command|undefined
   {
-    if(!this.memory.command && this.creep.ticksToLive! < 40)
+    if(!this.metaData.command && this.creep.ticksToLive! < 40)
     {
       this.creep.suicide();
       return;
     }
 
-    if(!this.memory.lastCommandTick)
+    if(!this.metaData.lastCommandTick)
     {
-      this.memory.lastCommandTick = Game.time - 10;
+      this.metaData.lastCommandTick = Game.time - 10;
     }
 
-    if(!this.memory.command && Game.time > this.memory.lastCommandTick + 10)
+    if(!this.metaData.command && Game.time > this.metaData.lastCommandTick + 10)
     {
       if(_.sum(this.creep.carry) === 0)
       {
-        this.memory.command = this.findCommand();
+        this.metaData.command = this.findCommand();
       }
       else
       {
         console.log("Creep: can't take new command in:", this.name, "because I'm holding something");
       }
 
-      if(!this.memory.command)
+      if(!this.metaData.command)
       {
-        this.memory.lastCommandTick = Game.time;
+        this.metaData.lastCommandTick = Game.time;
       }
     }
 
-    return this.memory.command;
+    return this.metaData.command;
   }
 
   private checkReagentLabs(): Command|undefined
@@ -276,9 +296,9 @@ export class LabManagementProcess extends InitalizationProcess
       }
       else if(mineralType)
       {
-        let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], this.creep.carryCapacity);
+        let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], LABDISTROCAPACITY);
         if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
-          && lab.mineralAmount <= lab.mineralCapacity - this.creep.carryCapacity)
+          && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
         {
           // bring minerals to lab when amount drops below amount needed
           let command: Command = {origin: this.terminal!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
@@ -299,7 +319,7 @@ export class LabManagementProcess extends InitalizationProcess
 
     for (let lab of this.productLabs) {
 
-        if (this.terminal!.store.energy >= this.creep.carryCapacity && lab.energy < this.creep.carryCapacity)
+        if (this.terminal!.store.energy >= LABDISTROCAPACITY && lab.energy < LABDISTROCAPACITY)
         {
             // restore boosting energy to lab
             return { origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
@@ -312,7 +332,7 @@ export class LabManagementProcess extends InitalizationProcess
             // empty wrong mineral type or clear lab when no process
             return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
         }
-        else if (this.labProcess && lab.mineralAmount >= this.creep.carryCapacity) {
+        else if (this.labProcess && lab.mineralAmount >= LABDISTROCAPACITY) {
             // store product in terminal
             return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
         }
@@ -322,9 +342,9 @@ export class LabManagementProcess extends InitalizationProcess
 
   private findReagentLabs(): StructureLab[] | undefined
   {
-    if(this.memory.reagentLabIds)
+    if(this.metaData.reagentLabIds)
     {
-      let labs = _.map(this.memory.reagentLabIds, (id: string) => {
+      let labs = _.map(this.metaData.reagentLabIds, (id: string) => {
         let lab = Game.getObjectById(id);
         if(lab)
         {
@@ -332,7 +352,7 @@ export class LabManagementProcess extends InitalizationProcess
         }
         else
         {
-          this.memory.reagentLabIds = undefined;
+          this.metaData.reagentLabIds = undefined;
           return;
         }
       }) as StructureLab[];
@@ -343,7 +363,7 @@ export class LabManagementProcess extends InitalizationProcess
       }
       else
       {
-        this.memory.reagentLabIds = undefined;
+        this.metaData.reagentLabIds = undefined;
       }
     }
 
@@ -390,8 +410,8 @@ export class LabManagementProcess extends InitalizationProcess
 
     if(reagentLabs.length === 2)
     {
-      this.memory.reagentLabIds = _.map(reagentLabs, (lab: StructureLab) => lab.id);
-      this.memory.productLabIds = undefined;
+      this.metaData.reagentLabIds = _.map(reagentLabs, (lab: StructureLab) => lab.id);
+      this.metaData.productLabIds = undefined;
       return reagentLabs;
     }
     return;
@@ -399,9 +419,9 @@ export class LabManagementProcess extends InitalizationProcess
 
   private findProductLabs(): StructureLab[] | undefined
   {
-    if(this.memory.productLabIds)
+    if(this.metaData.productLabIds)
     {
-      let labs = _.map(this.memory.productLabIds, (id: string) => {
+      let labs = _.map(this.metaData.productLabIds, (id: string) => {
         let lab = Game.getObjectById(id);
         if(lab)
         {
@@ -409,7 +429,7 @@ export class LabManagementProcess extends InitalizationProcess
         }
         else
         {
-          this.memory.productLabIds = undefined;
+          this.metaData.productLabIds = undefined;
           return;
         }
 
@@ -421,7 +441,7 @@ export class LabManagementProcess extends InitalizationProcess
       }
       else
       {
-        return this.memory.productLabIds = undefined;
+        return this.metaData.productLabIds = undefined;
       }
     }
 
@@ -443,7 +463,7 @@ export class LabManagementProcess extends InitalizationProcess
       }
     }
 
-    this.memory.productLabIds = _.map(labs, (lab: StructureLab) => lab.id);
+    this.metaData.productLabIds = _.map(labs, (lab: StructureLab) => lab.id);
     return labs;
   }
 
@@ -476,14 +496,14 @@ export class LabManagementProcess extends InitalizationProcess
       return;
     }
 
-    if(this.memory.labProcess)
+    if(this.metaData.labProcess)
     {
-      let process = this.memory.labProcess;
+      let process = this.metaData.labProcess;
       let processFinished = this.checkProcessFinished(process);
       if(processFinished)
       {
         console.log(this.name, "has finished with", process.currentShortage.mineralType);
-        this.memory.labProcess = undefined;
+        this.metaData.labProcess = undefined;
         return this.findLabProcess();
       }
 
@@ -491,7 +511,7 @@ export class LabManagementProcess extends InitalizationProcess
       if(!progress)
       {
         console.log(this.name, "made no progress with", process.currentShortage.mineralType);
-        this.memory.labProcess = undefined;
+        this.metaData.labProcess = undefined;
         return this.findLabProcess();
       }
 
@@ -499,17 +519,17 @@ export class LabManagementProcess extends InitalizationProcess
     }
 
     // avoid checking for anew process every tick
-    if(!this.memory.checkProcessTick)
+    if(!this.metaData.checkProcessTick)
     {
-      this.memory.checkProcessTick = Game.time - 100;
+      this.metaData.checkProcessTick = Game.time - 100;
     }
 
-    if(Game.time < this.memory.checkProcessTick+100)
+    if(Game.time < this.metaData.checkProcessTick+100)
     {
       return; // early
     }
 
-    this.memory.labProcess = this.findNewProcess();
+    this.metaData.labProcess = this.findNewProcess();
 
     return;
   }
@@ -564,7 +584,7 @@ export class LabManagementProcess extends InitalizationProcess
       {
         continue;
       }
-      return this.generateProcess({mineralType: compound, amount: PRODUCTION_AMOUNT + this.creep.carryCapacity - (this.terminal!.store[compound] || 0) });
+      return this.generateProcess({mineralType: compound, amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (this.terminal!.store[compound] || 0) });
     }
 
   /*  if(store[RESOURCE_CATALYZED_GHODIUM_ACID] < PRODUCTION_AMOUNT + 5000)
@@ -665,6 +685,7 @@ export class LabManagementProcess extends InitalizationProcess
   }
 }
 
+const LABDISTROCAPACITY = 1000;
 const COMPOUND_LIST: {[type: string]: ResourceConstant[]} =
 {
   KO: ["K", "O"],

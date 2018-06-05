@@ -2,7 +2,7 @@ import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { MineralHarvesterLifetimeProcess } from "processTypes/lifetimes/mineralHarvester";
 import { MineralDistroLifetimeProcess } from "processTypes/lifetimes/mineralDistro";
-import { SPREAD_AMOUNT } from "../buildingProcesses/mineralTerminal";
+import { SPREAD_AMOUNT, KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal";
 
 export class MineralManagementProcess extends Process
 {
@@ -51,8 +51,13 @@ export class MineralManagementProcess extends Process
 
     }
 
+    if(mineral.mineralAmount === 0)
+    {
+      this.metaData.mining = false;
+    }
+
     //if(this.metaData.mining && mineral.mineralAmount > 0)
-    if(mineral.mineralAmount > 0 && (terminal && terminal.store[mineral.mineralType] && terminal.store[mineral.mineralType]! < SPREAD_AMOUNT))
+    if(this.metaData.mining || (mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
     {
       this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
       this.metaData.mineralHaulers = Utils.clearDeadCreeps(this.metaData.mineralHaulers);
@@ -77,6 +82,7 @@ export class MineralManagementProcess extends Process
         case 'E45S48':
         case 'E48S49':
         case 'E51S49':
+        case 'E52S46':
           harvesters = 3;
           break;
         default:
@@ -102,6 +108,11 @@ export class MineralManagementProcess extends Process
           this.kernel.addProcess(MineralHarvesterLifetimeProcess, 'mhlf-' + creepName, 25, {
             creep: creepName
           });
+
+          if(!this.metaData.mining)
+          {
+            this.metaData.mining = true;
+          }
         }
       }
 

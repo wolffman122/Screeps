@@ -63,7 +63,7 @@ export class HoldRoomOptManagementProcess extends Process
 
     if(flag.memory.enemies)
     {
-      this.log('Remote room enemy present ticks left ' + (flag.memory.timeEnemies! + 1500 - Game.time));
+      //this.log('Remote room enemy present ticks left ' + (flag.memory.timeEnemies! + 1500 - Game.time));
       if(flag.memory.timeEnemies! + 1500 <= Game.time)
       {
         flag.memory.enemies = false;
@@ -232,15 +232,7 @@ export class HoldRoomOptManagementProcess extends Process
               this.metaData.harvestCreeps[s.id] = creepNames;
               let creeps = Utils.inflateCreeps(creepNames);
 
-              let dieingCreeps = _.filter(creeps, (cr) => {
-                return (cr.ticksToLive && cr.ticksToLive < (cr.body.length * 3));
-              })
-
-              _.forEach(dieingCreeps, (dc) => {
-                console.log('Die Creep', dc.name, dc.ticksToLive!);
-              })
-
-              if(this.metaData.harvestCreeps[s.id].length < 1 || (dieingCreeps.length > 0 && this.metaData.harvestCreeps[s.id].length === 1))
+              if(this.metaData.harvestCreeps[s.id].length < 1 || (this.metaData.prespawn && this.metaData.harvestCreeps[s.id].length === 1))
               {
                 console.log("Need to make some harvesting creeps " + s.id);
                   let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
@@ -255,6 +247,10 @@ export class HoldRoomOptManagementProcess extends Process
                 if(spawned)
                 {
                   this.metaData.harvestCreeps[s.id].push(creepName);
+                  if(this.metaData.prespawn)
+                  {
+                    this.metaData.prespawn = false;
+                  }
                 }
               }
 
@@ -264,6 +260,15 @@ export class HoldRoomOptManagementProcess extends Process
                   source: s.id,
                   flagName: flag.name
                 });
+
+                if(c.ticksToLive && c.ticksToLive <= c.body.length * 3)
+                {
+                  if(c.memory.dieing === undefined)
+                  {
+                    c.memory.dieing = true;
+                    this.metaData.prespawn = true;
+                  }
+                }
               });
             });
 
