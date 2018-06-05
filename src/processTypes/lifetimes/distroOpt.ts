@@ -77,8 +77,50 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
         }
 
+        // Clean out Enemy Structures
+        let enemyStructures = creep.room.find(FIND_HOSTILE_STRUCTURES);
+
+        let energyStructures = _.filter(enemyStructures, (es)=>{
+          return (es.structureType === STRUCTURE_LAB || es.structureType === STRUCTURE_LINK ||
+            es.structureType === STRUCTURE_NUKER || es.structureType === STRUCTURE_TOWER);
+        })
+
+        if(energyStructures.length > 0)
+        {
+          let target = creep.pos.findClosestByPath(energyStructures)
+
+          if(target)
+          {
+            if(creep.pos.isNearTo(target))
+            {
+              creep.withdraw(target, RESOURCE_ENERGY);
+              return;
+            }
+
+            creep.travelTo(target, {range: 1});
+            return;
+          }
+        }
+
+        if(creep.room.storage && creep.room.storage.my && creep.room.terminal && !creep.room.terminal.my)
+        {
+          if(_.sum(creep.room.terminal.store) > 0)
+          {
+            if(creep.pos.isNearTo(creep.room.terminal))
+            {
+              creep.withdrawEverything(creep.room.terminal);
+              return;
+            }
+
+            creep.travelTo(creep.room.terminal, {range: 1});
+            return;
+          }
+
+
+        }
+
         // Pickup up extra from mineral container only if the room is full on energy.
-        if(creep.room.energyAvailable === creep.room.energyCapacityAvailable && this.roomData().mineralContainer)
+        /*if(creep.room.energyAvailable === creep.room.energyCapacityAvailable && this.roomData().mineralContainer)
         {
           let container = this.roomData().mineralContainer;
           if(container && _.sum(container.store) > 0)
@@ -94,7 +136,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
             return;
           }
-        }
+        }*/
       }
       else
       {

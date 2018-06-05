@@ -161,6 +161,9 @@ export class EnergyManagementProcess extends Process{
       case 'E52S46':
         upgraders = 3;
         break;
+      case 'E36S43':
+        upgraders = 1;
+        break;
       default:
         upgraders = 3;
         break;
