@@ -251,7 +251,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     })
 
     // Drop off at terminal if creep is carrying anything but energy.
-    if(creep.room.terminal && _.sum(creep.carry) != creep.carry.energy)
+    if(creep.room.terminal && creep.room.terminal.my && _.sum(creep.carry) != creep.carry.energy)
     {
       if(creep.pos.isNearTo(creep.room.terminal!))
       {
@@ -262,6 +262,20 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         creep.travelTo(creep.room.terminal);
       }
       return;
+    }
+
+    let storage = creep.room.storage;
+    if(storage && _.sum(creep.carry) != creep.carry.energy)
+    {
+      if(creep.pos.isNearTo(storage))
+      {
+        creep.transferEverything(storage);
+        return;
+      }
+
+      creep.travelTo(storage);
+      return;
+
     }
 
     if(deliverTargets.length === 0){
