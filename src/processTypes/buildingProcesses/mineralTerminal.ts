@@ -12,7 +12,7 @@ export class MinetalTerminalManagementProcess extends Process
     let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
 
     _.forEach(Game.rooms, (r) => {
-      if(r.controller && r.controller.my && r.terminal && r.controller.level >= 8 && r.terminal.cooldown === 0)
+      if(r.controller && r.controller.my && r.terminal && r.controller.level >= 7  && r.terminal.cooldown === 0)
       {
         let mineral = <Mineral>r.find(FIND_MINERALS)[0]
         if(mineral)
@@ -76,6 +76,9 @@ export class MinetalTerminalManagementProcess extends Process
       }
     });
 
+    /*_.forEach(roomsExtraMinerals, (rr) => {
+      console.log("R Rooms", rr.rName, rr.mType);
+    })*/
       /*_.forEach(recievableRooms, (rr) => {
         console.log("R Rooms", rr.rName, rr.mType, rr.amount);
       })*/
@@ -110,7 +113,7 @@ export class MinetalTerminalManagementProcess extends Process
 export const KEEP_AMOUNT = 35000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
-export const PRODUCT_LIST = [RESOURCE_UTRIUM_HYDRIDE, RESOURCE_GHODIUM];
+export const PRODUCT_LIST = [RESOURCE_UTRIUM_HYDRIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_GHODIUM];
 export const PRODUCTION_AMOUNT = 5000;
 
 export const REAGENT_LIST = {
