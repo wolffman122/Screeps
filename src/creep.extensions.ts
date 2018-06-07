@@ -29,6 +29,23 @@ Creep.prototype.withdrawEverything = function(target: StructureContainer|Structu
   return ERR_NOT_ENOUGH_RESOURCES;
 }
 
+Creep.prototype.yieldRoad = function(target: {pos: RoomPosition}, allowSwamps = true): number
+{
+  let isOffRoad = this.pos.lookForStructures(STRUCTURE_ROAD) === undefined;
+  if(isOffRoad)
+  {
+    return OK;
+  }
+
+  let swampPosition;
+  // find movement options
+  let direction = this.pos.getDirectionTo(target);
+  for(let i = -2; i <= 2; i++)
+  {
+    
+  }
+}
+
 Room.prototype.findEnemies = function(): Creep[]
 {
   let hostileCreeps = this.find(FIND_HOSTILE_CREEPS);

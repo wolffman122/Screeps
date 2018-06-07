@@ -504,6 +504,7 @@ export class LabManagementProcess extends Process
       let processFinished = this.checkProcessFinished(process);
       if(processFinished)
       {
+        Game.notify(this.name + " has finished with " + process.currentShortage.mineralType);
         console.log(this.name, "has finished with", process.currentShortage.mineralType);
         this.metaData.labProcess = undefined;
         return this.findLabProcess();
@@ -512,6 +513,7 @@ export class LabManagementProcess extends Process
       let progress = this.checkProgress(process);
       if(!progress)
       {
+        Game.notify(this.name + " made no progress with " + process.currentShortage.mineralType);
         console.log(this.name, "made no progress with", process.currentShortage.mineralType);
         this.metaData.labProcess = undefined;
         return this.findLabProcess();
@@ -675,7 +677,7 @@ export class LabManagementProcess extends Process
       return;
     }
     let reagentLoads = {};
-    console.log(this.name, "Next", currentShortage.mineralType, REAGENT_LIST[currentShortage.mineralType])
+    console.log(this.name, "Next", currentShortage.mineralType, REAGENT_LIST['XKH2O'], REAGENT_LIST[currentShortage.mineralType])
     for(let mineralType of REAGENT_LIST[currentShortage.mineralType])
     {
       console.log(this.name, "Loop", mineralType)

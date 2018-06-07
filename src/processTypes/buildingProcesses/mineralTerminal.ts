@@ -118,6 +118,7 @@ export const PRODUCTION_AMOUNT = 5000;
 
 export const REAGENT_LIST = {
   KO: ["K", "O"],
+  KH: ["K", "H"],
   UH: ["U", "H"],
   UO: ["U", "O"],
   OH: ["O", "H"],
@@ -139,7 +140,7 @@ export const REAGENT_LIST = {
   ZHO2: ["ZO", "OH"],
   ZH2O: ["ZH", "OH"],
   KHO2: ["KO", "OH"],
-  KH20: ["KH", "OH"],
+  KH2O: ["KH", "OH"],
   XUH2O: ["X", "UH2O"],
   XUHO2: ["X", "UHO2"],
   XGH2O: ["X", "GH2O"],
@@ -149,7 +150,7 @@ export const REAGENT_LIST = {
   XZHO2: ["ZHO2", "X"],
   XZH2O: ["ZH2O", "X"],
   XKHO2: ["KHO2", "X"],
-  XKH20: ["KH20", "X"],
+  XKH2O: ["KH2O", "X"],
 };
 
 

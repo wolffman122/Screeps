@@ -9,8 +9,8 @@ interface Creep extends RoomObject {
     withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
   }
 
-interface Room extends Room {
-  findEnemies(): Creep[];
+interface RoomPosition {
+  lookForStructures(structureType: string): Structure;
 }
 
 
