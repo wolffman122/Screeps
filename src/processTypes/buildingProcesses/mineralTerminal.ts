@@ -113,7 +113,7 @@ export class MinetalTerminalManagementProcess extends Process
 export const KEEP_AMOUNT = 35000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
-export const PRODUCT_LIST = [RESOURCE_UTRIUM_HYDRIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_GHODIUM];
+export const PRODUCT_LIST = [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_KEANIUM_ACID, RESOURCE_GHODIUM];
 export const PRODUCTION_AMOUNT = 5000;
 
 export const REAGENT_LIST = {
@@ -139,6 +139,7 @@ export const REAGENT_LIST = {
   ZHO2: ["ZO", "OH"],
   ZH2O: ["ZH", "OH"],
   KHO2: ["KO", "OH"],
+  KH20: ["KH", "OH"],
   XUH2O: ["X", "UH2O"],
   XUHO2: ["X", "UHO2"],
   XGH2O: ["X", "GH2O"],
@@ -147,7 +148,8 @@ export const REAGENT_LIST = {
   XLH2O: ["X", "LH2O"],
   XZHO2: ["ZHO2", "X"],
   XZH2O: ["ZH2O", "X"],
-  XKHO2: ["KHO2", "X"]
+  XKHO2: ["KHO2", "X"],
+  XKH20: ["KH20", "X"],
 };
 
 

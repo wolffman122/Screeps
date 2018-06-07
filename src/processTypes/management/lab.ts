@@ -43,7 +43,7 @@ export class LabManagementProcess extends Process
       {
         this.reagentLabs = this.findReagentLabs();
         this.productLabs = this.findProductLabs();
-        //console.log(this.name, this.reagentLabs!.length, this.productLabs!.length);
+        console.log(this.name, this.reagentLabs!.length, this.productLabs!.length);
       }
 
       this.labProcess = this.findLabProcess();
@@ -64,7 +64,7 @@ export class LabManagementProcess extends Process
           this.metaData.command == undefined;
         }
       }
-
+      console.log(this.name,"meta",  this.metaData, 1)
     if(this.metaData.labDistros.length < 1 && this.labProcess)
     {
       let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
@@ -469,6 +469,7 @@ export class LabManagementProcess extends Process
 
   private doSynthesis()
   {
+    console.log(this.name, "productlabs", this.productLabs!, 6)
     for(let i = 0; i < this.productLabs!.length; i++)
     {
       // So that they don't all activate on the same tick and make bucket sad
@@ -477,6 +478,7 @@ export class LabManagementProcess extends Process
         continue;
       }
       let lab = this.productLabs![i];
+      console.log(this.name, "look for flags", lab.pos.lookFor(LOOK_FLAGS))
       if(lab.pos.lookFor(LOOK_FLAGS).length > 0)
       {
         continue;
@@ -664,18 +666,23 @@ export class LabManagementProcess extends Process
 
   private generateProcess(targetShortage: Shortage): LabProcess|undefined
   {
+    console.log(this.name, targetShortage.mineralType);
     let currentShortage = this.recursiveShortageCheck(targetShortage, true);
+    console.log(this.name, "Current", currentShortage!.mineralType)
     if(currentShortage === undefined)
     {
       console.log(this.name, "Lab Distro: error finding current shortage");
       return;
     }
     let reagentLoads = {};
+    console.log(this.name, "Next", currentShortage.mineralType, REAGENT_LIST[currentShortage.mineralType])
     for(let mineralType of REAGENT_LIST[currentShortage.mineralType])
     {
+      console.log(this.name, "Loop", mineralType)
       reagentLoads[mineralType] = currentShortage.amount;
     }
     let loadProgress = currentShortage.amount * 2;
+    console.log(this.name, "Load Progress", loadProgress)
     return {
       targetShortage: targetShortage,
       currentShortage: currentShortage,

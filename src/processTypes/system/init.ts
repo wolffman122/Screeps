@@ -73,7 +73,7 @@ export class InitProcess extends Process{
           {
             //if(room.name == 'E45S48' || room.name === 'E48S49' || room.name === 'E43S52' ||
             //  room.name == 'E45S57')
-            if(room.name == 'E41S49' || room.name == 'E51S49')
+            if(room.name == 'E41S49' || room.name == 'E51S49' || room.name == 'E43S53')
             {
               if(!proc.kernel.hasProcess('labm-' + room.name))
               {
