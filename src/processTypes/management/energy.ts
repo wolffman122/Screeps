@@ -165,7 +165,7 @@ export class EnergyManagementProcess extends Process{
         upgraders = 1;
         break;
       default:
-        upgraders = 2;
+        upgraders = 1;
         break;
     }
 
@@ -176,7 +176,8 @@ export class EnergyManagementProcess extends Process{
       upgraders = 1;
     }
 
-    if(this.metaData.upgradeCreeps.length < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0)
+    if((this.metaData.upgradeCreeps.length < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0) ||
+      (this.metaData.upgradeCreeps.length === upgraders && this.metaData.upgradePrespawn))
     {
       let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
       let spawned = false;
@@ -214,13 +215,31 @@ export class EnergyManagementProcess extends Process{
         );
       }
 
-      if(spawned){
+      if(spawned)
+      {
         this.metaData.upgradeCreeps.push(creepName)
         this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
           creep: creepName
         })
+        if(this.metaData.upgradePrespawn)
+        {
+          this.metaData.upgradePrespawn =false;
+        }
       }
     }
+
+    //Upgrade prespawn check
+    let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
+    _.forEach(creeps, (c)=> {
+      if(c.ticksToLive && c.ticksToLive < (c.body.length * 3) + 10)
+      {
+        if(c.memory.dieing === undefined)
+        {
+          c.memory.dieing = true;
+          this.metaData.upgradePrespawn = true;
+        }
+      }
+    });
 
     if(this.kernel.data.roomData[this.metaData.roomName].storageLink
         &&
@@ -275,7 +294,8 @@ export class EnergyManagementProcess extends Process{
         upgradeDistroAmount = 1;
       }
 
-      if(this.metaData.upgradeDistroCreeps.length < upgradeDistroAmount)
+      if(this.metaData.upgradeDistroCreeps.length < upgradeDistroAmount ||
+        (this.metaData.upgradeDistroCreeps.length === upgradeDistroAmount && this.metaData.upgradeDistroPrespawn))
       {
         let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = false;
@@ -320,8 +340,26 @@ export class EnergyManagementProcess extends Process{
           this.kernel.addProcess(UpgradeDistroLifetimeProcess, 'udlf-' + creepName, 25, {
             creep: creepName
           })
+
+          if(this.metaData.upgradeDistroPrespawn)
+          {
+            this.metaData.upgradeDistroPrespawn = false;
+          }
         }
       }
+
+      //Upgrade Distro Prespawn check
+      let creeps = Utils.inflateCreeps(this.metaData.upgradeDistroCreeps);
+      _.forEach(creeps, (c) => {
+        if(c.ticksToLive && c.ticksToLive < (c.body.length * 3) + 20)
+        {
+          if(c.memory.dieing === undefined)
+          {
+            c.memory.dieing = true;
+            this.metaData.upgradeDistroPrespawn = true;
+          }
+        }
+      })
 
     }
   }

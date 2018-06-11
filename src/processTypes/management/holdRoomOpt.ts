@@ -232,7 +232,8 @@ export class HoldRoomOptManagementProcess extends Process
               this.metaData.harvestCreeps[s.id] = creepNames;
               let creeps = Utils.inflateCreeps(creepNames);
 
-              if(this.metaData.harvestCreeps[s.id].length < 1 || (this.metaData.prespawn && this.metaData.harvestCreeps[s.id].length === 1))
+              if(this.metaData.harvestCreeps[s.id].length < 1 ||
+                (this.metaData.prespawn && this.metaData.harvestCreeps[s.id].length === 1))
               {
                 console.log("Need to make some harvesting creeps " + s.id);
                   let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;

@@ -13,6 +13,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
   {
     let flag = Game.flags[this.metaData.flagName];
     let creep = this.getCreep();
+    let room = flag.room;
 
     if(!creep || !flag)
     {
@@ -22,7 +23,35 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
     if(flag.pos.roomName != creep.pos.roomName)
     {
-      creep.travelTo(flag);
+      if(room)
+      {
+        let targets = _.filter(this.kernel.data.roomData[room.name].containers, (c: StructureContainer) => {
+          return (c.store.energy > 0);
+        })
+
+        if(targets.length)
+        {
+          let target = targets[0];
+          if(!creep.pos.inRangeTo(target, 1))
+          {
+            creep.travelTo(target);
+            return;
+          }
+
+          creep.withdraw(target, RESOURCE_ENERGY);
+          return;
+        }
+        else
+        {
+          creep.travelTo(flag);
+          return;
+        }
+      }
+      else
+      {
+        creep.travelTo(flag);
+        return;
+      }
     }
     else
     {
@@ -30,6 +59,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
       {
         if(this.kernel.data.roomData[creep.room.name].containers.length > 0)
         {
+          
           let targets = _.filter(this.kernel.data.roomData[creep.room.name].containers, (c: StructureContainer) => {
             return (c.store.energy > 0);
           })
@@ -76,7 +106,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
                     return;
                   });
 
-                  
+
 
                   return;
                 }
@@ -86,47 +116,96 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(this.kernel.data.roomData[creep.pos.roomName].sources)
+          let structures = creep.room!.find(FIND_HOSTILE_STRUCTURES);
+          if(structures)
           {
-            let source = creep.pos.findClosestByRange( this.kernel.data.roomData[creep.pos.roomName].sources);
+            let targets = _.filter(structures, (s) => {
+              return ((s.structureType === STRUCTURE_LINK || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_LAB) && s.energy > 50);
+            });
 
-            if(source)
+            console.log('Remote Builder ', targets.length)
+            if(targets.length > 0)
             {
-              if(!creep.pos.inRangeTo(source, 1))
-              {
-                creep.travelTo(source);
-                return;
-              }
+              let target = <Structure>creep.pos.findClosestByPath(targets);
 
-              if(creep.pos.inRangeTo(source, 1))
+              if(target)
               {
-                let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
-                if(sites.length > 0)
-                {
-                  let site = _.filter(sites, (s) => {
-                    if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
-                    {
-                      return s;
-                    }
-                    return;
+                  this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+                    creep: creep.name,
+                    target: target.id,
+                    resource: RESOURCE_ENERGY
                   });
 
-                  this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+                  return;
+              }
+            }
+            else
+            {
+              let targets = _.filter(structures, (s)=>{
+                return ((s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_TERMINAL) && s.store.energy > 0);
+              })
+
+              if(targets.length > 0)
+              {
+                let target = creep.pos.findClosestByPath(targets);
+
+                if(target)
+                {
+                  this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
                     creep: creep.name,
-                    source: source.id,
+                    target: target.id,
                     resource: RESOURCE_ENERGY
                   });
 
                   return;
                 }
+              }
+              else
+              {
+                if(this.kernel.data.roomData[creep.pos.roomName].sources)
+                {
+                  let source = creep.pos.findClosestByRange( this.kernel.data.roomData[creep.pos.roomName].sources);
 
-                this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-                  creep: creep.name,
-                  source: source.id,
-                  resource: RESOURCE_ENERGY
-                });
+                  if(source)
+                  {
+                    if(!creep.pos.inRangeTo(source, 1))
+                    {
+                      creep.travelTo(source);
+                      return;
+                    }
 
-                return;
+                    if(creep.pos.inRangeTo(source, 1))
+                    {
+                      let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                      if(sites.length > 0)
+                      {
+                        let site = _.filter(sites, (s) => {
+                          if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
+                          {
+                            return s;
+                          }
+                          return;
+                        });
+
+                        this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+                          creep: creep.name,
+                          source: source.id,
+                          resource: RESOURCE_ENERGY
+                        });
+
+                        return;
+                      }
+
+                      this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+                        creep: creep.name,
+                        source: source.id,
+                        resource: RESOURCE_ENERGY
+                      });
+
+                      return;
+                    }
+                  }
+                }
               }
             }
           }

@@ -7,8 +7,17 @@ export class DismantleManagementProcess extends Process
   metaData: DismantleManagementProcessMetaData
   type = 'dmp';
 
+  ensureMetaData()
+  {
+    if(!this.metaData.dismantleCreeps)
+    {
+      this.metaData.dismantleCreeps = [];
+    }
+  }
+  
   run()
   {
+    this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
 
     this.log('Dismantle ' + flag);

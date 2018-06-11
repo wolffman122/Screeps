@@ -257,6 +257,12 @@ export const Utils = {
     });*/
 
     return retValue;
+  },
+
+  clampDirection(direction: number): number {
+    while (direction < 1) direction += 8;
+    while (direction > 8) direction -= 8;
+    return direction;
   }
   /*
 

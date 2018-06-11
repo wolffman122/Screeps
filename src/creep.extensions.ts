@@ -1,4 +1,5 @@
 import { WHITE_LIST } from "processTypes/buildingProcesses/mineralTerminal";
+import { Utils } from "lib/utils";
 
 Creep.prototype.transferEverything = function(target: Creep|StructureContainer|StructureStorage|StructureTerminal)
 {
@@ -42,8 +43,62 @@ Creep.prototype.yieldRoad = function(target: {pos: RoomPosition}, allowSwamps = 
   let direction = this.pos.getDirectionTo(target);
   for(let i = -2; i <= 2; i++)
   {
-    
+    let relDirection = direction + i;
+    relDirection = Utils.clampDirection(relDirection);
+    let position = this.pos.getPositionAtDirection(relDirection);
+    if(!position.inRangeTo(target, 3))
+      continue;
+
+    if(position.lookFor(LOOK_STRUCTURES).length > 0)
+      continue;
+
+    if(!position.isPassible())
+      continue;
+
+    if(position.isNearExit(0))
+      continue;
+
+    if(position.lookFor(LOOK_TERRAIN)[0] === "swamp")
+    {
+      swampPosition = position;
+      continue;
+    }
+
+    switch(relDirection)
+    {
+      case 1:
+        this.move(TOP);
+        break;
+      case 2:
+        this.move(TOP_RIGHT);
+        break;
+      case 3:
+        this.move(RIGHT);
+        break;
+      case 4:
+        this.move(BOTTOM_RIGHT);
+        break;
+      case 5:
+        this.move(BOTTOM);
+        break;
+      case 6:
+        this.move(BOTTOM_LEFT);
+        break;
+      case 7:
+        this.move(LEFT);
+        break;
+      case 8:
+        this.move(TOP_LEFT);
+        break;
+    }
   }
+
+  if(swampPosition && allowSwamps)
+  {
+    return this.move(this.pos.getDirectionTo(swampPosition));
+  }
+
+  return this.travelTo(target);
 }
 
 Room.prototype.findEnemies = function(): Creep[]

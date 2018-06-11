@@ -55,6 +55,23 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
         if(this.kernel.data.roomData[creep.room.name].controllerContainer)
         {
+          let controller = creep.room.controller;
+          if(controller)
+          {
+            let sign = controller.sign;
+            if(sign && sign.username !== "wolffman122")
+            {
+              if(creep.pos.isNearTo(controller))
+              {
+                creep.signController(controller, "[YP] Territory");
+                return;
+              }
+
+              creep.travelTo(controller);
+              return;
+            }
+
+          }
           let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
 
           if(target)

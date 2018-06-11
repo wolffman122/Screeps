@@ -7,10 +7,14 @@ interface Creep extends RoomObject {
     fixMyRoad(): boolean;
     transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
     withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
+    yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number
   }
 
 interface RoomPosition {
   lookForStructures(structureType: string): Structure;
+  getPositionAtDirection(direction: number, range?: number): RoomPosition;
+  isPassible(ignoreCreeps?: boolean): boolean;
+  isNearExit(range: number): boolean;
 }
 
 
@@ -189,6 +193,8 @@ interface RoomPosition {
     upgradeCreeps: string[]
     spinCreeps: string[]
     upgradeDistroCreeps: string[]
+    upgradePrespawn: boolean
+    upgradeDistroPrespawn: boolean
   }
 
   interface StructureManagementProcessMetaData
