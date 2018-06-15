@@ -7,7 +7,8 @@ interface Creep extends RoomObject {
     fixMyRoad(): boolean;
     transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
     withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
-    yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number
+    yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
+    idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
   }
 
 interface RoomPosition {
@@ -15,6 +16,7 @@ interface RoomPosition {
   getPositionAtDirection(direction: number, range?: number): RoomPosition;
   isPassible(ignoreCreeps?: boolean): boolean;
   isNearExit(range: number): boolean;
+  openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
 }
 
 
@@ -143,6 +145,7 @@ interface RoomPosition {
       roomPath: -2 | { exit: ExitConstant, room: string}[],
       flagIndex: number;
       dieing: boolean;
+      boost: boolean;
   }
 
   interface FlagMemory
@@ -237,7 +240,8 @@ interface RoomPosition {
     workerCreeps: string[]
     flagName: string
     increasing: boolean
-    prespawn: boolean
+    harvesterPrespawn: boolean
+    distroPrespawn: boolean
   }
 
   interface MarketManagementProcessMetaData
@@ -460,6 +464,12 @@ interface RoomPosition {
     site: string,
   }
 
+  interface UpgradeLifetimeProcessMetaData
+  {
+    creep: string,
+    boosts?: string[],
+    boostRequests: {[boostType: string]: {flagName?: string, requesterIds: string[]} },
+  }
 //// Minerals
 
 

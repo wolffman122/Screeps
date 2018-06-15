@@ -56,7 +56,6 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
             return ((s.structureType === STRUCTURE_LINK || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_LAB) && s.energy > 0);
           });
 
-          console.log('Remote Builder ', targets.length)
           if(targets.length > 0)
           {
             let target = <Structure>creep.pos.findClosestByPath(targets);

@@ -124,6 +124,7 @@ export class EnergyManagementProcess extends Process{
     })
 
     _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
+
       if(proc.metaData.distroCreeps[container.id])
       {
         let creep = Game.creeps[proc.metaData.distroCreeps[container.id]]
@@ -158,11 +159,11 @@ export class EnergyManagementProcess extends Process{
     let upgraders = 0;
     switch(this.metaData.roomName)
     {
-      case 'E52S46':
-        upgraders = 3;
+      case 'E38S46':
+        upgraders = 2;
         break;
       case 'E36S43':
-        upgraders = 1;
+        upgraders = 2;
         break;
       default:
         upgraders = 1;
@@ -179,6 +180,7 @@ export class EnergyManagementProcess extends Process{
     if((this.metaData.upgradeCreeps.length < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0) ||
       (this.metaData.upgradeCreeps.length === upgraders && this.metaData.upgradePrespawn))
     {
+      let boost = false;
       let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
       let spawned = false;
       if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
@@ -192,6 +194,11 @@ export class EnergyManagementProcess extends Process{
             creepName,
             {}
           );
+
+          if(spawned)
+          {
+            boost = true;
+          }
         }
         else
         {
@@ -219,7 +226,7 @@ export class EnergyManagementProcess extends Process{
       {
         this.metaData.upgradeCreeps.push(creepName)
         this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-          creep: creepName
+          creep: creepName,
         })
         if(this.metaData.upgradePrespawn)
         {

@@ -65,24 +65,25 @@ export class LabManagementProcess extends Process
         }
       }
 
-    if(this.metaData.labDistros.length < 1 && this.labProcess)
-    {
-      let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
-      let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
-      if(spawned)
+      if(this.metaData.labDistros.length < 1 && this.labProcess)
       {
-        this.metaData.labDistros.push(creepName);
+        let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
+        if(spawned)
+        {
+          this.metaData.labDistros.push(creepName);
+        }
       }
-    }
-    else if(this.metaData.labDistros.length === 1)
-    {
-      this.creep = Game.creeps[this.metaData.labDistros[0]];
+      else if(this.metaData.labDistros.length === 1)
+      {
+        this.creep = Game.creeps[this.metaData.labDistros[0]];
 
-      if(this.creep)
-      {
-        this.missionActions();
+        if(this.creep)
+        {
+          console.log(this.name, 1, this.creep.name);
+          this.missionActions();
+        }
       }
-    }
 
     if(this.labProcess)
     {
@@ -145,20 +146,14 @@ export class LabManagementProcess extends Process
         return;
       }
 
-      let flag = Game.flags['pattern-' + this.creep.room];
-      if(flag)
-      {
-        if (!this.creep.pos.inRangeTo(flag, 1))
-        {
-          this.creep.travelTo(flag);
-        }
-      }
+      this.creep.idleOffRoad(this.creep.room!.terminal!, false);
       return;
     }
 
     if(_.sum(this.creep.carry) === 0)
     {
       let origin = Game.getObjectById<Structure>(command.origin);
+      console.log(this.name, 1, this.creep.name, 2, origin);
       if(this.creep.pos.isNearTo(origin!))
       {
         if(origin instanceof StructureTerminal)
@@ -170,6 +165,7 @@ export class LabManagementProcess extends Process
           }
         }
 
+        console.log(this.name, 1, this.creep.name, command.resourceType);
         this.creep.withdraw(origin!, command.resourceType, command.amount);
         let destination = Game.getObjectById<Structure>(command.destination);
         if(!this.creep.pos.isNearTo(destination!))
@@ -512,8 +508,8 @@ export class LabManagementProcess extends Process
       let progress = this.checkProgress(process);
       if(!progress)
       {
-        Game.notify(this.name + " made no progress with " + process.currentShortage.mineralType);
-        console.log(this.name, "made no progress with", process.currentShortage.mineralType);
+        //Game.notify(this.name + " made no progress with " + process.currentShortage.mineralType);
+        console.log(this.name, "made no progress with", process.currentShortage.mineralType, 1111);
         this.metaData.labProcess = undefined;
         return this.findLabProcess();
       }
@@ -559,9 +555,11 @@ export class LabManagementProcess extends Process
       return true;
     }
 
+    console.log(this.name, Object.keys(process.reagentLoads).length, 22222);
     let loadStatus = 0;
     for(let resourcetype in process.reagentLoads)
     {
+      console.log(this.name, resourcetype, 111111)
       loadStatus += process.reagentLoads[resourcetype];
     }
 
@@ -688,7 +686,7 @@ export class LabManagementProcess extends Process
   }
 }
 
-const LABDISTROCAPACITY = 1000;
+export const LABDISTROCAPACITY = 1000;
 const COMPOUND_LIST: {[type: string]: ResourceConstant[]} =
 {
   KO: ["K", "O"],

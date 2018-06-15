@@ -154,7 +154,7 @@ export const CreepBuilder = {
     'healer': 39,
     'attack': 30,
     'attackController': 10,
-    'dismantler': 50,
+    'dismantler': 48,
     'labDistro': 40,
     'special': 2
   }

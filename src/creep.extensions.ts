@@ -110,3 +110,41 @@ Room.prototype.findEnemies = function(): Creep[]
 
   return hostileCreeps;
 }
+
+Creep.prototype.idleOffRoad = function(anchor: {pos: RoomPosition}, maintainDistance): number
+{
+  let offRoad = this.pos.lookForStructures(STRUCTURE_ROAD) === undefined;
+  if(offRoad)
+    return OK;
+
+  let positions = _.sortBy(this.pos.openAdjacentSpots(), (p: RoomPosition) => p.getRangeTo(anchor));
+  if(maintainDistance)
+  {
+    let currentRange = this.pos.getRangeTo(anchor);
+    positions = _.filter(positions, (p: RoomPosition) => p.getRangeTo(anchor) <= currentRange);
+  }
+
+  let swampPosition;
+  for(let position of positions)
+  {
+    if(position.lookForStructures(STRUCTURE_ROAD))
+      continue;
+
+    let terrain = position.lookFor(LOOK_TERRAIN)[0] as string;
+    if(terrain === "swamp")
+    {
+      swampPosition = position;
+    }
+    else
+    {
+      return this.move(this.pos.getDirectionTo(position));
+    }
+  }
+
+  if(swampPosition)
+  {
+    return this.move(this.pos.getDirectionTo(swampPosition));
+  }
+
+  return this.travelTo(anchor) as number;
+}

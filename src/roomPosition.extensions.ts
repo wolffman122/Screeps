@@ -79,3 +79,20 @@ RoomPosition.prototype.isNearExit = function(range: number): boolean
 {
     return this.x - range <= 0 || this.x + range >= 49 || this.y - range <= 0 || this.y + range >= 49;
 };
+
+RoomPosition.prototype.openAdjacentSpots = function(ignoreCreeps?: boolean): RoomPosition[]
+{
+    let positions = [];
+    for(let i = 1; i <= 8; i++)
+    {
+        let testPosition = this.getPositionAtDirection(i);
+
+        if(testPosition.isPassible(ignoreCreeps))
+        {
+            // passed all tests
+            positions.push(testPosition);
+        }
+    }
+
+    return positions;
+}
