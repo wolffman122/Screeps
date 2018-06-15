@@ -45,6 +45,7 @@ export class EnergyManagementProcess extends Process{
     let sourceContainers = this.kernel.data.roomData[this.metaData.roomName].sourceContainers;
     let sourceLinks = this.kernel.data.roomData[this.metaData.roomName].sourceLinks;
 
+    // Harvester Code
     _.forEach(sources, function(source)
     {
       if(!proc.metaData.harvestCreeps[source.id])
@@ -62,8 +63,14 @@ export class EnergyManagementProcess extends Process{
       }
 
 
-      if(workRate < source.energyCapacity / dividend) //300
+      if(workRate < source.energyCapacity / dividend ||
+        proc.metaData.harvesterPrespawn) //300
       {
+        if(proc.metaData.harvesterPrespawn)
+        {
+          proc.metaData.harvesterPrespawn = false;
+        }
+
         let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
         let spawned = false;
         let room = source.room;
@@ -118,6 +125,17 @@ export class EnergyManagementProcess extends Process{
               creep: creep.name,
               source: source.id
             })
+          }
+        }
+
+        // Harvester prespawn check.
+        if(creep.ticksToLive && creep.ticksToLive <= (creep.body.length * 3) + 10)
+        {
+          if(creep.memory.dieing === undefined)
+          {
+            creep.memory.dieing = true;
+            proc.metaData.harvesterPrespawn = true;
+            Game.notify("Harvester Prespawn hanppening in " + creep.pos.roomName + " " + Game.time);
           }
         }
       })

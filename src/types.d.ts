@@ -146,6 +146,8 @@ interface RoomPosition {
       flagIndex: number;
       dieing: boolean;
       boost: boolean;
+      distance?: number;
+      reachedDest?: boolean;
   }
 
   interface FlagMemory
@@ -190,14 +192,15 @@ interface RoomPosition {
     harvestCreeps: {
       [source: string]: string[]
     }
+    harvesterPrespawn?: boolean
     distroCreeps: {
       [container: string]: string
     }
     upgradeCreeps: string[]
     spinCreeps: string[]
     upgradeDistroCreeps: string[]
-    upgradePrespawn: boolean
-    upgradeDistroPrespawn: boolean
+    upgradePrespawn?: boolean
+    upgradeDistroPrespawn?: boolean
   }
 
   interface StructureManagementProcessMetaData

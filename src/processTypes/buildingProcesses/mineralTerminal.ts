@@ -12,7 +12,7 @@ export class MinetalTerminalManagementProcess extends Process
     let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
 
     _.forEach(Game.rooms, (r) => {
-      if(r.controller && r.controller.my && r.terminal && r.controller.level >= 7  && r.terminal.cooldown === 0)
+      if(r.controller && r.controller.my && r.terminal && r.controller.level >= 6  && r.terminal.cooldown === 0)
       {
         let mineral = <Mineral>r.find(FIND_MINERALS)[0]
         if(mineral)
