@@ -19,99 +19,202 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         return;
       }
 
-      let dropped = creep.room.find(FIND_DROPPED_RESOURCES);
-      if(dropped.length > 0)
+      if(this.kernel.data.roomData[creep.pos.roomName].sourceLinks.length == 2)
       {
-        dropped = _.filter(dropped, (d) =>{
-          if(d.resourceType === RESOURCE_ENERGY && d.amount >= creep!.carryCapacity)
-          {
-            return d;
-          }
-          return;
-        });
+        let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
 
+        let storage = creep.room.storage;
+
+        if(storage && storage.store.energy > 0 && sourceContainer && sourceContainer.store.energy <= sourceContainer.storeCapacity * .9)
+        {
+            if(creep.pos.isNearTo(storage))
+            {
+                creep.withdraw(storage, RESOURCE_ENERGY);
+                return;
+            }
+
+            creep.travelTo(storage, {range: 1});
+            return;
+        }
+
+        if(sourceContainer && sourceContainer.store.energy > creep.carryCapacity)
+        {
+            if(creep.pos.isNearTo(sourceContainer))
+            {
+                creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+                return;
+            }
+
+            creep.travelTo(sourceContainer, {range: 1});
+            return;
+        }
+
+
+
+        let dropped = creep.room.find(FIND_DROPPED_RESOURCES);
         if(dropped.length > 0)
         {
-          let target = creep.pos.findClosestByPath(dropped);
-
-          if(!creep.pos.inRangeTo(target, 5))
-          {
-            creep.travelTo(target);
+          dropped = _.filter(dropped, (d) =>{
+            if(d.resourceType === RESOURCE_ENERGY && d.amount >= creep!.carryCapacity)
+            {
+              return d;
+            }
             return;
-          }
-          creep.pickup(target);
-          return;
-        }
-      }
+          });
 
-      // Clean out Enemy Structures
-      let enemyStructures = creep.room.find(FIND_HOSTILE_STRUCTURES);
-
-      let energyStructures = _.filter(enemyStructures, (es)=>{
-        return (es.structureType === STRUCTURE_LAB || es.structureType === STRUCTURE_LINK ||
-          es.structureType === STRUCTURE_NUKER || es.structureType === STRUCTURE_TOWER) && es.energy > 50;
-      })
-
-      if(energyStructures.length > 0)
-      {
-        let target = creep.pos.findClosestByPath(energyStructures)
-
-        if(target)
-        {
-          console.log(this.name, "Going to get enemy supplies")
-          if(creep.pos.isNearTo(target))
+          if(dropped.length > 0)
           {
-            creep.withdraw(target, RESOURCE_ENERGY);
-            return;
-          }
+            let target = creep.pos.findClosestByPath(dropped);
 
-          creep.travelTo(target, {range: 1});
-          return;
-        }
-      }
-
-      let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
-
-      if(sourceContainer && sourceContainer.store.energy >= creep.carryCapacity)
-      {
-          if(creep.pos.isNearTo(sourceContainer))
-          {
-              creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+            if(!creep.pos.inRangeTo(target, 5))
+            {
+              creep.travelTo(target);
               return;
-          }
-
-          creep.travelTo(sourceContainer, {range: 1});
-          return;
-      }
-      else if(creep.room.storage && creep.room.storage.my && creep.room.terminal && !creep.room.terminal.my)
-      {
-        if(_.sum(creep.room.terminal.store) > 0)
-        {
-          if(creep.pos.isNearTo(creep.room.terminal))
-          {
-            creep.withdrawEverything(creep.room.terminal);
+            }
+            creep.pickup(target);
             return;
           }
 
-          creep.travelTo(creep.room.terminal, {range: 1});
-          return;
         }
+
+        // Clean out Enemy Structures
+        let enemyStructures = creep.room.find(FIND_HOSTILE_STRUCTURES);
+
+        let energyStructures = _.filter(enemyStructures, (es)=>{
+          return (es.structureType === STRUCTURE_LAB || es.structureType === STRUCTURE_LINK ||
+            es.structureType === STRUCTURE_NUKER || es.structureType === STRUCTURE_TOWER);
+        })
+
+        if(energyStructures.length > 0)
+        {
+          let target = creep.pos.findClosestByPath(energyStructures)
+
+          if(target)
+          {
+            console.log(this.name, "Going to get enemy supplies")
+            if(creep.pos.isNearTo(target))
+            {
+              creep.withdraw(target, RESOURCE_ENERGY);
+              return;
+            }
+
+            creep.travelTo(target, {range: 1});
+            return;
+          }
+        }
+
+        if(creep.name === 'em-m-E36S43-9122439')
+        {
+          console.log(this.name, "Before enemy supplies")
+        }
+        if(creep.room.storage && creep.room.storage.my && creep.room.terminal && !creep.room.terminal.my)
+        {
+          if(_.sum(creep.room.terminal.store) > 0)
+          {
+            if(creep.pos.isNearTo(creep.room.terminal))
+            {
+              creep.withdrawEverything(creep.room.terminal);
+              return;
+            }
+
+            creep.travelTo(creep.room.terminal, {range: 1});
+            return;
+          }
+
+
+        }
+
+        // Pickup up extra from mineral container only if the room is full on energy.
+        /*if(creep.room.energyAvailable === creep.room.energyCapacityAvailable && this.roomData().mineralContainer)
+        {
+          let container = this.roomData().mineralContainer;
+          if(container && _.sum(container.store) > 0)
+          {
+            if(creep.pos.isNearTo(container))
+            {
+              creep.withdrawEverything(container);
+            }
+            else
+            {
+              creep.travelTo(container);
+            }
+            return;
+          }
+        }*/
       }
       else
       {
-        let storage = creep.room.storage;
+        let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
 
-        if(storage && storage.store.energy > creep.carryCapacity)
+        if(sourceContainer && sourceContainer.store.energy >= creep.carryCapacity)
         {
-          if(creep.pos.isNearTo(storage))
-          {
-              creep.withdraw(storage, RESOURCE_ENERGY);
-              return;
-          }
+            if(creep.pos.isNearTo(sourceContainer))
+            {
+                creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+                return;
+            }
 
-          creep.travelTo(storage, {range: 1});
-          return;
+            creep.travelTo(sourceContainer, {range: 1});
+            return;
         }
+        else if(creep.room.storage && creep.room.storage.my && creep.room.terminal && !creep.room.terminal.my)
+        {
+          if(_.sum(creep.room.terminal.store) > 0)
+          {
+            if(creep.pos.isNearTo(creep.room.terminal))
+            {
+              creep.withdrawEverything(creep.room.terminal);
+              return;
+            }
+
+            creep.travelTo(creep.room.terminal, {range: 1});
+            return;
+          }
+        }
+        else
+        {
+          let storage = creep.room.storage;
+
+          if(storage && storage.store.energy > creep.carryCapacity)
+          {
+            if(creep.pos.isNearTo(storage))
+            {
+                creep.withdraw(storage, RESOURCE_ENERGY);
+                return;
+            }
+
+            creep.travelTo(storage, {range: 1});
+            return;
+          }
+        }
+
+        // Clean out Enemy Structures
+        /*let enemyStructures = creep.room.find(FIND_HOSTILE_STRUCTURES);
+        let energyStructures = _.filter(enemyStructures, (es)=>{
+          return (es.structureType === STRUCTURE_LAB || es.structureType === STRUCTURE_LINK ||
+            es.structureType === STRUCTURE_NUKER || es.structureType === STRUCTURE_TOWER);
+        })
+        if(energyStructures.length > 0)
+        {
+          energyStructures = _.filter(energyStructures, (es) => {
+          })
+          let target = creep.pos.findClosestByPath(energyStructures)
+          if(target)
+          {
+            console.log(this.name, "Going to get enemy supplies")
+            if(creep.pos.isNearTo(target))
+            {
+              let ret = creep.withdraw(target, RESOURCE_ENERGY);
+              console.log(this.name, "Problem", ret);
+              return;
+            }
+            creep.travelTo(target, {range: 1});
+            return;
+          }
+        }*/
+
+
+
       }
     }
 

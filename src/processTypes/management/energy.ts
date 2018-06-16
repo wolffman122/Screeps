@@ -45,7 +45,6 @@ export class EnergyManagementProcess extends Process{
     let sourceContainers = this.kernel.data.roomData[this.metaData.roomName].sourceContainers;
     let sourceLinks = this.kernel.data.roomData[this.metaData.roomName].sourceLinks;
 
-    // Harvester Code
     _.forEach(sources, function(source)
     {
       if(!proc.metaData.harvestCreeps[source.id])
@@ -54,23 +53,43 @@ export class EnergyManagementProcess extends Process{
       let creepNames = Utils.clearDeadCreeps(proc.metaData.harvestCreeps[source.id])
       proc.metaData.harvestCreeps[source.id] = creepNames
       let creeps = Utils.inflateCreeps(creepNames)
-      let workRate = Utils.workRate(creeps, 2)
 
-      let dividend = 300
-      if(Game.rooms[proc.metaData.roomName].controller!.level < 3)
+      let count = 0;
+      _.forEach(creeps, (c) => {
+        let  ticksNeeded = c.body.length * 3;
+        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+      });
+
+      let controller = room.controller;
+      let numberOfHarvesters = 0;
+      if(controller && controller.my)
       {
-        dividend = 150;
+        switch(controller.level)
+        {
+          case 1:
+            numberOfHarvesters = 4;
+            break;
+          case 2:
+            numberOfHarvesters = 4;
+            break;
+          case 3:
+            numberOfHarvesters = 3;
+            break;
+          case 4:
+          case 5:
+          case 6:
+          case 7:
+          case 8:
+            numberOfHarvesters = 1;
+            break;
+          default:
+            numberOfHarvesters = 1;
+            break;
+        }
       }
 
-
-      if(workRate < source.energyCapacity / dividend ||
-        proc.metaData.harvesterPrespawn) //300
+      if(count < numberOfHarvesters) //300
       {
-        if(proc.metaData.harvesterPrespawn)
-        {
-          proc.metaData.harvesterPrespawn = false;
-        }
-
         let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
         let spawned = false;
         let room = source.room;
@@ -127,22 +146,10 @@ export class EnergyManagementProcess extends Process{
             })
           }
         }
-
-        // Harvester prespawn check.
-        if(creep.ticksToLive && creep.ticksToLive <= (creep.body.length * 3) + 10)
-        {
-          if(creep.memory.dieing === undefined)
-          {
-            creep.memory.dieing = true;
-            proc.metaData.harvesterPrespawn = true;
-            Game.notify("Harvester Prespawn hanppening in " + creep.pos.roomName + " " + Game.time);
-          }
-        }
       })
     })
 
     _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
-
       if(proc.metaData.distroCreeps[container.id])
       {
         let creep = Game.creeps[proc.metaData.distroCreeps[container.id]]
@@ -177,14 +184,14 @@ export class EnergyManagementProcess extends Process{
     let upgraders = 0;
     switch(this.metaData.roomName)
     {
-      case 'E38S46':
-        upgraders = 2;
+      case 'E52S46':
+        upgraders = 3;
         break;
       case 'E36S43':
-        upgraders = 2;
+        upgraders = 1;
         break;
       default:
-        upgraders = 1;
+        upgraders = 3;
         break;
     }
 
@@ -195,10 +202,8 @@ export class EnergyManagementProcess extends Process{
       upgraders = 1;
     }
 
-    if((this.metaData.upgradeCreeps.length < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0) ||
-      (this.metaData.upgradeCreeps.length === upgraders && this.metaData.upgradePrespawn))
+    if(this.metaData.upgradeCreeps.length < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0)
     {
-      let boost = false;
       let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
       let spawned = false;
       if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
@@ -212,11 +217,6 @@ export class EnergyManagementProcess extends Process{
             creepName,
             {}
           );
-
-          if(spawned)
-          {
-            boost = true;
-          }
         }
         else
         {
@@ -240,31 +240,13 @@ export class EnergyManagementProcess extends Process{
         );
       }
 
-      if(spawned)
-      {
+      if(spawned){
         this.metaData.upgradeCreeps.push(creepName)
         this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-          creep: creepName,
+          creep: creepName
         })
-        if(this.metaData.upgradePrespawn)
-        {
-          this.metaData.upgradePrespawn =false;
-        }
       }
     }
-
-    //Upgrade prespawn check
-    let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
-    _.forEach(creeps, (c)=> {
-      if(c.ticksToLive && c.ticksToLive < (c.body.length * 3) + 10)
-      {
-        if(c.memory.dieing === undefined)
-        {
-          c.memory.dieing = true;
-          this.metaData.upgradePrespawn = true;
-        }
-      }
-    });
 
     if(this.kernel.data.roomData[this.metaData.roomName].storageLink
         &&
@@ -319,8 +301,7 @@ export class EnergyManagementProcess extends Process{
         upgradeDistroAmount = 1;
       }
 
-      if(this.metaData.upgradeDistroCreeps.length < upgradeDistroAmount ||
-        (this.metaData.upgradeDistroCreeps.length === upgradeDistroAmount && this.metaData.upgradeDistroPrespawn))
+      if(this.metaData.upgradeDistroCreeps.length < upgradeDistroAmount)
       {
         let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = false;
@@ -365,26 +346,8 @@ export class EnergyManagementProcess extends Process{
           this.kernel.addProcess(UpgradeDistroLifetimeProcess, 'udlf-' + creepName, 25, {
             creep: creepName
           })
-
-          if(this.metaData.upgradeDistroPrespawn)
-          {
-            this.metaData.upgradeDistroPrespawn = false;
-          }
         }
       }
-
-      //Upgrade Distro Prespawn check
-      let creeps = Utils.inflateCreeps(this.metaData.upgradeDistroCreeps);
-      _.forEach(creeps, (c) => {
-        if(c.ticksToLive && c.ticksToLive < (c.body.length * 3) + 20)
-        {
-          if(c.memory.dieing === undefined)
-          {
-            c.memory.dieing = true;
-            this.metaData.upgradeDistroPrespawn = true;
-          }
-        }
-      })
 
     }
   }
