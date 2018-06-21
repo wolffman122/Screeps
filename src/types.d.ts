@@ -239,12 +239,14 @@ interface RoomPosition {
     distroCreeps: {
       [container: string]: string[]
     }
+    distroDistance: {
+      [container: string]: number
+    }
+
     builderCreeps: string[]
     workerCreeps: string[]
     flagName: string
     increasing: boolean
-    harvesterPrespawn: boolean
-    distroPrespawn: boolean
   }
 
   interface MarketManagementProcessMetaData

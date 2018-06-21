@@ -60,7 +60,7 @@ export class EnergyManagementProcess extends Process{
         if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
       });
 
-      let controller = room.controller;
+      let controller = source.room.controller;
       let numberOfHarvesters = 0;
       if(controller && controller.my)
       {
@@ -150,6 +150,7 @@ export class EnergyManagementProcess extends Process{
     })
 
     _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
+      let count = 0;
       if(proc.metaData.distroCreeps[container.id])
       {
         let creep = Game.creeps[proc.metaData.distroCreeps[container.id]]
@@ -157,8 +158,17 @@ export class EnergyManagementProcess extends Process{
           delete proc.metaData.distroCreeps[container.id]
           return
         }
+        else
+        {
+          let ticksNeeded = creep.body.length * 3;
+          if(!creep.ticksToLive || creep.ticksToLive > ticksNeeded)
+          {
+            count++;
+          }
+        }
       }
-      else
+
+      if(count < 1)
       {
         let creepName = 'em-m-' + proc.metaData.roomName + '-' + Game.time
         let spawned = Utils.spawn(
@@ -185,7 +195,7 @@ export class EnergyManagementProcess extends Process{
     switch(this.metaData.roomName)
     {
       case 'E52S46':
-        upgraders = 3;
+        upgraders = 1;
         break;
       case 'E36S43':
         upgraders = 1;
