@@ -190,6 +190,13 @@ export class EnergyManagementProcess extends Process{
     })
 
     this.metaData.upgradeCreeps = Utils.clearDeadCreeps(this.metaData.upgradeCreeps)
+    let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
+
+    let count = 0;
+    _.forEach(creeps, (c) => {
+      let ticksNeeded = c.body.length * 3;
+      if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+    })
 
     let upgraders = 0;
     switch(this.metaData.roomName)
@@ -201,7 +208,7 @@ export class EnergyManagementProcess extends Process{
         upgraders = 1;
         break;
       default:
-        upgraders = 3;
+        upgraders = 1;
         break;
     }
 
@@ -212,7 +219,7 @@ export class EnergyManagementProcess extends Process{
       upgraders = 1;
     }
 
-    if(this.metaData.upgradeCreeps.length < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0)
+    if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0)
     {
       let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
       let spawned = false;

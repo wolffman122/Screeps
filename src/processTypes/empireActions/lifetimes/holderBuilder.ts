@@ -2,6 +2,7 @@ import { LifetimeProcess } from "os/process";
 import { BuildProcess } from "processTypes/creepActions/build";
 import { CollectProcess } from "processTypes/creepActions/collect";
 import { HarvestProcess } from "processTypes/creepActions/harvest";
+import { MoveProcess } from "../../creepActions/move";
 
 
 export class HoldBuilderLifetimeProcess extends LifetimeProcess
@@ -23,39 +24,13 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
     if(flag.pos.roomName != creep.pos.roomName)
     {
-      if(room)
-      {
-        let targets = _.filter(this.kernel.data.roomData[room.name].containers, (c: StructureContainer) => {
-          return (c.store.energy > 0);
-        })
+      this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
+        creep: creep.name,
+        pos: flag.pos,
+        range: 1
+      });
 
-        if(creep.name === 'hrm-build-E47S51-9302311')
-        {
-          console.log(this.name, "Not in the ROOM");
-        }
-        if(targets.length)
-        {
-          let target = targets[0];
-          if(!creep.pos.inRangeTo(target, 1))
-          {
-            creep.travelTo(target);
-            return;
-          }
-
-          creep.withdraw(target, RESOURCE_ENERGY);
-          return;
-        }
-        else
-        {
-          creep.travelTo(flag);
-          return;
-        }
-      }
-      else
-      {
-        creep.travelTo(flag);
-        return;
-      }
+      return;
     }
     else
     {

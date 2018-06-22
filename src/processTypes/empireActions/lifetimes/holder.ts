@@ -32,11 +32,11 @@ export class HolderLifetimeProcess extends LifetimeProcess
 
     if(creep.pos.roomName != flag.pos.roomName)
     {
-      this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
-        creep: creep.name,
-        pos: flag.pos,
-        range: 1
-      });
+        this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
+          creep: creep.name,
+          pos: flag.pos,
+          range: 1
+        });
 
       return;
     }
