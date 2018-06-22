@@ -25,25 +25,28 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
     if(Game.time % 10 === 5)
     {
-      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
-
-      enemies = _.filter(enemies, (e: Creep)=> {
-        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
-      });
-
-      if(enemies.length > 0)
+      if(creep.room.name !== flag.pos.roomName)
       {
-        flag.memory.enemies = true;
-        if(flag.memory.timeEnemies === undefined)
+        /*let flagName = this.metaData.spawnRoom + "-Hold-" + creep.room.name;
+        let travelFlag = Game.flags[flagName];
+        if(travelFlag)
         {
-          flag.memory.timeEnemies = Game.time;
-        }
+          if(travelFlag.memory.enemies)
+          {
+            flag.memory.enemies = travelFlag.memory.enemies;
+            flag.memory.timeEnemies = travelFlag.memory.timeEnemies;
+          }
+          else
+          {
+            let hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
+            if(hostiles.length > 0)
+            {
+              flag.memory.enemies = travelFlag.memory.enemies = true;
+              flag.memory.timeEnemies = travelFlag.memory.timeEnemies = hostiles[0].ticksToLive;
+            }
+          }
+        }*/
       }
-      else
-      {
-        flag.memory.enemies = false;
-        flag.memory.timeEnemies = undefined;
-      }*/
     }
 
     if(flag.memory.enemies)

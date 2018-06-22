@@ -45,6 +45,7 @@ export class EnergyManagementProcess extends Process{
     let sourceContainers = this.kernel.data.roomData[this.metaData.roomName].sourceContainers;
     let sourceLinks = this.kernel.data.roomData[this.metaData.roomName].sourceLinks;
 
+    // Harvesters
     _.forEach(sources, function(source)
     {
       if(!proc.metaData.harvestCreeps[source.id])
@@ -149,6 +150,7 @@ export class EnergyManagementProcess extends Process{
       })
     })
 
+    // Distro
     _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
       let count = 0;
       if(proc.metaData.distroCreeps[container.id])
@@ -189,6 +191,8 @@ export class EnergyManagementProcess extends Process{
       }
     })
 
+
+    // Upgrade creeps.
     this.metaData.upgradeCreeps = Utils.clearDeadCreeps(this.metaData.upgradeCreeps)
     let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
 
@@ -201,11 +205,9 @@ export class EnergyManagementProcess extends Process{
     let upgraders = 0;
     switch(this.metaData.roomName)
     {
-      case 'E52S46':
-        upgraders = 1;
-        break;
+      case 'E38S46':
       case 'E36S43':
-        upgraders = 1;
+        upgraders = 2;
         break;
       default:
         upgraders = 1;
@@ -265,6 +267,8 @@ export class EnergyManagementProcess extends Process{
       }
     }
 
+
+    // Spinner
     if(this.kernel.data.roomData[this.metaData.roomName].storageLink
         &&
        this.metaData.upgradeCreeps.length > 0
@@ -275,7 +279,20 @@ export class EnergyManagementProcess extends Process{
 
       this.metaData.spinCreeps = Utils.clearDeadCreeps(this.metaData.spinCreeps)
 
-      if(this.metaData.spinCreeps.length < 1 && storageLink ) //&& (this.kernel.data.roomData[this.metaData.roomName].sourceLinks.length > 0))
+      let count = 0;
+      if(this.metaData.spinCreeps.length)
+      {
+        let creep = Game.creeps[this.metaData.spinCreeps[0]];
+        let ticksNeeded = creep.body.length * 3;
+        if(!creep.ticksToLive || creep.ticksToLive > ticksNeeded)
+        {
+          count++;
+        }
+      }
+
+
+
+      if(count < 1 && storageLink ) //&& (this.kernel.data.roomData[this.metaData.roomName].sourceLinks.length > 0))
       {
         let creepName = 'em-s-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = Utils.spawn(
@@ -300,13 +317,20 @@ export class EnergyManagementProcess extends Process{
     if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
     {
       this.metaData.upgradeDistroCreeps = Utils.clearDeadCreeps(this.metaData.upgradeDistroCreeps);
+      let creeps = Utils.inflateCreeps(this.metaData.upgradeDistroCreeps);
+
+      let count = 0;
+      _.forEach(creeps, (c) => {
+        let  ticksNeeded = c.body.length * 3;
+        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+      });
 
       let upgradeDistroAmount = 1;
 
       switch(this.metaData.roomName)
       {
-        case 'E52S46':
-          upgradeDistroAmount = 3;
+        case 'E36S43':
+          upgradeDistroAmount = 1;
           break;
         default:
           upgradeDistroAmount = 1;
@@ -318,7 +342,7 @@ export class EnergyManagementProcess extends Process{
         upgradeDistroAmount = 1;
       }
 
-      if(this.metaData.upgradeDistroCreeps.length < upgradeDistroAmount)
+      if(count < upgradeDistroAmount)
       {
         let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = false;
