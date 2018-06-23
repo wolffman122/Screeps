@@ -15,7 +15,6 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       if(creep.memory.storageDelivery == true)
       {
         creep.memory.storageDelivery = false;
-
         this.suspend = 5;
         return;
       }

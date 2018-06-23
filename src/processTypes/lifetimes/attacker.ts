@@ -55,37 +55,22 @@ export class AttackerLifetimeProcess extends LifetimeProcess
             }
 
             creep.attack(spawnTarget);
-            return;
-        }
-
-        if(hostileCreeps)
-        {
-            let target = creep.pos.findClosestByPath(hostileCreeps);
-            if(!creep.pos.inRangeTo(target, 1))
-            {
-                creep.travelTo(target);
-                return;
-            }
-            creep.attack(target);
-            return;
         }
         else
         {
-            let OtherContainers = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTAINER});
-            if(OtherContainers.length)
+            hostileCreeps = creep.room.find(FIND_HOSTILE_CREEPS);
+            if(hostileCreeps)
             {
-                let target = creep.pos.findClosestByPath(OtherContainers);
-                if(!creep.pos.inRangeTo(target,1))
+                let target = creep.pos.findClosestByPath(hostileCreeps);
+                if(!creep.pos.inRangeTo(target, 1))
                 {
                     creep.travelTo(target);
                     return;
                 }
-
                 creep.attack(target);
                 return;
             }
         }
-
 
     }
 }
