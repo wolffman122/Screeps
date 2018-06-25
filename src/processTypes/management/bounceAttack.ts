@@ -22,6 +22,8 @@ export class BounceAttackProcess extends Process
       return;
     }
 
+    Utils.clearDeadCreep(this.metaData.creep);
+
     if(!creep)
     {
       let creepName = 'attackB-' + flag.pos.roomName + '-' + Game.time;

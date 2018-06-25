@@ -70,6 +70,8 @@ import { DistroLifetimeOptProcess } from 'processTypes/lifetimes/distroOpt';
 import { UpgradeDistroLifetimeOptProcess } from 'processTypes/lifetimes/upgradeDistroOpt';
 import { HoldRoomOptManagementProcess } from 'processTypes/management/holdRoomOpt';
 import { HoldHarvesterOptLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderHarvesterOpt';
+import { RangeAttackManagementProcess } from 'processTypes/management/rangeAttack';
+import { RangeAttackerLifetimeProcess } from 'processTypes/lifetimes/rangeAttacker';
 
 
 
@@ -135,7 +137,10 @@ const processTypes = <{[type: string]: any}>{
   'dlfOpt': DistroLifetimeOptProcess,
   'udlfOpt': UpgradeDistroLifetimeOptProcess,
   'hrmOpt': HoldRoomOptManagementProcess,
-  'holdHarvesterlfOpt': HoldHarvesterOptLifetimeProcess
+  'holdHarvesterlfOpt': HoldHarvesterOptLifetimeProcess,
+  'ra': RangeAttackManagementProcess,
+  'ralf': RangeAttackerLifetimeProcess,
+
 }
 
 interface KernelData{

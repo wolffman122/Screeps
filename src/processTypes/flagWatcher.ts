@@ -13,6 +13,7 @@ import { GeneralAttackManagementProcess } from './management/generalAttack';
 import { RemoteBuilderLifetimeProcess } from './lifetimes/remoteBuilder';
 import { HelpManagementProcess } from './management/help';
 import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
+import { RangeAttackManagementProcess } from './management/rangeAttack';
 
 export class FlagWatcherProcess extends Process
 {
@@ -75,6 +76,11 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(GeneralAttackManagementProcess, 'gamp-' + flag.name, 40, {flagName: flag.name});
   }
 
+  RangeAttack(flag: Flag)
+  {
+    this.kernel.addProcess(RangeAttackManagementProcess, 'ra-' + flag.name, 35, {flagName: flag.name});
+  }
+
   helpRoom(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + flag.name, 35, {flagName: flag.name});
@@ -128,13 +134,16 @@ export class FlagWatcherProcess extends Process
             case COLOR_RED:
               proc.GeneralAttack(flag);
               break;
+            case COLOR_BLUE:
+              proc.RangeAttack(flag);
+              break;
             case COLOR_BROWN:
               proc.BounceAttack(flag);
               break;
             case COLOR_GREY:
               proc.HealAttack(flag);
               break;
-            case COLOR_BLUE:
+            case COLOR_GREEN:
               proc.AttackController(flag);
               break;
           }

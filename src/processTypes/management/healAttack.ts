@@ -22,8 +22,10 @@ export class HealAttackProcess extends Process
 
     let spawnRoom = flag.name.split('-')[0];
 
+    console.log(this.name, 1)
     if(!creep)
     {
+      console.log(this.name, 2)
       let creepName = 'healA-' + flag.pos.roomName + '-' + Game.time;
       let spawned = Utils.spawn(
         this.kernel,
@@ -33,14 +35,17 @@ export class HealAttackProcess extends Process
         {}
       );
 
+      console.log(this.name, 3, spawned)
       if(spawned)
       {
+        console.log(this.name, 4)
         this.metaData.creep = creepName;
       }
     }
 
     if(creep.pos.roomName != flag.pos.roomName)
     {
+      console.log(this.name, 5)
       this.kernel.addProcessIfNotExist(MoveProcess, 'move-' + creep.name, this.priority-1, {
         creep: creep.name,
         pos: flag.pos,
@@ -50,14 +55,17 @@ export class HealAttackProcess extends Process
       return;
     }
 
+    console.log(this.name, 6)
     let roomCreeps = <Creep[]>creep.room.find(FIND_CREEPS);
 
     let hurtCreeps = _.filter(roomCreeps, (c) => {
       return (c.hits < c.hitsMax);
     })
 
+    console.log(this.name, 7)
     if(hurtCreeps.length > 0)
     {
+      console.log(this.name, 8)
       let heal = creep.pos.findClosestByRange(hurtCreeps);
 
       if(heal)

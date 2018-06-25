@@ -444,11 +444,23 @@ interface RoomPosition {
     healers: string[]
   }
 
+  interface RangeAttackManagementProcessMetaData
+  {
+    flagName: string,
+    attackers: string[],
+    healers: string[]
+  }
+
   interface AttackerLifetimeProcessMetaData
   {
     creep: string[],
     flagName: string,
+  }
 
+  interface RangeAttackerLifetimeProcessMetaData
+  {
+    creep: string,
+    flagName: string,
   }
 
   interface RemoteBuilderLifetimeProcessMetaData

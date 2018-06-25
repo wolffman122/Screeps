@@ -301,7 +301,7 @@ export class HoldRoomOptManagementProcess extends Process
                 });
 
                 let numberDistro = 2;
-                if(this.metaData.distroDistance[sc.id] < 50)
+                if(this.metaData.distroDistance[sc.id] < 60)
                 {
                   numberDistro = 1;
                 }

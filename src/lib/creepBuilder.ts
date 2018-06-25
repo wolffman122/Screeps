@@ -17,7 +17,6 @@ export const CreepBuilder = {
     }).length
     let emergancy = (creepType === 'harvester' && creepCount < 2) || (creepType === 'mover' && creepCount < 4)
 
-
     if(emergancy){
       spendCap = 300
     }else{
@@ -27,17 +26,22 @@ export const CreepBuilder = {
     let add = true
     let extendIndex = 0
 
+    if(CreepBuilder.typeExtends[creepType].length === 0)
+    {
+      add = false;
+    }
+
     while(add){
       var creepCost = CreepBuilder.bodyCost(body)
 
       if(memory.addition)
       {
-
         creepType = memory.addition;
       }
 
       var nextPart = <BodyPartConstant>CreepBuilder.typeExtends[creepType][extendIndex]
       let maximum = CreepBuilder.typeLengths[creepType];
+
       if(memory.max)
       {
         maximum = memory.max;
@@ -106,6 +110,10 @@ export const CreepBuilder = {
     'dismantler': [WORK,WORK,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
+    'rangeAttack': [RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+      MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+      MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
+      RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL]
   },
 
   typeExtends: <PartList>{
@@ -133,6 +141,7 @@ export const CreepBuilder = {
     'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
+    'rangeAttack': [],
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -156,6 +165,7 @@ export const CreepBuilder = {
     'attackController': 10,
     'dismantler': 48,
     'labDistro': 40,
-    'special': 2
+    'special': 2,
+    'rangeAttack': 50
   }
 }

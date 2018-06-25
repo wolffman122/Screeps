@@ -10,6 +10,11 @@ export const Utils = {
     })
   },
 
+  clearDeadCreep: function(name: string)
+  {
+    return !!Game.creeps[name];
+  },
+
   inflateCreeps: function(list: string[]): Creep[]{
     return _.transform(list, function(result, entry){
       result.push(Game.creeps[entry])
@@ -32,13 +37,26 @@ export const Utils = {
 
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
+
+    if(creepType === "rangeAttack")
+        {
+          console.log('Spawn result', body.length);
+        }
     let spawns = kernel.data.roomData[roomName].spawns
     let outcome = false
 
     _.forEach(spawns, function(spawn){
+      if(creepType === "rangeAttack")
+        {
+          console.log('Spawn result', spawn.canCreateCreep(body));
+        }
       if(!_.includes(kernel.data.usedSpawns, spawn.id) &&!spawn.spawning && spawn.canCreateCreep(body) === OK){
 
-        spawn.createCreep(body, name, memory)
+        let ret = spawn.createCreep(body, name, memory)
+        if(creepType === "rangeAttack")
+        {
+          console.log('Spawn result', ret);
+        }
         outcome = true
         kernel.data.usedSpawns.push(spawn.id)
       }
