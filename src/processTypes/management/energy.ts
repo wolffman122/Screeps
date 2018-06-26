@@ -201,14 +201,11 @@ export class EnergyManagementProcess extends Process{
     let upgraders = 0;
     switch(this.metaData.roomName)
     {
-      case 'E52S46':
-        upgraders = 1;
-        break;
       case 'E36S43':
-        upgraders = 1;
+        upgraders = 3;
         break;
       default:
-        upgraders = 1;
+        upgraders = 3;
         break;
     }
 
@@ -305,8 +302,8 @@ export class EnergyManagementProcess extends Process{
 
       switch(this.metaData.roomName)
       {
-        case 'E52S46':
-          upgradeDistroAmount = 3;
+        case 'E36S43':
+          upgradeDistroAmount = 2;
           break;
         default:
           upgradeDistroAmount = 1;
@@ -335,26 +332,13 @@ export class EnergyManagementProcess extends Process{
         }
         else
         {
-          if(upgraders == 4)
-          {
-            spawned = Utils.spawn(
-              proc.kernel,
-              proc.metaData.roomName,
-              'bigMover',
-              creepName,
-              {max: 48}
-            )
-          }
-          else
-          {
-            spawned = Utils.spawn(
-              proc.kernel,
-              proc.metaData.roomName,
-              'bigMover',
-              creepName,
-              {}
-            )
-          }
+          spawned = Utils.spawn(
+            proc.kernel,
+            proc.metaData.roomName,
+            'bigMover',
+            creepName,
+            {max: 48}
+          );
         }
 
         if(spawned)

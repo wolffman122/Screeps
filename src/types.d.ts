@@ -249,6 +249,13 @@ interface RoomPosition {
     increasing: boolean
   }
 
+  interface HoldHarvesterOptLifetimeProcessMetaData
+  {
+    flagName: string
+    source: string
+    harvesting: boolean
+  }
+
   interface MarketManagementProcessMetaData
   {
     data: {
@@ -485,7 +492,7 @@ interface RoomPosition {
   {
     creep: string,
     boosts?: string[],
-    boostRequests: {[boostType: string]: {flagName?: string, requesterIds: string[]} },
+    boostRequests: BoostRequests,
   }
 //// Minerals
 

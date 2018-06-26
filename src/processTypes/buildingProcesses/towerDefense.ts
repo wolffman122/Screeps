@@ -1,5 +1,6 @@
 import {Process} from '../../os/process'
 import { HealAttackProcess } from '../management/healAttack';
+import { WHITE_LIST } from './mineralTerminal';
 
 export class TowerDefenseProcess extends Process{
   type = 'td'
@@ -7,7 +8,11 @@ export class TowerDefenseProcess extends Process{
   run(){
     //this.log('Tower Defense');
     let room = Game.rooms[this.metaData.roomName]
-    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
+    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
+
+    enemies = _.filter(enemies, (e)=> {
+      return !_.includes(WHITE_LIST, e.owner.username);
+    })
     let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
     let flag = Game.flags['Center-'+this.metaData.roomName];
 

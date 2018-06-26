@@ -38,7 +38,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
         }
         if(!requests[boost])
         {
-          requests[boost] = { flagName: undefined, requesterIds: [] };
+         // requests[boost] = { flagName: undefined, requesterIds: [] };
         }
 
         // check if already boosted
