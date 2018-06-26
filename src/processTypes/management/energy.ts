@@ -297,7 +297,13 @@ export class EnergyManagementProcess extends Process{
     if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
     {
       this.metaData.upgradeDistroCreeps = Utils.clearDeadCreeps(this.metaData.upgradeDistroCreeps);
+      let creeps = Utils.inflateCreeps(this.metaData.upgradeDistroCreeps)
 
+      let count = 0;
+      _.forEach(creeps, (c) => {
+        let ticksNeeded = c.body.length * 3 + 10;
+        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+      })
       let upgradeDistroAmount = 1;
 
       switch(this.metaData.roomName)
@@ -306,7 +312,7 @@ export class EnergyManagementProcess extends Process{
           upgradeDistroAmount = 2;
           break;
         default:
-          upgradeDistroAmount = 1;
+          upgradeDistroAmount = 2;
           break;
       }
 
@@ -315,7 +321,7 @@ export class EnergyManagementProcess extends Process{
         upgradeDistroAmount = 1;
       }
 
-      if(this.metaData.upgradeDistroCreeps.length < upgradeDistroAmount)
+      if(count < upgradeDistroAmount)
       {
         let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = false;

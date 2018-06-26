@@ -304,9 +304,9 @@ export class HoldRoomOptManagementProcess extends Process
                 {
                   console.log(this.name, "Distance", this.metaData.distroDistance[sc.id])
                 }
-                
+
                 let numberDistro = 2;
-                if(this.metaData.distroDistance[sc.id] < 60)
+                if(this.metaData.distroDistance[sc.id] < 70)
                 {
                   numberDistro = 1;
                 }
