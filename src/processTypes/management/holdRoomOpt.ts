@@ -5,13 +5,14 @@ import { HolderLifetimeProcess } from 'processTypes/empireActions/lifetimes/hold
 import { HoldBuilderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderBuilder';
 import { HoldHarvesterLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderHarvester';
 import { HoldDistroLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDistro';
+import { HoldHarvesterOptLifetimeProcess } from '../empireActions/lifetimes/holderHarvesterOpt';
 
 
 
-export class HoldRoomManagementProcess extends Process
+export class HoldRoomOptManagementProcess extends Process
 {
-  metaData: HoldRoomManagementProcessMetaData;
-  type = 'hrm'
+  metaData: HoldRoomOptManagementProcessMetaData;
+  type = 'hrmOpt'
 
   ensureMetaData()
   {
@@ -28,6 +29,11 @@ export class HoldRoomManagementProcess extends Process
     if(!this.metaData.distroCreeps)
     {
       this.metaData.distroCreeps = {};
+    }
+
+    if(!this.metaData.distroDistance)
+    {
+      this.metaData.distroDistance = {};
     }
 
     if(!this.metaData.harvestCreeps)
@@ -62,7 +68,7 @@ export class HoldRoomManagementProcess extends Process
 
     if(flag.memory.enemies)
     {
-      this.log('Remote room enemy present ticks left ' + (flag.memory.timeEnemies! + 1500 - Game.time));
+      //this.log('Remote room enemy present ticks left ' + (flag.memory.timeEnemies! + 1500 - Game.time));
       if(flag.memory.timeEnemies! + 1500 <= Game.time)
       {
         flag.memory.enemies = false;
@@ -111,10 +117,10 @@ export class HoldRoomManagementProcess extends Process
           {
             if(this.metaData.holdCreeps.length < 1)
             {
-              let max = 12;
+              let max = 16;
               if(sRoom.energyAvailable < sRoom.energyCapacityAvailable * 0.50)
               {
-                max = 3;
+                max = 4;
               }
 
               let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
@@ -231,17 +237,26 @@ export class HoldRoomManagementProcess extends Process
               this.metaData.harvestCreeps[s.id] = creepNames;
               let creeps = Utils.inflateCreeps(creepNames);
 
-              if(this.metaData.harvestCreeps[s.id].length < 1)
+              let count = 0;
+              _.forEach(creeps, (c) => {
+                let ticksNeeded = c.body.length * 3 + 10;
+                if(!c.ticksToLive || c.ticksToLive > ticksNeeded)
+                {
+                  count++;
+                }
+              })
+
+              if(count < 1)
               {
                 console.log("Need to make some harvesting creeps " + s.id);
-                  let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
-                  let spawned = Utils.spawn(
-                    this.kernel,
-                    spawnRoomName,
-                    'harvester',
-                    creepName,
-                    {}
-                  )
+                let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
+                let spawned = Utils.spawn(
+                  this.kernel,
+                  spawnRoomName,
+                  'harvester',
+                  creepName,
+                  {}
+                )
 
                 if(spawned)
                 {
@@ -250,7 +265,7 @@ export class HoldRoomManagementProcess extends Process
               }
 
               _.forEach(creeps, (c) => {
-                this.kernel.addProcessIfNotExist(HoldHarvesterLifetimeProcess, 'holdHarvesterlf-' + c.name, 27, {
+                this.kernel.addProcessIfNotExist(HoldHarvesterOptLifetimeProcess, 'holdHarvesterlfOpt-' + c.name, 27, {
                   creep: c.name,
                   source: s.id,
                   flagName: flag.name
@@ -261,37 +276,66 @@ export class HoldRoomManagementProcess extends Process
 
             // Hauling code
             _.forEach(this.roomData().sourceContainers, (sc) => {
-                if(this.metaData.distroCreeps[sc.id])
+                if(!this.metaData.distroCreeps[sc.id])
+                    this.metaData.distroCreeps[sc.id] = [];
+
+                if(!this.metaData.distroDistance[sc.id])
                 {
-                  let creep = Game.creeps[this.metaData.distroCreeps[sc.id]];
-                  if(!creep)
-                  {
-                    delete this.metaData.distroCreeps[sc.id];
-                    return;
-                  }
+                  let ret = PathFinder.search(centerFlag.pos, sc.pos, {
+                    plainCost: 2,
+                    swampCost: 10,
+                  });
+
+                  this.metaData.distroDistance[sc.id] = ret.path.length;
                 }
-                else
+
+
+                let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[sc.id]);
+                this.metaData.distroCreeps[sc.id] = creepNames;
+                let creeps = Utils.inflateCreeps(creepNames);
+
+                let count = 0;
+                _.forEach(creeps, (c) => {
+                  let  ticksNeeded = c.body.length * 3 +  this.metaData.distroDistance[sc.id];
+                  if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+                });
+
+                if(this.metaData.roomName === 'E51S49')
+                {
+                  console.log(this.name, "Distance", this.metaData.distroDistance[sc.id])
+                }
+
+                let numberDistro = 2;
+                if(this.metaData.distroDistance[sc.id] < 70)
+                {
+                  numberDistro = 1;
+                }
+
+                if(count < numberDistro)
                 {
                   let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
                   let spawned = Utils.spawn(
-                    this.kernel,
-                    spawnRoomName,
-                    'holdmover',
-                    creepName,
-                    {}
+                      this.kernel,
+                      spawnRoomName,
+                      'holdmover',
+                      creepName,
+                      {}
                   );
 
                   if(spawned)
                   {
-                    this.metaData.distroCreeps[sc.id] = creepName;
-                    this.kernel.addProcessIfNotExist(HoldDistroLifetimeProcess, 'holdDistrolf-' + creepName, 26, {
-                      sourceContainer: sc.id,
-                      spawnRoom: spawnRoomName,
-                      creep: creepName,
-                      flagName: flag.name
-                    });
+                      this.metaData.distroCreeps[sc.id].push(creepName);
                   }
                 }
+
+                _.forEach(creeps, (creep) => {
+                  this.kernel.addProcessIfNotExist(HoldDistroLifetimeProcess, 'holdDistrolf-' + creep.name, 26, {
+                    sourceContainer: sc.id,
+                    spawnRoom: spawnRoomName,
+                    creep: creep.name,
+                    flagName: flag.name
+                  });
+                });
             });
           }
         }

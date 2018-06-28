@@ -25,7 +25,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
     if(Game.time % 10 === 5)
     {
-      let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
+      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
 
       enemies = _.filter(enemies, (e: Creep)=> {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
@@ -43,7 +43,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       {
         flag.memory.enemies = false;
         flag.memory.timeEnemies = undefined;
-      }
+      }*/
     }
 
     if(flag.memory.enemies)
@@ -70,83 +70,95 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       {
         if(!creep.pos.inRangeTo(sourceContainer, 1))
         {
+          if(creep.room.name === flag.room!.name)
+          {
+            creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+          }
           creep.travelTo(sourceContainer);
+          return;
+        }
+
+        let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
+        if(resource.length > 0)
+        {
+          let withdrawAmount = creep.carryCapacity - _.sum(creep.carry) - resource[0].amount;
+
+          if(withdrawAmount >= 0)
+          {
+            creep.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
+          }
+
+          creep.pickup(resource[0]);
+          return;
+          /*creep.pickup(resource[0]);
+
+          let remainingRoom = creep.carryCapacity - resource[0].amount
+
+          if(sourceContainer.store.energy > remainingRoom)
+          {
+            creep.withdraw(sourceContainer, RESOURCE_ENERGY)
+          }
+          else
+          {
+            this.suspend = 10;
+          }*/
+        }
+        else if(sourceContainer.store.energy > creep.carryCapacity)
+        {
+          creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           return;
         }
         else
         {
-          let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
-          if(resource.length > 0)
-          {
-            let withdrawAmount = creep.carryCapacity - _.sum(creep.carry) - resource[0].amount;
-
-            if(withdrawAmount >= 0)
-            {
-              creep.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
-            }
-
-            creep.pickup(resource[0]);
-            /*creep.pickup(resource[0]);
-
-            let remainingRoom = creep.carryCapacity - resource[0].amount
-
-            if(sourceContainer.store.energy > remainingRoom)
-            {
-              creep.withdraw(sourceContainer, RESOURCE_ENERGY)
-            }
-            else
-            {
-              this.suspend = 10;
-            }*/
-          }
-          else if(sourceContainer.store.energy > creep.carryCapacity)
-          {
-            creep.withdraw(sourceContainer, RESOURCE_ENERGY);
-          }
-          else
-          {
-            this.log('Suspend');
-            this.suspend = 20;
-          }
+          this.suspend = 20;
+          return;
         }
       }
     }
 
     if(this.kernel.data.roomData[this.metaData.spawnRoom].links.length > 0)
     {
-      if(creep.pos.roomName != this.metaData.spawnRoom)
+      let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
+
+      links = creep.pos.findInRange(links, 6);
+      links = _.filter(links, (l) => {
+        return (l.energy == 0 || l.cooldown == 0);
+      });
+
+      if(links.length > 0)
       {
-        if(!creep.fixMyRoad())
+        let link = creep.pos.findClosestByPath(links);
+
+        if(link.energy < link.energyCapacity)
         {
-          let rName: string = this.metaData.spawnRoom;
-          creep.travelTo(new RoomPosition(25,25, rName), {range: 24})
-        }
-
-      }
-      else
-      {
-        let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
-
-        links = creep.pos.findInRange(links, 6);
-        links = _.filter(links, (l) => {
-          return (l.energy == 0 || l.cooldown == 0);
-        });
-
-        if(links.length > 0)
-        {
-          let link = creep.pos.findClosestByPath(links);
-
-          if(link.energy < link.energyCapacity)
+          if(!creep.pos.inRangeTo(link, 1))
           {
-            if(!creep.pos.inRangeTo(link, 1))
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(link);
+            }
+          }
+
+          if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
+          {
+            return;
+          }
+        }
+        else
+        {
+          let storage = creep.room.storage;
+          if(storage)
+          {
+            if(!creep.pos.inRangeTo(storage,1))
             {
               if(!creep.fixMyRoad())
               {
-                creep.travelTo(link);
+                creep.travelTo(storage);
+                return;
               }
             }
 
-            if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
+            if(creep.transfer(storage, RESOURCE_ENERGY) === ERR_FULL)
             {
               return;
             }
@@ -156,26 +168,26 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
             this.suspend = 2;
           }
         }
-        else
+      }
+      else
+      {
+        if(Game.rooms[this.metaData.spawnRoom].storage)
         {
-          if(Game.rooms[this.metaData.spawnRoom].storage)
+          let target = Game.rooms[this.metaData.spawnRoom].storage;
+
+          if(target)
           {
-            let target = Game.rooms[this.metaData.spawnRoom].storage;
-
-            if(target)
+            if(!creep.pos.inRangeTo(target, 1))
             {
-              if(!creep.pos.inRangeTo(target, 1))
+              if(!creep.fixMyRoad())
               {
-                if(!creep.fixMyRoad())
-                {
-                  creep.travelTo(target);
-                }
+                creep.travelTo(target);
               }
+            }
 
-              if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-              {
-                return;
-              }
+            if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
+            {
+              return;
             }
           }
         }

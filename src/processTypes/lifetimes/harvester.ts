@@ -87,10 +87,13 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
     // Find the nearest target
     let target = <Structure>creep.pos.findClosestByPath(deliverTargets)
 
-    this.fork(DeliverProcess, creep.name + '-deliver', this.priority, {
-      creep: creep.name,
-      target: target.id,
-      resource: RESOURCE_ENERGY
-    })
+    if(creep.pos.isNearTo(target))
+    {
+      creep.transfer(target, RESOURCE_ENERGY);
+      return;
+    }
+
+    creep.travelTo(target);
+    return;
   }
 }

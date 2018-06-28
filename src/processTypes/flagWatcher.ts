@@ -12,6 +12,8 @@ import { SignControllerProcess } from './management/sign';
 import { GeneralAttackManagementProcess } from './management/generalAttack';
 import { RemoteBuilderLifetimeProcess } from './lifetimes/remoteBuilder';
 import { HelpManagementProcess } from './management/help';
+import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
+import { RangeAttackManagementProcess } from './management/rangeAttack';
 
 export class FlagWatcherProcess extends Process
 {
@@ -41,19 +43,12 @@ export class FlagWatcherProcess extends Process
 
   remoteHoldFlag(flag: Flag)
   {
-    if(flag.memory.enemies)
-    {
-      if(flag.memory.timeEnemies! + 1500 === Game.time)
-      {
-        flag.memory.enemies = false;
-        flag.memory.timeEnemies = undefined;
-      }
-    }
-    else
-    {
-      //console.log('Hold Management Process ' + flag.name);
-      this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name});
-    }
+    this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
+  }
+
+  remoteHoldOptFlag(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(HoldRoomOptManagementProcess, 'hrmOpt-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
   }
 
   transferFlag(flag: Flag)
@@ -81,6 +76,11 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(GeneralAttackManagementProcess, 'gamp-' + flag.name, 40, {flagName: flag.name});
   }
 
+  RangeAttack(flag: Flag)
+  {
+    this.kernel.addProcess(RangeAttackManagementProcess, 'ra-' + flag.name, 35, {flagName: flag.name});
+  }
+
   helpRoom(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + flag.name, 35, {flagName: flag.name});
@@ -106,7 +106,15 @@ export class FlagWatcherProcess extends Process
           }
           break;
         case COLOR_RED:
-          proc.remoteHoldFlag(flag);
+          switch(flag.secondaryColor)
+          {
+            case COLOR_RED:
+              proc.remoteHoldFlag(flag);
+              break;
+            case COLOR_GREEN:
+              proc.remoteHoldOptFlag(flag);
+              break;
+          }
           break;
         case COLOR_PURPLE:
           proc.remoteDismantleFlag(flag);
@@ -126,13 +134,16 @@ export class FlagWatcherProcess extends Process
             case COLOR_RED:
               proc.GeneralAttack(flag);
               break;
+            case COLOR_BLUE:
+              proc.RangeAttack(flag);
+              break;
             case COLOR_BROWN:
               proc.BounceAttack(flag);
               break;
             case COLOR_GREY:
               proc.HealAttack(flag);
               break;
-            case COLOR_BLUE:
+            case COLOR_GREEN:
               proc.AttackController(flag);
               break;
           }

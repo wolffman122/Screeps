@@ -30,7 +30,8 @@ export class DismantleProcess extends Process
       }
       else
       {
-        creep.dismantle(spawn);
+        let ret = creep.dismantle(spawn);
+        console.log(this.name, ret, 11111);
       }
     }
     else
@@ -40,6 +41,7 @@ export class DismantleProcess extends Process
 
       if(_.sum(creep.carry) < creep.carryCapacity)
       {
+        this.log('wtf 1')
         if(!creep.pos.inRangeTo(targetPos, 1))
         {
           creep.travelTo(targetPos);
@@ -52,22 +54,15 @@ export class DismantleProcess extends Process
       }
       else
       {
-        let storage = creep.room.storage;
-        if(storage && storage.my)
+        this.log('wtf 2')
+        if(creep.pos.isNearTo(target))
         {
-          if(creep.pos.isNearTo(storage))
-          {
-            creep.transferEverything(storage);
-          }
-          else
-          {
-            if(!creep.fixMyRoad())
-            {
-              creep.travelTo(storage);
-            }
-          }
+          creep.dismantle(target);
           return;
         }
+
+        creep.travelTo(target);
+        return;
       }
     }
   }

@@ -14,6 +14,25 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
+    if(creep.ticksToLive! < 50 && _.sum(creep.carry) > 0)
+    {
+      let storage = creep.room.storage;
+      if(storage)
+      {
+        if(!creep.pos.inRangeTo(storage, 1))
+        {
+          creep.travelTo(storage);
+          return;
+        }
+
+        if(creep.transferEverything(storage) == OK)
+        {
+          creep.suicide();
+          return;
+        }
+      }
+    }
+
     if(_.sum(creep.carry) === 0){
       let target = Utils.withdrawTarget(creep, this)
 
@@ -104,10 +123,24 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       {
         let target = creep.pos.findClosestByPath(repairTargets)
 
-        this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          target: target.id
-        });
+        if(target)
+        {
+          let enemies = target.room.find(FIND_HOSTILE_CREEPS);
+          let inRangeEnemies = target.pos.findInRange(enemies, 4);
+
+          if(inRangeEnemies.length === 0)
+          {
+            this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
+              creep: creep.name,
+              target: target.id
+            });
+          }
+          else
+          {
+            this.suspend = 10;
+            return;
+          }
+        }
       }
       else
       {

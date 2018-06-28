@@ -26,7 +26,11 @@ export class RepairProcess extends Process{
         return
       }
 
-      creep.repair(target)
+      let outcome = creep.repair(target)
+      if(outcome === OK)
+      {
+        creep.yieldRoad(target, true);
+      }
     }
   }
 }

@@ -27,14 +27,22 @@ export class DefenseManagementProcess extends Process
     this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
 
     let room = Game.rooms[this.metaData.roomName]
-    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
+    let flagName = 'Center-' + this.metaData.roomName;
+    let flag = Game.flags[flagName];
 
-    if(this.metaData.defenderCreeps.length < enemies.length)
+    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
+    let dangerEnemies = _.filter(enemies, (e) => {
+      return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0) &&
+        flag.pos.inRangeTo(e, 15);
+    });
+
+
+    if(this.metaData.defenderCreeps.length < dangerEnemies.length)
     {
       let creepName = 'dm-' + this.metaData.roomName + '-' + Game.time;
       let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'defender', creepName, {});
 
-      let flagName = 'Center-' + this.metaData.roomName;
+
       if(spawned)
       {
         this.metaData.defenderCreeps.push(creepName);

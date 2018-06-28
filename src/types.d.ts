@@ -7,8 +7,17 @@ interface Creep extends RoomObject {
     fixMyRoad(): boolean;
     transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
     withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
+    yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
+    idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
   }
 
+interface RoomPosition {
+  lookForStructures(structureType: string): Structure;
+  getPositionAtDirection(direction: number, range?: number): RoomPosition;
+  isPassible(ignoreCreeps?: boolean): boolean;
+  isNearExit(range: number): boolean;
+  openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
+}
 
 
   declare namespace NodeJS{
@@ -134,6 +143,11 @@ interface Creep extends RoomObject {
       atPlace: boolean;
       currentRoom: string;
       roomPath: -2 | { exit: ExitConstant, room: string}[],
+      flagIndex: number;
+      dieing: boolean;
+      boost: boolean;
+      distance?: number;
+      reachedDest?: boolean;
   }
 
   interface FlagMemory
@@ -178,12 +192,15 @@ interface Creep extends RoomObject {
     harvestCreeps: {
       [source: string]: string[]
     }
+    harvesterPrespawn?: boolean
     distroCreeps: {
       [container: string]: string
     }
     upgradeCreeps: string[]
     spinCreeps: string[]
     upgradeDistroCreeps: string[]
+    upgradePrespawn?: boolean
+    upgradeDistroPrespawn?: boolean
   }
 
   interface StructureManagementProcessMetaData
@@ -210,6 +227,33 @@ interface Creep extends RoomObject {
     flagName: string
     increasing: boolean
 
+  }
+
+  interface HoldRoomOptManagementProcessMetaData
+  {
+    roomName: string
+    holdCreeps: string[]
+    harvestCreeps: {
+      [source: string]: string[]
+    }
+    distroCreeps: {
+      [container: string]: string[]
+    }
+    distroDistance: {
+      [container: string]: number
+    }
+
+    builderCreeps: string[]
+    workerCreeps: string[]
+    flagName: string
+    increasing: boolean
+  }
+
+  interface HoldHarvesterOptLifetimeProcessMetaData
+  {
+    flagName: string
+    source: string
+    harvesting: boolean
   }
 
   interface MarketManagementProcessMetaData
@@ -291,7 +335,8 @@ interface Creep extends RoomObject {
   interface HoldBuilderLifetimeProcessMetaData
   {
     creep: string
-    flagName: string
+    flagName: string,
+    site: string
   }
 
   interface HoldWorkerLifetimeProcessMetaData
@@ -334,6 +379,26 @@ interface Creep extends RoomObject {
   {
     roomName: string,
     labDistros: string[],
+    idlePosition: RoomPosition;
+    command?: Command;
+    labCount: number;
+    reagentLabIds?: string[];
+    productLabIds?: string[];
+    lastCommandTick: number;
+    checkProcessTick: number;
+    labProcess?: LabProcess;
+  }
+
+  interface LabMemory
+  {
+    idlePosition: RoomPosition;
+    command?: Command;
+    labCount: number;
+    reagentLabIds?: string[];
+    productLabIds?: string[];
+    lastCommandTick: number;
+    checkProcessTick: number;
+    labProcess?: LabProcess;
   }
 
   interface LabDistroLifetimeProcessMetaData
@@ -386,11 +451,23 @@ interface Creep extends RoomObject {
     healers: string[]
   }
 
+  interface RangeAttackManagementProcessMetaData
+  {
+    flagName: string,
+    attackers: string[],
+    healers: string[]
+  }
+
   interface AttackerLifetimeProcessMetaData
   {
     creep: string[],
     flagName: string,
+  }
 
+  interface RangeAttackerLifetimeProcessMetaData
+  {
+    creep: string,
+    flagName: string,
   }
 
   interface RemoteBuilderLifetimeProcessMetaData
@@ -404,13 +481,19 @@ interface Creep extends RoomObject {
     flagName: string,
     creeps: string[],
   }
-  
+
   interface HelperLifetimeProcessMetaData
   {
     flagName: string,
     site: string,
   }
 
+  interface UpgradeLifetimeProcessMetaData
+  {
+    creep: string,
+    boosts?: string[],
+    boostRequests: BoostRequests,
+  }
 //// Minerals
 
 
@@ -433,4 +516,12 @@ interface TravelOptions {
   preferHW: boolean,         //Prefer to path through Highways
   preferRooms: string[],        //Prefer to path through a specific list of rooms
   avoidRooms: string[],         //Avoid pathing through a specific list of rooms
+}
+
+
+interface ExecOrder {
+  name: string,
+  cpu: number,
+  type: string,
+  faulted: boolean
 }

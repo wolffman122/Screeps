@@ -22,13 +22,15 @@ export class BounceAttackProcess extends Process
       return;
     }
 
+    Utils.clearDeadCreep(this.metaData.creep);
+
     if(!creep)
     {
       let creepName = 'attackB-' + flag.pos.roomName + '-' + Game.time;
       let spawned = Utils.spawn(
         this.kernel,
         spawnRoom,
-        'toughDefender',
+        'attack',
         creepName,
         {}
       );
@@ -73,6 +75,21 @@ export class BounceAttackProcess extends Process
           pos: healFlag.pos,
           range: 1
         });
+        return;
+      }
+
+      let structures = creep.room.find(FIND_HOSTILE_STRUCTURES)
+      if(structures.length)
+      {
+        let target = creep.pos.findClosestByRange(structures);
+
+        if(creep.pos.isNearTo(target))
+        {
+          creep.attack(target);
+          return;
+        }
+
+        creep.travelTo(target);
         return;
       }
     }

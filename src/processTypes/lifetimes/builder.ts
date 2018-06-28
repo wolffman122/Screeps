@@ -14,7 +14,7 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
 
     if(_.sum(creep.carry) === 0){
       let target = Utils.withdrawTarget(creep, this)
-      this.log('Target ' + target);
+
       if(!target)
       {
         if(creep.room.terminal && creep.room.terminal.my)
