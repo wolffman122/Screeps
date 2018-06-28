@@ -12,7 +12,7 @@ export class HealAttackProcess extends Process
     let flag = Game.flags[this.metaData.flagName];
     let creep = Game.creeps[this.metaData.creep];
 
-
+    Utils.clearDeadCreep(this.metaData.creep)
 
     if(!flag)
     {
@@ -21,6 +21,8 @@ export class HealAttackProcess extends Process
     }
 
     let spawnRoom = flag.name.split('-')[0];
+
+
 
     console.log(this.name, 1)
     if(!creep)
@@ -59,7 +61,7 @@ export class HealAttackProcess extends Process
     let roomCreeps = <Creep[]>creep.room.find(FIND_CREEPS);
 
     let hurtCreeps = _.filter(roomCreeps, (c) => {
-      return (c.hits < c.hitsMax);
+      return (c.hits < c.hitsMax && c.my);
     })
 
     console.log(this.name, 7)
