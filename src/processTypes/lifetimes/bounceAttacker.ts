@@ -48,7 +48,7 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
 
             let target = flag.pos.lookFor(LOOK_STRUCTURES)
 
-            if(target)
+            if(target.length)
             {
                 if(creep.pos.isNearTo(target[0]))
                 {
@@ -58,6 +58,24 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
 
                 creep.travelTo(target[0]);
                 return;
+            }
+            else
+            {
+                let targets = flag.pos.findInRange(FIND_HOSTILE_CREEPS, 10);
+                let target = creep.pos.findClosestByPath(targets);
+
+                if(target)
+                {
+                    if(creep.attack(target) === OK)
+                    {
+                        var direction = creep.pos.getDirectionTo(target);
+                        creep.move(direction);
+                    }
+                    else
+                    {
+                        creep.travelTo(target, {range: 1});
+                    }
+                }
             }
         }
     }
