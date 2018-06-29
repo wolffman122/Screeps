@@ -21,6 +21,7 @@ export class TransferProcess extends Process
   {
     let flag = Game.flags[this.metaData.flagName];
 
+    this.log('hello ' + this.name);
     if(!flag)
     {
       this.completed = true;

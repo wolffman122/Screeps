@@ -1,0 +1,10 @@
+Tracking Remote room expenditures vs income
+
+Idea: How much it cost in creeps, and repairs per hour, then how much is put back into controlled room per hour.
+
+Tasks
+1.  How much is put into controlled room per hour
+    - When creep makes deposit into structure log in LF process to management room process
+    - management room process keep track of all energy dumps of creeps from LF
+2.  How much is spent per hour on creep and repairs.
+

@@ -45,7 +45,7 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
 
     if(creep.room.storage && creep.room.terminal)
     {
-      if(creep.room.storage.store[this.metaData.mineralType]! > 20000)
+      if(creep.room.storage.store[this.metaData.mineralType]! > 20000 && (_.sum(creep.room.terminal!.store) !== creep.room.terminal!.storeCapacity))
       {
         this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
           target: creep.room.terminal.id,

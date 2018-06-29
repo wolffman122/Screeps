@@ -29,7 +29,7 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
 
     if(Game.time % 10 === 5)
     {
-      let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
+      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
 
       enemies = _.filter(enemies, (e: Creep)=> {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
@@ -42,7 +42,7 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
         {
           flag.memory.timeEnemies = Game.time;
         }
-        
+
         let fleeRoom = this.metaData.flagName.split('-')[1];
         creep.travelTo(RoomPosition(10,10, fleeRoom));
         return;
@@ -50,7 +50,7 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
       else
       {
         flag.memory.enemies = false;
-      }
+      }*/
     }
 
     let room = Game.rooms[this.metaData.targetRoom];

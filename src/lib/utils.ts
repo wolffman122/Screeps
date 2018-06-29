@@ -10,6 +10,11 @@ export const Utils = {
     })
   },
 
+  clearDeadCreep: function(name: string)
+  {
+    return !!Game.creeps[name];
+  },
+
   inflateCreeps: function(list: string[]): Creep[]{
     return _.transform(list, function(result, entry){
       result.push(Game.creeps[entry])
@@ -32,13 +37,26 @@ export const Utils = {
 
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
+
+    if(creepType === "rangeAttack")
+        {
+          console.log('Spawn result', body.length);
+        }
     let spawns = kernel.data.roomData[roomName].spawns
     let outcome = false
 
     _.forEach(spawns, function(spawn){
+      if(creepType === "rangeAttack")
+        {
+          console.log('Spawn result', spawn.canCreateCreep(body));
+        }
       if(!_.includes(kernel.data.usedSpawns, spawn.id) &&!spawn.spawning && spawn.canCreateCreep(body) === OK){
 
-        spawn.createCreep(body, name, memory)
+        let ret = spawn.createCreep(body, name, memory)
+        if(creepType === "rangeAttack")
+        {
+          console.log('Spawn result', ret);
+        }
         outcome = true
         kernel.data.usedSpawns.push(spawn.id)
       }
@@ -51,11 +69,6 @@ export const Utils = {
     let withdraws = <Structure[]>[].concat(
       <never[]>proc.kernel.data.roomData[creep.room.name].generalContainers
     )
-
-    if(creep.room.name == 'E42S48')
-    {
-      console.log('WTF WTF WTF 1')
-    }
 
     if(proc.kernel.data.roomData[creep.room.name].controllerLink)
     {
@@ -71,11 +84,6 @@ export const Utils = {
         <never[]>withdraws,
         <never[]>[creep.room.storage]
       )
-    }
-
-    if(creep.room.name == 'E42S48')
-    {
-      console.log('WTF WTF WTF ' + withdraws.length);
     }
 
     if(withdraws.length === 0){
@@ -181,7 +189,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 625000;
+      let max = room.controller!.level * 468750;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 
@@ -207,7 +215,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 312500;
+      let max = room.controller!.level * 375000;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].walls, 'hits') / kernel.data.roomData[roomName].walls.length);
 
@@ -267,6 +275,12 @@ export const Utils = {
     });*/
 
     return retValue;
+  },
+
+  clampDirection(direction: number): number {
+    while (direction < 1) direction += 8;
+    while (direction > 8) direction -= 8;
+    return direction;
   }
   /*
 

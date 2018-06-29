@@ -1,8 +1,8 @@
 import { LifetimeProcess } from "os/process";
 
-export class HoldHarvesterLifetimeProcess extends LifetimeProcess
+export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
 {
-  type = 'holdHarvesterlf';
+  type = 'holdHarvesterlfOpt';
 
   run()
   {
@@ -75,7 +75,10 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
           creep.travelTo(container);
         }
 
-        creep.harvest(source);
+        if((container.storeCapacity - _.sum(container.store)) >= (creep.getActiveBodyparts(WORK) * 2))
+        {
+            creep.harvest(source);
+        }
 
         if(container.hits <= container.hitsMax * .95 && _.sum(creep.carry) > 0)
         {

@@ -1,11 +1,12 @@
 import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { AttackerLifetimeProcess } from "../lifetimes/attacker";
+import { RangeAttackerLifetimeProcess } from "../lifetimes/rangeAttacker";
 
-export class GeneralAttackManagementProcess extends Process
+export class RangeAttackManagementProcess extends Process
 {
-    type = 'gamp';
-    metaData: GeneralAttackManagementProcessMetaData;
+    type = 'ra';
+    metaData : RangeAttackManagementProcessMetaData;
 
     ensureMetaData()
     {
@@ -24,6 +25,7 @@ export class GeneralAttackManagementProcess extends Process
     {
         this.ensureMetaData();
 
+        console.log(this.name, 1)
         let flag = Game.flags[this.metaData.flagName];
         let spawnRoom = this.metaData.flagName.split('-')[0];
         let numberOfAttackers = +this.metaData.flagName.split('-')[1];
@@ -36,35 +38,31 @@ export class GeneralAttackManagementProcess extends Process
         }
 
         this.metaData.attackers = Utils.clearDeadCreeps(this.metaData.attackers);
+        this.metaData.healers = Utils.clearDeadCreeps(this.metaData.healers);
 
-        console.log("Number Of Attackers", numberOfAttackers, "Number of healers", numberOfHealers, spawnRoom);
-
-
+        console.log(this.name, 2, this.metaData.attackers.length, numberOfAttackers)
         if(this.metaData.attackers.length < numberOfAttackers)
         {
-            let creepName = 'gamp-attack-'+flag.pos.roomName + '-' + Game.time;
+            console.log(this.name, 3)
+            let creepName = 'ra-attack-' + flag.pos.roomName + '-' + Game.time;
             let spawned = Utils.spawn(
                 this.kernel,
                 spawnRoom,
-                'attack',
+                'rangeAttack',
                 creepName,
                 {}
             )
+            console.log(this.name, 'spawned', spawned);
 
             if(spawned)
             {
+                console.log(this.name, 4)
                 this.metaData.attackers.push(creepName);
-                this.kernel.addProcessIfNotExist(AttackerLifetimeProcess, 'attacklf-' + creepName, this.priority-1, {
+                this.kernel.addProcessIfNotExist(RangeAttackerLifetimeProcess, 'ralf-' + creepName, this.priority-1, {
                     creep: creepName,
                     flagName: this.metaData.flagName
                 })
             }
         }
-
-        /*if(this.metaData.healers.length < numberOfHealers)
-        {
-
-        }*/
     }
-
 }

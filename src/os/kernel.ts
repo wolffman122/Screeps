@@ -37,19 +37,6 @@ import {ClaimProcess} from '../processTypes/empireActions/claim'
 import { HoldRoomManagementProcess } from 'processTypes/management/holdRoom';
 import { TransferProcess} from '../processTypes/empireActions/transfer'
 
-/*
-import {HoldRoomProcess} from '../processTypes/empireActions/hold'
-import {HoldProcess} from '../processTypes/creepActions/hold'
-import {MineralHarvestProcess} from '../processTypes/creepActions/mineralHarvest'
-import {MineralharvesterLifetimeProcess} from '../processTypes/lifetimes/mineralHarvester'
-import {MineralManagementProcess} from '../processTypes/management/mineral'
-
-
-
-import {RoomLayoutProcess} from '../processTypes/management/roomLayout'
-*/
-
-
 import {Stats} from '../lib/stats'
 import { HolderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holder';
 import { HoldProcess } from 'processTypes/empireActions/creepActions/hold';
@@ -79,6 +66,12 @@ import { GeneralAttackManagementProcess } from 'processTypes/management/generalA
 import { AttackerLifetimeProcess } from 'processTypes/lifetimes/attacker';
 import { HelperLifetimeProcess } from 'processTypes/lifetimes/Helper';
 import { HelpManagementProcess } from 'processTypes/management/help';
+import { DistroLifetimeOptProcess } from 'processTypes/lifetimes/distroOpt';
+import { UpgradeDistroLifetimeOptProcess } from 'processTypes/lifetimes/upgradeDistroOpt';
+import { HoldRoomOptManagementProcess } from 'processTypes/management/holdRoomOpt';
+import { HoldHarvesterOptLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderHarvesterOpt';
+import { RangeAttackManagementProcess } from 'processTypes/management/rangeAttack';
+import { RangeAttackerLifetimeProcess } from 'processTypes/lifetimes/rangeAttacker';
 
 
 
@@ -141,25 +134,13 @@ const processTypes = <{[type: string]: any}>{
   'attacklf': AttackerLifetimeProcess,
   'hmp': HelpManagementProcess,
   'hlp': HelperLifetimeProcess,
+  'dlfOpt': DistroLifetimeOptProcess,
+  'udlfOpt': UpgradeDistroLifetimeOptProcess,
+  'hrmOpt': HoldRoomOptManagementProcess,
+  'holdHarvesterlfOpt': HoldHarvesterOptLifetimeProcess,
+  'ra': RangeAttackManagementProcess,
+  'ralf': RangeAttackerLifetimeProcess,
 
-  /*
-
-
-
-  'holdRoom': HoldRoomProcess,
-  'hold': HoldProcess,
-  'mh': MineralHarvestProcess,
-  'mhlf': MineralharvesterLifetimeProcess,
-  'mineralManagement': MineralManagementProcess,
-
-
-
-
-
-
-  'roomLayout': RoomLayoutProcess,
-
-  */
 }
 
 interface KernelData{
@@ -191,7 +172,7 @@ export class Kernel{
     usedSpawns: []
   }
 
-  execOrder: {}[] = []
+  execOrder: ExecOrder[] = []
   suspendCount = 0
   schedulerUsage = 0;
 

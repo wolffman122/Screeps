@@ -1,0 +1,5 @@
+1.  Look into taking out marg10 and Daxten
+2. Harrasment Plot
+    - 2Heals, 25M 23RA
+    - Attack screeps
+    - If damaged then go to the edge and bounce

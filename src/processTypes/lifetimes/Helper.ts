@@ -1,6 +1,7 @@
 import { LifetimeProcess } from "os/process";
 import { HarvestProcess } from "../creepActions/harvest";
 import { BuildProcess } from "../creepActions/build";
+import { UpgradeProcess } from "../creepActions/upgrade";
 
 export class HelperLifetimeProcess extends LifetimeProcess
 {
@@ -15,6 +16,18 @@ export class HelperLifetimeProcess extends LifetimeProcess
       if(!flag || !creep)
       {
         this.completed = true;
+        return;
+      }
+
+      if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
+      {
+        if(creep.pos.isNearTo(creep.room.storage))
+        {
+          creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+          return;
+        }
+
+        creep.travelTo(creep.room.storage);
         return;
       }
 
@@ -48,6 +61,31 @@ export class HelperLifetimeProcess extends LifetimeProcess
             creep: creep.name,
             site: site.id
           });
+      }
+      else
+      {
+        if(_.sum(creep.carry) === 0)
+        {
+          let sources = _.filter(this.roomData().sources, (s)=>{
+            return (s.energy > 0);
+          })
+          let source = creep.pos.findClosestByPath(sources);
+
+          if(source)
+          {
+            this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+              source: source.id,
+              creep: creep.name
+            })
+          }
+        }
+
+        if(_.sum(creep.carry) !== 0)
+        {
+          this.fork(UpgradeProcess, 'upgrade-' + creep.name, this.priority - 1, {
+            creep: creep.name
+          })
+        }
       }
     }
 }

@@ -31,6 +31,8 @@ export class HelpManagementProcess extends Process
         let spawnRoom = this.metaData.flagName.split('-')[0];
         let numberOfHelpers = +this.metaData.flagName.split('-')[1];
 
+        this.metaData.creeps = Utils.clearDeadCreeps(this.metaData.creeps);
+
         if(this.metaData.creeps.length < numberOfHelpers)
         {
             let creepName = 'hmp-helper-' + spawnRoom + '-' + Game.time;

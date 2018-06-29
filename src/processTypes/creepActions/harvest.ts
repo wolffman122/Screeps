@@ -24,10 +24,10 @@ export class HarvestProcess extends Process{
       if(creep.getActiveBodyparts(WORK) >= 6)
       {
         targetPos = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id].pos
-        targetRange = 1
+        targetRange = 0
       }
     }
-    
+
 
     if(!creep.pos.inRangeTo(targetPos, targetRange)){
       creep.travelTo(targetPos);

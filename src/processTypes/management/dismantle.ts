@@ -7,24 +7,32 @@ export class DismantleManagementProcess extends Process
   metaData: DismantleManagementProcessMetaData
   type = 'dmp';
 
+  ensureMetaData()
+  {
+    if(!this.metaData.dismantleCreeps)
+    {
+      this.metaData.dismantleCreeps = [];
+    }
+  }
+
   run()
   {
+    this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
 
     this.log('Dismantle ' + flag);
-    if(this.name == 'dmpE42S48-Dismantle-2')
-    
+
     if(!flag)
     {
       this.completed = true;
       return;
     }
 
-    this.log('Metadata ' + this.metaData.dismantleCreeps.length);
     this.metaData.dismantleCreeps = Utils.clearDeadCreeps(this.metaData.dismantleCreeps);
 
     let deliverRoom = flag.name.split('-')[0];
-    let numberOfDismantlers = +flag.name.split('-')[2];
+    let numberOfDismantlers = +flag.name.split('-')[1];
+
 
     numberOfDismantlers = Math.min(numberOfDismantlers, 3);
 
@@ -32,8 +40,9 @@ export class DismantleManagementProcess extends Process
     {
       let creepName = 'dm-' + flag.pos.roomName + '-' + Game.time;
       let spawned = false;
+      this.log('Metadata ' + flag + 2 + flag.pos.roomName)
 
-      if(flag.room!.name === deliverRoom)
+      if(flag.pos.roomName === deliverRoom)
       {
         this.log('Before Spawn');
         spawned = Utils.spawn(

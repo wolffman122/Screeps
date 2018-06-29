@@ -7,6 +7,7 @@ import {UpgraderLifetimeProcess} from '../lifetimes/upgrader'
 import { SpinnerLifetimeProcess } from 'processTypes/lifetimes/spinner';
 import { LinkHarvesterLifetimeProcess } from 'processTypes/lifetimes/linkHarvester';
 import { UpgradeDistroLifetimeProcess } from 'processTypes/lifetimes/upgradeDistro';
+import { DistroLifetimeOptProcess } from '../lifetimes/distroOpt';
 
 export class EnergyManagementProcess extends Process{
   metaData: EnergyManagementMetaData
@@ -52,16 +53,42 @@ export class EnergyManagementProcess extends Process{
       let creepNames = Utils.clearDeadCreeps(proc.metaData.harvestCreeps[source.id])
       proc.metaData.harvestCreeps[source.id] = creepNames
       let creeps = Utils.inflateCreeps(creepNames)
-      let workRate = Utils.workRate(creeps, 2)
 
-      let dividend = 300
-      if(Game.rooms[proc.metaData.roomName].controller!.level < 3)
+      let count = 0;
+      _.forEach(creeps, (c) => {
+        let  ticksNeeded = c.body.length * 3;
+        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+      });
+
+      let controller = source.room.controller;
+      let numberOfHarvesters = 0;
+      if(controller && controller.my)
       {
-        dividend = 150;
+        switch(controller.level)
+        {
+          case 1:
+            numberOfHarvesters = 4;
+            break;
+          case 2:
+            numberOfHarvesters = 4;
+            break;
+          case 3:
+            numberOfHarvesters = 3;
+            break;
+          case 4:
+          case 5:
+          case 6:
+          case 7:
+          case 8:
+            numberOfHarvesters = 1;
+            break;
+          default:
+            numberOfHarvesters = 1;
+            break;
+        }
       }
 
-
-      if(workRate < source.energyCapacity / dividend) //300
+      if(count < numberOfHarvesters) //300
       {
         let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
         let spawned = false;
@@ -123,6 +150,7 @@ export class EnergyManagementProcess extends Process{
     })
 
     _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
+      let count = 0;
       if(proc.metaData.distroCreeps[container.id])
       {
         let creep = Game.creeps[proc.metaData.distroCreeps[container.id]]
@@ -130,8 +158,17 @@ export class EnergyManagementProcess extends Process{
           delete proc.metaData.distroCreeps[container.id]
           return
         }
+        else
+        {
+          let ticksNeeded = creep.body.length * 3;
+          if(!creep.ticksToLive || creep.ticksToLive > ticksNeeded)
+          {
+            count++;
+          }
+        }
       }
-      else
+
+      if(count < 1)
       {
         let creepName = 'em-m-' + proc.metaData.roomName + '-' + Game.time
         let spawned = Utils.spawn(
@@ -144,7 +181,7 @@ export class EnergyManagementProcess extends Process{
 
         if(spawned){
           proc.metaData.distroCreeps[container.id] = creepName
-          proc.kernel.addProcess(DistroLifetimeProcess, 'dlf-' + creepName, 48, {
+          proc.kernel.addProcess(DistroLifetimeOptProcess, 'dlf-' + creepName, 48, {
             sourceContainer: container.id,
             creep: creepName
           })
@@ -153,15 +190,22 @@ export class EnergyManagementProcess extends Process{
     })
 
     this.metaData.upgradeCreeps = Utils.clearDeadCreeps(this.metaData.upgradeCreeps)
+    let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
+
+    let count = 0;
+    _.forEach(creeps, (c) => {
+      let ticksNeeded = c.body.length * 3;
+      if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+    })
 
     let upgraders = 0;
     switch(this.metaData.roomName)
     {
-      case 'E42S48':
-        upgraders = 6;
+      case 'E36S43':
+        upgraders = 2;
         break;
       default:
-        upgraders = 1;
+        upgraders = 3;
         break;
     }
 
@@ -172,7 +216,7 @@ export class EnergyManagementProcess extends Process{
       upgraders = 1;
     }
 
-    if(this.metaData.upgradeCreeps.length < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0)
+    if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0)
     {
       let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
       let spawned = false;
@@ -253,16 +297,22 @@ export class EnergyManagementProcess extends Process{
     if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
     {
       this.metaData.upgradeDistroCreeps = Utils.clearDeadCreeps(this.metaData.upgradeDistroCreeps);
+      let creeps = Utils.inflateCreeps(this.metaData.upgradeDistroCreeps)
 
+      let count = 0;
+      _.forEach(creeps, (c) => {
+        let ticksNeeded = c.body.length * 3 + 10;
+        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+      })
       let upgradeDistroAmount = 1;
 
       switch(this.metaData.roomName)
       {
-        case 'E42S48':
+        case 'E36S43':
           upgradeDistroAmount = 2;
           break;
         default:
-          upgradeDistroAmount = 1;
+          upgradeDistroAmount = 2;
           break;
       }
 
@@ -271,7 +321,7 @@ export class EnergyManagementProcess extends Process{
         upgradeDistroAmount = 1;
       }
 
-      if(this.metaData.upgradeDistroCreeps.length < upgradeDistroAmount)
+      if(count < upgradeDistroAmount)
       {
         let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
         let spawned = false;
@@ -288,26 +338,13 @@ export class EnergyManagementProcess extends Process{
         }
         else
         {
-          if(upgraders == 4)
-          {
-            spawned = Utils.spawn(
-              proc.kernel,
-              proc.metaData.roomName,
-              'bigMover',
-              creepName,
-              {max: 48}
-            )
-          }
-          else
-          {
-            spawned = Utils.spawn(
-              proc.kernel,
-              proc.metaData.roomName,
-              'bigMover',
-              creepName,
-              {}
-            )
-          }
+          spawned = Utils.spawn(
+            proc.kernel,
+            proc.metaData.roomName,
+            'bigMover',
+            creepName,
+            {max: 48}
+          );
         }
 
         if(spawned)

@@ -17,7 +17,6 @@ export const CreepBuilder = {
     }).length
     let emergancy = (creepType === 'harvester' && creepCount < 2) || (creepType === 'mover' && creepCount < 4)
 
-
     if(emergancy){
       spendCap = 300
     }else{
@@ -27,17 +26,22 @@ export const CreepBuilder = {
     let add = true
     let extendIndex = 0
 
+    if(CreepBuilder.typeExtends[creepType].length === 0)
+    {
+      add = false;
+    }
+
     while(add){
       var creepCost = CreepBuilder.bodyCost(body)
 
       if(memory.addition)
       {
-
         creepType = memory.addition;
       }
 
       var nextPart = <BodyPartConstant>CreepBuilder.typeExtends[creepType][extendIndex]
       let maximum = CreepBuilder.typeLengths[creepType];
+
       if(memory.max)
       {
         maximum = memory.max;
@@ -85,9 +89,9 @@ export const CreepBuilder = {
   },
 
   typeStarts: <PartList>{
-    'claimer': [TOUGH, MOVE, MOVE, CLAIM],
+    'claimer': [TOUGH, CLAIM, MOVE, MOVE, MOVE, MOVE],
     'harvester': [WORK, WORK, CARRY, MOVE],
-    'hold': [CLAIM, CLAIM, MOVE],
+    'hold': [CLAIM, MOVE],
     'mover': [CARRY, MOVE],
     'bigMover': [CARRY, MOVE],
     'worker': [WORK, CARRY, MOVE, MOVE],
@@ -99,20 +103,24 @@ export const CreepBuilder = {
     'mineralHarvester': [MOVE,WORK,WORK,CARRY,CARRY,CARRY],
     'remoteWorker': [TOUGH, TOUGH, WORK, CARRY, MOVE, MOVE],
     'upgrader1': [WORK, CARRY, CARRY, CARRY, MOVE,MOVE],
-    'toughDefender': [TOUGH,TOUGH,MOVE],
+    'toughDefender': [ATTACK,TOUGH,TOUGH,MOVE],
     'healer': [HEAL, HEAL, MOVE],
-    'attack': [TOUGH, TOUGH, ATTACK, ATTACK, MOVE, MOVE],
+    'attack': [ATTACK, MOVE],
     'attackController': [CLAIM, MOVE],
     'dismantler': [WORK,WORK,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
+    'rangeAttack': [RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+      MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+      MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
+      RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL]
   },
 
   typeExtends: <PartList>{
-    'claimer': [CLAIM],
+    'claimer': [TOUGH, CLAIM, MOVE, MOVE, MOVE, MOVE],
     'harvester': [MOVE, WORK],
     'bigHarvester': [WORK, WORK, MOVE],
-    'hold': [CLAIM, CLAIM, MOVE],
+    'hold': [CLAIM, MOVE],
     'mover': [CARRY, CARRY, MOVE],
     'bigMover': [CARRY, CARRY, MOVE],
     //'worker': [WORK, CARRY, MOVE, MOVE]
@@ -127,18 +135,19 @@ export const CreepBuilder = {
     'upgrader1': [WORK, WORK, MOVE],
     'toughDefender': [TOUGH, TOUGH, MOVE],
     'healer': [HEAL, HEAL, MOVE],
-    'attack': [TOUGH, TOUGH, ATTACK, ATTACK, MOVE, MOVE],
+    'attack': [ATTACK, MOVE],
     'attackController': [CLAIM, MOVE],
     'dismantler': [WORK, WORK, MOVE],
     'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
+    'rangeAttack': [],
   },
 
   typeLengths: <{[name: string]: number}>{
-    'claimer': 4,
+    'claimer': 12,
     'harvester': 14,
-    'hold': 3,
+    'hold': 4,
     'mover': 32,
     'bigMover': 42,
     'worker': 16,
@@ -152,10 +161,11 @@ export const CreepBuilder = {
     'upgrader1': 27,
     'toughDefender': 48,
     'healer': 39,
-    'attack': 30,
+    'attack': 50,
     'attackController': 10,
-    'dismantler': 50,
+    'dismantler': 48,
     'labDistro': 40,
-    'special': 2
+    'special': 2,
+    'rangeAttack': 50
   }
 }
