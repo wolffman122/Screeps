@@ -62,9 +62,14 @@ export const CreepBuilder = {
       }
     }
 
-    return _.sortBy(body, function(part){
+    let temp = _.chunk(body, body.length - 1)[0];
+    temp = _.sortBy(temp, function(part){
       return CreepBuilder.partWeight[part]
     }) as BodyPartConstant[];
+
+    let last = _.chunk(body, body.length -1)[1];
+    temp.push(last[0]);
+    return temp;
   },
 
   bodyCost: function(body: BodyPartConstant[]){
