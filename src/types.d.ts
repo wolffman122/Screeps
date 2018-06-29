@@ -357,7 +357,13 @@ interface RoomPosition {
     flagName: string
   }
 
-  interface BounceAttackMetaData
+  interface BounceAttackManagementMetaData
+  {
+    bounceAttackCreeps: string[],
+    flagName: string
+  }
+
+  interface BounceAttackerLifetimeProcessMetaData
   {
     creep: string,
     flagName: string

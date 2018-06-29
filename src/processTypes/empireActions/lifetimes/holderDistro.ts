@@ -1,4 +1,6 @@
 import { LifetimeProcess } from "os/process";
+import { TransferProcess } from "../transfer";
+import { DeliverProcess } from "../../creepActions/deliver";
 
 
 export class HoldDistroLifetimeProcess extends LifetimeProcess
@@ -25,7 +27,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
     if(Game.time % 10 === 5)
     {
-      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
+      let enemies = creep.room!.find(FIND_HOSTILE_CREEPS);
 
       enemies = _.filter(enemies, (e: Creep)=> {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
@@ -34,31 +36,37 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       if(enemies.length > 0)
       {
         flag.memory.enemies = true;
-        if(flag.memory.timeEnemies === undefined)
+        if(!flag.memory.timeEnemies)
         {
           flag.memory.timeEnemies = Game.time;
         }
       }
-      else
-      {
-        flag.memory.enemies = false;
-        flag.memory.timeEnemies = undefined;
-      }*/
     }
 
     if(flag.memory.enemies)
     {
-      let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
-      if(fleeFlag)
+      if(_.sum(creep.carry) > 0)
       {
-        this.log('Flee Room');
-        creep.travelTo(fleeFlag.pos);
-        return;
+        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority -1,{
+          creep: creep.name,
+          target: creep.room.storage!.id,
+          resource: RESOURCE_ENERGY
+        })
       }
       else
       {
-        creep.travelTo(RoomPosition(10,10, this.metaData.spawnRoom));
-        return;
+        let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
+        if(fleeFlag)
+        {
+          this.log('Flee Room');
+          creep.travelTo(fleeFlag.pos);
+          return;
+        }
+        else
+        {
+          creep.travelTo(RoomPosition(10,10, this.metaData.spawnRoom));
+          return;
+        }
       }
     }
 
@@ -120,7 +128,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     {
       let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
 
-      links = creep.pos.findInRange(links, 6);
+      links = creep.pos.findInRange(links, 8);
       links = _.filter(links, (l) => {
         return (l.energy == 0 || l.cooldown == 0);
       });

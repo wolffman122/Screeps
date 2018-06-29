@@ -6,7 +6,7 @@ import {TransferProcess} from '../processTypes/empireActions/transfer'
 import { HoldRoomManagementProcess } from 'processTypes/management/holdRoom';
 import { RemoteDefenseManagementProcess } from 'processTypes/management/remoteDefense';
 import { AttackControllerManagementProcess } from 'processTypes/management/attackController';
-import { BounceAttackProcess } from 'processTypes/management/bounceAttack';
+import { BounceAttackManagementProcess } from 'processTypes/management/bounceAttack';
 import { HealAttackProcess } from 'processTypes/management/healAttack';
 import { SignControllerProcess } from './management/sign';
 import { GeneralAttackManagementProcess } from './management/generalAttack';
@@ -58,7 +58,7 @@ export class FlagWatcherProcess extends Process
 
   BounceAttack(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(BounceAttackProcess, 'bounce-' + flag.name, 31, {flagName: flag.name});
+    this.kernel.addProcessIfNotExist(BounceAttackManagementProcess, 'bamp-' + flag.name, 31, {flagName: flag.name});
   }
 
   HealAttack(flag: Flag)
