@@ -56,8 +56,13 @@ export class MineralManagementProcess extends Process
       this.metaData.mining = false;
     }
 
+    if(mineral.mineralType === RESOURCE_CATALYST)
+    {
+      Game.notify(this.metaData.roomName + ' Mineral X should be mining' + mineral.mineralAmount + ' ' + terminal + ' ' + terminal!.store[mineral.mineralType]);
+    }
+
     //if(this.metaData.mining && mineral.mineralAmount > 0)
-    if(this.metaData.mining || (mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
+    if((mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
     {
       this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
       this.metaData.mineralHaulers = Utils.clearDeadCreeps(this.metaData.mineralHaulers);

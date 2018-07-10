@@ -132,7 +132,7 @@ interface Flag {
   {
     [resourceType: string]:
     {
-      flagName: string;
+      flagName?: string;
       requesterIds: string[];
     };
   }
@@ -168,6 +168,7 @@ interface Flag {
     avoid: number;
     cache: {[key: string]: any};
     numSites: number;
+    boostRequests: BoostRequests;
   }
 
   interface SpawnMemory {}
@@ -516,8 +517,9 @@ interface Flag {
   interface UpgradeLifetimeProcessMetaData
   {
     creep: string,
+    roomName: string,
     boosts?: string[],
-    boostRequests: BoostRequests,
+    allowUnboosted?: boolean,
   }
 //// Minerals
 

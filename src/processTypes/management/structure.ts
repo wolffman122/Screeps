@@ -79,7 +79,7 @@ export class StructureManagementProcess extends Process{
         {
           let health = Utils.rampartHealth(this.kernel, this.metaData.roomName);
           let target = controller.level * RAMPARTTARGET;
-          if(health > target * .95)
+          if(health > target * .98)
           {
             reapirCount = 1;
           }
