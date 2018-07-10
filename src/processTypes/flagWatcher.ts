@@ -14,6 +14,7 @@ import { RemoteBuilderLifetimeProcess } from './lifetimes/remoteBuilder';
 import { HelpManagementProcess } from './management/help';
 import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
 import { RangeAttackManagementProcess } from './management/rangeAttack';
+import { SquadManagementProcess } from './management/squad';
 
 export class FlagWatcherProcess extends Process
 {
@@ -86,6 +87,11 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + flag.name, 35, {flagName: flag.name});
   }
 
+  SquadAttack(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(SquadManagementProcess, 'sqm-' + flag.name, 31, {flagName: flag.name});
+  }
+
   run()
   {
     this.completed = true;
@@ -125,14 +131,14 @@ export class FlagWatcherProcess extends Process
         case COLOR_ORANGE:
           proc.transferFlag(flag);
           break;
-        case COLOR_GREEN:
-          proc.AttackController(flag);
-          break;
         case COLOR_BROWN:
           switch(flag.secondaryColor)
           {
             case COLOR_RED:
               proc.GeneralAttack(flag);
+              break;
+            case COLOR_PURPLE:
+              proc.SquadAttack(flag);
               break;
             case COLOR_BLUE:
               proc.RangeAttack(flag);

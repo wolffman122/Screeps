@@ -148,3 +148,18 @@ Creep.prototype.idleOffRoad = function(anchor: {pos: RoomPosition}, maintainDist
 
   return this.travelTo(anchor) as number;
 }
+
+Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
+{
+  let flags = [];
+  for(let i = 0; i < max; i++)
+  {
+      let flag = Game.flags[identifier + '-' + i];
+      if(flag)
+      {
+          flags.push(flag);
+      }
+  }
+
+  return flags;
+}

@@ -73,6 +73,9 @@ import { HoldHarvesterOptLifetimeProcess } from 'processTypes/empireActions/life
 import { RangeAttackManagementProcess } from 'processTypes/management/rangeAttack';
 import { RangeAttackerLifetimeProcess } from 'processTypes/lifetimes/rangeAttacker';
 import { BounceAttackerLifetimeProcess } from 'processTypes/lifetimes/bounceAttacker';
+import { SquadManagementProcess } from 'processTypes/management/squad';
+import { HealerLifetimeProcess } from 'processTypes/lifetimes/healer';
+import { SquadAttackerLifetimeProcess } from 'processTypes/lifetimes/squadAttacker';
 
 
 
@@ -143,6 +146,9 @@ const processTypes = <{[type: string]: any}>{
   'ra': RangeAttackManagementProcess,
   'ralf': RangeAttackerLifetimeProcess,
   'balf': BounceAttackerLifetimeProcess,
+  'sqm': SquadManagementProcess,
+  'heallf': HealerLifetimeProcess,
+  'salf': SquadAttackerLifetimeProcess,
 }
 
 interface KernelData{

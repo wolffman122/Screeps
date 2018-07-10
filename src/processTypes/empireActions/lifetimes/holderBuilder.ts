@@ -27,7 +27,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
       this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
         creep: creep.name,
         pos: flag.pos,
-        range: 1
+        range: 3
       });
 
       return;

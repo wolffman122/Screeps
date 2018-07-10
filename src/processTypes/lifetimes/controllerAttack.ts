@@ -48,10 +48,10 @@ export class ControllerAttackLifetimeProcess extends LifetimeProcess
       creep.attackController(creep.room.controller!);
     }
 
-    if(creep.room.controller!.progress === 0)
+    /*if(creep.room.controller!.progress === 0)
     {
       creep.room.createFlag(creep.room.controller!.pos, 'Claim', COLOR_BLUE);
-    }
+    }*/
 
     if(creep.ticksToLive === 1)
     {

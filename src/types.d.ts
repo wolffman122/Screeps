@@ -9,6 +9,7 @@ interface Creep extends RoomObject {
     withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
+    getFlags(identifier: string, max: Number): Flag[]
   }
 
 interface RoomPosition {
@@ -19,6 +20,9 @@ interface RoomPosition {
   openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
 }
 
+interface Flag {
+
+}
 
   declare namespace NodeJS{
     interface Global {
@@ -201,6 +205,21 @@ interface RoomPosition {
     upgradeDistroCreeps: string[]
     upgradePrespawn?: boolean
     upgradeDistroPrespawn?: boolean
+  }
+
+  interface SquadManagementProcessMetaData
+  {
+    attackers: string[],
+    healers: string[],
+    flagName: string,
+  }
+
+  interface SquadAttackerLifetimeProcessMetaData
+  {
+    creep: string,
+    follower: string,
+    identifier: string,
+    number: number
   }
 
   interface StructureManagementProcessMetaData

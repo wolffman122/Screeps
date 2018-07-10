@@ -189,7 +189,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 468750;
+      let max = room.controller!.level * RAMPARTTARGET;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 
@@ -327,3 +327,5 @@ export const Utils = {
     console.log("Used CPU", Game.cpu.getUsed() - startCpu);
   }*/
 }
+
+export const RAMPARTTARGET = 468750;
