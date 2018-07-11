@@ -134,7 +134,7 @@ interface Flag {
     {
       flagName?: string;
       requesterIds: string[];
-    };
+    }|undefined;
   }
 
 

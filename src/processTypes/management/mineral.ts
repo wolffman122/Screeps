@@ -62,7 +62,7 @@ export class MineralManagementProcess extends Process
     }
 
     //if(this.metaData.mining && mineral.mineralAmount > 0)
-    if((mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
+    if(this.metaData.mining || (mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
     {
       this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
       this.metaData.mineralHaulers = Utils.clearDeadCreeps(this.metaData.mineralHaulers);
@@ -91,6 +91,9 @@ export class MineralManagementProcess extends Process
         case 'E51S49':
         case 'E52S46':
           harvesters = 3;
+          break;
+        case 'E36S43':
+          harvesters = 4;
           break;
         default:
           harvesters = 0;
