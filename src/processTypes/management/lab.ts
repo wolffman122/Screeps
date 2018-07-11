@@ -213,7 +213,10 @@ export class LabManagementProcess extends Process
     }
 
 
-    let command = this.checkReagentLabs();
+    let command = this.checkPullFlags();
+    if(command) return command;
+
+    command = this.checkReagentLabs();
     if(command) return command;
 
     command = this.checkProductLabs();
@@ -750,6 +753,43 @@ export class LabManagementProcess extends Process
     {
       console.log("IGOR: placing boost flag:", outcome);
       return outcome;
+    }
+  }
+
+  private checkPullFlags(): any
+  {
+    if(!this.productLabs)
+      return;
+
+    for(let lab of this.productLabs)
+    {
+      if(this.terminal!.store.energy >= CARRY_CAPACITY && lab.energy < CARRY_CAPACITY)
+      {
+        //restore boosting energy to lab
+        return { Origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
+      }
+
+      let flag = lab.pos.lookFor(LOOK_FLAGS)[0];
+      if(!flag)
+        continue;
+
+      let mineralType = flag.name.substring(flag.name.indexOf("_") + 1);
+      if(!_.include(PRODUCT_LIST, mineralType))
+      {
+        console.log("ERROR: invalid lab request:", flag.name);
+        return; // early
+      }
+
+      if(lab.mineralType && lab.mineralType !== mineralType)
+      {
+        // empty wrong mineral type
+        return {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType };
+      }
+      else if(lab.mineralCapacity - lab.mineralAmount >= CARRY_CAPACITY && this.terminal!.store[mineralType] >= CARRY_CAPACITY)
+      {
+        // bring mineral to lab when amount is below carry capacity
+        return { origin: this.terminal!.id, destination: lab.id, resourceType: mineralType};
+      }
     }
   }
 }
