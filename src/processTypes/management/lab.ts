@@ -703,6 +703,10 @@ export class LabManagementProcess extends Process
     {
       let request = requests[resourceType];
 
+      if(this.metaData.roomName === 'E45S48')
+          {
+            console.log(this.name, resourceType);
+          }
       if(request)
       {
         for(let id of request.requesterIds)
@@ -720,11 +724,15 @@ export class LabManagementProcess extends Process
         {
           console.log("IGOR: removing boost flag:", flag.name);
           flag.remove();
-          requests[resourceType] = undefined;
+          requests[resourceType] = {flagName: undefined, requesterIds: []};
         }
 
-        if(request.requesterIds.length > 0 && flag)
+        if(request.requesterIds.length > 0 && !flag)
         {
+          if(this.metaData.roomName === 'E45S48')
+          {
+            console.log(this.name, "Going to place a flag");
+          }
           request.flagName = this.placePullFlag(resourceType);
         }
       }
@@ -741,6 +749,10 @@ export class LabManagementProcess extends Process
     if(labs.length === 0)
       return;
 
+      if(this.metaData.roomName === 'E45S48')
+    {
+      console.log(this.name, "Place Pull Flag");
+    }
 
     let closestToSpawn = this.roomData().spawns[0].pos.findClosestByRange(labs);
     if(this.productLabs!.length > 1)

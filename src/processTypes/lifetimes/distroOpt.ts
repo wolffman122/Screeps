@@ -10,6 +10,12 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
+    if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable)
+    {
+      let storage = creep.room.storage;
+      if(storage)
+        creep.idleOffRoad(storage, false);
+    }
     if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 50)
     {
       if(creep.memory.storageDelivery == true)

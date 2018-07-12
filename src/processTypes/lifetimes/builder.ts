@@ -72,8 +72,13 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
       })
 
       return
-    }else{
-      creep.say('spare')
+    }else
+    {
+      if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+      {
+        creep.say('spare')
+      }
+
     }
   }
 }

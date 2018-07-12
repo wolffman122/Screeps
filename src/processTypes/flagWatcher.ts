@@ -67,11 +67,6 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(HealAttackProcess, 'healAttack-' + flag.name, 29, {flagName: flag.name});
   }
 
-  SignController(flag: Flag)
-  {
-    this.kernel.addProcessIfNotExist(SignControllerProcess, 'sign-' + flag.name, 35, {flagName: flag.name});
-  }
-
   GeneralAttack(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(GeneralAttackManagementProcess, 'gamp-' + flag.name, 40, {flagName: flag.name});
@@ -153,9 +148,6 @@ export class FlagWatcherProcess extends Process
               proc.AttackController(flag);
               break;
           }
-          break;
-        case COLOR_WHITE:
-          proc.SignController(flag);
           break;
       }
     })

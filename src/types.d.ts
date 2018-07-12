@@ -10,6 +10,7 @@ interface Creep extends RoomObject {
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
+    boostRequest(boosts: string[], allowUnboosted: boolean): any
   }
 
 interface RoomPosition {
@@ -134,7 +135,7 @@ interface Flag {
     {
       flagName?: string;
       requesterIds: string[];
-    }|undefined;
+    };
   }
 
 
@@ -519,7 +520,7 @@ interface Flag {
     creep: string,
     roomName: string,
     boosts?: string[],
-    allowUnboosted?: boolean,
+    allowUnboosted: boolean,
   }
 //// Minerals
 

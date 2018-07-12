@@ -137,7 +137,10 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           }
           else
           {
-            this.suspend = 10;
+            if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+            {
+              this.suspend = 10;
+            }
             return;
           }
         }
@@ -155,7 +158,10 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         }
         else
         {
-          this.suspend = shortestDecay;
+          if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+          {
+            this.suspend = 10;
+          }
           return;
         }
       }

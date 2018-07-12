@@ -15,105 +15,20 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
-    if(creep.name === 'em-u-E45S48-10023612')
-    {
-      this.log('Found Creeeeeep')
-    }
-
     if((this.kernel.data.roomData[creep.room!.name].labs.length === 0) || (creep.room.controller && creep.room.controller.level < 6))
     {
       this.metaData.boosts = undefined;
     }
 
-    if(this.metaData.boosts)
+    if(this.metaData.boosts && this.metaData.allowUnboosted !== undefined)
     {
-      console.log(this.name, "boost start !!!!!!!!!1", this.metaData.boosts)
-      let boosted = true;
-      for(let boost of this.metaData.boosts)
+      if(creep.boostRequest(this.metaData.boosts, this.metaData.allowUnboosted) == OK)
       {
-        console.log(this.name, 'boost 2');
-        if(creep.memory[boost])
-        {
-          console.log(this.name, 'boost 3')
-          continue;
-        }
-
-        console.log(this.name, 'boost 4')
-        let room = Game.rooms[this.metaData.roomName];
-
-        if(room)
-        {
-          console.log(this.name, 'boost 5')
-          let requests = room.memory.boostRequests;
-          if(!requests)
-          {
-            console.log(this.name, 'boost 6')
-            creep.memory[boost] = true;
-            continue;
-          }
-
-          console.log(this.name, 'boost 7')
-          if(!requests[boost])
-          {
-            console.log(this.name, 'boost 8')
-            requests[boost] = { flagName: undefined, requesterIds: [] };
-          }
-
-          // check if already boosted
-          let boostedPart = _.find(creep.body, {boost: boost});
-          if(boostedPart)
-          {
-            console.log(this.name, 'boost 9')
-            creep.memory[boost] = true;
-            requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
-            continue;
-          }
-
-          console.log(this.name, 'boost 10')
-          boosted = false;
-          if(!_.include(requests[boost].requesterIds, creep.id))
-          {
-            requests[boost].requesterIds.push(creep.id);
-          }
-
-          if(creep.spawning)
-            continue;
-
-          let flag = Game.flags[requests[boost].flagName!];
-          if(!flag)
-          {
-            console.log(this.name, 'boost 11')
-            continue;
-          }
-
-          let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
-
-          if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
-          {
-            if(creep.pos.isNearTo(lab))
-            {
-              lab.boostCreep(creep);
-            }
-            else
-            {
-              creep.travelTo(lab);
-              return;
-            }
-          }
-          else if(this.metaData.allowUnboosted)
-          {
-            console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
-            requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
-            creep.memory[boost] = true;
-          }
-          else
-          {
-            if(Game.time % 10 === 0)
-              console.log("BOOST: no boost for", creep.name);
-            creep.idleOffRoad(creep.room!.storage!, false);
-            return;
-          }
-        }
+        this.metaData.boosts = undefined;
+      }
+      else
+      {
+        return;
       }
     }
 
