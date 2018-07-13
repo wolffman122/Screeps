@@ -165,7 +165,7 @@ Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
   return flags;
 }
 
-Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean)
+Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean): any
 {
   let boosted = true;
   for(let boost of boosts)
@@ -227,7 +227,7 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
         else
         {
           this.travelTo(lab);
-          return;
+          return ERR_BUSY;
         }
       }
       else if(allowUnboosted)
@@ -235,6 +235,7 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
         console.log("BOOST: no boost for", this.name, " so moving on (alloweUnboosted = true)");
         requests[boost].requesterIds = _.pull(requests[boost].requesterIds, this.id);
         this.memory[boost] = true;
+        return;
       }
       else
       {

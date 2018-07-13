@@ -20,15 +20,86 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       this.metaData.boosts = undefined;
     }
 
-    if(this.metaData.boosts && this.metaData.allowUnboosted !== undefined)
+
+    if(this.metaData.boosts)
     {
-      if(creep.boostRequest(this.metaData.boosts, this.metaData.allowUnboosted) == OK)
+      let boosted = true;
+      for(let boost of this.metaData.boosts)
       {
-        this.metaData.boosts = undefined;
-      }
-      else
-      {
-        return;
+        if(creep.memory[boost])
+        {
+          continue;
+        }
+
+        let room = Game.rooms[creep.pos.roomName];
+
+        if(room)
+        {
+          let requests = room.memory.boostRequests;
+          if(!requests)
+          {
+            creep.memory[boost] = true;
+            continue;
+          }
+
+          if(!requests[boost])
+          {
+            requests[boost] = { flagName: undefined, requesterIds: [] };
+          }
+
+          // check if already boosted
+          let boostedPart = _.find(creep.body, {boost: boost});
+          if(boostedPart)
+          {
+            creep.memory[boost] = true;
+            requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+            continue;
+          }
+
+          boosted = false;
+          if(!_.include(requests[boost].requesterIds, creep.id))
+          {
+            requests[boost].requesterIds.push(creep.id);
+          }
+
+          if(creep.spawning)
+            continue;
+
+          let flag = Game.flags[requests[boost].flagName!];
+          if(!flag)
+          {
+            continue;
+          }
+
+          let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
+
+          if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
+          {
+            if(creep.pos.isNearTo(lab))
+            {
+              lab.boostCreep(creep);
+            }
+            else
+            {
+              creep.travelTo(lab);
+              return;
+            }
+          }
+          else if(this.metaData.allowUnboosted)
+          {
+            console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
+            requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+            creep.memory[boost] = true;
+            return;
+          }
+          else
+          {
+            if(Game.time % 10 === 0)
+              console.log("BOOST: no boost for", creep.name);
+              creep.idleOffRoad(creep.room!.storage!, false);
+            return;
+          }
+        }
       }
     }
 
@@ -122,7 +193,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
     // If the creep has been refilled
     if (!creep.pos.inRangeTo(creep.room.controller!, 3)){
-      creep.travelTo(creep.room.controller!);
+      creep.travelTo(creep.room.controller!, {range: 3});
     }else{
       creep.upgradeController(creep.room.controller!);
     }
