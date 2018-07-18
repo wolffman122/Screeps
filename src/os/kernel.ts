@@ -55,7 +55,7 @@ import { MineralDistroLifetimeProcess } from 'processTypes/lifetimes/mineralDist
 import { AttackControllerManagementProcess } from 'processTypes/management/attackController';
 import { MarketManagementProcess } from 'processTypes/management/market';
 import { TerminalManagementProcess } from 'processTypes/buildingProcesses/terminal';
-import { BounceAttackProcess } from 'processTypes/management/bounceAttack';
+import { BounceAttackManagementProcess } from 'processTypes/management/bounceAttack';
 import { HealAttackProcess } from 'processTypes/management/healAttack';
 import { ControllerAttackLifetimeProcess } from 'processTypes/lifetimes/controllerAttack';
 import { MinetalTerminalManagementProcess } from 'processTypes/buildingProcesses/mineralTerminal';
@@ -72,6 +72,11 @@ import { HoldRoomOptManagementProcess } from 'processTypes/management/holdRoomOp
 import { HoldHarvesterOptLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderHarvesterOpt';
 import { RangeAttackManagementProcess } from 'processTypes/management/rangeAttack';
 import { RangeAttackerLifetimeProcess } from 'processTypes/lifetimes/rangeAttacker';
+import { BounceAttackerLifetimeProcess } from 'processTypes/lifetimes/bounceAttacker';
+import { SquadManagementProcess } from 'processTypes/management/squad';
+import { HealerLifetimeProcess } from 'processTypes/lifetimes/healer';
+import { SquadAttackerLifetimeProcess } from 'processTypes/lifetimes/squadAttacker';
+
 
 
 
@@ -123,7 +128,7 @@ const processTypes = <{[type: string]: any}>{
   'acmp': AttackControllerManagementProcess,
   'market': MarketManagementProcess,
   'terminal' : TerminalManagementProcess,
-  'bounce' : BounceAttackProcess,
+  'bamp' : BounceAttackManagementProcess,
   'healAttack' : HealAttackProcess,
   'calf' : ControllerAttackLifetimeProcess,
   'mineralTerminal': MinetalTerminalManagementProcess,
@@ -140,7 +145,10 @@ const processTypes = <{[type: string]: any}>{
   'holdHarvesterlfOpt': HoldHarvesterOptLifetimeProcess,
   'ra': RangeAttackManagementProcess,
   'ralf': RangeAttackerLifetimeProcess,
-
+  'balf': BounceAttackerLifetimeProcess,
+  'sqm': SquadManagementProcess,
+  'heallf': HealerLifetimeProcess,
+  'salf': SquadAttackerLifetimeProcess,
 }
 
 interface KernelData{

@@ -1,5 +1,6 @@
 import { WHITE_LIST } from "processTypes/buildingProcesses/mineralTerminal";
 import { Utils } from "lib/utils";
+import { LABDISTROCAPACITY } from "processTypes/management/lab";
 
 Creep.prototype.transferEverything = function(target: Creep|StructureContainer|StructureStorage|StructureTerminal)
 {
@@ -147,4 +148,102 @@ Creep.prototype.idleOffRoad = function(anchor: {pos: RoomPosition}, maintainDist
   }
 
   return this.travelTo(anchor) as number;
+}
+
+Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
+{
+  let flags = [];
+  for(let i = 0; i < max; i++)
+  {
+      let flag = Game.flags[identifier + '-' + i];
+      if(flag)
+      {
+          flags.push(flag);
+      }
+  }
+
+  return flags;
+}
+
+Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean): any
+{
+  let boosted = true;
+  for(let boost of boosts)
+  {
+    if(this.memory[boost])
+    {
+      continue;
+    }
+
+    let room = Game.rooms[this.pos.roomName];
+
+    if(room)
+    {
+      let requests = room.memory.boostRequests;
+      if(!requests)
+      {
+        this.memory[boost] = true;
+        continue;
+      }
+
+      if(!requests[boost])
+      {
+        requests[boost] = { flagName: undefined, requesterIds: [] };
+      }
+
+      // check if already boosted
+      let boostedPart = _.find(this.body, {boost: boost});
+      if(boostedPart)
+      {
+        this.memory[boost] = true;
+        requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, this.id);
+        continue;
+      }
+
+      boosted = false;
+      if(!_.include(requests[boost].requesterIds, this.id))
+      {
+        requests[boost].requesterIds.push(this.id);
+      }
+
+      if(this.spawning)
+        continue;
+
+      let flag = Game.flags[requests[boost].flagName!];
+      if(!flag)
+      {
+        continue;
+      }
+
+      let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
+
+      if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
+      {
+        if(this.pos.isNearTo(lab))
+        {
+          lab.boostCreep(this);
+          return OK;
+        }
+        else
+        {
+          this.travelTo(lab);
+          return ERR_BUSY;
+        }
+      }
+      else if(allowUnboosted)
+      {
+        console.log("BOOST: no boost for", this.name, " so moving on (alloweUnboosted = true)");
+        requests[boost].requesterIds = _.pull(requests[boost].requesterIds, this.id);
+        this.memory[boost] = true;
+        return;
+      }
+      else
+      {
+        if(Game.time % 10 === 0)
+          console.log("BOOST: no boost for", this.name);
+          this.idleOffRoad(this.room!.storage!, false);
+        return;
+      }
+    }
+  }
 }

@@ -9,6 +9,8 @@ interface Creep extends RoomObject {
     withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
+    getFlags(identifier: string, max: Number): Flag[]
+    boostRequest(boosts: string[], allowUnboosted: boolean): any
   }
 
 interface RoomPosition {
@@ -19,6 +21,9 @@ interface RoomPosition {
   openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
 }
 
+interface Flag {
+
+}
 
   declare namespace NodeJS{
     interface Global {
@@ -128,7 +133,7 @@ interface RoomPosition {
   {
     [resourceType: string]:
     {
-      flagName: string;
+      flagName?: string;
       requesterIds: string[];
     };
   }
@@ -164,6 +169,7 @@ interface RoomPosition {
     avoid: number;
     cache: {[key: string]: any};
     numSites: number;
+    boostRequests: BoostRequests;
   }
 
   interface SpawnMemory {}
@@ -201,6 +207,21 @@ interface RoomPosition {
     upgradeDistroCreeps: string[]
     upgradePrespawn?: boolean
     upgradeDistroPrespawn?: boolean
+  }
+
+  interface SquadManagementProcessMetaData
+  {
+    attackers: string[],
+    healers: string[],
+    flagName: string,
+  }
+
+  interface SquadAttackerLifetimeProcessMetaData
+  {
+    creep: string,
+    follower: string,
+    identifier: string,
+    number: number
   }
 
   interface StructureManagementProcessMetaData
@@ -357,7 +378,13 @@ interface RoomPosition {
     flagName: string
   }
 
-  interface BounceAttackMetaData
+  interface BounceAttackManagementMetaData
+  {
+    bounceAttackCreeps: string[],
+    flagName: string
+  }
+
+  interface BounceAttackerLifetimeProcessMetaData
   {
     creep: string,
     flagName: string
@@ -491,8 +518,9 @@ interface RoomPosition {
   interface UpgradeLifetimeProcessMetaData
   {
     creep: string,
+    roomName: string,
     boosts?: string[],
-    boostRequests: BoostRequests,
+    allowUnboosted: boolean,
   }
 //// Minerals
 

@@ -90,6 +90,8 @@ export class LabManagementProcess extends Process
       this.doSynthesis();
     }
 
+    this.checkBoostRequests();
+
     /*Object.keys(COMPOUND_LIST).forEach(key => {
         console.log('found property', COMPOUND_LIST[key][0]);
     })*/
@@ -211,7 +213,10 @@ export class LabManagementProcess extends Process
     }
 
 
-    let command = this.checkReagentLabs();
+    let command = this.checkPullFlags();
+    if(command) return command;
+
+    command = this.checkReagentLabs();
     if(command) return command;
 
     command = this.checkProductLabs();
@@ -683,6 +688,121 @@ export class LabManagementProcess extends Process
       reagentLoads: reagentLoads,
       loadProgress: loadProgress
     };
+  }
+
+  private checkBoostRequests()
+  {
+    if(!this.room.memory.boostRequests)
+    {
+      this.room.memory.boostRequests = {};
+    }
+
+    let requests = this.room.memory.boostRequests as BoostRequests;
+
+    for(let resourceType in requests)
+    {
+      let request = requests[resourceType];
+
+      if(this.metaData.roomName === 'E45S48')
+          {
+            console.log(this.name, resourceType);
+          }
+      if(request)
+      {
+        for(let id of request.requesterIds)
+        {
+          let creep = Game.getObjectById(id);
+          if(!creep)
+          {
+            request.requesterIds = _.pull(request.requesterIds, id);
+          }
+        }
+
+        let flag = Game.flags[request.flagName!];
+
+        if(request.requesterIds.length === 0 && flag)
+        {
+          console.log("IGOR: removing boost flag:", flag.name);
+          flag.remove();
+          requests[resourceType] = {flagName: undefined, requesterIds: []};
+        }
+
+        if(request.requesterIds.length > 0 && !flag)
+        {
+          if(this.metaData.roomName === 'E45S48')
+          {
+            console.log(this.name, "Going to place a flag");
+          }
+          request.flagName = this.placePullFlag(resourceType);
+        }
+      }
+    }
+  }
+
+  private placePullFlag(resourceType: string): any
+  {
+    let existingFlag = Game.flags[this.name + "_" + resourceType];
+    if(existingFlag)
+      return existingFlag;
+
+    let labs = _.filter(this.productLabs!, (l: StructureLab) => l.pos.lookFor(LOOK_FLAGS).length === 0);
+    if(labs.length === 0)
+      return;
+
+      if(this.metaData.roomName === 'E45S48')
+    {
+      console.log(this.name, "Place Pull Flag");
+    }
+
+    let closestToSpawn = this.roomData().spawns[0].pos.findClosestByRange(labs);
+    if(this.productLabs!.length > 1)
+    {
+      this.productLabs = _.pull(this.productLabs!, closestToSpawn);
+    }
+
+    let outcome = closestToSpawn.pos.createFlag(this.name + "_" + resourceType);
+    if(_.isString(outcome))
+    {
+      console.log("IGOR: placing boost flag:", outcome);
+      return outcome;
+    }
+  }
+
+  private checkPullFlags(): any
+  {
+    if(!this.productLabs)
+      return;
+
+    for(let lab of this.productLabs)
+    {
+      if(this.terminal!.store.energy >= CARRY_CAPACITY && lab.energy < CARRY_CAPACITY)
+      {
+        //restore boosting energy to lab
+        return { Origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
+      }
+
+      let flag = lab.pos.lookFor(LOOK_FLAGS)[0];
+      if(!flag)
+        continue;
+
+      let mineralType = flag.name.substring(flag.name.indexOf("_") + 1);
+      if(!_.include(PRODUCT_LIST, mineralType))
+      {
+        console.log("ERROR: invalid lab request:", flag.name);
+        return; // early
+      }
+
+      if(lab.mineralType && lab.mineralType !== mineralType)
+      {
+        // empty wrong mineral type
+        return {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType };
+      }
+      else if(lab.mineralCapacity - lab.mineralAmount >= CARRY_CAPACITY && this.terminal!.store[mineralType] >= CARRY_CAPACITY)
+      {
+        // bring mineral to lab when amount is below carry capacity
+        return { origin: this.terminal!.id, destination: lab.id, resourceType: mineralType};
+      }
+    }
   }
 }
 

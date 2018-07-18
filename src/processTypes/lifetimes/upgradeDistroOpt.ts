@@ -15,7 +15,7 @@ export class UpgradeDistroLifetimeOptProcess extends LifetimeProcess
       return
     }
 
-    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
+    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 50)
     {
       if(creep.room.storage)
       {

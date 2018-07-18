@@ -256,9 +256,24 @@ export class EnergyManagementProcess extends Process{
 
       if(spawned){
         this.metaData.upgradeCreeps.push(creepName)
-        this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-          creep: creepName
-        })
+
+        if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E45S57')
+        {
+          let boosts = [];
+          boosts.push(RESOURCE_GHODIUM_ACID)
+          this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+            creep: creepName,
+            roomName: proc.metaData.roomName,
+            boosts: boosts,
+            allowUnboosted: false
+          })
+        }
+        else
+        {
+          this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+            creep: creepName
+          });
+        }
       }
     }
 

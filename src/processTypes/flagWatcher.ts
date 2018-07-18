@@ -6,7 +6,7 @@ import {TransferProcess} from '../processTypes/empireActions/transfer'
 import { HoldRoomManagementProcess } from 'processTypes/management/holdRoom';
 import { RemoteDefenseManagementProcess } from 'processTypes/management/remoteDefense';
 import { AttackControllerManagementProcess } from 'processTypes/management/attackController';
-import { BounceAttackProcess } from 'processTypes/management/bounceAttack';
+import { BounceAttackManagementProcess } from 'processTypes/management/bounceAttack';
 import { HealAttackProcess } from 'processTypes/management/healAttack';
 import { SignControllerProcess } from './management/sign';
 import { GeneralAttackManagementProcess } from './management/generalAttack';
@@ -14,6 +14,7 @@ import { RemoteBuilderLifetimeProcess } from './lifetimes/remoteBuilder';
 import { HelpManagementProcess } from './management/help';
 import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
 import { RangeAttackManagementProcess } from './management/rangeAttack';
+import { SquadManagementProcess } from './management/squad';
 
 export class FlagWatcherProcess extends Process
 {
@@ -58,17 +59,12 @@ export class FlagWatcherProcess extends Process
 
   BounceAttack(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(BounceAttackProcess, 'bounce-' + flag.name, 31, {flagName: flag.name});
+    this.kernel.addProcessIfNotExist(BounceAttackManagementProcess, 'bamp-' + flag.name, 31, {flagName: flag.name});
   }
 
   HealAttack(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(HealAttackProcess, 'healAttack-' + flag.name, 29, {flagName: flag.name});
-  }
-
-  SignController(flag: Flag)
-  {
-    this.kernel.addProcessIfNotExist(SignControllerProcess, 'sign-' + flag.name, 35, {flagName: flag.name});
   }
 
   GeneralAttack(flag: Flag)
@@ -84,6 +80,11 @@ export class FlagWatcherProcess extends Process
   helpRoom(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + flag.name, 35, {flagName: flag.name});
+  }
+
+  SquadAttack(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(SquadManagementProcess, 'sqm-' + flag.name, 31, {flagName: flag.name});
   }
 
   run()
@@ -125,14 +126,14 @@ export class FlagWatcherProcess extends Process
         case COLOR_ORANGE:
           proc.transferFlag(flag);
           break;
-        case COLOR_GREEN:
-          proc.AttackController(flag);
-          break;
         case COLOR_BROWN:
           switch(flag.secondaryColor)
           {
             case COLOR_RED:
               proc.GeneralAttack(flag);
+              break;
+            case COLOR_PURPLE:
+              proc.SquadAttack(flag);
               break;
             case COLOR_BLUE:
               proc.RangeAttack(flag);
@@ -147,9 +148,6 @@ export class FlagWatcherProcess extends Process
               proc.AttackController(flag);
               break;
           }
-          break;
-        case COLOR_WHITE:
-          proc.SignController(flag);
           break;
       }
     })

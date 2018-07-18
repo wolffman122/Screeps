@@ -1,4 +1,4 @@
-import {Utils} from '../../lib/utils'
+import {Utils, RAMPARTTARGET} from '../../lib/utils'
 import {Process} from '../../os/process'
 import {BuilderLifetimeProcess} from '../lifetimes/builder'
 import {RepairerLifetimeProcess} from '../lifetimes/repairer'
@@ -70,9 +70,22 @@ export class StructureManagementProcess extends Process{
 
     if(repairTargets.length > 0)
     {
-      if(Game.rooms[this.metaData.roomName].controller!.level === 8)
+      let controller = Game.rooms[this.metaData.roomName].controller;
+      if(controller && controller.level === 8)
       {
-        if(this.metaData.repairCreeps.length < 2)
+        let reapirCount = 2;
+
+        if(this.roomData().ramparts.length)
+        {
+          let health = Utils.rampartHealth(this.kernel, this.metaData.roomName);
+          let target = controller.level * RAMPARTTARGET;
+          if(health > target * .98)
+          {
+            reapirCount = 1;
+          }
+        }
+
+        if(this.metaData.repairCreeps.length < reapirCount)
         {
           if(this.metaData.spareCreeps.length === 0)
           {
