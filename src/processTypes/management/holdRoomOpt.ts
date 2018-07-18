@@ -49,6 +49,10 @@ export class HoldRoomOptManagementProcess extends Process
 
   run()
   {
+    if(this.metaData.flagName === 'E35S41-Hold-1')
+    {
+      console.log(this.name, this.metaData.flagName);
+    }
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
     let spawnRoomName = this.metaData.flagName.split('-')[0];

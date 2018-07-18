@@ -205,7 +205,7 @@ export class EnergyManagementProcess extends Process{
         upgraders = 2;
         break;
       default:
-        upgraders = 3;
+        upgraders = 1;
         break;
     }
 
@@ -257,7 +257,7 @@ export class EnergyManagementProcess extends Process{
       if(spawned){
         this.metaData.upgradeCreeps.push(creepName)
 
-        if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E45S57')
+        if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49')
         {
           let boosts = [];
           boosts.push(RESOURCE_GHODIUM_ACID)
@@ -265,7 +265,7 @@ export class EnergyManagementProcess extends Process{
             creep: creepName,
             roomName: proc.metaData.roomName,
             boosts: boosts,
-            allowUnboosted: false
+            allowUnboosted: true
           })
         }
         else
@@ -327,7 +327,7 @@ export class EnergyManagementProcess extends Process{
           upgradeDistroAmount = 2;
           break;
         default:
-          upgradeDistroAmount = 2;
+          upgradeDistroAmount = 1;
           break;
       }
 

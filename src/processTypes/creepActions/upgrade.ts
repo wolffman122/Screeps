@@ -14,7 +14,7 @@ export class UpgradeProcess extends Process{
     }
 
     if (!creep.pos.inRangeTo(creep.room.controller!, 3)){
-      creep.travelTo(creep.room.controller!);
+      creep.travelTo(creep.room.controller!, {range: 3});
     }else{
       creep.upgradeController(creep.room.controller!);
     }

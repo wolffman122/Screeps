@@ -65,7 +65,11 @@ export class LabManagementProcess extends Process
         }
       }
 
-      if(this.metaData.labDistros.length < 1 && this.labProcess)
+      if(this.metaData.roomName === 'E45S57')
+      {
+        console.log(this.name, this.metaData.labDistros.length, this.labProcess, this.room.memory.boostRequests);
+      }
+      if(this.metaData.labDistros.length < 1 && (this.labProcess || this.room.memory.boostRequests))
       {
         let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
         let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});

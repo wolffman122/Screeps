@@ -9,6 +9,8 @@ export class MarketManagementProces2s extends Process
 
   run()
   {
+    this.completed = true;
+    return;
     let proc = this;
     //this.kernel.sendIpc('market', 'minerals-E48S57', {value: "Testing Send"});
 

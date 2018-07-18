@@ -26,19 +26,17 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
 
     let roomInContainer = container.storeCapacity - _.sum(container.store);
 
-    if(mineral.mineralAmount === 0 && _.sum(creep.carry) > 0 && roomInContainer >= _.sum(creep.carry))
+    if(mineral.mineralAmount === 0 && _.sum(creep.carry) === 0)
+    {
+      creep.suicide();
+      return;
+    }
+
+    if(mineral.mineralAmount === 0 && _.sum(creep.carry) > 0 && roomInContainer === 0)
     {
       this.fork(DeliverProcess, creep.name + '-deliver', this.priority - 1, {
         creep: creep.name,
         target: container.id,
-        resource: mineral.mineralType
-      })
-    }
-    else
-    {
-      this.fork(DeliverProcess, creep.name + '-deliver', this.priority - 1, {
-        creep: creep.name,
-        target: creep.room.terminal!.id,
         resource: mineral.mineralType
       })
     }

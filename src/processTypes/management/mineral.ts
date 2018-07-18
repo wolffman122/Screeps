@@ -57,6 +57,8 @@ export class MineralManagementProcess extends Process
     }
 
     //if(this.metaData.mining && mineral.mineralAmount > 0)
+
+
     if(this.metaData.mining || (mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
     {
       this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
