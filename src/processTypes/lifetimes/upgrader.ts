@@ -85,7 +85,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
               return;
             }
           }
-          else if(this.metaData.allowUnboosted)
+          else if(this.metaData.allowUnboosted && creep.room.terminal!.store[boost] < LABDISTROCAPACITY)
           {
             console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
             requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);

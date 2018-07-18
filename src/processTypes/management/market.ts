@@ -17,6 +17,10 @@ export class MarketManagementProcess extends Process
 
   run()
   {
+    this.completed = true;
+    return;
+  }
+  /*
     this.ensureMetaData();
 
     //this.metaData.waitingToSell = !this.metaData.waitingToSell;
@@ -146,7 +150,7 @@ export class MarketManagementProcess extends Process
     }
 
     return (priceTotal / amountTotal);
-  }
+  }*/
 }
 
 const MINERAL_KEEP_AMOUNT = 5000;

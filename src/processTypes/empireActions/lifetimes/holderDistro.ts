@@ -13,7 +13,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     let creep = this.getCreep();
 
     let flag = Game.flags[this.metaData.flagName];
-
+    let spawnName = flag.name.split('-')[0];
     if(!flag)
     {
       this.completed = true;
@@ -47,19 +47,29 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     {
       if(_.sum(creep.carry) > 0)
       {
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority -1,{
-          creep: creep.name,
-          target: creep.room.storage!.id,
-          resource: RESOURCE_ENERGY
-        })
+        let storage = Game.rooms[spawnName].storage;
+        if(storage)
+        {
+          this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority -1,{
+            creep: creep.name,
+            target: storage,
+            resource: RESOURCE_ENERGY
+          })
+        }
       }
       else
       {
         let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
         if(fleeFlag)
         {
-          this.log('Flee Room');
-          creep.travelTo(fleeFlag.pos);
+          if(!creep.pos.inRangeTo(fleeFlag, 5))
+          {
+            creep.travelTo(fleeFlag.pos);
+          }
+          else
+          {
+            creep.suicide();
+          }
           return;
         }
         else
