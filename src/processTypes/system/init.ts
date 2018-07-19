@@ -10,6 +10,7 @@ import { MarketManagementProcess } from 'processTypes/management/market';
 import { TerminalManagementProcess } from 'processTypes/buildingProcesses/terminal';
 import { MinetalTerminalManagementProcess } from '../buildingProcesses/mineralTerminal';
 import { LabManagementProcess } from 'processTypes/management/lab';
+import { ReportProcess } from './reports';
 
 /*
 
@@ -89,6 +90,7 @@ export class InitProcess extends Process{
       }
     })
 
+    this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});
     this.kernel.addProcessIfNotExist(SuspensionProcess, 'suspension-master', 99, {master: true})
     this.kernel.addProcessIfNotExist(FlagWatcherProcess, 'flag-watcher', 98, {})
     //this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});

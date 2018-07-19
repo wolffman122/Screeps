@@ -43,6 +43,7 @@ export class LinkManagementProcess extends Process
           if(sl.cooldown == 0 && sl.energy > 700 && storageLink!.energy < 100)
           {
             sl.transferEnergy(storageLink!);
+            return;
           }
         });
       }
@@ -58,6 +59,7 @@ export class LinkManagementProcess extends Process
           if(l.cooldown == 0 && l.energy > 200 && storageLink!.energy < 100)
           {
             let retValue = l.transferEnergy(storageLink!);
+            return;
           }
         })
       }

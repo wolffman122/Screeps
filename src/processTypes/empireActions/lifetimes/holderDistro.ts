@@ -25,7 +25,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(Game.time % 10 === 5)
+    if(Game.time % 10 === 5 && creep.room.name  !== spawnName)
     {
       let enemies = creep.room!.find(FIND_HOSTILE_CREEPS);
 
@@ -217,6 +217,26 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       if(Game.rooms[this.metaData.spawnRoom].storage)
       {
         let target = Game.rooms[this.metaData.spawnRoom].storage;
+
+        if(target)
+        {
+          if(!creep.pos.inRangeTo(target, 1))
+          {
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(target);
+            }
+          }
+
+          if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
+          {
+            return;
+          }
+        }
+      }
+      else if (this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers.length)
+      {
+        let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
 
         if(target)
         {

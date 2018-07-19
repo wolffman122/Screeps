@@ -55,6 +55,8 @@ interface Flag {
     extensions: StructureExtension[]
     extractor: StructureExtractor | undefined
     nuker?: StructureNuker
+    observer?: StructureObserver
+    powerBank?: StructurePowerBank
     generalContainers: StructureContainer[]
     mineral: Mineral | undefined
     labs: StructureLab[]
@@ -170,6 +172,12 @@ interface Flag {
     cache: {[key: string]: any};
     numSites: number;
     boostRequests: BoostRequests;
+    observeTarget: string;
+    randomN: number;
+    Information: {
+      owner: string,
+      level: number
+    }
   }
 
   interface SpawnMemory {}

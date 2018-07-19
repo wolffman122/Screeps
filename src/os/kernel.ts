@@ -76,6 +76,8 @@ import { BounceAttackerLifetimeProcess } from 'processTypes/lifetimes/bounceAtta
 import { SquadManagementProcess } from 'processTypes/management/squad';
 import { HealerLifetimeProcess } from 'processTypes/lifetimes/healer';
 import { SquadAttackerLifetimeProcess } from 'processTypes/lifetimes/squadAttacker';
+import { ObservationProcess } from 'processTypes/buildingProcesses/observation';
+import { ReportProcess } from 'processTypes/system/reports';
 
 
 
@@ -149,6 +151,8 @@ const processTypes = <{[type: string]: any}>{
   'sqm': SquadManagementProcess,
   'heallf': HealerLifetimeProcess,
   'salf': SquadAttackerLifetimeProcess,
+  'op': ObservationProcess,
+  'report': ReportProcess
 }
 
 interface KernelData{
