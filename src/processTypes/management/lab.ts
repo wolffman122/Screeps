@@ -65,10 +65,6 @@ export class LabManagementProcess extends Process
         }
       }
 
-      if(this.metaData.roomName === 'E45S57')
-      {
-        console.log(this.name, this.metaData.labDistros.length, this.labProcess, this.room.memory.boostRequests);
-      }
       if(this.metaData.labDistros.length < 1 && (this.labProcess || this.room.memory.boostRequests))
       {
         let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
@@ -135,7 +131,14 @@ export class LabManagementProcess extends Process
 
   private missionActions()
   {
+
     let command = this.accessCommand();
+
+    if(this.creep.name === 'lab-d-E43S53-10259121')
+    {
+      console.log(this.name, 1, command);
+    }
+
     if(!command)
     {
       if(_.sum(this.creep.carry) > 0)
@@ -158,6 +161,10 @@ export class LabManagementProcess extends Process
 
     if(_.sum(this.creep.carry) === 0)
     {
+      if(this.creep.name === 'lab-d-E43S53-10259121')
+    {
+      console.log(this.name, 'command', command.origin);
+    }
       let origin = Game.getObjectById<Structure>(command.origin);
       console.log(this.name, 1, this.creep.name, 2, origin);
       if(this.creep.pos.isNearTo(origin!))
@@ -171,6 +178,7 @@ export class LabManagementProcess extends Process
           }
         }
 
+        
         console.log(this.name, 1, this.creep.name, command.resourceType);
         this.creep.withdraw(origin!, command.resourceType, command.amount);
         let destination = Game.getObjectById<Structure>(command.destination);

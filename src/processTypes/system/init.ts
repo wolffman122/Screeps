@@ -70,20 +70,17 @@ export class InitProcess extends Process{
             });
           }
 
-          if(Game.rooms[room.name].controller!.level >= 8)
+          //if(room.name == 'E45S48' || room.name === 'E48S49' || room.name === 'E43S52' ||
+          //  room.name == 'E45S57')
+          if(room.name === 'E41S49' || room.name === 'E51S49' || room.name === 'E43S53' || room.name === 'E45S48' ||
+              room.name === 'E45S57' || room.name === 'E48S49' || room.name === 'E52S46' || room.name === 'E38S46' ||
+              room.name === 'E36S43' || room.name === 'E43S52' || room.name === 'E48S57' || room.name === 'E35S41')
           {
-            //if(room.name == 'E45S48' || room.name === 'E48S49' || room.name === 'E43S52' ||
-            //  room.name == 'E45S57')
-            if(room.name === 'E41S49' || room.name === 'E51S49' || room.name === 'E43S53' || room.name === 'E45S48' ||
-               room.name === 'E45S57' || room.name === 'E48S49' || room.name === 'E52S46' || room.name === 'E38S46' ||
-               room.name === 'E36S43' || room.name === 'E43S52' || room.name === 'E48S57')
+            if(!proc.kernel.hasProcess('labm-' + room.name))
             {
-              if(!proc.kernel.hasProcess('labm-' + room.name))
-              {
-                proc.kernel.addProcess(LabManagementProcess, 'labm-' + room.name, 30, {
-                  roomName: room.name
-                });
-              }
+              proc.kernel.addProcess(LabManagementProcess, 'labm-' + room.name, 30, {
+                roomName: room.name
+              });
             }
           }
         }
