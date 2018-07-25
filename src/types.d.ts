@@ -19,6 +19,7 @@ interface RoomPosition {
   isPassible(ignoreCreeps?: boolean): boolean;
   isNearExit(range: number): boolean;
   openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
+  getOpenPositions(range:number, opts:{}): RoomPosition[];
 }
 
 interface Flag {
@@ -164,6 +165,7 @@ interface Flag {
       source: string;
       droppedResource: boolean;
       rollCall: number;
+      follower: string;
   }
 
   interface RoomMemory
@@ -560,4 +562,16 @@ interface ExecOrder {
   cpu: number,
   type: string,
   faulted: boolean
+}
+
+interface OpenPositionsOptions
+{
+  offset: number,
+  ignoreIds: string[],
+  maxPositions: number,
+  avoidEdges: number,
+  avoidStructures: string[],
+  avoidTerrain: string[],
+  avoidCreeps: boolean,
+  avoidConstructionSites: boolean,
 }

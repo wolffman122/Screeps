@@ -79,21 +79,6 @@ export class MinetalTerminalManagementProcess extends Process
       }
     });
 
-    /*_.forEach(roomsExtraMinerals, (rr) => {
-      console.log("R Rooms", rr.rName, rr.mType);
-    })*/
-      /*_.forEach(recievableRooms, (rr) => {
-        console.log("R Rooms", rr.rName, rr.mType, rr.amount);
-      })*/
-    let found = _.find(recievableRooms, {'rname':'E35S41'})
-    if(found)
-    {
-      console.log('696969696969696969696')
-    }
-    console.log(this.name, recievableRooms.length, roomsExtraMinerals.length);
-    console.log(this.name, needUpgrade.length, extraUpgrade.length);
-
-
     _.forEach(roomsExtraMinerals, (ex) => {
       let receiveRoom = _.find(recievableRooms, (rr) => {
         if(rr.mType == ex.mType && rr.rName != ex.rName)

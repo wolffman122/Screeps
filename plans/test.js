@@ -43,3 +43,29 @@ _(Game.rooms)
                 t[0].attack(t[1])
             })
     })
+	
+	RoomPosition.prototype.isExit = function(){
+    return(this.y<=0 || this.x>=49 || this.y>=49 || this.x<=0);
+}
+
+RoomPosition.prototype.isOpen = function(opts){
+// opts.ignoreCreeps (boolean) default false. ignores creeps if true.
+// opts.ignoreSolids (boolean) default false. ignores solid structures if true.
+    if ("wall" === Game.map.getTerrainAt(this)) return(false);
+    if (null==Game.rooms[this.roomName]) return (true);
+
+    if ((null==opts || !opts.ignoreCreeps) && 
+        (this.lookFor(LOOK_CREEPS).length !== 0)) return(false);
+
+    if (null==opts || !opts.ignoreSolids){
+        var structList = this.lookFor(LOOK_STRUCTURES);
+        for (var i=structList.length;--i>=0;){
+            if ((structList[i].structureType !== STRUCTURE_CONTAINER && 
+                 structList[i].structureType !== STRUCTURE_ROAD) &&
+                (structList[i].structureType !== STRUCTURE_RAMPART || 
+                !structList[i].my))
+                        return(false);
+            }
+        }
+    return(true);
+}

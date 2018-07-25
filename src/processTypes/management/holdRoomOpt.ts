@@ -177,6 +177,10 @@ export class HoldRoomOptManagementProcess extends Process
           // Construction Code
           if(!this.roomData().sourceContainers || (this.roomData().sourceContainers.length < this.roomData().sources.length))
           {
+            if(this.roomData().sourceContainers.length < this.roomData().sources.length)
+            {
+              Game.notify("Problem in room " + this.metaData.roomName + " lost some contianers");
+            }
             if(this.metaData.builderCreeps.length < this.roomData().sources.length)
             {
               let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
