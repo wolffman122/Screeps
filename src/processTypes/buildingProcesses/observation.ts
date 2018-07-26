@@ -13,7 +13,6 @@ export class ObservationProcess extends Process
 
         if(Game.time % 20 <= 1)
         {
-            console.log(this.name, '555555555')
             let room = Game.rooms[this.metaData.roomName];
             if(room && room.controller  && room.controller.level >= 8)
             {
@@ -40,13 +39,34 @@ export class ObservationProcess extends Process
                     else
                     {
                     // Check for stuff
-                    this.basicRoomCheck(room.memory.observeTarget);
+                    if(!Memory.observeRoom[room.memory.observeTarget])
+                    {
+                        this.basicRoomCheck(room.memory.observeTarget);
+                    }
 
                     room.memory.observeTarget = this.getRandomRoom(room.name, 10);
                     }
                 }
             }
         }
+
+        if(Game.time % 10000 === 0)
+        {
+            let index = 0;
+            let roomList: string = "Need Room";
+            _.filter(Object.keys(Memory.observeRoom), (or) => {
+                let room = Memory.observeRoom[or];
+                if(room.mineralType === RESOURCE_UTRIUM && room.sourceCount === 2)
+                {
+                    roomList += "\n" + index++ + or;
+                }
+                return;
+            });
+
+            roomList += 'Total' + index;
+            Game.notify(roomList);
+        }
+
     }
 
     private getRandomRoom(room: string, max: number) : string
@@ -125,6 +145,12 @@ export class ObservationProcess extends Process
                 if(mineral)
                 {
                     Memory.observeRoom[roomName].mineralType = mineral.mineralType;
+                }
+
+                if(room.controller.owner)
+                {
+                    Memory.observeRoom[roomName].controllerOwner = room.controller.owner.username;
+                    Memory.observeRoom[roomName].controllerLevel = room.controller.level;
                 }
             }
         }

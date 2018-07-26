@@ -150,6 +150,9 @@ interface Flag {
   {
     sourceCount?: number;
     mineralType?: MineralConstant;
+    controllerOwner?: string;
+    controllerLevel?: number;
+
   }
 
   interface CreepMemory
