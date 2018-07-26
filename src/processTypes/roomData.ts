@@ -34,6 +34,11 @@ export class RoomDataProcess extends Process{
 
     this.importFromMemory(room)
 
+    if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0)
+    {
+      console.log(this.metaData.roomName, "construciton sites")
+    }
+
     if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
       if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
         this.kernel.addProcess(SpawnRemoteBuilderProcess, 'srm-' + this.metaData.roomName, 90, {

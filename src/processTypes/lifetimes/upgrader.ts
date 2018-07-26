@@ -167,11 +167,14 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
           if(target)
           {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: target.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            });
+            if(creep.pos.isNearTo(target))
+            {
+              creep.withdraw(target, RESOURCE_ENERGY);
+              return;
+            }
+
+            creep.travelTo(target);
+            return;
           }
 
           return;

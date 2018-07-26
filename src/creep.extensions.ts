@@ -16,7 +16,7 @@ Creep.prototype.transferEverything = function(target: Creep|StructureContainer|S
   return ERR_NOT_ENOUGH_RESOURCES;
 }
 
-Creep.prototype.withdrawEverything = function(target: StructureContainer|StructureStorage|StructureTerminal)
+Creep.prototype.withdrawEverything = function(target: StructureContainer|StructureStorage|StructureTerminal|Tombstone)
 {
   for(let t in target.store)
   {

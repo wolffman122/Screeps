@@ -6,7 +6,12 @@ export class ObservationProcess extends Process
 
     run()
     {
-        if(Game.time % 20 == 0)
+        if(!Memory.observeRoom)
+        {
+            Memory.observeRoom = {};
+        }
+
+        if(Game.time % 20 <= 1)
         {
             console.log(this.name, '555555555')
             let room = Game.rooms[this.metaData.roomName];
@@ -27,18 +32,19 @@ export class ObservationProcess extends Process
                         }
                     }
 
-                        if(Game.rooms[room.memory.observeTarget] === undefined)
-                        {
-                            let retValue = observer.observeRoom(room.memory.observeTarget);
-                            console.log(this.name, room.memory.observeTarget, retValue);
-                        }
-                        else
-                        {
-                        // Check for stuff
-                        room.memory.observeTarget = this.getRandomRoom(room.name, 10);
-                        }
-                }
+                    if(Game.rooms[room.memory.observeTarget] === undefined)
+                    {
+                        let retValue = observer.observeRoom(room.memory.observeTarget);
+                        //console.log(this.name, room.memory.observeTarget, retValue);
+                    }
+                    else
+                    {
+                    // Check for stuff
+                    this.basicRoomCheck(room.memory.observeTarget);
 
+                    room.memory.observeTarget = this.getRandomRoom(room.name, 10);
+                    }
+                }
             }
         }
     }
@@ -100,28 +106,27 @@ export class ObservationProcess extends Process
 
         return room;
     }
-/*
+
     private basicRoomCheck(roomName: string)
     {
+        console.log(this.name, roomName);
         let room = Game.rooms[roomName];
         if(room)
         {
             if(room.controller && !room.controller.my)
             {
-                room.memory.Information.owner = room.controller.owner.username;
-                room.memory.Information.level = room.controller.level;
-            }
+                if(!Memory.observeRoom[roomName])
+                {
+                    Memory.observeRoom[roomName] = {};
+                }
 
-
-            room.memory.Information.sourceCount = room.find(FIND_SOURCES).length;
-
-            let minerals = room.find(FIND_MINERALS);
-            if(minerals.length)
-            {
-                let mineral = minerals[0];
-                room.memory.Information.mineralType = mineral.mineralType;
+                Memory.observeRoom[roomName].sourceCount = room.find(FIND_SOURCES).length;
+                let mineral = room.find(FIND_MINERALS)[0];
+                if(mineral)
+                {
+                    Memory.observeRoom[roomName].mineralType = mineral.mineralType;
+                }
             }
         }
     }
-*/
 }

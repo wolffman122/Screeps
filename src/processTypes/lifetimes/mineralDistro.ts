@@ -32,6 +32,16 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
 
           return;
         }
+        else if(container.store[RESOURCE_ENERGY] > 0)
+        {
+          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+            target: container.id,
+            creep: creep.name,
+            resource: RESOURCE_ENERGY
+          });
+
+          return;
+        }
         else if(!creep.pos.inRangeTo(container, 1))
         {
           creep.travelTo(container);
