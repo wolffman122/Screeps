@@ -208,7 +208,7 @@ export class EnergyManagementProcess extends Process{
         upgraders = 1;
         break;
       default:
-        upgraders = 2;
+        upgraders = 4;
         break;
     }
 
