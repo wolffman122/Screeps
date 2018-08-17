@@ -16,15 +16,27 @@ Creep.prototype.transferEverything = function(target: Creep|StructureContainer|S
   return ERR_NOT_ENOUGH_RESOURCES;
 }
 
-Creep.prototype.withdrawEverything = function(target: StructureContainer|StructureStorage|StructureTerminal|Tombstone)
+Creep.prototype.withdrawEverything = function(target: StructureContainer|StructureStorage|StructureTerminal|Tombstone|StructureLab)
 {
-  for(let t in target.store)
+  if(!(target instanceof StructureLab))
   {
-    let resourceType = t as ResourceConstant;
-    let amount = target.store[resourceType];
-    if(amount && amount > 0)
+    for(let t in target.store)
     {
-      return this.withdraw(target, resourceType);
+      let resourceType = t as ResourceConstant;
+      let amount = target.store[resourceType];
+      if(amount && amount > 0)
+      {
+        return this.withdraw(target, resourceType);
+      }
+    }
+  }
+  else if(target instanceof StructureLab)
+  {
+    let mineralType = target.mineralType;
+    let amount = target.mineralAmount;
+    if(mineralType && amount && amount > 0)
+    {
+      return this.withdraw(target, mineralType);
     }
   }
 

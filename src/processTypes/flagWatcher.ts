@@ -87,6 +87,11 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(SquadManagementProcess, 'sqm-' + flag.name, 31, {flagName: flag.name});
   }
 
+  stripRoom(flag: Flag)
+  {
+    //this.kernel.addProcessIfNotExist(StripManagementProcess, 'strip-' + flag.name, 30, {flagName: flag.name});
+  }
+
   run()
   {
     this.completed = true;
@@ -114,6 +119,9 @@ export class FlagWatcherProcess extends Process
               break;
             case COLOR_GREEN:
               proc.remoteHoldOptFlag(flag);
+              break;
+            case COLOR_BLUE:
+              proc.stripRoom(flag);
               break;
           }
           break;

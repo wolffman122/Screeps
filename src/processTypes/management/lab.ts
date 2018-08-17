@@ -30,6 +30,7 @@ export class LabManagementProcess extends Process
 
   run()
   {
+    console.log(this.name);
     this.room = Game.rooms[this.metaData.roomName];
 
     if(this.room)
@@ -76,10 +77,18 @@ export class LabManagementProcess extends Process
       }
       else if(this.metaData.labDistros.length === 1)
       {
+        if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 0)
+        }
         this.creep = Game.creeps[this.metaData.labDistros[0]];
 
         if(this.creep)
         {
+          if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 11)
+        }
           //console.log(this.name, 1, this.creep.name);
           this.missionActions();
         }
@@ -133,9 +142,16 @@ export class LabManagementProcess extends Process
   {
 
     let command = this.accessCommand();
-
+    if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 2)
+        }
     if(!command)
     {
+      if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 3)
+        }
       if(_.sum(this.creep.carry) > 0)
       {
         //console.log(this.name, "is holding resources without a command, putting them in terminal");
@@ -156,6 +172,10 @@ export class LabManagementProcess extends Process
 
     if(_.sum(this.creep.carry) === 0)
     {
+      if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 4)
+        }
       let origin = Game.getObjectById<Structure>(command.origin);
       //console.log(this.name, 1, this.creep.name, 2, origin);
       if(this.creep.pos.isNearTo(origin!))
@@ -176,7 +196,7 @@ export class LabManagementProcess extends Process
         if(!this.creep.pos.isNearTo(destination!))
         {
           this.creep.travelTo(destination!);
-        }
+        }        
       }
       else
       {

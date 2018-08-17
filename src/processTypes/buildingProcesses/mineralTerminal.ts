@@ -30,7 +30,7 @@ export class MinetalTerminalManagementProcess extends Process
 
           let terminal = r.terminal;
 
-          console.log(this.name, 'Upgrade', terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]!, 'level', r.controller.level)
+
           if(terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! >= PRODUCTION_AMOUNT && r.controller.level >= 8)
           {
             console.log(this.name, 'extra upgrade', r.name);
@@ -39,7 +39,7 @@ export class MinetalTerminalManagementProcess extends Process
 
           if((terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT) && r.controller.level < 8)
           {
-            console.log(r.name);
+            console.log(r.name);  
             needUpgrade.push(r.name);
           }
 

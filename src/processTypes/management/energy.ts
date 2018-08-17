@@ -201,11 +201,8 @@ export class EnergyManagementProcess extends Process{
     let upgraders = 0;
     switch(this.metaData.roomName)
     {
-      case 'E35S41':
-        upgraders = 3;
-        break;
       case 'E48S56':
-        upgraders = 1;
+        upgraders = 2;
         break;
       default:
         upgraders = 4;
@@ -272,7 +269,7 @@ export class EnergyManagementProcess extends Process{
             allowUnboosted: true
           })
       }
-      else if(proc.metaData.roomName === 'E35S41')
+      else if(proc.metaData.roomName === 'E48S56')
      {
        let boosts = [];
        boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
@@ -331,7 +328,7 @@ export class EnergyManagementProcess extends Process{
 
       let count = 0;
       _.forEach(creeps, (c) => {
-        let ticksNeeded = c.body.length * 3 + 10;
+        let ticksNeeded = c.body.length * 3 + 25;
         if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
       })
       let upgradeDistroAmount = 1;
@@ -340,7 +337,7 @@ export class EnergyManagementProcess extends Process{
       {
         case 'E36S43':
         case 'E35S41':
-          upgradeDistroAmount = 2;
+          upgradeDistroAmount = 3;
           break;
         default:
           upgradeDistroAmount = 1;

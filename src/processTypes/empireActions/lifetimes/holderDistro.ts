@@ -159,6 +159,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
           if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
           {
+            this.suspend = 2;
             return;
           }
         }
@@ -183,7 +184,22 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
           }
           else
           {
-            this.suspend = 2;
+            let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
+            if(target)
+            {
+              if(creep.pos.isNearTo(target))
+              {
+                creep.transfer(target, RESOURCE_ENERGY);
+                return;
+              }
+
+              creep.travelTo(target, {range: 1});
+              return;
+            }
+            else
+            {
+              this.suspend = 2;
+            }
           }
         }
       }
@@ -207,6 +223,25 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
             {
               return;
             }
+          }
+        }
+        else
+        {
+          let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
+          if(target)
+          {
+            if(creep.pos.isNearTo(target))
+            {
+              creep.transfer(target, RESOURCE_ENERGY);
+              return;
+            }
+
+            creep.travelTo(target, {range: 1});
+            return;
+          }
+          else
+          {
+            this.suspend = 2;
           }
         }
       }
