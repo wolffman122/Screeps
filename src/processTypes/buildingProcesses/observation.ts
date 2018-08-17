@@ -6,40 +6,72 @@ export class ObservationProcess extends Process
 
     run()
     {
-        let room = Game.rooms[this.metaData.roomName];
-        if(room && room.controller  && room.controller.level >= 8)
+        if(!Memory.observeRoom)
         {
-               let observer = room.find(FIND_STRUCTURES).filter((f) => {return f.structureType === STRUCTURE_OBSERVER})[0] as StructureObserver;
-
-
-               if(observer)
-               {
-                   if(room.memory.observeTarget === undefined)
-                   {
-                       room.memory.observeTarget = this.getRandomRoom(room.name, 10);
-                       if(room.memory.observeTarget === room.name)
-                       {
-                           return;
-                       }
-                   }
-
-                   if(Game.rooms[room.memory.observeTarget] === undefined)
-                   {
-                       observer.observeRoom(room.memory.observeTarget);
-                   }
-                   else
-                   {
-                       // Check for stuff
-
-                       room.memory.observeTarget = this.getRandomRoom(room.name, 10);
-                   }
-               }
+            Memory.observeRoom = {};
         }
+
+        if(Game.time % 20 <= 1)
+        {
+            let room = Game.rooms[this.metaData.roomName];
+            if(room && room.controller  && room.controller.level >= 8)
+            {
+                let observer = this.roomData().observer;
+
+
+                if(observer)
+                {
+                    if(room.memory.observeTarget === undefined)
+                    {
+                        room.memory.observeTarget = this.getRandomRoom(room.name, 10);
+                        console.log(this.name, room.memory.observeTarget);
+                        if(room.memory.observeTarget === room.name)
+                        {
+                            return;
+                        }
+                    }
+
+                    if(Game.rooms[room.memory.observeTarget] === undefined)
+                    {
+                        let retValue = observer.observeRoom(room.memory.observeTarget);
+                        //console.log(this.name, room.memory.observeTarget, retValue);
+                    }
+                    else
+                    {
+                    // Check for stuff
+                    if(!Memory.observeRoom[room.memory.observeTarget])
+                    {
+                        this.basicRoomCheck(room.memory.observeTarget);
+                    }
+
+                    room.memory.observeTarget = this.getRandomRoom(room.name, 10);
+                    }
+                }
+            }
+        }
+
+        if(Game.time % 10000 === 0)
+        {
+            let index = 0;
+            let roomList: string = "Need Room";
+            _.filter(Object.keys(Memory.observeRoom), (or) => {
+                let room = Memory.observeRoom[or];
+                if(room.mineralType === RESOURCE_UTRIUM && room.sourceCount === 2)
+                {
+                    roomList += "\n" + index++ + or;
+                }
+                return;
+            });
+
+            roomList += 'Total' + index;
+            Game.notify(roomList);
+        }
+
     }
 
     private getRandomRoom(room: string, max: number) : string
     {
-        
+
         let parsed = /^([WE])([0-9]+)([NS])([0-9]+)$/.exec(room);
 
         if(parsed)
@@ -78,7 +110,17 @@ export class ObservationProcess extends Process
                 _ns_num = (_ns_num + 1)  * -1;
             }
 
-            Game.rooms[room].memory.randomN += 1;
+            if(_ns_num > 60)
+            {
+                _ns_num = 60;
+            }
+
+            if(_we_num > 60)
+            {
+                _we_num = 60;
+            }
+
+           // Game.rooms[room].memory.randomN += 1;
             return _we + _we_num + _ns + _ns_num;
         }
 
@@ -87,25 +129,30 @@ export class ObservationProcess extends Process
 
     private basicRoomCheck(roomName: string)
     {
+        console.log(this.name, roomName);
         let room = Game.rooms[roomName];
         if(room)
         {
             if(room.controller && !room.controller.my)
             {
-                room.memory.Information.owner = room.controller.owner.username;
-                room.memory.Information.level = room.controller.level;
-            }
+                if(!Memory.observeRoom[roomName])
+                {
+                    Memory.observeRoom[roomName] = {};
+                }
 
+                Memory.observeRoom[roomName].sourceCount = room.find(FIND_SOURCES).length;
+                let mineral = room.find(FIND_MINERALS)[0];
+                if(mineral)
+                {
+                    Memory.observeRoom[roomName].mineralType = mineral.mineralType;
+                }
 
-            room.memory.Information.sourceCount = room.find(FIND_SOURCES).length;
-
-            let minerals = room.find(FIND_MINERALS);
-            if(minerals.length)
-            {
-                let mineral = minerals[0];
-                room.memory.Information.mineralType = mineral.mineralType;
+                if(room.controller.owner)
+                {
+                    Memory.observeRoom[roomName].controllerOwner = room.controller.owner.username;
+                    Memory.observeRoom[roomName].controllerLevel = room.controller.level;
+                }
             }
         }
     }
-
 }

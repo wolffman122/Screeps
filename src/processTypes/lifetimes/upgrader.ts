@@ -85,7 +85,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
               return;
             }
           }
-          else if(this.metaData.allowUnboosted && creep.room.terminal!.store[boost] < LABDISTROCAPACITY)
+          else if(this.metaData.allowUnboosted)
           {
             console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
             requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
@@ -167,14 +167,16 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
           if(target)
           {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: target.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            });
+            if(creep.pos.isNearTo(target))
+            {
+              creep.withdraw(target, RESOURCE_ENERGY);
+            }
+            else
+            {
+              creep.travelTo(target);
+              return;
+            }
           }
-
-          return;
         }
         else
         {
@@ -196,6 +198,19 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       creep.travelTo(creep.room.controller!, {range: 3});
     }else{
       creep.upgradeController(creep.room.controller!);
+
+      if(_.sum(creep.carry) <= creep.getActiveBodyparts(WORK))
+      {
+        let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
+        if(target)
+        {
+          if(creep.pos.isNearTo(target))
+          {
+            creep.withdraw(target, RESOURCE_ENERGY);
+          }
+        }
+      }
     }
   }
 }

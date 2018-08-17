@@ -201,11 +201,11 @@ export class EnergyManagementProcess extends Process{
     let upgraders = 0;
     switch(this.metaData.roomName)
     {
-      case 'E36S43':
+      case 'E48S56':
         upgraders = 2;
         break;
       default:
-        upgraders = 1;
+        upgraders = 4;
         break;
     }
 
@@ -257,7 +257,8 @@ export class EnergyManagementProcess extends Process{
       if(spawned){
         this.metaData.upgradeCreeps.push(creepName)
 
-        if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49')
+        if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
+           proc.metaData.roomName === 'E45S57')
         {
           let boosts = [];
           boosts.push(RESOURCE_GHODIUM_ACID)
@@ -267,8 +268,19 @@ export class EnergyManagementProcess extends Process{
             boosts: boosts,
             allowUnboosted: true
           })
-        }
-        else
+      }
+      else if(proc.metaData.roomName === 'E48S56')
+     {
+       let boosts = [];
+       boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
+       this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+         creep: creepName,
+         roomName: proc.metaData.roomName,
+         boosts: boosts,
+         allowUnboosted: true
+       })
+     }
+     else
         {
           this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
             creep: creepName
@@ -316,7 +328,7 @@ export class EnergyManagementProcess extends Process{
 
       let count = 0;
       _.forEach(creeps, (c) => {
-        let ticksNeeded = c.body.length * 3 + 10;
+        let ticksNeeded = c.body.length * 3 + 25;
         if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
       })
       let upgradeDistroAmount = 1;
@@ -324,7 +336,8 @@ export class EnergyManagementProcess extends Process{
       switch(this.metaData.roomName)
       {
         case 'E36S43':
-          upgradeDistroAmount = 2;
+        case 'E35S41':
+          upgradeDistroAmount = 3;
           break;
         default:
           upgradeDistroAmount = 1;

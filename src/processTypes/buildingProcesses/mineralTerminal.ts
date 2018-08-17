@@ -10,6 +10,8 @@ export class MinetalTerminalManagementProcess extends Process
 
     let roomsExtraMinerals: {rName: string, mType: ResourceConstant} [] = [];
     let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
+    let needUpgrade: string[] = [];
+    let extraUpgrade: string[] = [];
 
     _.forEach(Game.rooms, (r) => {
       if(r.controller && r.controller.my && r.terminal && r.controller.level >= 6  && r.terminal.cooldown === 0)
@@ -27,6 +29,20 @@ export class MinetalTerminalManagementProcess extends Process
           }
 
           let terminal = r.terminal;
+
+
+          if(terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! >= PRODUCTION_AMOUNT && r.controller.level >= 8)
+          {
+            console.log(this.name, 'extra upgrade', r.name);
+            extraUpgrade.push(r.name);
+          }
+
+          if((terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT) && r.controller.level < 8)
+          {
+            console.log(r.name);  
+            needUpgrade.push(r.name);
+          }
+
           let roomName = "";
           let type = "";
 
@@ -59,29 +75,11 @@ export class MinetalTerminalManagementProcess extends Process
                   amount: sendAmount
                 });
               }
-
-              /*if(sendAmount > 100)
-              {
-                console.log(r.name, "push");
-                recievableRooms.push({
-                  rName: r.name,
-                  mType: mineralType,
-                  amount: sendAmount
-                });
-                break;
-              }*/
             }
           }
         }
       }
     });
-
-    /*_.forEach(roomsExtraMinerals, (rr) => {
-      console.log("R Rooms", rr.rName, rr.mType);
-    })*/
-      /*_.forEach(recievableRooms, (rr) => {
-        console.log("R Rooms", rr.rName, rr.mType, rr.amount);
-      })*/
 
     _.forEach(roomsExtraMinerals, (ex) => {
       let receiveRoom = _.find(recievableRooms, (rr) => {
@@ -107,6 +105,24 @@ export class MinetalTerminalManagementProcess extends Process
         }
       }
     });
+
+    for(let i = 0; i < extraUpgrade.length; i++)
+    {
+      let name = extraUpgrade[i];
+
+      let terminal = Game.rooms[name].terminal;
+
+      if(terminal && terminal.cooldown === 0)
+      {
+        if(needUpgrade.length)
+        {
+          terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, 1000, needUpgrade[0]);
+          return;
+        }
+      }
+    }
+
+
   }
 }
 

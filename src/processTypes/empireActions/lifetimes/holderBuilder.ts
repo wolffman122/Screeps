@@ -276,14 +276,41 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(!creep.pos.inRangeTo(creep.room.controller!, 5))
-          {
-            creep.travelTo(creep.room.controller!);
-          }
+          let sources = this.kernel.data.roomData[creep.pos.roomName].sources;
+          let sourceContainersMaps = this.kernel.data.roomData[creep.pos.roomName].sourceContainerMaps;
 
-          creep.say('spare');
+          if(sources.length)
+          {
+            let missingConatiners = _.filter(sources, (s) => {
+              return (!sourceContainersMaps[s.id])
+            });
+
+            if(missingConatiners.length)
+            {
+              let openSpaces = missingConatiners[0].pos.openAdjacentSpots(true);
+              if(openSpaces.length)
+              {
+                let openSpace = openSpaces[0];
+                missingConatiners[0].room.createConstructionSite(openSpace.x, openSpace.y, STRUCTURE_CONTAINER);
+              }
+
+            }
+            /*else
+            {
+              console.log(this.name, 'Not missing some contianers');
+            }*/
+          }
+          else
+          {
+            if(!creep.pos.inRangeTo(creep.room.controller!, 5))
+            {
+              creep.travelTo(creep.room.controller!);
+            }
+
+            creep.say('spare');
+          }
         }
       }
-  }
+    }
   }
 }

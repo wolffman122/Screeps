@@ -6,7 +6,7 @@ declare const require: (module: string) => any;
 interface Creep extends RoomObject {
     fixMyRoad(): boolean;
     transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
-    withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
+    withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|Tombstone|StructureLab): number;
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
@@ -19,6 +19,7 @@ interface RoomPosition {
   isPassible(ignoreCreeps?: boolean): boolean;
   isNearExit(range: number): boolean;
   openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
+  getOpenPositions(range:number, opts:{}): RoomPosition[];
 }
 
 interface Flag {
@@ -55,6 +56,8 @@ interface Flag {
     extensions: StructureExtension[]
     extractor: StructureExtractor | undefined
     nuker?: StructureNuker
+    observer?: StructureObserver
+    powerBank?: StructurePowerBank
     generalContainers: StructureContainer[]
     mineral: Mineral | undefined
     labs: StructureLab[]
@@ -138,7 +141,19 @@ interface Flag {
     };
   }
 
+  interface Memory
+  {
+    observeRoom: {[name: string]: ObserveMemory}
+  }
 
+  interface ObserveMemory
+  {
+    sourceCount?: number;
+    mineralType?: MineralConstant;
+    controllerOwner?: string;
+    controllerLevel?: number;
+
+  }
 
   interface CreepMemory
   {
@@ -162,6 +177,7 @@ interface Flag {
       source: string;
       droppedResource: boolean;
       rollCall: number;
+      follower: string;
   }
 
   interface RoomMemory
@@ -170,6 +186,12 @@ interface Flag {
     cache: {[key: string]: any};
     numSites: number;
     boostRequests: BoostRequests;
+    observeTarget: string;
+    randomN: number;
+    Information: {
+      owner: string,
+      level: number
+    }
   }
 
   interface SpawnMemory {}
@@ -552,4 +574,16 @@ interface ExecOrder {
   cpu: number,
   type: string,
   faulted: boolean
+}
+
+interface OpenPositionsOptions
+{
+  offset: number,
+  ignoreIds: string[],
+  maxPositions: number,
+  avoidEdges: number,
+  avoidStructures: string[],
+  avoidTerrain: string[],
+  avoidCreeps: boolean,
+  avoidConstructionSites: boolean,
 }

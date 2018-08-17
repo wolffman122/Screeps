@@ -5,6 +5,7 @@ import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
 import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 import {TowerRepairProcess} from './buildingProcesses/towerRepair'
 import { MineralManagementProcess } from 'processTypes/management/mineral';
+import { ObservationProcess } from './buildingProcesses/observation';
 
 interface RoomDataMeta{
   roomName: string
@@ -25,13 +26,18 @@ export class RoomDataProcess extends Process{
 
   singleFields = [
     'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
-    'nuker'
+    'nuker', 'observer', 'powerBank'
   ]
 
   run(){
     let room = Game.rooms[this.metaData.roomName]
 
     this.importFromMemory(room)
+
+    if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0)
+    {
+      console.log(this.metaData.roomName, "construciton sites")
+    }
 
     if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
       if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
@@ -47,14 +53,20 @@ export class RoomDataProcess extends Process{
       if((room.name ==='E45S57' || room.name == 'E43S52' || room.name == 'E44S51' || room.name == 'E43S53' ||
           room.name == 'E46S51' || room.name == 'E46S52' || room.name == 'E48S57' || room.name == 'E45S48' ||
           room.name == 'E48S49' || room.name == 'E41S49' || room.name == 'E43S55' || room.name == 'E51S49' ||
-          room.name == 'E52S46' || room.name == 'E42S48' || room.name == 'E38S46' || room.name == 'E36S43')
+          room.name == 'E52S46' || room.name == 'E42S48' || room.name == 'E38S46' || room.name == 'E36S43' ||
+          room.name == 'E35S41' || room.name == 'E48S56')
         && room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
       {
-        if(room.name === 'E52S46')
-    {
-      console.log(this.name,1);
-    }
         this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {
+          roomName: room.name
+        })
+      }
+
+
+      let observer = this.kernel.data.roomData[room.name].observer
+      if(observer)
+      {
+        this.kernel.addProcessIfNotExist(ObservationProcess, 'op-' + this.metaData.roomName, 18, {
           roomName: room.name
         })
       }
@@ -71,6 +83,7 @@ export class RoomDataProcess extends Process{
       this.enemyDetection(room)
       this.repairDetection(room);
     }
+
     this.completed = true
   }
 
@@ -229,6 +242,12 @@ export class RoomDataProcess extends Process{
       nuker: <StructureNuker>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_NUKER);
       })[0],
+      observer: <StructureObserver>_.filter(myStructures, function(structure){
+        return (structure.structureType === STRUCTURE_OBSERVER);
+      })[0],
+      powerBank: <StructurePowerBank>_.filter(myStructures, function(structure){
+        return (structure.structureType === STRUCTURE_POWER_BANK);
+      })[0],
       generalContainers: generalContainers,
       mineral: <Mineral>room.find(FIND_MINERALS)[0],
       labs: labs,
@@ -317,6 +336,8 @@ export class RoomDataProcess extends Process{
       extensions: [],
       extractor: undefined,
       nuker: undefined,
+      observer: undefined,
+      powerBank: undefined,
       generalContainers: [],
       mineral: undefined,
       labs: [],

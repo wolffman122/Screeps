@@ -30,6 +30,7 @@ export class LabManagementProcess extends Process
 
   run()
   {
+    console.log(this.name);
     this.room = Game.rooms[this.metaData.roomName];
 
     if(this.room)
@@ -49,8 +50,8 @@ export class LabManagementProcess extends Process
       this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
-        console.log(this.name, "Found a Process Current Shortage", this.labProcess.currentShortage.mineralType, this.labProcess.currentShortage.amount,
-          "Load Porgress", this.labProcess.loadProgress, "Target Shortage", this.labProcess.targetShortage.mineralType, this.labProcess.targetShortage.amount)
+        //console.log(this.name, "Found a Process Current Shortage", this.labProcess.currentShortage.mineralType, this.labProcess.currentShortage.amount,
+        //  "Load Porgress", this.labProcess.loadProgress, "Target Shortage", this.labProcess.targetShortage.mineralType, this.labProcess.targetShortage.amount)
       }
 
       this.ensureMetaData();
@@ -65,10 +66,6 @@ export class LabManagementProcess extends Process
         }
       }
 
-      if(this.metaData.roomName === 'E45S57')
-      {
-        console.log(this.name, this.metaData.labDistros.length, this.labProcess, this.room.memory.boostRequests);
-      }
       if(this.metaData.labDistros.length < 1 && (this.labProcess || this.room.memory.boostRequests))
       {
         let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
@@ -80,11 +77,19 @@ export class LabManagementProcess extends Process
       }
       else if(this.metaData.labDistros.length === 1)
       {
+        if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 0)
+        }
         this.creep = Game.creeps[this.metaData.labDistros[0]];
 
         if(this.creep)
         {
-          console.log(this.name, 1, this.creep.name);
+          if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 11)
+        }
+          //console.log(this.name, 1, this.creep.name);
           this.missionActions();
         }
       }
@@ -135,12 +140,21 @@ export class LabManagementProcess extends Process
 
   private missionActions()
   {
+
     let command = this.accessCommand();
+    if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 2)
+        }
     if(!command)
     {
+      if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 3)
+        }
       if(_.sum(this.creep.carry) > 0)
       {
-        console.log(this.name, "is holding resources without a command, putting them in terminal");
+        //console.log(this.name, "is holding resources without a command, putting them in terminal");
         if(this.creep.pos.isNearTo(this.terminal!))
         {
           this.creep.transferEverything(this.terminal!);
@@ -158,8 +172,12 @@ export class LabManagementProcess extends Process
 
     if(_.sum(this.creep.carry) === 0)
     {
+      if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 4)
+        }
       let origin = Game.getObjectById<Structure>(command.origin);
-      console.log(this.name, 1, this.creep.name, 2, origin);
+      //console.log(this.name, 1, this.creep.name, 2, origin);
       if(this.creep.pos.isNearTo(origin!))
       {
         if(origin instanceof StructureTerminal)
@@ -171,13 +189,14 @@ export class LabManagementProcess extends Process
           }
         }
 
-        console.log(this.name, 1, this.creep.name, command.resourceType);
+
+        //console.log(this.name, 1, this.creep.name, command.resourceType);
         this.creep.withdraw(origin!, command.resourceType, command.amount);
         let destination = Game.getObjectById<Structure>(command.destination);
         if(!this.creep.pos.isNearTo(destination!))
         {
           this.creep.travelTo(destination!);
-        }
+        }        
       }
       else
       {
@@ -564,11 +583,11 @@ export class LabManagementProcess extends Process
       return true;
     }
 
-    console.log(this.name, Object.keys(process.reagentLoads).length, 22222);
+    //console.log(this.name, Object.keys(process.reagentLoads).length, 22222);
     let loadStatus = 0;
     for(let resourcetype in process.reagentLoads)
     {
-      console.log(this.name, resourcetype, 111111)
+      //console.log(this.name, resourcetype, 111111)
       loadStatus += process.reagentLoads[resourcetype];
     }
 
@@ -707,10 +726,6 @@ export class LabManagementProcess extends Process
     {
       let request = requests[resourceType];
 
-      if(this.metaData.roomName === 'E45S48')
-          {
-            console.log(this.name, resourceType);
-          }
       if(request)
       {
         for(let id of request.requesterIds)
@@ -733,10 +748,6 @@ export class LabManagementProcess extends Process
 
         if(request.requesterIds.length > 0 && !flag)
         {
-          if(this.metaData.roomName === 'E45S48')
-          {
-            console.log(this.name, "Going to place a flag");
-          }
           request.flagName = this.placePullFlag(resourceType);
         }
       }
@@ -752,11 +763,6 @@ export class LabManagementProcess extends Process
     let labs = _.filter(this.productLabs!, (l: StructureLab) => l.pos.lookFor(LOOK_FLAGS).length === 0);
     if(labs.length === 0)
       return;
-
-      if(this.metaData.roomName === 'E45S48')
-    {
-      console.log(this.name, "Place Pull Flag");
-    }
 
     let closestToSpawn = this.roomData().spawns[0].pos.findClosestByRange(labs);
     if(this.productLabs!.length > 1)

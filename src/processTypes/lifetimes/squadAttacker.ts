@@ -7,17 +7,20 @@ export class SquadAttackerLifetimeProcess extends LifetimeProcess
     creep?: Creep;
     follower: Creep;
     path: Flag[];
+    flag: Flag;
 
     public run()
     {
         this.creep = this.getCreep();
-        this.follower = Game.creeps[this.metaData.follower];
+        this.flag = Game.flags[this.metaData.identifier + this.metaData.number];
 
-        if(!this.creep)
+        if(!this.creep || !this.flag)
         {
             this.completed = true;
             return;
         }
+
+        this.follower = Game.creeps[this.flag.memory.follower];
 
         this.path = this.creep.getFlags(this.metaData.identifier, this.metaData.number);
 
@@ -43,6 +46,7 @@ export class SquadAttackerLifetimeProcess extends LifetimeProcess
                 if(this.follower && this.creep.pos.isNearTo(this.follower))
                 {
                     this.creep.travelTo(this.path[flagIndex]);
+                    return;
                 }
             }
         }
