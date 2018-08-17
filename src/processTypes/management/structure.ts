@@ -95,17 +95,41 @@ export class StructureManagementProcess extends Process{
             if(controller && controller.my && controller.level >= 8)
             {
               spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {})
+              if(spawned)
+              {
+                this.metaData.repairCreeps.push(creepName)
+                let room = Game.rooms[this.metaData.roomName];
+                if(room && room.memory.fastBuild)
+                {
+                  let boosts = [];
+                  boosts.push(RESOURCE_LEMERGIUM_HYDRIDE);
+                  this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
+                    creep: creepName,
+                    roomName: this.metaData.roomName,
+                    boosts: boosts,
+                    allowUnboosted: true
+                  })
+                }
+                else
+                {
+                  this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
+                    creep: creepName,
+                    roomName: this.metaData.roomName
+                  })
+                }
+              }
             }
             else
             {
               spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {})
-            }
-            if(spawned){
-              this.metaData.repairCreeps.push(creepName)
-              this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
-                creep: creepName,
-                roomName: this.metaData.roomName
-              })
+
+              if(spawned){
+                this.metaData.repairCreeps.push(creepName)
+                this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
+                  creep: creepName,
+                  roomName: this.metaData.roomName
+                })
+              }
             }
           }
           else

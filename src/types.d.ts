@@ -191,7 +191,8 @@ interface Flag {
     Information: {
       owner: string,
       level: number
-    }
+    };
+    fastBuild?: boolean;
   }
 
   interface SpawnMemory {}
@@ -543,6 +544,14 @@ interface Flag {
     roomName: string,
     boosts?: string[],
     allowUnboosted: boolean,
+  }
+
+  interface RepairerLifetimeProcessMetaData
+  {
+    creep: string,
+    roomName: string,
+    boosts?: string[],
+    allowUnboosted?: boolean,
   }
 //// Minerals
 

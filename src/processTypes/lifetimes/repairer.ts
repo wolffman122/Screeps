@@ -4,15 +4,110 @@ import {Utils} from '../../lib/utils'
 import {CollectProcess} from '../creepActions/collect'
 import {RepairProcess} from '../creepActions/repair'
 import { BuildProcess } from '../creepActions/build';
+import { LABDISTROCAPACITY } from '../management/lab';
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
   type = 'rlf'
+  metaData: RepairerLifetimeProcessMetaData;
 
   run()
   {
     let creep = this.getCreep()
 
+
     if(!creep){ return }
+
+    let centerFlag = Game.flags['Center-'+creep.room.name]
+
+    ///////////
+    // Boosting
+    ///////////
+    if((this.kernel.data.roomData[creep.room!.name].labs.length === 0) || (creep.room.controller && creep.room.controller.level < 6))
+    {
+      this.metaData.boosts = undefined;
+    }
+
+    if(this.metaData.boosts)
+    {
+      let boosted = true;
+      for(let boost of this.metaData.boosts)
+      {
+        if(creep.memory[boost])
+        {
+          continue;
+        }
+
+        let room = Game.rooms[creep.pos.roomName];
+
+        if(room)
+        {
+          let requests = room.memory.boostRequests;
+          if(!requests)
+          {
+            creep.memory[boost] = true;
+            continue;
+          }
+
+          if(!requests[boost])
+          {
+            requests[boost] = { flagName: undefined, requesterIds: [] };
+          }
+
+          // check if already boosted
+          let boostedPart = _.find(creep.body, {boost: boost});
+          if(boostedPart)
+          {
+            creep.memory[boost] = true;
+            requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+            continue;
+          }
+
+          boosted = false;
+          if(!_.include(requests[boost].requesterIds, creep.id))
+          {
+            requests[boost].requesterIds.push(creep.id);
+          }
+
+          if(creep.spawning)
+            continue;
+
+          let flag = Game.flags[requests[boost].flagName!];
+          if(!flag)
+          {
+            continue;
+          }
+
+          let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
+
+          if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
+          {
+            if(creep.pos.isNearTo(lab))
+            {
+              lab.boostCreep(creep);
+            }
+            else
+            {
+              creep.travelTo(lab);
+              return;
+            }
+          }
+          else if(this.metaData.allowUnboosted)
+          {
+            console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
+            requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+            creep.memory[boost] = true;
+            return;
+          }
+          else
+          {
+            if(Game.time % 10 === 0)
+              console.log("BOOST: no boost for", creep.name);
+              creep.idleOffRoad(creep.room!.storage!, false);
+            return;
+          }
+        }
+      }
+    }
 
     if(creep.ticksToLive! < 50 && _.sum(creep.carry) > 0)
     {
@@ -31,6 +126,34 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           return;
         }
       }
+
+      /*if(centerFlag)
+      {
+        let controller = creep.room.controller;
+        let room = creep.room;
+        if(room && controller && controller.level >= 8 && !creep.room.memory.fastBuild)
+        {
+          // Figure out if there is a full grid of ramparts
+          let ramparts = this.roomData().ramparts;
+
+          if(ramparts.length === 0)
+          {
+            creep.room.memory.fastBuild = true;
+
+            for(let i = -6; i < 7; i++)
+            {
+              for(let j = -6; j < 7; j++)
+              {
+                if((i > -4 && i < 4) && (j > -4 && j < 4))
+                  continue;
+
+                //room.createConstructionSite(centerFlag.pos.x + i, centerFlag.pos.y + j, STRUCTURE_RAMPART);
+                //console.log(this.name, 'Lets make alot of ramparts');
+              }
+            }
+          }
+        }
+      }*/
     }
 
     if(_.sum(creep.carry) === 0){
