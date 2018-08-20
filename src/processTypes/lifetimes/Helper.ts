@@ -2,6 +2,9 @@ import { LifetimeProcess } from "os/process";
 import { HarvestProcess } from "../creepActions/harvest";
 import { BuildProcess } from "../creepActions/build";
 import { UpgradeProcess } from "../creepActions/upgrade";
+import { LABDISTROCAPACITY } from "../management/lab";
+import { LabDistroLifetimeProcess } from "./labDistro";
+import { Utils } from "lib/utils";
 
 export class HelperLifetimeProcess extends LifetimeProcess
 {
@@ -19,7 +22,91 @@ export class HelperLifetimeProcess extends LifetimeProcess
         return;
       }
 
-      if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
+      console.log(this.name, creep.pos.roomName, creep.pos.x, creep.pos.y);
+
+      if(this.metaData.boosts)
+      {
+        let boosted = true;
+        for(let boost of this.metaData.boosts)
+        {
+          if(creep.memory[boost])
+          {
+            continue;
+          }
+
+          let room = Game.rooms[creep.pos.roomName];
+
+          if(room)
+          {
+            let requests = room.memory.boostRequests;
+            if(!requests)
+            {
+              creep.memory[boost] = true;
+              continue;
+            }
+
+            if(!requests[boost])
+            {
+              requests[boost] = { flagName: undefined, requesterIds: [] };
+            }
+
+            // check if already boosted
+            let boostedPart = _.find(creep.body, {boost: boost});
+            if(boostedPart)
+            {
+              creep.memory[boost] = true;
+              requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+              continue;
+            }
+
+            boosted = false;
+            if(!_.include(requests[boost].requesterIds, creep.id))
+            {
+              requests[boost].requesterIds.push(creep.id);
+            }
+
+            if(creep.spawning)
+              continue;
+
+            let flag = Game.flags[requests[boost].flagName!];
+            if(!flag)
+            {
+              continue;
+            }
+
+            let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
+
+            if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
+            {
+              if(creep.pos.isNearTo(lab))
+              {
+                lab.boostCreep(creep);
+              }
+              else
+              {
+                creep.travelTo(lab);
+                return;
+              }
+            }
+            else if(this.metaData.allowUnboosted)
+            {
+              console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
+              requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+              creep.memory[boost] = true;
+              return;
+            }
+            else
+            {
+              if(Game.time % 10 === 0)
+                console.log("BOOST: no boost for", creep.name);
+                creep.idleOffRoad(creep.room!.storage!, false);
+              return;
+            }
+          }
+        }
+      }
+
+      /*if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
       {
         if(creep.pos.isNearTo(creep.room.storage))
         {
@@ -29,62 +116,34 @@ export class HelperLifetimeProcess extends LifetimeProcess
 
         creep.travelTo(creep.room.storage);
         return;
-      }
+      }*/
 
-      let sites = flag.room!.find(FIND_CONSTRUCTION_SITES);
-      if(sites.length > 0)
+      let controller = flag.room!.controller;
+      if(controller)
       {
-        let site = sites[0];
-        this.metaData.site = site.id;
-
-        if(_.sum(creep.carry) === 0)
+        if(creep.room.name !== controller.room.name)
         {
-          if(creep.pos.roomName == site.pos.roomName)
-          {
-            let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
-
-            this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-              creep: creep.name,
-              source: source.id
-            })
-
-            return;
-          }
-          else
-          {
-              creep.travelTo(flag.pos);
-              return;
-          }
+          console.log(this.name, this.metaData.source);
+          creep.travelTo(flag, { preferHighway: true});
+          return;
         }
 
-        this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-            creep: creep.name,
-            site: site.id
-          });
-      }
-      else
-      {
-        if(_.sum(creep.carry) === 0)
+        if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
         {
-          let sources = _.filter(this.roomData().sources, (s)=>{
-            return (s.energy > 0);
-          })
-          let source = creep.pos.findClosestByPath(sources);
-
-          if(source)
-          {
-            this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-              source: source.id,
-              creep: creep.name
-            })
-          }
-        }
-
-        if(_.sum(creep.carry) !== 0)
-        {
-          this.fork(UpgradeProcess, 'upgrade-' + creep.name, this.priority - 1, {
+          console.log(this.name, this.metaData.source);
+          this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority-1, {
+            source: this.metaData.source,
             creep: creep.name
           })
+        }
+
+        if(!creep.pos.inRangeTo(controller, 3))
+        {
+          creep.travelTo(controller, { range: 3 });
+        }
+        else
+        {
+          creep.upgradeController(controller);
         }
       }
     }

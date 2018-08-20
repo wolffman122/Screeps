@@ -191,7 +191,8 @@ interface Flag {
     Information: {
       owner: string,
       level: number
-    }
+    };
+    assisted: boolean
   }
 
   interface SpawnMemory {}
@@ -227,6 +228,7 @@ interface Flag {
     upgradeCreeps: string[]
     spinCreeps: string[]
     upgradeDistroCreeps: string[]
+    visionCreeps: string[]
     upgradePrespawn?: boolean
     upgradeDistroPrespawn?: boolean
   }
@@ -528,13 +530,19 @@ interface Flag {
   interface HelpManagementProcessMetaData
   {
     flagName: string,
-    creeps: string[],
+    creeps: {
+      [source: string]: string[]
+    }
   }
 
   interface HelperLifetimeProcessMetaData
   {
     flagName: string,
     site: string,
+    boosts?: string[],
+    allowUnboosted?: boolean,
+    harvesting: boolean,
+    source: string
   }
 
   interface UpgradeLifetimeProcessMetaData

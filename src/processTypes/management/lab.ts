@@ -40,6 +40,14 @@ export class LabManagementProcess extends Process
       this.storage = this.room.storage;
       this.nuker = this.roomData().nuker;
 
+
+        if(this.metaData.roomName === 'E48S56')
+        {
+          //console.log(this.name, this.metaData.productLabIds!.length, this.metaData.reagentLabIds!.length);
+          console.log(this.name, this.productLabs, this.reagentLabs)
+        }
+
+
       if(!this.productLabs || !this.reagentLabs)
       {
         this.reagentLabs = this.findReagentLabs();
@@ -196,7 +204,7 @@ export class LabManagementProcess extends Process
         if(!this.creep.pos.isNearTo(destination!))
         {
           this.creep.travelTo(destination!);
-        }        
+        }
       }
       else
       {

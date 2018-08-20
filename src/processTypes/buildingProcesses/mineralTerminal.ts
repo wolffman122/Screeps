@@ -6,130 +6,201 @@ export class MinetalTerminalManagementProcess extends Process
 
   run()
   {
-    this.log('Minteral Terminal');
+    if(Game.time % 10 === 0)
+    {
+      this.log('Minteral Terminal');
 
-    let roomsExtraMinerals: {rName: string, mType: ResourceConstant} [] = [];
-    let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
-    let needUpgrade: string[] = [];
-    let extraUpgrade: string[] = [];
+      let roomsExtraMinerals: {rName: string, mType: ResourceConstant} [] = [];
+      let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
+      let needUpgrade: string[] = [];
+      let extraUpgrade: string[] = [];
+      let needCarry: string[] = [];
+      let extraCarry: string[] = [];
+      let needMove: string[] = [];
+      let extraMove: string[] = [];
 
-    _.forEach(Game.rooms, (r) => {
-      if(r.controller && r.controller.my && r.terminal && r.controller.level >= 6  && r.terminal.cooldown === 0)
-      {
-        let mineral = <Mineral>r.find(FIND_MINERALS)[0]
-        if(mineral)
+      _.forEach(Game.rooms, (r) => {
+        if(r.controller && r.controller.my && r.terminal && r.controller.level >= 6  && r.terminal.cooldown === 0)
         {
-          if(mineral.room!.storage && mineral.room!.terminal!.store[mineral.mineralType]! >= KEEP_AMOUNT)
+          let mineral = <Mineral>r.find(FIND_MINERALS)[0]
+          if(mineral)
           {
-            //console.log('Room ' + mineral.room.name + ' storage ' + mineral.room.storage.store[mineral.mineralType])
-            roomsExtraMinerals.push( {
-              rName: mineral.room!.name,
-              mType: mineral.mineralType
-            })
-          }
-
-          let terminal = r.terminal;
-
-
-          if(terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! >= PRODUCTION_AMOUNT && r.controller.level >= 8)
-          {
-            console.log(this.name, 'extra upgrade', r.name);
-            extraUpgrade.push(r.name);
-          }
-
-          if((terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT) && r.controller.level < 8)
-          {
-            console.log(r.name);  
-            needUpgrade.push(r.name);
-          }
-
-          let roomName = "";
-          let type = "";
-
-          for(let mineralType of MINERALS_RAW)
-          {
-            let sendAmount: number = 0;
-
-            if(terminal)
+            if(mineral.room!.storage && mineral.room!.terminal!.store[mineral.mineralType]! >= KEEP_AMOUNT)
             {
-              if(terminal.store[mineralType])
+              //console.log('Room ' + mineral.room.name + ' storage ' + mineral.room.storage.store[mineral.mineralType])
+              roomsExtraMinerals.push( {
+                rName: mineral.room!.name,
+                mType: mineral.mineralType
+              })
+            }
+
+            let terminal = r.terminal;
+
+            // Upgrade
+            if(terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! > PRODUCTION_AMOUNT && r.controller.level >= 8)
+            {
+              //console.log(this.name, 'extra upgrade', r.name);
+              extraUpgrade.push(r.name);
+            }
+
+            if((terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT))
+            {
+              //console.log(this.name, 'need upgrade', r.name);
+              needUpgrade.push(r.name);
+            }
+
+            // Carry
+            if(terminal.store[RESOURCE_CATALYZED_KEANIUM_ACID]! > PRODUCTION_AMOUNT && r.controller.level >= 8)
+            {
+              //console.log(this.name, 'extra upgrade', r.name);
+              extraCarry.push(r.name);
+            }
+
+            if((terminal.store[RESOURCE_CATALYZED_KEANIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT))
+            {
+              //console.log(r.name);
+              needCarry.push(r.name);
+            }
+
+            // Move
+            if(terminal.store[RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]! > PRODUCTION_AMOUNT && r.controller.level >= 8)
+            {
+              //console.log(this.name, 'extra move', r.name);
+              extraMove.push(r.name);
+            }
+
+            if((terminal.store[RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT))
+            {
+              //console.log(this.name, 'need move', r.name);
+              needMove.push(r.name);
+            }
+
+            let roomName = "";
+            let type = "";
+
+            for(let mineralType of MINERALS_RAW)
+            {
+              let sendAmount: number = 0;
+
+              if(terminal)
               {
-                if(terminal.store[mineralType]! < SPREAD_AMOUNT  && mineral.mineralType !== mineralType)
+                if(terminal.store[mineralType])
                 {
-                  sendAmount = SPREAD_AMOUNT - terminal.store[mineralType]!;
+                  if(terminal.store[mineralType]! < SPREAD_AMOUNT  && mineral.mineralType !== mineralType)
+                  {
+                    sendAmount = SPREAD_AMOUNT - terminal.store[mineralType]!;
+                  }
                 }
-              }
-              else
-              {
-                sendAmount = SPREAD_AMOUNT;
-              }
+                else
+                {
+                  sendAmount = SPREAD_AMOUNT;
+                }
 
-              //console.log('1', r.name, mineralType, sendAmount)
+                //console.log('1', r.name, mineralType, sendAmount)
 
-              if(sendAmount > 100)
-              {
-                //console.log(r.name, "Sending", mineralType, sendAmount)
-                recievableRooms.push({
-                  rName: r.name,
-                  mType: mineralType,
-                  amount: sendAmount
-                });
+                if(sendAmount > 100)
+                {
+                  //console.log(r.name, "Sending", mineralType, sendAmount)
+                  recievableRooms.push({
+                    rName: r.name,
+                    mType: mineralType,
+                    amount: sendAmount
+                  });
+                }
               }
             }
           }
         }
-      }
-    });
-
-    _.forEach(roomsExtraMinerals, (ex) => {
-      let receiveRoom = _.find(recievableRooms, (rr) => {
-        if(rr.mType == ex.mType && rr.rName != ex.rName)
-        {
-          return rr.rName;
-        }
-        return false;
       });
 
-      if(receiveRoom)
-      {
-        console.log('Found receive room ', receiveRoom.rName, receiveRoom.mType, receiveRoom.amount)
-        let terminal = Game.rooms[ex.rName].terminal;
-        if(terminal && terminal.cooldown == 0 && receiveRoom.amount)
-        {
-          if(terminal.send(ex.mType, receiveRoom.amount, receiveRoom.rName) === OK)
+      _.forEach(roomsExtraMinerals, (ex) => {
+        let receiveRoom = _.find(recievableRooms, (rr) => {
+          if(rr.mType == ex.mType && rr.rName != ex.rName)
           {
-            recievableRooms = _.filter(recievableRooms, (r2) => {
-              return r2 !== receiveRoom;
-            });
+            return rr.rName;
+          }
+          return false;
+        });
+
+        if(receiveRoom)
+        {
+          console.log('Found receive room ', receiveRoom.rName, receiveRoom.mType, receiveRoom.amount)
+          let terminal = Game.rooms[ex.rName].terminal;
+          if(terminal && terminal.cooldown == 0 && receiveRoom.amount)
+          {
+            if(terminal.send(ex.mType, receiveRoom.amount, receiveRoom.rName) === OK)
+            {
+              recievableRooms = _.filter(recievableRooms, (r2) => {
+                return r2 !== receiveRoom;
+              });
+
+              return;
+            }
+          }
+        }
+      });
+
+      // Upgrade
+      for(let i = 0; i < extraUpgrade.length; i++)
+      {
+        let name = extraUpgrade[i];
+
+        let terminal = Game.rooms[name].terminal;
+
+        if(terminal && terminal.cooldown === 0)
+        {
+          if(needUpgrade.length)
+          {
+            terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, 1000, needUpgrade[0]);
+            return;
           }
         }
       }
-    });
 
-    for(let i = 0; i < extraUpgrade.length; i++)
-    {
-      let name = extraUpgrade[i];
-
-      let terminal = Game.rooms[name].terminal;
-
-      if(terminal && terminal.cooldown === 0)
+      //Carry
+      for(let i = 0; i < extraCarry.length; i++)
       {
-        if(needUpgrade.length)
+        let name = extraCarry[i];
+
+        let terminal = Game.rooms[name].terminal;
+
+        if(terminal && terminal.cooldown === 0)
         {
-          terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, 1000, needUpgrade[0]);
-          return;
+          if(needCarry.length)
+          {
+            terminal.send(RESOURCE_CATALYZED_KEANIUM_ACID, 1000, needCarry[0]);
+            return;
+          }
+        }
+      }
+
+      //Move
+      for(let i = 0; i < extraMove.length; i++)
+      {
+        let name = extraMove[i];
+
+        let terminal = Game.rooms[name].terminal;
+
+        if(terminal && terminal.cooldown === 0)
+        {
+          if(needMove.length)
+          {
+            terminal.send(RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, 1000, needMove[0]);
+            return;
+          }
         }
       }
     }
-
-
   }
 }
 
 export const KEEP_AMOUNT = 35000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
-export const PRODUCT_LIST = [RESOURCE_CATALYZED_GHODIUM_ACID, RESOURCE_CATALYZED_GHODIUM_ALKALIDE, RESOURCE_GHODIUM_ACID, RESOURCE_UTRIUM_ALKALIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_KEANIUM_ACID, RESOURCE_CATALYZED_LEMERGIUM_ACID, RESOURCE_GHODIUM];
+export const PRODUCT_LIST = [RESOURCE_CATALYZED_GHODIUM_ACID, RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
+                             RESOURCE_GHODIUM_ACID, RESOURCE_UTRIUM_ALKALIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+                             RESOURCE_CATALYZED_KEANIUM_ACID, RESOURCE_CATALYZED_LEMERGIUM_ACID, RESOURCE_GHODIUM,
+                             RESOURCE_LEMERGIUM_ALKALIDE];
 export const PRODUCTION_AMOUNT = 5000;
 
 export const REAGENT_LIST = {
