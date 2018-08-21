@@ -47,15 +47,18 @@ export class HelpManagementProcess extends Process
                 let terminal = room.terminal;
                 for(let mineral in boostMinerals)
                 {
-                    if(terminal.store.hasOwnProperty(mineral))
+                    let mt = boostMinerals[mineral];
+                    if(terminal.store.hasOwnProperty(mt))
                     {
-                        if(terminal.store[mineral] < 1000)
+                        if(terminal.store[mt]! < 1000)
                         {
+                            console.log(this.name, 'turning false 1')
                             flag.room!.memory.assisted = false;
                         }
                     }
                     else
                     {
+                        console.log(this.name, 'turning false 2')
                         flag.room!.memory.assisted = false;
                     }
                 }
@@ -82,7 +85,13 @@ export class HelpManagementProcess extends Process
                 proc.metaData.creeps[source.id] = creepNames;
                 let creeps = Utils.inflateCreeps(creepNames);
 
-                if(creeps.length < 1)
+                let count = 0;
+                _.forEach(creeps, (c) => {
+                    let ticksNeeeded = c.body.length * 3;
+                    if(!c.ticksToLive || c.ticksToLive > ticksNeeeded) { count++; }
+                });
+                
+                if(count < 1)
                 {
                     console.log(proc.name, '1');
                     let creepName = 'hmp-helper-' + spawnRoom + '-' + Game.time;

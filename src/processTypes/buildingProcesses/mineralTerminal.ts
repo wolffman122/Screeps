@@ -151,7 +151,13 @@ export class MinetalTerminalManagementProcess extends Process
         {
           if(needUpgrade.length)
           {
-            if(terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, 1000, needUpgrade[0]) === OK)
+            let amount = terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! - PRODUCTION_AMOUNT;
+            if(amount > 0 && amount < 100)
+            {
+              amount = 100;
+            }
+
+            if(terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, amount, needUpgrade[0]) === OK)
             {
               return
               //extraCarry = _.pull(extraCarry, name);
@@ -173,6 +179,12 @@ export class MinetalTerminalManagementProcess extends Process
         {
           if(needCarry.length)
           {
+            let amount = terminal.store[RESOURCE_CATALYZED_KEANIUM_ACID]! - PRODUCTION_AMOUNT;
+            if(amount > 0 && amount < 100)
+            {
+              amount = 100;
+            }
+
             if(terminal.send(RESOURCE_CATALYZED_KEANIUM_ACID, 1000, needCarry[0]) === OK)
             {
               return;
@@ -193,6 +205,12 @@ export class MinetalTerminalManagementProcess extends Process
         {
           if(needMove.length)
           {
+            let amount = terminal.store[RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]! - PRODUCTION_AMOUNT;
+            if(amount > 0 && amount < 100)
+            {
+              amount = 100;
+            }
+
             terminal.send(RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, 1000, needMove[0]);
             return;
           }
@@ -205,8 +223,8 @@ export class MinetalTerminalManagementProcess extends Process
 export const KEEP_AMOUNT = 35000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
-export const PRODUCT_LIST = [RESOURCE_CATALYZED_GHODIUM_ACID, RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
-                             RESOURCE_GHODIUM_ACID, RESOURCE_UTRIUM_ALKALIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+export const PRODUCT_LIST = [RESOURCE_CATALYZED_GHODIUM_ACID,
+                             RESOURCE_GHODIUM_ACID, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
                              RESOURCE_CATALYZED_KEANIUM_ACID, RESOURCE_CATALYZED_LEMERGIUM_ACID, RESOURCE_GHODIUM,
                              RESOURCE_LEMERGIUM_ALKALIDE];
 export const PRODUCTION_AMOUNT = 5000;

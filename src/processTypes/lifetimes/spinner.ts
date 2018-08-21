@@ -1,6 +1,7 @@
 import { LifetimeProcess } from "os/process";
 import { CollectProcess } from "processTypes/creepActions/collect";
 import { DeliverProcess } from "processTypes/creepActions/deliver";
+import { KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal";
 
 export class  SpinnerLifetimeProcess extends LifetimeProcess
 {
@@ -29,6 +30,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
 
     if(_.sum(creep.carry) === 0)
     {
+      // LInks
       if(this.kernel.data.roomData[creep.room.name].sourceLinks.length > 0)
       {
         let link = <StructureLink>Game.getObjectById(this.metaData.storageLink);
@@ -61,6 +63,20 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             });
           }
         }
+        else if(mineral.mineralAmount === 0 && mineral.ticksToRegeneration > 0)
+        {
+          // New part to take from storage
+          if(creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 40000 &&
+            creep.room.terminal && creep.room.terminal.store[mineral.mineralType]! < KEEP_AMOUNT)
+            {
+              let amount = KEEP_AMOUNT - creep.room.terminal.store[mineral.mineralType]!;
+              this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+                target: creep.room.storage.id,
+                creep: creep.name,
+                resource: mineral.mineralType
+              })
+            }
+        }
         else if(mineral && creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 40000)
         {
           this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
@@ -87,16 +103,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       }
       else
       {
-        let link = <StructureLink>Game.getObjectById(this.metaData.storageLink);
-        if(link && link.energy > 0)
-        {
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-            target: this.metaData.storageLink,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          });
-        }
-        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 100000)
+        if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 100000)
         {
           let collectAmount = creep.room.terminal.store.energy - 100000;
           if(collectAmount < creep.carryCapacity)
