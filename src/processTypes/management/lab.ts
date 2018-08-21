@@ -187,7 +187,7 @@ export class LabManagementProcess extends Process
     {
       if(this.name === 'labm-E46S51')
         {
-          console.log(this.name, 4)
+          console.log(this.name, 4, command.origin, command.resourceType, command.destination)
         }
       let origin = Game.getObjectById<Structure>(command.origin);
       //console.log(this.name, 1, this.creep.name, 2, origin);
@@ -204,7 +204,15 @@ export class LabManagementProcess extends Process
 
 
         //console.log(this.name, 1, this.creep.name, command.resourceType);
-        this.creep.withdraw(origin!, command.resourceType, command.amount);
+        let retValue = this.creep.withdraw(origin!, command.resourceType, command.amount);
+        if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 5, retValue)
+        }
+        if(retValue === ERR_NOT_ENOUGH_RESOURCES || retValue === ERR_INVALID_ARGS)
+        {
+          this.metaData.command = undefined;
+        }
         let destination = Game.getObjectById<Structure>(command.destination);
         if(!this.creep.pos.isNearTo(destination!))
         {
@@ -248,15 +256,33 @@ export class LabManagementProcess extends Process
       energyInStorage = storage.store.energy;
     }
 
-
+    if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "command 1")
+    }
     let command = this.checkPullFlags();
     if(command) return command;
+
+    if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "command 2")
+    }
 
     command = this.checkReagentLabs();
     if(command) return command;
 
+    if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "command 3")
+    }
+
     command = this.checkProductLabs();
     if(command) return command;
+
+    if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "command 4")
+    }
 
     // load nukers
     let nuker = this.roomData().nuker;
@@ -288,9 +314,16 @@ export class LabManagementProcess extends Process
     {
       this.metaData.lastCommandTick = Game.time - 10;
     }
-
+    if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, 21, this.metaData.command, this.metaData.lastCommandTick)
+    }
     if(!this.metaData.command && Game.time > this.metaData.lastCommandTick + 10)
     {
+      if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, 22)
+        }
       if(_.sum(this.creep.carry) === 0)
       {
         this.metaData.command = this.findCommand();
@@ -316,27 +349,50 @@ export class LabManagementProcess extends Process
       return; //early
     }
 
+    if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "reagentLabs 1")
+    }
+
     for(let i = 0; i < 2; i++)
     {
       let lab = this.reagentLabs[i];
       let mineralType = (this.labProcess ? Object.keys(this.labProcess.reagentLoads)[i] : undefined) as ResourceConstant;
       if(!mineralType && lab.mineralAmount > 0)
       {
+        if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "reagentLabs 2")
+    }
         // clear labs when there is no current process
         let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType!};
         return command;
       }
       else if(mineralType && lab.mineralType && lab.mineralType !== mineralType)
       {
+        if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "reagentLabs 3")
+    }
         let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType};
         return command;
       }
       else if(mineralType)
       {
+
         let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], LABDISTROCAPACITY);
+        if(this.name === 'labm-E46S51')
+        {
+          console.log(this.name, "reagentLabs 4", mineralType, amountNeeded, this.terminal!.store[mineralType], (amountNeeded > 0), this.terminal!.store[mineralType]! >= amountNeeded,
+           (lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY))
+        }
         if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
           && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
         {
+          if(this.name === 'labm-E46S51')
+    {
+      console.log(this.name, "reagentLabs 5")
+    }
           // bring minerals to lab when amount drops below amount needed
           let command: Command = {origin: this.terminal!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
           return command;

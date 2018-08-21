@@ -279,10 +279,11 @@ export class EnergyManagementProcess extends Process{
           );
         }
 
-        if(spawned){
+        if(spawned)
+        {
           this.metaData.upgradeCreeps.push(creepName)
 
-          if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
+          /*if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
             proc.metaData.roomName === 'E45S57')
           {
             let boosts = [];
@@ -293,22 +294,23 @@ export class EnergyManagementProcess extends Process{
               boosts: boosts,
               allowUnboosted: true
             })
-        }
-        else if(proc.metaData.roomName === 'E48S56')
-      {
-        let boosts = [];
-        boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
-        this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-          creep: creepName,
-          roomName: proc.metaData.roomName,
-          boosts: boosts,
-          allowUnboosted: true
-        })
-      }
-      else
+          }
+          else if(proc.metaData.roomName === 'E48S56')
+          {
+            let boosts = [];
+            boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
+            this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+              creep: creepName,
+              roomName: proc.metaData.roomName,
+              boosts: boosts,
+              allowUnboosted: true
+            })
+          }
+          else*/
           {
             this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-              creep: creepName
+              creep: creepName,
+              roomName: proc.metaData.roomName
             });
           }
         }
