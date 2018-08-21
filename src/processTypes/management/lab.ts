@@ -58,6 +58,11 @@ export class LabManagementProcess extends Process
       this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
+        let target = this.labProcess.targetShortage.mineralType;
+        if(!this.kernel.data.labProcesses[target])
+          this.kernel.data.labProcesses[target] = 0;
+
+        this.kernel.data.labProcesses[target]++;
         //console.log(this.name, "Found a Process Current Shortage", this.labProcess.currentShortage.mineralType, this.labProcess.currentShortage.amount,
         //  "Load Porgress", this.labProcess.loadProgress, "Target Shortage", this.labProcess.targetShortage.mineralType, this.labProcess.targetShortage.amount)
       }
@@ -517,6 +522,10 @@ export class LabManagementProcess extends Process
       if(!lab.mineralType || lab.mineralType === this.labProcess!.currentShortage.mineralType)
       {
         let outcome = lab.runReaction(this.reagentLabs![0], this.reagentLabs![1]);
+        if(outcome === OK)
+        {
+          this.kernel.data.activeLabCount++;
+        }
       }
 
     }

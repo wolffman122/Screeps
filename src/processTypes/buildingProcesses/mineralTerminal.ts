@@ -56,7 +56,7 @@ export class MinetalTerminalManagementProcess extends Process
               extraCarry.push(r.name);
             }
 
-            if((terminal.store[RESOURCE_CATALYZED_KEANIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT))
+            if((terminal.store[RESOURCE_CATALYZED_KEANIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_KEANIUM_ACID]! < PRODUCTION_AMOUNT))
             {
               //console.log(r.name);
               needCarry.push(r.name);
@@ -69,7 +69,7 @@ export class MinetalTerminalManagementProcess extends Process
               extraMove.push(r.name);
             }
 
-            if((terminal.store[RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT))
+            if((terminal.store[RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE] === undefined || terminal.store[RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]! < PRODUCTION_AMOUNT))
             {
               //console.log(this.name, 'need move', r.name);
               needMove.push(r.name);
@@ -151,12 +151,17 @@ export class MinetalTerminalManagementProcess extends Process
         {
           if(needUpgrade.length)
           {
-            terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, 1000, needUpgrade[0]);
-            return;
+            if(terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, 1000, needUpgrade[0]) === OK)
+            {
+              return
+              //extraCarry = _.pull(extraCarry, name);
+              //extraMove = _.pull(extraMove, name);
+            }
           }
         }
       }
 
+      console.log(this.name, 'Carry', needCarry.length);
       //Carry
       for(let i = 0; i < extraCarry.length; i++)
       {
@@ -168,8 +173,11 @@ export class MinetalTerminalManagementProcess extends Process
         {
           if(needCarry.length)
           {
-            terminal.send(RESOURCE_CATALYZED_KEANIUM_ACID, 1000, needCarry[0]);
-            return;
+            if(terminal.send(RESOURCE_CATALYZED_KEANIUM_ACID, 1000, needCarry[0]) === OK)
+            {
+              return;
+              //extraMove = _.pull(extraMove, name);
+            }
           }
         }
       }

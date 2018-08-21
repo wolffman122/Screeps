@@ -7,7 +7,6 @@ export const Stats = {
   build(kernel: Kernel){
     if(!Memory.stats){ Memory.stats = {}}
 
-
     Memory.stats['gcl.progress'] = Game.gcl.progress
     Memory.stats['gcl.progressTotal'] = Game.gcl.progressTotal
     Memory.stats['gcl.level'] = Game.gcl.level
@@ -196,6 +195,14 @@ export const Stats = {
     _.forEach(Object.keys(boostAmounts), (ba) => {
       Memory.stats['terminals.' + ba + '.amount'] = boostAmounts[ba];
     })
+
+    for(let resourceType of PRODUCT_LIST)
+    {
+      Memory.stats["lab.processCount." + resourceType] = kernel.data.labProcesses[resourceType] || 0;
+    }
+
+    Memory.stats['lab.activeLabCount'] = kernel.data.activeLabCount;
+
 
   }
 }

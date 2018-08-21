@@ -126,5 +126,12 @@ export class HelpManagementProcess extends Process
                 }
             })
         }
+        else
+        {
+            if(Game.time % 3000 === 0 && flag)
+            {
+                Game.notify("Out of boost minerals for room" + flag.room!.name);
+            }
+        }
     }
 }

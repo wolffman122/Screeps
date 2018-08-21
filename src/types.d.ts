@@ -22,6 +22,12 @@ interface RoomPosition {
   getOpenPositions(range:number, opts:{}): RoomPosition[];
 }
 
+interface Game {
+  cache: {
+    labProcesses: { [resourceType: string]: number }
+    activeLabCount: number;
+  }
+}
 interface Flag {
 
 }
