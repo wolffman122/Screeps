@@ -544,6 +544,17 @@ interface Flag {
     boosts?: string[],
     allowUnboosted: boolean,
   }
+
+  interface PowerManagementProcessMetaData
+  {
+    roomName: string;
+    clydes: string[];
+    bonnies: string[];
+    carts: string[];
+    currentBank: BankData;
+    scanIndex: number;
+    scanData: {[roomName: string]: number}
+  }
 //// Minerals
 
 
@@ -586,4 +597,15 @@ interface OpenPositionsOptions
   avoidTerrain: string[],
   avoidCreeps: boolean,
   avoidConstructionSites: boolean,
+}
+
+interface BankData
+{
+  pos: RoomPosition;
+  hits: number;
+  power: number;
+  assisting?: boolean;
+  finishing?: boolean;
+  distance: number;
+  timeout: number;
 }
