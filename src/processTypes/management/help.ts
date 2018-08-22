@@ -49,7 +49,7 @@ export class HelpManagementProcess extends Process
                 {
                     flag.room!.memory.assisted = false;
                 }
-                
+
                 let terminal = room.terminal;
                 for(let mineral in boostMinerals)
                 {
@@ -93,8 +93,8 @@ export class HelpManagementProcess extends Process
 
                 let count = 0;
                 _.forEach(creeps, (c) => {
-                    let ticksNeeeded = c.body.length * 3;
-                    if(!c.ticksToLive || c.ticksToLive > ticksNeeeded) { count++; }
+                    let ticksNeeeded = c.body.length * 3 + 100;
+                    if(!c.ticksToLive || c.ticksToLive > ticksNeeeded ) { count++; }
                 });
 
                 if(count < 1)
