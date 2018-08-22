@@ -128,13 +128,33 @@ export class HelperLifetimeProcess extends LifetimeProcess
           return;
         }
 
-        if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
+        if((_.sum(creep.carry) === 0 || this.metaData.harvesting) && creep.ticksToLive! > 200)
         {
           console.log(this.name, this.metaData.source);
-          this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority-1, {
-            source: this.metaData.source,
-            creep: creep.name
-          })
+          this.metaData.harvesting = true;
+          if(_.sum(creep.carry) === creep.carryCapacity)
+          {
+            this.metaData.harvesting = false;
+          }
+
+          let source = <Source>Game.getObjectById(this.metaData.source);
+          if(source)
+          {
+            let targetPos = source.pos;
+            let targetRange = 1
+            console.log(this.name, '1')
+            if(!creep.pos.inRangeTo(targetPos, targetRange))
+            {
+              creep.travelTo(targetPos);
+              return;
+            }
+
+            if(creep.harvest(source) === ERR_NOT_ENOUGH_RESOURCES)
+            {
+              this.metaData.harvesting = false;
+            }
+            return;
+          }
         }
 
         if(!creep.pos.inRangeTo(controller, 3))

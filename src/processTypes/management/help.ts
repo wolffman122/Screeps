@@ -42,8 +42,14 @@ export class HelpManagementProcess extends Process
         {
             let boostMinerals = [RESOURCE_CATALYZED_GHODIUM_ACID,RESOURCE_CATALYZED_KEANIUM_ACID,RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE];
             let room = Game.rooms[spawnRoom];
-            if(room && room.terminal)
+            if(room && room.terminal && room.storage)
             {
+                let storage = room.storage;
+                if(storage.store.energy < 20000)
+                {
+                    flag.room!.memory.assisted = false;
+                }
+                
                 let terminal = room.terminal;
                 for(let mineral in boostMinerals)
                 {
@@ -90,7 +96,7 @@ export class HelpManagementProcess extends Process
                     let ticksNeeeded = c.body.length * 3;
                     if(!c.ticksToLive || c.ticksToLive > ticksNeeeded) { count++; }
                 });
-                
+
                 if(count < 1)
                 {
                     console.log(proc.name, '1');

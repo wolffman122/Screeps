@@ -103,7 +103,16 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       }
       else
       {
-        if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 100000)
+        let link = <StructureLink>Game.getObjectById(this.metaData.storageLink);
+        if(link && link.energy > 0)
+        {
+          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+            target: this.metaData.storageLink,
+            creep: creep.name,
+            resource: RESOURCE_ENERGY
+          });
+        }
+        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 100000)
         {
           let collectAmount = creep.room.terminal.store.energy - 100000;
           if(collectAmount < creep.carryCapacity)

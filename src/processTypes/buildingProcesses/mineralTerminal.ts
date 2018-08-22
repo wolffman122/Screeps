@@ -185,7 +185,7 @@ export class MinetalTerminalManagementProcess extends Process
               amount = 100;
             }
 
-            if(terminal.send(RESOURCE_CATALYZED_KEANIUM_ACID, 1000, needCarry[0]) === OK)
+            if(terminal.send(RESOURCE_CATALYZED_KEANIUM_ACID, amount, needCarry[0]) === OK)
             {
               return;
               //extraMove = _.pull(extraMove, name);
@@ -211,7 +211,7 @@ export class MinetalTerminalManagementProcess extends Process
               amount = 100;
             }
 
-            terminal.send(RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, 1000, needMove[0]);
+            terminal.send(RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, amount, needMove[0]);
             return;
           }
         }
