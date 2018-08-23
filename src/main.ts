@@ -5,6 +5,7 @@ import { Traveler } from "./lib/Traveler";
 import "creep.extensions";
 import "roomPosition.extensions";
 import "utils/constants";
+import { initRoomPrototype } from "prototypes/initRoomPrototype";
 
 Creep.prototype.fixMyRoad = function()
 {
@@ -46,6 +47,8 @@ Creep.prototype.fixMyRoad = function()
 global.conLog = (message: string) => {
   global.displayOldProcesses = true;
 }
+
+initRoomPrototype();
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code

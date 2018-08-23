@@ -609,3 +609,17 @@ interface BankData
   distance: number;
   timeout: number;
 }
+ interface Room
+ {
+  findStructures<T>(structureType: string): T[];
+  findStructures<T>(structureType: string): Structure[];
+   coords: RoomCoord
+ }
+
+ interface RoomCoord
+ {
+   x: number;
+   y: number;
+   xDir: string;
+   yDir: string;
+ }
