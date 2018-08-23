@@ -1,5 +1,5 @@
 import {Kernel} from '../os/kernel'
-import { PRODUCT_LIST } from 'processTypes/buildingProcesses/mineralTerminal';
+import { PRODUCT_LIST, MINERALS_RAW } from 'processTypes/buildingProcesses/mineralTerminal';
 //import {Utils} from '../lib/utils'
 
 
@@ -69,6 +69,10 @@ export const Stats = {
     let remoteIndex = 0;
 
     let boostAmounts: {
+      [mineralType: string]: number
+    } = {};
+
+    let basicMineralAmounts: {
       [mineralType: string]: number
     } = {};
 
@@ -144,6 +148,22 @@ export const Stats = {
                 boostAmounts[type] += terminal.store[type]!;
               }
             }
+
+            // Basic Mineral amounts
+            for(let mineral in MINERALS_RAW)
+            {
+              let type = MINERALS_RAW[mineral];
+
+              if(!basicMineralAmounts[type])
+              {
+                basicMineralAmounts[type] = 0;
+              }
+
+              if(terminal.store.hasOwnProperty(type))
+              {
+                basicMineralAmounts[type] += terminal.store[type]!;
+              }
+            }
           }
 
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
@@ -194,6 +214,10 @@ export const Stats = {
     //console.log('Stats stats', boostAmounts, Object.keys(boostAmounts).length)
     _.forEach(Object.keys(boostAmounts), (ba) => {
       Memory.stats['terminals.' + ba + '.amount'] = boostAmounts[ba];
+    })
+
+    _.forEach(Object.keys(basicMineralAmounts), (bm) => {
+      Memory.stats['terminals.basic.' + bm + '.amount'] = basicMineralAmounts[bm];
     })
 
     for(let resourceType of PRODUCT_LIST)

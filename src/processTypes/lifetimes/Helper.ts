@@ -123,14 +123,12 @@ export class HelperLifetimeProcess extends LifetimeProcess
       {
         if(creep.room.name !== controller.room.name)
         {
-          console.log(this.name, this.metaData.source);
           creep.travelTo(flag, { preferHighway: true});
           return;
         }
 
         if((_.sum(creep.carry) === 0 || this.metaData.harvesting) && creep.ticksToLive! > 200)
         {
-          console.log(this.name, this.metaData.source);
           this.metaData.harvesting = true;
           if(_.sum(creep.carry) === creep.carryCapacity)
           {
@@ -142,7 +140,7 @@ export class HelperLifetimeProcess extends LifetimeProcess
           {
             let targetPos = source.pos;
             let targetRange = 1
-            console.log(this.name, '1')
+
             if(!creep.pos.inRangeTo(targetPos, targetRange))
             {
               creep.travelTo(targetPos);
