@@ -4,6 +4,7 @@ import {Utils} from '../../lib/utils'
 import {CollectProcess} from '../creepActions/collect'
 import {RepairProcess} from '../creepActions/repair'
 import { BuildProcess } from '../creepActions/build';
+import { HarvestProcess } from '../creepActions/harvest';
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
   type = 'rlf'
@@ -14,6 +15,11 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
+    if(creep.name === 'sm-E41S41-11139758')
+    {
+      console.log(this.name, '111111')
+    }
+    
     if(creep.ticksToLive! < 50 && _.sum(creep.carry) > 0)
     {
       let storage = creep.room.storage;
@@ -44,9 +50,24 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         })
 
         return
-      }else{
-        this.suspend = 10
-        return
+      }
+      else
+      {
+        let source = creep.pos.findClosestByPath(FIND_SOURCES)[0];
+        if(source)
+        {
+          this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+            creep: creep.name,
+            source: source.id
+          });
+
+          return;
+        }
+        else
+        {
+          this.suspend = 10
+          return
+        }
       }
     }
 

@@ -13,16 +13,6 @@ export class HarvestProcess extends Process{
       return
     }
 
-    if(creep.name === 'hmp-helper-E38S46-11000650')
-    {
-      this.metaData.source = '59830049b097071b4adc407f';
-    }
-
-    if(creep.name === 'hmp-helper-E38S46-10999990')
-    {
-      this.metaData.source = '59830049b097071b4adc407d';
-    }
-    console.log(this.name, this.metaData.source);
     let source = <Source>Game.getObjectById(this.metaData.source)
     if(source)
     {

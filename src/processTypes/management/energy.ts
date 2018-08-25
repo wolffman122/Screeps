@@ -230,7 +230,7 @@ export class EnergyManagementProcess extends Process{
           upgraders = 2;
           break;
         default:
-          upgraders = 4;
+          upgraders = 1;
           break;
       }
 
@@ -283,8 +283,8 @@ export class EnergyManagementProcess extends Process{
         {
           this.metaData.upgradeCreeps.push(creepName)
 
-          /*if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
-            proc.metaData.roomName === 'E45S57')
+          if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
+            proc.metaData.roomName === 'E45S57' || proc.metaData.roomName === 'E48S57'  || proc.metaData.roomName === 'E43S55')
           {
             let boosts = [];
             boosts.push(RESOURCE_GHODIUM_ACID)
@@ -295,7 +295,7 @@ export class EnergyManagementProcess extends Process{
               allowUnboosted: true
             })
           }
-          else if(proc.metaData.roomName === 'E48S56')
+          /*else if(proc.metaData.roomName === 'E48S56')
           {
             let boosts = [];
             boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
@@ -305,8 +305,8 @@ export class EnergyManagementProcess extends Process{
               boosts: boosts,
               allowUnboosted: true
             })
-          }
-          else*/
+          }*/
+          else
           {
             this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
               creep: creepName,
