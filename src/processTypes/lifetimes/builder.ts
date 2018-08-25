@@ -3,6 +3,7 @@ import {Utils} from '../../lib/utils'
 
 import {CollectProcess} from '../creepActions/collect'
 import {BuildProcess} from '../creepActions/build'
+import { HarvestProcess } from '../creepActions/harvest';
 
 export class BuilderLifetimeProcess extends LifetimeProcess{
   type = 'blf'
@@ -11,6 +12,11 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
     let creep = this.getCreep()
 
     if(!creep){ return }
+
+    if(creep.name === 'sm-E41S41-11139758')
+    {
+      console.log(this.name, '22222')
+    }
 
     if(_.sum(creep.carry) === 0){
       let target = Utils.withdrawTarget(creep, this)
@@ -38,10 +44,24 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
               return;
             })[0];
           }
+          else
+          {
+            let source = creep.pos.findClosestByPath(FIND_SOURCES)[0];
+            if(source)
+            {
+              this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+                creep: creep.name,
+                source: source.id
+              });
+
+              return;
+            }
+          }
         }
       }
 
-      if(target){
+      if(target)
+      {
         this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
           creep: creep.name,
           target: target.id,
@@ -49,36 +69,52 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
         })
 
         return
-      }else{
-        if(creep.room.controller!.level <= 3)
+      }
+      else
+      {
+        let source = creep.pos.findClosestByPath(FIND_SOURCES)[0];
+        if(source)
         {
-          this.suspend = 2
+          this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+            creep: creep.name,
+            source: source.id
+          });
+
+          return;
         }
         else
         {
-          this.suspend = 10
+          if(creep.room.controller!.level <= 3)
+          {
+            this.suspend = 2
+          }
+          else
+          {
+            this.suspend = 10
+          }
+          return;
         }
-        return
       }
     }
 
     // If the creep has been refilled
     let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
 
-    if(target){
+    if(target)
+    {
       this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
         creep: creep.name,
         site: target.id
       })
 
       return
-    }else
+    }
+    else
     {
       if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
       {
         creep.say('spare')
       }
-
     }
   }
 }

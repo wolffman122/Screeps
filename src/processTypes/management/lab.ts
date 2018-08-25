@@ -30,7 +30,6 @@ export class LabManagementProcess extends Process
 
   run()
   {
-    console.log(this.name);
     this.room = Game.rooms[this.metaData.roomName];
 
     if(this.room)
