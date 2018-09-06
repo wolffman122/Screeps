@@ -1,11 +1,11 @@
 import {Kernel} from '../os/kernel'
+import { PRODUCT_LIST, MINERALS_RAW } from 'processTypes/buildingProcesses/mineralTerminal';
 //import {Utils} from '../lib/utils'
 
 
 export const Stats = {
   build(kernel: Kernel){
     if(!Memory.stats){ Memory.stats = {}}
-
 
     Memory.stats['gcl.progress'] = Game.gcl.progress
     Memory.stats['gcl.progressTotal'] = Game.gcl.progressTotal
@@ -68,6 +68,14 @@ export const Stats = {
 
     let remoteIndex = 0;
 
+    let boostAmounts: {
+      [mineralType: string]: number
+    } = {};
+
+    let basicMineralAmounts: {
+      [mineralType: string]: number
+    } = {};
+
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
 
@@ -124,6 +132,38 @@ export const Stats = {
           {
             Memory.stats['rooms.' + roomName + '.terminal.energy'] = room.terminal.store.energy
             Memory.stats['rooms.' + roomName + '.terminal.minerals'] = _.sum(room.terminal.store) - room.terminal.store.energy;
+
+            // Total Production boost amounts in terminals.
+            let terminal = room.terminal;
+            for(let mineral in PRODUCT_LIST)
+            {
+              let type = PRODUCT_LIST[mineral];
+              if(terminal.store.hasOwnProperty(type))
+              {
+                if(!boostAmounts[type])
+                {
+                  boostAmounts[type] = 0;
+                }
+
+                boostAmounts[type] += terminal.store[type]!;
+              }
+            }
+
+            // Basic Mineral amounts
+            for(let mineral in MINERALS_RAW)
+            {
+              let type = MINERALS_RAW[mineral];
+
+              if(!basicMineralAmounts[type])
+              {
+                basicMineralAmounts[type] = 0;
+              }
+
+              if(terminal.store.hasOwnProperty(type))
+              {
+                basicMineralAmounts[type] += terminal.store[type]!;
+              }
+            }
           }
 
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
@@ -170,5 +210,23 @@ export const Stats = {
         }
       }
     })
+
+    //console.log('Stats stats', boostAmounts, Object.keys(boostAmounts).length)
+    _.forEach(Object.keys(boostAmounts), (ba) => {
+      Memory.stats['terminals.' + ba + '.amount'] = boostAmounts[ba];
+    })
+
+    _.forEach(Object.keys(basicMineralAmounts), (bm) => {
+      Memory.stats['terminals.basic.' + bm + '.amount'] = basicMineralAmounts[bm];
+    })
+
+    for(let resourceType of PRODUCT_LIST)
+    {
+      Memory.stats["lab.processCount." + resourceType] = kernel.data.labProcesses[resourceType] || 0;
+    }
+
+    Memory.stats['lab.activeLabCount'] = kernel.data.activeLabCount;
+
+
   }
 }
