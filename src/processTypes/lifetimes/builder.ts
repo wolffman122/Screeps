@@ -13,7 +13,7 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
-    if(creep.name === 'sm-E41S41-11139758')
+    if(creep.name === 'sm-E41S41-11147991')
     {
       console.log(this.name, '22222')
     }
@@ -46,9 +46,18 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
           }
           else
           {
-            let source = creep.pos.findClosestByPath(FIND_SOURCES)[0];
+            if(creep.name === 'sm-E41S41-11147991')
+    {
+      console.log(this.name, '3')
+    }
+            let sources = creep.room.find(FIND_SOURCES);
+            let source = creep.pos.findClosestByPath(sources);
             if(source)
             {
+              if(creep.name === 'sm-E41S41-11147991')
+    {
+      console.log(this.name, '4')
+    }
               this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
                 creep: creep.name,
                 source: source.id
@@ -84,7 +93,7 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
         }
         else
         {
-          if(creep.room.controller!.level <= 3)
+          /*if(creep.room.controller!.level <= 3)
           {
             this.suspend = 2
           }
@@ -92,7 +101,7 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
           {
             this.suspend = 10
           }
-          return;
+          return;*/
         }
       }
     }

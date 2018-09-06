@@ -198,7 +198,8 @@ interface Flag {
       owner: string,
       level: number
     };
-    assisted: boolean
+    assisted: boolean;
+    rampartHealth?: number;
   }
 
   interface SpawnMemory {}
@@ -557,6 +558,15 @@ interface Flag {
     roomName: string,
     boosts?: string[],
     allowUnboosted: boolean,
+  }
+
+  interface RepairerLifetimeProcessMetaData
+  {
+    creep: string,
+    roomName: string,
+    boosts?: string[],
+    allowUnboosted: boolean,
+
   }
 //// Minerals
 

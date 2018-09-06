@@ -1,13 +1,15 @@
 import {LifetimeProcess} from '../../os/process'
-import {Utils} from '../../lib/utils'
+import {Utils, RAMPARTTARGET} from '../../lib/utils'
 
 import {CollectProcess} from '../creepActions/collect'
 import {RepairProcess} from '../creepActions/repair'
 import { BuildProcess } from '../creepActions/build';
 import { HarvestProcess } from '../creepActions/harvest';
+import { LABDISTROCAPACITY } from '../management/lab';
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
   type = 'rlf'
+  metaData: RepairerLifetimeProcessMetaData;
 
   run()
   {
@@ -15,11 +17,102 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
-    if(creep.name === 'sm-E41S41-11139758')
+    if(this.metaData.boosts)
     {
-      console.log(this.name, '111111')
+      let boosted = true;
+      for(let boost of this.metaData.boosts)
+      {
+        if(creep.memory[boost])
+        {
+          continue;
+        }
+
+        let room = Game.rooms[creep.pos.roomName];
+
+        if(room)
+        {
+          let requests = room.memory.boostRequests;
+          if(!requests)
+          {
+            if(this.name === 'sm-E42S48-11295177')
+            {
+              console.log(this.name, 'Boost request did not exist')
+            }
+            creep.memory[boost] = true;
+            continue;
+          }
+
+          if(!requests[boost])
+          {
+            requests[boost] = { flagName: undefined, requesterIds: [] };
+          }
+
+          // check if already boosted
+          let boostedPart = _.find(creep.body, {boost: boost});
+          if(boostedPart)
+          {
+            if(this.name === 'sm-E42S48-11295177')
+            {
+              console.log(this.name, 'Creep already boosted')
+            }
+            creep.memory[boost] = true;
+            requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+            continue;
+          }
+
+          boosted = false;
+          if(!_.include(requests[boost].requesterIds, creep.id))
+          {
+            requests[boost].requesterIds.push(creep.id);
+          }
+
+          if(creep.spawning)
+            continue;
+
+          let flag = Game.flags[requests[boost].flagName!];
+          if(!flag)
+          {
+            continue;
+          }
+
+          let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
+
+
+          if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
+          {
+            if(creep.pos.isNearTo(lab))
+            {
+              lab.boostCreep(creep);
+            }
+            else
+            {
+              creep.travelTo(lab);
+              return;
+            }
+          }
+          else if(this.metaData.allowUnboosted)
+          {
+            if(creep.room.terminal!.store[boost] >= LABDISTROCAPACITY && lab.mineralAmount < LABDISTROCAPACITY)
+            {
+              console.log(this.name, 'Filling lab');
+              continue;
+            }
+            console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
+            requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
+            creep.memory[boost] = true;
+            return;
+          }
+          else
+          {
+            if(Game.time % 10 === 0)
+              console.log("BOOST: no boost for", creep.name);
+              creep.idleOffRoad(creep.room!.storage!, false);
+            return;
+          }
+        }
+      }
     }
-    
+
     if(creep.ticksToLive! < 50 && _.sum(creep.carry) > 0)
     {
       let storage = creep.room.storage;
@@ -53,15 +146,24 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
       else
       {
-        let source = creep.pos.findClosestByPath(FIND_SOURCES)[0];
-        if(source)
+        if(creep.room.controller && creep.room.controller.level < 8)
         {
-          this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-            creep: creep.name,
-            source: source.id
-          });
+          let sources = creep.room.find(FIND_SOURCES);
+          let source = creep.pos.findClosestByPath(sources);
+          if(source)
+          {
+            this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+              creep: creep.name,
+              source: source.id
+            });
 
-          return;
+            return;
+          }
+          else
+          {
+            this.suspend = 10
+            return
+          }
         }
         else
         {
@@ -121,7 +223,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       });
 
 
-      if(repairTargets.length === 0)
+      /*if(repairTargets.length === 0)
       {
         let repairableObjects = <StructureRoad[]>[].concat(
           <never[]>this.kernel.data.roomData[this.metaData.roomName].roads
@@ -137,7 +239,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
           return (object.hits <  object.hitsMax);
         });
-      }
+      }*/
 
 
       if(repairTargets.length > 0)
@@ -160,7 +262,10 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           {
             if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
             {
-              this.suspend = 10;
+              if(creep.name === 'sm-E41S49-11295193')
+                console.log(this.name, 'First suspend')
+              else
+                this.suspend = 10;
             }
             return;
           }
@@ -179,11 +284,25 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         }
         else
         {
-          if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+          let storage = creep.room.storage;
+          if(storage && storage.store.energy > 200000)
           {
-            this.suspend = 10;
+            if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= 5250000)
+            {
+              creep.room.memory.rampartHealth += 100;
+            }
           }
-          return;
+          else
+          {
+            if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+            {
+              if(creep.name === 'sm-E41S49-11295193')
+                  console.log(this.name, 'Second suspend');
+              else
+                this.suspend = 10;
+            }
+            return;
+          }
         }
       }
     }

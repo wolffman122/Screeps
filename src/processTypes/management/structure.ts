@@ -30,6 +30,12 @@ export class StructureManagementProcess extends Process{
       return
     }
 
+    let room = Game.rooms[this.metaData.roomName];
+    if(room && !room.memory.rampartHealth)
+    {
+      room.memory.rampartHealth = RAMPARTTARGET;
+    }
+
     let constructionSites = _.filter(this.kernel.data.roomData[this.metaData.roomName].constructionSites, (cs) => {
       return (cs.structureType != STRUCTURE_RAMPART);
     })
@@ -100,12 +106,28 @@ export class StructureManagementProcess extends Process{
             {
               spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {})
             }
-            if(spawned){
+            if(spawned)
+            {
               this.metaData.repairCreeps.push(creepName)
-              this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
-                creep: creepName,
-                roomName: this.metaData.roomName
-              })
+              if(controller && controller.my && controller.level >= 8)
+              {
+                let boosts =[];
+                boosts.push(RESOURCE_LEMERGIUM_HYDRIDE);
+                this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
+                  creep: creepName,
+                  roomName: this.metaData.roomName,
+                  boosts: boosts,
+                  allowUnboosted: true
+
+                })
+              }
+              else
+              {
+                this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
+                  creep: creepName,
+                  roomName: this.metaData.roomName
+                })
+              }
             }
           }
           else

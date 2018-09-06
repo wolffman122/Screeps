@@ -284,7 +284,9 @@ export class EnergyManagementProcess extends Process{
           this.metaData.upgradeCreeps.push(creepName)
 
           if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
-            proc.metaData.roomName === 'E45S57' || proc.metaData.roomName === 'E48S57'  || proc.metaData.roomName === 'E43S55')
+             proc.metaData.roomName === 'E45S57' || proc.metaData.roomName === 'E48S57' || proc.metaData.roomName === 'E43S55' ||
+             proc.metaData.roomName === 'E41S49' || proc.metaData.roomName === 'E38S46' || proc.metaData.roomName === 'E43S52' ||
+             proc.metaData.roomName === 'E35S41')
           {
             let boosts = [];
             boosts.push(RESOURCE_GHODIUM_ACID)

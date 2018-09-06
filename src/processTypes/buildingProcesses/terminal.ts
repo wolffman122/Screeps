@@ -1,4 +1,5 @@
 import { Process } from "os/process";
+import { ENERGY_KEEP_AMOUNT } from "./mineralTerminal";
 
 export class TerminalManagementProcess extends Process
 {
@@ -26,7 +27,7 @@ export class TerminalManagementProcess extends Process
       let fullRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.controller && r.storage)
         {
-          return (r.controller.level === 8 && r.storage.store.energy > 325000 &&
+          return (r.controller.level === 8 && r.storage.store.energy > ENERGY_KEEP_AMOUNT &&
             r.terminal.cooldown == 0 && r.terminal.store.energy >= 50000);
         }
         else
