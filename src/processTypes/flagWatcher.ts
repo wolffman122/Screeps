@@ -79,7 +79,8 @@ export class FlagWatcherProcess extends Process
 
   helpRoom(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + flag.name, 35, {flagName: flag.name});
+    let spawnRoom = flag.name.split('-')[0];
+    this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + spawnRoom, 35, {flagName: flag.name});
   }
 
   SquadAttack(flag: Flag)

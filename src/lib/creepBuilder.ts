@@ -106,7 +106,7 @@ export const CreepBuilder = {
     'spinner': [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
     'holdmover': [CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,WORK],
     'mineralHarvester': [MOVE,WORK,WORK,CARRY,CARRY,CARRY],
-    'remoteWorker': [TOUGH, TOUGH, WORK, CARRY, MOVE, MOVE],
+    'remoteWorker': [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
     'upgrader1': [WORK, CARRY, CARRY, CARRY, MOVE,MOVE],
     'toughDefender': [ATTACK,TOUGH,TOUGH,MOVE],
     'healer': [HEAL, MOVE],
@@ -118,7 +118,8 @@ export const CreepBuilder = {
     'rangeAttack': [RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
       MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
       MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
-      RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL]
+      RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL],
+    'vision': [MOVE],
   },
 
   typeExtends: <PartList>{
@@ -136,7 +137,7 @@ export const CreepBuilder = {
     'spinner': [CARRY],
     'holdmover': [CARRY,CARRY,MOVE],
     'mineralHarvester': [WORK,WORK,MOVE],
-    'remoteWorker': [CARRY, WORK, MOVE, MOVE],
+    'remoteWorker': [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
     'upgrader1': [WORK, WORK, MOVE],
     'toughDefender': [TOUGH, TOUGH, MOVE],
     'healer': [HEAL, MOVE],
@@ -147,6 +148,7 @@ export const CreepBuilder = {
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
     'rangeAttack': [],
+    'vision': [],
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -162,7 +164,7 @@ export const CreepBuilder = {
     'spinner': 14,
     'holdmover': 50,
     'mineralHarvester': 48,
-    'remoteWorker': 42,
+    'remoteWorker': 50,
     'upgrader1': 27,
     'toughDefender': 48,
     'healer': 42,
@@ -171,6 +173,7 @@ export const CreepBuilder = {
     'dismantler': 48,
     'labDistro': 40,
     'special': 2,
-    'rangeAttack': 50
+    'rangeAttack': 50,
+    'vision': 1
   }
 }

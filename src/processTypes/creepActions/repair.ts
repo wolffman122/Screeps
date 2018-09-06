@@ -14,6 +14,9 @@ export class RepairProcess extends Process{
       return
     }
 
+    if(creep.name === 'sm-E41S49-11295193')
+      console.log(this.name, target.structureType, target.pos.x, target.pos.y);
+
     if(!creep.pos.inRangeTo(target, 3))
     {
       creep.travelTo(target);

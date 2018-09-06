@@ -22,6 +22,12 @@ interface RoomPosition {
   getOpenPositions(range:number, opts:{}): RoomPosition[];
 }
 
+interface Game {
+  cache: {
+    labProcesses: { [resourceType: string]: number }
+    activeLabCount: number;
+  }
+}
 interface Flag {
 
 }
@@ -191,7 +197,9 @@ interface Flag {
     Information: {
       owner: string,
       level: number
-    }
+    };
+    assisted: boolean;
+    rampartHealth?: number;
   }
 
   interface SpawnMemory {}
@@ -227,6 +235,7 @@ interface Flag {
     upgradeCreeps: string[]
     spinCreeps: string[]
     upgradeDistroCreeps: string[]
+    visionCreeps: string[]
     upgradePrespawn?: boolean
     upgradeDistroPrespawn?: boolean
   }
@@ -528,13 +537,19 @@ interface Flag {
   interface HelpManagementProcessMetaData
   {
     flagName: string,
-    creeps: string[],
+    creeps: {
+      [source: string]: string[]
+    }
   }
 
   interface HelperLifetimeProcessMetaData
   {
     flagName: string,
     site: string,
+    boosts?: string[],
+    allowUnboosted?: boolean,
+    harvesting: boolean,
+    source: string
   }
 
   interface UpgradeLifetimeProcessMetaData
@@ -543,6 +558,15 @@ interface Flag {
     roomName: string,
     boosts?: string[],
     allowUnboosted: boolean,
+  }
+
+  interface RepairerLifetimeProcessMetaData
+  {
+    creep: string,
+    roomName: string,
+    boosts?: string[],
+    allowUnboosted: boolean,
+
   }
 //// Minerals
 

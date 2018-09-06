@@ -75,7 +75,8 @@ export class InitProcess extends Process{
           if(room.name === 'E41S49' || room.name === 'E51S49' || room.name === 'E43S53' || room.name === 'E45S48' ||
               room.name === 'E45S57' || room.name === 'E48S49' || room.name === 'E52S46' || room.name === 'E38S46' ||
               room.name === 'E36S43' || room.name === 'E43S52' || room.name === 'E48S57' || room.name === 'E35S41' ||
-              room.name === 'E46S51' || room.name === 'E48S56')
+              room.name === 'E46S51' || room.name === 'E48S56' || room.name === 'E43S55' || room.name === 'E42S48' ||
+              room.name === 'E41S41')
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
@@ -92,8 +93,9 @@ export class InitProcess extends Process{
     this.kernel.addProcessIfNotExist(SuspensionProcess, 'suspension-master', 99, {master: true})
     this.kernel.addProcessIfNotExist(FlagWatcherProcess, 'flag-watcher', 98, {})
     //this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
-    this.kernel.addProcessIfNotExist(TerminalManagementProcess, 'terminal', 15, {});
-    this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 14,  {});
+    this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 15,  {});
+    this.kernel.addProcessIfNotExist(TerminalManagementProcess, 'terminal', 14, {});
+
 
     this.completed = true
   }

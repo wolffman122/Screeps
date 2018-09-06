@@ -159,7 +159,9 @@ interface KernelData{
   roomData: {
     [name: string]: RoomData
   }
-  usedSpawns: string[]
+  usedSpawns: string[];
+  labProcesses: { [resourceType: string]: number };
+  activeLabCount: number;
 }
 
 interface ProcessTable{
@@ -181,7 +183,9 @@ export class Kernel{
 
   data = <KernelData>{
     roomData: {},
-    usedSpawns: []
+    usedSpawns: [],
+    activeLabCount: 0,
+    labProcesses: {}
   }
 
   execOrder: ExecOrder[] = []
