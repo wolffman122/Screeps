@@ -15,7 +15,7 @@ export class TerminalManagementProcess extends Process
       let lowRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.storage)
         {
-          return (r.storage.store.energy < 225000 && r.controller && r.controller.my &&
+          return (r.storage.store.energy < 100000 && r.controller && r.controller.my &&
             r.terminal.my);
         }
         else
@@ -42,7 +42,7 @@ export class TerminalManagementProcess extends Process
         _.forEach(lowRooms, (f) => {
           if(f.storage)
           {
-            lRooms.push({name: f.name, amount: f.storage.store.energy});
+            lRooms.push({name: f.name, amount: _.sum(f.terminal!.store)});
           }
         });
 
@@ -68,7 +68,8 @@ export class TerminalManagementProcess extends Process
             {
               if(room.terminal)
               {
-                let retVal = room.terminal.send(RESOURCE_ENERGY, 50000, lRooms[0].name);
+                let amount = 300000 - lRooms[0].amount
+                let retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
                 this.log('Sending Energy from ' + room.name + ' to ' + lRooms[0].name + ' retVal ' + retVal);
               }
             }
