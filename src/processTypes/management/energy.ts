@@ -230,7 +230,7 @@ export class EnergyManagementProcess extends Process{
           upgraders = 2;
           break;
         default:
-          upgraders = 1;
+          upgraders = 2;
           break;
       }
 
@@ -297,7 +297,7 @@ export class EnergyManagementProcess extends Process{
               allowUnboosted: true
             })
           }
-          /*else if(proc.metaData.roomName === 'E48S56')
+          else if(proc.metaData.roomName === 'E41S41')
           {
             let boosts = [];
             boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
@@ -307,7 +307,7 @@ export class EnergyManagementProcess extends Process{
               boosts: boosts,
               allowUnboosted: true
             })
-          }*/
+          }
           else
           {
             this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {

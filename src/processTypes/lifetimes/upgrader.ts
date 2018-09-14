@@ -72,6 +72,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
           }
 
           let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
+          let terminal = flag.room!.terminal;
 
           if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
           {

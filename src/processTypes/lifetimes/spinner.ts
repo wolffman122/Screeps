@@ -42,9 +42,9 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: RESOURCE_ENERGY
           });
         }
-        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 50000)
+        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 75000)
         {
-          let collectAmount = creep.room.terminal.store.energy - 50000;
+          let collectAmount = creep.room.terminal.store.energy - 75000;
           if(collectAmount < creep.carryCapacity)
           {
             this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
@@ -112,9 +112,9 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: RESOURCE_ENERGY
           });
         }
-        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 50000)
+        else if (creep.room.terminal && creep.room.terminal.my && creep.room.terminal.store.energy > 75000)
         {
-          let collectAmount = creep.room.terminal.store.energy - 50000;
+          let collectAmount = creep.room.terminal.store.energy - 75000;
           if(collectAmount < creep.carryCapacity)
           {
             this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
@@ -173,7 +173,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: mineral.mineralType
           });
         }
-        else if(creep.room.terminal.my && creep.room.terminal.store.energy < 50000)
+        else if(creep.room.terminal.my && creep.room.terminal.store.energy < 75000)
         {
           this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
             creep: creep.name,
@@ -200,7 +200,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             resource: mineral.mineralType
           });
         }
-        else if(creep.room.terminal.my && creep.room.terminal.store.energy < 100000)
+        else if(creep.room.terminal.my && creep.room.terminal.store.energy < 75000)
         {
           this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
             creep: creep.name,

@@ -819,7 +819,7 @@ export class LabManagementProcess extends Process
           }
         if(request.requesterIds.length > 0 && !flag)
         {
-          console.log(this.name, 'Placing pull flag');
+          //console.log(this.name, 'Placing pull flag');
           request.flagName = this.placePullFlag(resourceType);
         }
       }

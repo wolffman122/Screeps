@@ -109,6 +109,18 @@ interface Flag {
     hitsMax: number
   }
 
+  interface StructureObserver
+  {
+    observation: Observation;
+  }
+
+  interface Observation
+  {
+    purpose: string,
+    roomName: string,
+    room?: Room,
+  }
+
   interface SerializedProcess{
     name: string
     priority: number
@@ -150,6 +162,13 @@ interface Flag {
   interface Memory
   {
     observeRoom: {[name: string]: ObserveMemory}
+    playerConfig: {
+      terminalNetworkRange: number;
+      enableStats: boolean;
+      muteSpawn: boolean;
+      creditReserveAmount: number;
+      powerMinimum: number;
+    };
   }
 
   interface ObserveMemory

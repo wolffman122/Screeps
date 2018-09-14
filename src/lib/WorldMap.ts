@@ -25,7 +25,7 @@ export class WorldMap {
         };
     }
 
-    public static negaDirection(dir: string): string {
+    public static negaDirection(dir: string): string|undefined {
         switch (dir) {
             case "W":
                 return "E";
@@ -36,5 +36,6 @@ export class WorldMap {
             case "S":
                 return "N";
         }
+        return;
     }
 }

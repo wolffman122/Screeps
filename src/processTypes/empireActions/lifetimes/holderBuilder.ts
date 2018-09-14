@@ -263,7 +263,10 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
       if(_.sum(creep.carry) != 0)
       {
-        let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.pos.roomName].constructionSites);
+        let sites = _.filter(this.kernel.data.roomData[creep.pos.roomName].constructionSites, (cs) => {
+          return (cs.my);
+        })
+        let target = creep.pos.findClosestByRange(sites);
 
         if(target)
         {

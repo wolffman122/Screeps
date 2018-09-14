@@ -140,6 +140,33 @@ export class PowerManagementProcess extends Process
         return scanData;
     }
 
+    private scanForBanks(observer: StructureObserver)
+    {
+        if(observer.observation && observer.observation.purpose === this.name)
+        {
+            let room = observer.observation.room;
+            if(room)
+            {
+                let bank = room.findStructures<StructurePowerBank>(STRUCTURE_POWER_BANK)[0];
+                if(bank && bank.ticksToDecay > 4500 && room.findStructures(STRUCTURE_WALL).length === 0
+                    && bank.power >= Memory.playerConfig.powerMinimum)
+                {
+                    console.log("\\o/ \\o/ \\o/", bank.power, "power found at", room, "\\o/ \\o/ \\o/");
+                    this.metaData.currentBank = {
+                        pos: bank.pos,
+                        hits: bank.hits,
+                        power: bank.power,
+                        distance: Memory.powerObservers[this.metaData.roomName][room.name],
+                        timeout: Game.time + bank.ticksToDecay,
+                    };
+                    return;
+                }
+            }
+        }
+
+        if()
+    }
+
     private monitorBank(currentBank: BankData)
     {
         let room = Game.rooms[currentBank.pos.roomName];
