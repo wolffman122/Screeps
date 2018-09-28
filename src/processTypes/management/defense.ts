@@ -31,26 +31,35 @@ export class DefenseManagementProcess extends Process
     let flag = Game.flags[flagName];
 
     let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
-    let dangerEnemies = _.filter(enemies, (e) => {
-      return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0) &&
-        flag.pos.inRangeTo(e, 15);
-    });
 
 
-    if(this.metaData.defenderCreeps.length < dangerEnemies.length)
+    if(room.controller && room.controller.my)
     {
-      let creepName = 'dm-' + this.metaData.roomName + '-' + Game.time;
-      let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'defender', creepName, {});
+      let dangerEnemies = _.filter(enemies, (e) => {
+        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0) &&
+          flag.pos.inRangeTo(e, 15);
+      });
 
-
-      if(spawned)
+      if(this.metaData.defenderCreeps.length < dangerEnemies.length)
       {
-        this.metaData.defenderCreeps.push(creepName);
-        this.kernel.addProcess(DefenderLifetimeProcess, 'deflf-' + creepName, 60, {
-          creep: creepName,
-          flagName: flagName
-        });
+        let creepName = 'dm-' + this.metaData.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'defender', creepName, {});
+
+
+        if(spawned)
+        {
+          this.metaData.defenderCreeps.push(creepName);
+          this.kernel.addProcess(DefenderLifetimeProcess, 'deflf-' + creepName, 60, {
+            creep: creepName,
+            flagName: flagName
+          });
+        }
       }
+    }
+    else
+    {
+      this.completed = true;
+      return;
     }
   }
 }

@@ -120,6 +120,7 @@ export const CreepBuilder = {
       MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
       RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL],
     'vision': [MOVE],
+    'bounce': [TOUGH, TOUGH, MOVE],
   },
 
   typeExtends: <PartList>{
@@ -149,6 +150,7 @@ export const CreepBuilder = {
     'special': [MOVE],
     'rangeAttack': [],
     'vision': [],
+    'bounce': [TOUGH, TOUGH, MOVE],
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -174,6 +176,7 @@ export const CreepBuilder = {
     'labDistro': 40,
     'special': 2,
     'rangeAttack': 50,
-    'vision': 1
+    'vision': 1,
+    'bounce': 39,
   }
 }

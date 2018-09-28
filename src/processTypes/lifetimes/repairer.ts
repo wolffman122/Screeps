@@ -17,11 +17,19 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
+    if(creep.name === 'sm-E41S41-11865461')
+    {
+      console.log(this.name, 'Problem 1')
+    }
     if(this.metaData.boosts)
     {
       let boosted = true;
       for(let boost of this.metaData.boosts)
       {
+        if(creep.name === 'sm-E41S41-11865461')
+    {
+      console.log(this.name, 'Problem 2')
+    }
         if(creep.memory[boost])
         {
           continue;
@@ -34,12 +42,17 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           let requests = room.memory.boostRequests;
           if(!requests)
           {
-            if(this.name === 'sm-E42S48-11295177')
-            {
-              console.log(this.name, 'Boost request did not exist')
-            }
             creep.memory[boost] = true;
             continue;
+          }
+
+          if(creep.name === 'sm-E41S41-11865461')
+    {
+      console.log(this.name, 'Problem 3')
+    }
+          if(room.name === 'E41S41')
+          {
+            console.log(this.metaData, '1');
           }
 
           if(!requests[boost])
@@ -51,14 +64,15 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           let boostedPart = _.find(creep.body, {boost: boost});
           if(boostedPart)
           {
-            if(this.name === 'sm-E42S48-11295177')
-            {
-              console.log(this.name, 'Creep already boosted')
-            }
             creep.memory[boost] = true;
             requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
             continue;
           }
+
+          if(creep.name === 'sm-E41S41-11865461')
+    {
+      console.log(this.name, 'Problem 4')
+    }
 
           boosted = false;
           if(!_.include(requests[boost].requesterIds, creep.id))
@@ -69,17 +83,24 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           if(creep.spawning)
             continue;
 
+            if(creep.name === 'sm-E41S41-11865461')
+    {
+      console.log(this.name, 'Problem 5')
+    }
           let flag = Game.flags[requests[boost].flagName!];
           if(!flag)
           {
             continue;
           }
 
-          let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
 
+
+          let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
+          let terminal = flag.room!.terminal;
 
           if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
           {
+            console.log("BOOST: Time to boost");
             if(creep.pos.isNearTo(lab))
             {
               lab.boostCreep(creep);
@@ -90,13 +111,8 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
               return;
             }
           }
-          else if(this.metaData.allowUnboosted)
+          else if(this.metaData.allowUnboosted && terminal && (terminal.store[boost] === undefined || terminal.store[boost] < LABDISTROCAPACITY))
           {
-            if(creep.room.terminal!.store[boost] >= LABDISTROCAPACITY && lab.mineralAmount < LABDISTROCAPACITY)
-            {
-              console.log(this.name, 'Filling lab');
-              continue;
-            }
             console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
             requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
             creep.memory[boost] = true;

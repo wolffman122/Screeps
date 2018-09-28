@@ -8,13 +8,16 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
 
     run()
     {
+        console.log('WTF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         let creep = this.getCreep();
 
+        console.log('BAttack');
         let roomName = this.metaData.flagName.split('-')[0];
         let healName = roomName + '-Heal';
         let flag = Game.flags[this.metaData.flagName];
         let healFlag = Game.flags[healName];
 
+        console.log('BAttack',creep, healFlag, flag);
         if(!creep || !healFlag || !flag)
         {
             this.completed = true;
@@ -24,26 +27,18 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
         if(!creep.pos.inRangeTo(flag,1) && creep.hits === creep.hitsMax)
         {
             this.log('2)')
-            this.kernel.addProcessIfNotExist(MoveProcess, 'move-' + creep.name, this.priority-1, {
-            creep: creep.name,
-            pos: flag.pos,
-            range: 1
-            });
+            creep.travelTo(flag, {range: 1});
 
             return;
         }
 
         if(creep.hits < creep.hitsMax * .50)
         {
-            this.kernel.addProcessIfNotExist(MoveProcess, 'move-' + creep.name, this.priority-1, {
-            creep: creep.name,
-            pos: healFlag.pos,
-            range: 1
-            });
+            creep.travelTo(healFlag.pos, {range: 1});
             return;
         }
 
-        if(creep.room.name == flag.room!.name)
+        /*if(creep.room.name == flag.room!.name)
         {
 
             let target = flag.pos.lookFor(LOOK_STRUCTURES)
@@ -77,6 +72,6 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
                     }
                 }
             }
-        }
+        }*/
     }
 }

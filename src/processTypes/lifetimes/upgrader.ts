@@ -20,7 +20,6 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       this.metaData.boosts = undefined;
     }
 
-
     if(this.metaData.boosts)
     {
       let boosted = true;
@@ -40,6 +39,11 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
           {
             creep.memory[boost] = true;
             continue;
+          }
+
+          if(room.name === 'E55S48')
+          {
+            console.log(this.name, 'upgrade 1')
           }
 
           if(!requests[boost])
@@ -74,6 +78,10 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
           let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
           let terminal = flag.room!.terminal;
 
+          if(room.name === 'E55S48')
+          {
+            console.log(this.name, 'upgrade')
+          }
           if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
           {
             if(creep.pos.isNearTo(lab))
@@ -86,9 +94,9 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
               return;
             }
           }
-          else if(this.metaData.allowUnboosted)
+          else if(this.metaData.allowUnboosted && terminal && (terminal.store[boost] === undefined || terminal.store[boost] < LABDISTROCAPACITY))
           {
-            console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
+            console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)", boost, terminal, terminal.store[boost]);
             requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
             creep.memory[boost] = true;
             return;

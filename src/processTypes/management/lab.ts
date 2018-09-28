@@ -30,6 +30,7 @@ export class LabManagementProcess extends Process
 
   run()
   {
+    //console.log(this.name);
     this.room = Game.rooms[this.metaData.roomName];
 
     if(this.room)
@@ -42,7 +43,13 @@ export class LabManagementProcess extends Process
           //console.log(this.name, this.metaData.productLabIds!.length, this.metaData.reagentLabIds!.length);
           //console.log(this.name, this.productLabs, this.reagentLabs)
 
-
+      /*if(this.metaData.roomName === 'E55S48')
+      {
+        this.productLabs = undefined;
+        this.reagentLabs = undefined;
+        this.metaData.reagentLabIds = undefined;
+        this.metaData.productLabIds = undefined;
+      }*/
 
       if(!this.productLabs || !this.reagentLabs)
       {
@@ -51,6 +58,10 @@ export class LabManagementProcess extends Process
         //console.log(this.name, this.reagentLabs!.length, this.productLabs!.length);
       }
 
+      if(this.name === 'labm-E45S48')
+      {
+        //console.log(this.name, 1)
+      }
       this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
@@ -63,6 +74,10 @@ export class LabManagementProcess extends Process
         //  "Load Porgress", this.labProcess.loadProgress, "Target Shortage", this.labProcess.targetShortage.mineralType, this.labProcess.targetShortage.amount)
       }
 
+      if(this.name === 'labm-E45S48')
+      {
+        //console.log(this.name, 2)
+      }
       this.ensureMetaData();
 
       this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
@@ -75,11 +90,11 @@ export class LabManagementProcess extends Process
         }
       }
 
-      if(this.name == 'labm-E45S48')
-          {
-            console.log(this.name, this.labProcess, Object.keys(this.room.memory.boostRequests).length);
-            console.log(Object.keys(this.room.memory.boostRequests)[0]);
-          }
+      if(this.name === 'labm-E45S48')
+      {
+        //console.log(this.name, 3)
+      }
+
       try
       {
         if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
@@ -90,26 +105,23 @@ export class LabManagementProcess extends Process
           {
             this.metaData.labDistros.push(creepName);
           }
+          if(this.name === 'labm-E45S48')
+      {
+        //console.log(this.name, 4)
+      }
         }
         else if(this.metaData.labDistros.length === 1)
         {
-          if(this.name == 'labm-E45S48')
-          {
-            console.log(this.name, this.labProcess, 1);
-
-          }
-
           this.creep = Game.creeps[this.metaData.labDistros[0]];
 
           if(this.creep)
           {
             //console.log(this.name, 1, this.creep.name);
             this.missionActions();
-            if(this.name == 'labm-E45S48')
-          {
-            console.log(this.name, this.labProcess, 2);
-
-          }
+            if(this.name === 'labm-E45S48')
+      {
+        //console.log(this.name, 5)
+      }
           }
         }
       }
@@ -122,12 +134,17 @@ export class LabManagementProcess extends Process
     {
       this.doSynthesis();
     }
-    if(this.name == 'labm-E45S48')
-    {
-      console.log(this.name, this.labProcess, 3);
+    if(this.name === 'labm-E45S48')
+      {
+        //console.log(this.name, 6)
+      }
 
-    }
     this.checkBoostRequests();
+
+    if(this.name === 'labm-E45S48')
+      {
+        //console.log(this.name, 7)
+      }
 
     /*Object.keys(COMPOUND_LIST).forEach(key => {
         console.log('found property', COMPOUND_LIST[key][0]);
@@ -168,9 +185,9 @@ export class LabManagementProcess extends Process
 
   private missionActions()
   {
-    if(this.name == 'labm-E45S48')
+    if(this.name == 'labm-E55S48')
     {
-      console.log(this.name, 'Mission Actions 1');
+      //console.log(this.name, 'Mission Actions 1');
     }
 
     let command = this.accessCommand();
@@ -179,7 +196,7 @@ export class LabManagementProcess extends Process
     {
       if(this.name == 'labm-E45S48')
     {
-      console.log(this.name, 'Mission Actions 2');
+      //console.log(this.name, 'Mission Actions 2');
     }
       if(_.sum(this.creep.carry) > 0)
       {
@@ -203,7 +220,7 @@ export class LabManagementProcess extends Process
     {
       if(this.name == 'labm-E45S48')
     {
-      console.log(this.name, 'Mission Actions 3');
+      //console.log(this.name, 'Mission Actions 3');
     }
       let origin = Game.getObjectById<Structure>(command.origin);
       //console.log(this.name, 1, this.creep.name, 2, origin);
@@ -278,7 +295,7 @@ export class LabManagementProcess extends Process
 
     if(this.name == 'labm-E45S48')
     {
-      console.log(this.name, 'Find Command 2');
+      //console.log(this.name, 'Find Command 2');
     }
 
     command = this.checkReagentLabs();
@@ -286,7 +303,7 @@ export class LabManagementProcess extends Process
 
     if(this.name == 'labm-E45S48')
     {
-      console.log(this.name, 'Find Command 3');
+      //console.log(this.name, 'Find Command 3');
     }
 
     command = this.checkProductLabs();
@@ -294,7 +311,7 @@ export class LabManagementProcess extends Process
 
     if(this.name == 'labm-E45S48')
     {
-      console.log(this.name, 'Find Command 4');
+      //console.log(this.name, 'Find Command 4');
     }
     // load nukers
     let nuker = this.roomData().nuker;
@@ -331,9 +348,9 @@ export class LabManagementProcess extends Process
     {
       if(_.sum(this.creep.carry) === 0)
       {
-        if(this.name == 'labm-E45S48')
+        if(this.name == 'labm-E55S48')
         {
-          console.log(this.name, 'Mission Actions 2-1');
+          //console.log(this.name, 'Mission Actions 2-1');
         }
         this.metaData.command = this.findCommand();
       }
@@ -502,6 +519,11 @@ export class LabManagementProcess extends Process
   {
     if(this.metaData.productLabIds)
     {
+      if(this.metaData.roomName === 'E41S41')
+      {
+        this.metaData.productLabIds = undefined;
+        return;
+      }
       let labs = _.map(this.metaData.productLabIds, (id: string) => {
         let lab = Game.getObjectById(id);
         if(lab)
@@ -778,7 +800,7 @@ export class LabManagementProcess extends Process
   {
     if(this.name == 'labm-E45S48')
           {
-            console.log(this.name, 1);
+            //console.log(this.name, 1);
           }
     if(!this.room.memory.boostRequests)
     {
@@ -812,9 +834,9 @@ export class LabManagementProcess extends Process
           requests[resourceType] = {flagName: undefined, requesterIds: []};
         }
 
-        if(this.name == 'labm-E45S48')
+        if(this.name == 'labm-E55S48')
           {
-            console.log(this.name, 'requesters', request.requesterIds.length);
+            console.log(this.name, 'requesters', request.requesterIds.length, flag);
 
           }
         if(request.requesterIds.length > 0 && !flag)
@@ -855,14 +877,26 @@ export class LabManagementProcess extends Process
     if(!this.productLabs)
       return;
 
+      if(this.name == 'labm-E45S48')
+          {
+            //console.log(this.name, 2);
+          }
     for(let lab of this.productLabs)
     {
+      if(this.name == 'labm-E45S48')
+          {
+            //console.log(this.name, 3);
+          }
       if(this.terminal!.store.energy >= CARRY_CAPACITY && lab.energy < CARRY_CAPACITY)
       {
         //restore boosting energy to lab
         return { Origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
       }
 
+      if(this.name == 'labm-E45S48')
+      {
+        //console.log(this.name, 4);
+      }
       let flag = lab.pos.lookFor(LOOK_FLAGS)[0];
       if(!flag)
         continue;
@@ -874,6 +908,10 @@ export class LabManagementProcess extends Process
         return; // early
       }
 
+      if(this.name == 'labm-E45S48')
+          {
+            //console.log(this.name, 5);
+          }
       if(lab.mineralType && lab.mineralType !== mineralType)
       {
         // empty wrong mineral type

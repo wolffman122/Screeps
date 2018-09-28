@@ -215,6 +215,7 @@ export const Stats = {
     _.forEach(Object.keys(boostAmounts), (ba) => {
       Memory.stats['terminals.' + ba + '.amount'] = boostAmounts[ba];
     })
+      Memory.stats['terminals.H.amount'] = undefined;
 
     _.forEach(Object.keys(basicMineralAmounts), (bm) => {
       Memory.stats['terminals.basic.' + bm + '.amount'] = basicMineralAmounts[bm];
@@ -222,7 +223,7 @@ export const Stats = {
 
     for(let resourceType of PRODUCT_LIST)
     {
-      Memory.stats["lab.processCount." + resourceType] = kernel.data.labProcesses[resourceType] || 0;
+      Memory.stats["lab.processCount." + resourceType] = kernel.data.labProcesses[resourceType] || undefined;
     }
 
     Memory.stats['lab.activeLabCount'] = kernel.data.activeLabCount;

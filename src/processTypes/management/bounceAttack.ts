@@ -37,7 +37,7 @@ export class BounceAttackManagementProcess extends Process
       let spawned = Utils.spawn(
         this.kernel,
         spawnRoom,
-        'attack',
+        'bounce',
         creepName,
         {}
       );
