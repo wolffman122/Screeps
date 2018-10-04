@@ -88,6 +88,8 @@ export class skRoomManagementProcess extends Process
     {
         console.log(this.name);
 
+        let centerFlag = Game.flags['Center-'+this.metaData.roomName];
+
         let flag = Game.flags[this.metaData.flagName];
         if(!flag)
         {
@@ -336,6 +338,118 @@ export class skRoomManagementProcess extends Process
                         this.BuilderActions(builder);
                     }
                 }
+
+                // Harvester Code
+                if(this.roomInfo(this.skRoomName).sourceContainers.length > 1)
+                {
+                    let containers = this.roomInfo(this.skRoomName).sourceContainers;
+                    let sources = this.roomInfo(this.skRoomName).sources;
+
+                    _.forEach(sources, (s)=>{
+                        if(!this.metaData.harvestCreeps[s.id])
+                        {
+                            this.metaData.harvestCreeps[s.id] = [];
+                        }
+
+                        let creepNames = Utils.clearDeadCreeps(this.metaData.harvestCreeps[s.id])
+                        this.metaData.harvestCreeps[s.id] = creepNames;
+                        let creeps = Utils.inflateCreeps(creepNames);
+
+                        let count = 0;
+                        _.forEach(creeps, (c) => {
+                            let ticksNeeded = c.body.length * 3 + 10;
+                            if(!c.ticksToLive || c.ticksToLive > ticksNeeded)
+                            {
+                                count ++;
+                            }
+                        });
+
+                        if(count < 1)
+                        {
+                            let creepName = 'sk-harvest-'+this.skRoomName+'-'+Game.time;
+                            let spawned = Utils.spawn(
+                                this.kernel,
+                                this.metaData.roomName,
+                                'harvester',
+                                creepName,
+                                {}
+                            );
+
+                            if(spawned)
+                            {
+                                this.metaData.harvestCreeps[s.id].push(creepName);
+                            }
+                        }
+
+                        for(let i = 0; i < this.metaData.harvestCreeps[s.id].length; i++)
+                        {
+                            let harvester = Game.creeps[this.metaData.harvestCreeps[s.id][i]];
+                            if(harvester)
+                            {
+                                this.HarvesterActions(harvester, s);
+                            }
+                        }
+                    }
+                }
+
+                // Hauling Code
+                _.forEach(this.roomInfo(this.skRoomName).sourceContainers, (sc) => {
+                    if(!this.metaData.distroCreeps[sc.id])
+                        this.metaData.distroCreeps[sc.id] = [];
+
+                    if(!this.metaData.distroDistance[sc.id])
+                    {
+                        let ret = PathFinder.search(centerFlag.pos, sc.pos, {
+                            plainCost: 2,
+                            swampCost: 10,
+                        });
+
+                        this.metaData.distroDistance[sc.id] = ret.path.length;
+                    }
+
+                    let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[sc.id]);
+                    this.metaData.distroCreeps[sc.id] = creepNames;
+                    let creeps = Utils.inflateCreeps(creepNames);
+
+                    let count = 0;
+                    _.forEach(creeps, (c) => {
+                        let ticksNeeded = c.body.length * 3 + this.metaData.distroDistance[sc.id];
+                        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+                    });
+
+                    let numberDistro = 2;
+                    if(this.metaData.distroDistance[sc.id] < 70)
+                    {
+                        numberDistro = 1;
+                    }
+
+                    if(count < numberDistro)
+                    {
+                        let creepName = 'sk-m-' + this.skRoomName + '-' + Game.time;
+                        let spawned = Utils.spawn(
+                            this.kernel,
+                            this.metaData.roomName,
+                            'holdmover',
+                            creepName,
+                            {}
+                        );
+
+                        if(spawned)
+                        {
+                            this.metaData.distroCreeps[sc.id].push(creepName);
+                        }
+                    }
+
+                    //Hauler Action Code
+                    for(let i = 0; i < this.metaData.distroCreeps[sc.id].length; i++)
+                    {
+                        let hauler = Game.creeps[this.metaData.distroCreeps[sc.id][i]]
+                        if(hauler)
+                        {
+                            this.HaulerActions(hauler, sc);
+                        }
+                    }
+                });
             }
         }
     }
@@ -627,7 +741,7 @@ export class skRoomManagementProcess extends Process
                                     {
                                         builder.travelTo(source);
                                     }
-                                    
+
                                 }
                             }
                         }
@@ -693,4 +807,123 @@ export class skRoomManagementProcess extends Process
             }
         }
     }
+
+    HarvesterActions(harvester: Creep, source: Source)
+    {
+        if(source && this.roomInfo(this.skRoomName).sourceContainerMaps[source.id])
+        {
+            let container = this.roomInfo(this.skRoomName).sourceContainerMaps[source.id];
+
+            if(!harvester.pos.inRangeTo(container,0))
+            {
+                harvester.travelTo(container);
+            }
+
+            if((container.storeCapacity - _.sum(container.store)) >= (harvester.getActiveBodyparts(WORK) * 2))
+            {
+                harvester.harvest(source);
+            }
+
+            if(container.hits < container.hitsMax * .95 && _.sum(harvester.carry) > 0)
+            {
+                harvester.repair(container);
+            }
+
+            if(container.store.energy < container.storeCapacity && _.sum(harvester.carry) === harvester.carryCapacity)
+            {
+                harvester.transfer(container, RESOURCE_ENERGY)
+            }
+        }
+    }
+
+    HaulerActions(hauler: Creep, sourceContainer: StructureContainer)
+    {
+        if(hauler.pos.roomName !== this.skRoomName)
+        {
+            hauler.travelTo(new RoomPosition(25, 25, this.skRoomName));
+        }
+        else
+        {
+            if(_.sum(hauler.carry) === 0 && hauler.ticksToLive! > 100)
+            {
+                if(!hauler.pos.inRangeTo(sourceContainer, 1))
+                {
+                    if(hauler.room.name === this.skRoomName)
+                    {
+                        hauler.room.createConstructionSite(hauler.pos, STRUCTURE_ROAD);
+                    }
+                    hauler.travelTo(sourceContainer);
+                    return;
+                }
+
+                let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY);
+                if(resource.length > 0)
+                {
+                    let withdrawAmount = hauler.carryCapacity - _.sum(hauler.carry) - resource[0].amount;
+
+                    if(withdrawAmount >=0)
+                    {
+                        hauler.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
+                    }
+
+                    hauler.pickup(resource[0]);
+                    return;
+                }
+                else if(sourceContainer.store.energy > hauler.carryCapacity)
+                {
+                    hauler.withdraw(sourceContainer, RESOURCE_ENERGY);
+                    return;
+                }
+                else
+                {
+                    this.suspend = 20;
+                    return;
+                }
+            }
+        }
+
+        if(Game.rooms[this.metaData.roomName].storage)
+        {
+            let target = Game.rooms[this.metaData.roomName].storage;
+
+            if(target)
+            {
+                if(!hauler.pos.inRangeTo(target,1))
+                {
+                    if(!hauler.fixMyRoad())
+                    {
+                        hauler.travelTo(target);
+                    }
+                }
+
+                if(hauler.transfer(target, RESOURCE_ENERGY) === ERR_FULL)
+                {
+                    return;
+                }
+            }
+        }
+        else if (this.kernel.data.roomData[this.metaData.roomName].generalContainers.length)
+        {
+            let target = this.kernel.data.roomData[this.metaData.roomName].generalContainers[0];
+
+            if(target)
+            {
+                if(!hauler.pos.inRangeTo(target, 1))
+                {
+                    if(!hauler.fixMyRoad())
+                    {
+                        hauler.travelTo(target);
+                    }
+                }
+
+                if(hauler.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
+                {
+                    return;
+                }
+            }
+        }
+    }
 }
+///////////////////////////////////////////////////////////
+/// E14S36
+// Gaurd 25M, 17A, 5H1, 3RT1

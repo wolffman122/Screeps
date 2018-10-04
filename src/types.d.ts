@@ -616,7 +616,12 @@ interface Flag {
     devils: string[],
     builderCreeps: string[],
     //workerCreeps: string[],
-    distroCreeps: string[],
+    distroCreeps: {
+      [container: string]: string[]
+    }
+    distroDistance: {
+      [container: string]: number
+    }
     harvestCreeps: string[]
   }
 //// Minerals
