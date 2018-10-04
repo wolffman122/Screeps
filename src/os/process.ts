@@ -107,6 +107,11 @@ export class Process
     return this.kernel.data.roomData[this.metaData.roomName]
   }
 
+  roomInfo(roomName: string)
+  {
+    return this.kernel.data.roomData[roomName];
+  }
+
   /** Use the Kernels Logger */
   log(message: string){
     this.kernel.log(this, message)

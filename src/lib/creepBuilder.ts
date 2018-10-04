@@ -9,6 +9,10 @@ interface WeightList{
 export const CreepBuilder = {
   design: function(creepType: string, room: Room, memory: any) : BodyPartConstant[]
   {
+    if(creepType === 'vision')
+    {
+      console.log('Vision problems 1')
+    }
     let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
 
@@ -26,6 +30,10 @@ export const CreepBuilder = {
     let add = true
     let extendIndex = 0
 
+    if(creepType === 'vision')
+    {
+      console.log('Vision problems 2')
+    }
     if(CreepBuilder.typeExtends[creepType].length === 0)
     {
       add = false;
@@ -62,14 +70,30 @@ export const CreepBuilder = {
       }
     }
 
-    let temp = _.chunk(body, body.length - 1)[0];
-    temp = _.sortBy(temp, function(part){
-      return CreepBuilder.partWeight[part]
-    }) as BodyPartConstant[];
+    if(creepType === 'vision')
+    {
+      console.log('Vision problems 3', body)
+    }
 
-    let last = _.chunk(body, body.length -1)[1];
-    temp.push(last[0]);
-    return temp;
+    if(body.length > 1)
+    {
+      let temp = _.chunk(body, body.length - 1)[0];
+      temp = _.sortBy(temp, function(part){
+        return CreepBuilder.partWeight[part]
+      }) as BodyPartConstant[];
+
+      let last = _.chunk(body, body.length -1)[1];
+      temp.push(last[0]);
+      if(creepType === 'vision')
+      {
+        console.log('Vision problems 4')
+      }
+      return temp;
+    }
+    else
+    {
+      return body;
+    }
   },
 
   bodyCost: function(body: BodyPartConstant[]){

@@ -78,6 +78,7 @@ import { HealerLifetimeProcess } from 'processTypes/lifetimes/healer';
 import { SquadAttackerLifetimeProcess } from 'processTypes/lifetimes/squadAttacker';
 import { ObservationProcess } from 'processTypes/buildingProcesses/observation';
 import { ReportProcess } from 'processTypes/system/reports';
+import { skRoomManagementProcess } from 'processTypes/management/skroom';
 
 
 
@@ -152,7 +153,8 @@ const processTypes = <{[type: string]: any}>{
   'heallf': HealerLifetimeProcess,
   'salf': SquadAttackerLifetimeProcess,
   'op': ObservationProcess,
-  'report': ReportProcess
+  'report': ReportProcess,
+  'skrmp': skRoomManagementProcess
 }
 
 interface KernelData{

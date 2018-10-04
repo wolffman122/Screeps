@@ -38,7 +38,7 @@ export const Utils = {
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
 
-    if(creepType === "rangeAttack")
+    if(creepType === "vision")
         {
           console.log('Spawn result', body.length);
         }
@@ -200,7 +200,7 @@ export const Utils = {
       }
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
-      
+
       let target = average + 10000;
       if(target > max)
       {

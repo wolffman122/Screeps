@@ -193,6 +193,9 @@ interface Flag {
       boost: boolean;
       distance?: number;
       reachedDest?: boolean;
+      angelName: string;
+      devilName: string;
+      target?: string;
   }
 
   interface FlagMemory
@@ -597,6 +600,24 @@ interface Flag {
     boosts?: string[],
     allowUnboosted: boolean,
 
+  }
+
+  interface SKRoomManagementProcessMetaData
+  {
+    flagName: string,
+    roomName: string,
+    skRoomName: string,
+    scoutName?: string,
+    vision: boolean,
+    locations: {
+      [types: string]: any[]
+    },
+    angels: string[],
+    devils: string[],
+    builderCreeps: string[],
+    //workerCreeps: string[],
+    distroCreeps: string[],
+    harvestCreeps: string[]
   }
 //// Minerals
 

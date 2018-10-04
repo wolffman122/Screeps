@@ -6,6 +6,7 @@ import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 import {TowerRepairProcess} from './buildingProcesses/towerRepair'
 import { MineralManagementProcess } from 'processTypes/management/mineral';
 import { ObservationProcess } from './buildingProcesses/observation';
+import { skRoomManagementProcess } from './management/skroom';
 
 interface RoomDataMeta{
   roomName: string
@@ -72,13 +73,29 @@ export class RoomDataProcess extends Process{
       }
     }
 
-    if(room && room.controller!.my){
-      /*this.kernel.addProcessIfNotExist(RoomLayoutProcess, 'room-layout-' + room.name, 20, {
-        roomName: room.name
-      })*/
+    if(room && room.controller && room.controller!.my){
+      //if(Game.time % 10505 === 0)
+      {
+        let flags = <Flag[]>room.find(FIND_FLAGS);
+        flags = _.filter(flags, (f)=>{
+          return (f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW);
+        });
+
+        if(flags.length)
+        {
+          _.forEach(flags, (f) =>{
+            let skRoomName = f.name.split('-')[0];
+            this.kernel.addProcessIfNotExist(skRoomManagementProcess, 'skrmp-'+skRoomName, 30, {
+              roomName: room.name,
+              skRoomName: skRoomName,
+              flagName: f.name
+            })
+          })
+        }
+      }
     }
 
-    if(room)
+    if(room && room.controller && room.controller.my)
     {
       this.enemyDetection(room)
       this.repairDetection(room);
@@ -89,6 +106,10 @@ export class RoomDataProcess extends Process{
 
   /** Returns the room data */
   build(room: Room){
+    if(room.name === 'E45S56')
+    {
+      console.log(this.name, '1');
+    }
     let structures = <Structure[]>room.find(FIND_STRUCTURES)
     let myStructures = <Structure[]>room.find(FIND_MY_STRUCTURES)
 
@@ -187,36 +208,40 @@ export class RoomDataProcess extends Process{
       }
     }
 
+    let controllerLink: StructureLink|undefined
+    let generalLinks: StructureLink[] = []
+    if(room.controller)
+    {
+      controllerLink = <StructureLink>room.controller!.pos.findInRange(links, 2)[0];
 
-    let controllerLink = <StructureLink>room.controller!.pos.findInRange(links, 2)[0];
 
-    let generalLinks = _.filter(links, function(l){
-      let matchedLinks = [].concat(
-        <never[]>sourceLinks) as StructureLink[];
+      generalLinks = _.filter(links, function(l){
+        let matchedLinks = [].concat(
+          <never[]>sourceLinks) as StructureLink[];
 
-      if(storageLink)
-      {
-        matchedLinks = [].concat(
-          <never[]>matchedLinks,
-          <never[]>[storageLink]
-        ) as StructureLink[];
-      }
+        if(storageLink)
+        {
+          matchedLinks = [].concat(
+            <never[]>matchedLinks,
+            <never[]>[storageLink]
+          ) as StructureLink[];
+        }
 
-      if(controllerLink)
-      {
-        matchedLinks = [].concat(
-          <never[]>matchedLinks,
-          <never[]>[controllerLink]
-        ) as StructureLink[];
-      }
+        if(controllerLink)
+        {
+          matchedLinks = [].concat(
+            <never[]>matchedLinks,
+            <never[]>[controllerLink]
+          ) as StructureLink[];
+        }
 
-      let matched = _.filter(matchedLinks, function(ml){
-        return (ml.id == l.id);
+        let matched = _.filter(matchedLinks, function(ml){
+          return (ml.id == l.id);
+        });
+
+        return (matched.length == 0);
       });
-
-      return (matched.length == 0);
-    });
-
+    }
 
     let roads = <StructureRoad[]>_.filter(structures, function(structure){
       return (structure.structureType === STRUCTURE_ROAD)

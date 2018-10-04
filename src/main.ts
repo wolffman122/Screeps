@@ -55,6 +55,17 @@ initRoomPrototype();
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
+  if(Game.time % 20001 === 0)
+  {
+    for(var name in Memory.creeps)
+    {
+      if(!Game.creeps[name])
+      {
+          delete Memory.creeps[name];
+          console.log('Clearing non-existing creep memory:', name);
+      }
+    }
+  }
   // Load Memory from the global object if it is there and up to date.
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){
     delete global.Memory
