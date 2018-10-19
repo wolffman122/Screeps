@@ -69,6 +69,7 @@ export class ClaimProcess extends Process{
             this.log('Here now 2 ' + tFlag.name);
             if(creep.pos.isNearTo(tFlag))
             {
+              tFlag.remove();
               creep.memory.flagIndex++;
             }
 

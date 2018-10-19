@@ -8,6 +8,13 @@ export class TowerDefenseProcess extends Process{
   run(){
     //this.log('Tower Defense');
     let room = Game.rooms[this.metaData.roomName]
+
+    if(room.controller && !room.controller.my)
+    {
+      this.completed = true;
+      return;
+    }
+    
     let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
 
     enemies = _.filter(enemies, (e)=> {

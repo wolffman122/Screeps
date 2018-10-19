@@ -43,7 +43,7 @@ export class LabManagementProcess extends Process
           //console.log(this.name, this.metaData.productLabIds!.length, this.metaData.reagentLabIds!.length);
           //console.log(this.name, this.productLabs, this.reagentLabs)
 
-      /*if(this.metaData.roomName === 'E55S48')
+      /*if(this.metaData.roomName === 'E58S52')
       {
         this.productLabs = undefined;
         this.reagentLabs = undefined;

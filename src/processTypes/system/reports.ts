@@ -36,7 +36,7 @@ export class ReportProcess extends Process
                 holder += k + ' ' + r.mineralType + ' ' + r.numberOfSources;
             });
 
-            Game.notify(holder);
+            //Game.notify(holder);
         }
     }
 }

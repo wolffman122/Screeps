@@ -56,7 +56,7 @@ export class ObservationProcess extends Process
             let roomList: string = "Need Room";
             _.filter(Object.keys(Memory.observeRoom), (or) => {
                 let room = Memory.observeRoom[or];
-                if(room.mineralType === RESOURCE_LEMERGIUM && room.sourceCount === 2)
+                if(room.mineralType === RESOURCE_KEANIUM && room.sourceCount === 2)
                 {
                     roomList += "\n" + index++ + or;
                 }

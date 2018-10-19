@@ -33,7 +33,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
+    /*if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
     {
       if(creep.pos.isNearTo(creep.room.storage))
       {
@@ -43,7 +43,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
 
       creep.travelTo(creep.room.storage);
       return;
-    }
+    }*/
 
     if(_.sum(creep.carry) === 0)
     {

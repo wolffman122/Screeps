@@ -15,7 +15,7 @@ export class TerminalManagementProcess extends Process
       let lowRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.storage)
         {
-          return ((r.storage.store.energy < 175000 ||  r.storage.store === undefined) && r.controller && r.controller.my &&
+          return ((r.storage.store.energy < 225000 ||  r.storage.store === undefined) && r.controller && r.controller.my &&
             r.terminal.my);
         }
         else
@@ -77,6 +77,7 @@ export class TerminalManagementProcess extends Process
             {
               if(room.terminal)
               {
+                console.log(this.name, 'Full 1', lRooms[0].name, lRooms[0].amount);
                 let amount = 300000 - lRooms[0].amount;
                 //if(Game.map.getRoomLinearDistance(room.name, lRooms[0].name) > 10)
                 if(amount > 50000)

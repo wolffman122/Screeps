@@ -228,9 +228,10 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E55S48':
+          case 'E58S52':
             upgraders = 2;
             break;
+          case 'E36S38':
           default:
             upgraders = 1;
             break;
@@ -288,7 +289,8 @@ export class EnergyManagementProcess extends Process{
             if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
               proc.metaData.roomName === 'E45S57' || proc.metaData.roomName === 'E48S57' || proc.metaData.roomName === 'E43S55' ||
               proc.metaData.roomName === 'E41S49' || proc.metaData.roomName === 'E38S46' || proc.metaData.roomName === 'E43S52' ||
-              proc.metaData.roomName === 'E35S41' || proc.metaData.roomName === 'E36S43' || proc.metaData.roomName === 'E41S41' )
+              proc.metaData.roomName === 'E35S41' || proc.metaData.roomName === 'E36S43' || proc.metaData.roomName === 'E41S41' ||
+              proc.metaData.roomName === 'E55S48')
             {
               let boosts = [];
               boosts.push(RESOURCE_GHODIUM_ACID)
@@ -299,7 +301,7 @@ export class EnergyManagementProcess extends Process{
                 allowUnboosted: true
               })
             }
-            else if(proc.metaData.roomName === 'E55S48')
+            else if(proc.metaData.roomName === 'E58S52')
             {
               let boosts = [];
               boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)

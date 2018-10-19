@@ -229,6 +229,7 @@ export class Kernel{
   /** Load the process table from Memory */
   loadProcessTable(){
     let kernel = this
+
     _.forEach(Memory.wolffOS.processTable, function(entry){
       if(processTypes[entry.type]){
         //kernel.processTable.push(new processTypes[entry.type](entry, kernel))
@@ -291,6 +292,13 @@ export class Kernel{
     if(!this.toRunProcesses || this.toRunProcesses.length === 0)
     {
       let toRunProcesses = _.filter(this.processTable, function(entry) {
+        /*let splits = entry.name.split('-');
+        let split = +splits[splits.length - 1];
+        if(split < Game.time - 500000)
+        {
+          console.log('Finding old process', entry.name);
+         // entry.completed = true;
+        }*/
         return (!entry.ticked && entry.suspend === false);
       });
 

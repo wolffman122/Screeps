@@ -51,12 +51,13 @@ export class RoomDataProcess extends Process{
 
     if(room)
     {
-      if((room.name ==='E45S57' || room.name == 'E43S52' || room.name == 'E44S51' || room.name == 'E43S53' ||
+      /*if((room.name ==='E45S57' || room.name == 'E43S52' || room.name == 'E44S51' || room.name == 'E43S53' ||
           room.name == 'E46S51' || room.name == 'E46S52' || room.name == 'E48S57' || room.name == 'E45S48' ||
           room.name == 'E48S49' || room.name == 'E41S49' || room.name == 'E43S55' || room.name == 'E51S49' ||
           room.name == 'E52S46' || room.name == 'E42S48' || room.name == 'E38S46' || room.name == 'E36S43' ||
-          room.name == 'E35S41' || room.name == 'E48S56' || room.name == 'E41S41' || room.name == 'E55S48')
-        && room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
+          room.name == 'E35S41' || room.name == 'E48S56' || room.name == 'E41S41' || room.name == 'E55S48' ||
+          room.name == 'E58S52')*/
+      if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
       {
         this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {
           roomName: room.name
@@ -132,7 +133,14 @@ export class RoomDataProcess extends Process{
     let controllerContainers = _.filter(containers, function(container){
       if(container.room.controller)
       {
-        return (container.pos.inRangeTo(container.room.controller, 4));
+        if(container.room.name === 'E58S52')
+        {
+          return (container.pos.inRangeTo(container.room.controller, 3));
+        }
+        else
+        {
+          return (container.pos.inRangeTo(container.room.controller, 4));
+        }
       }
       else
       {
