@@ -290,7 +290,7 @@ export class EnergyManagementProcess extends Process{
               proc.metaData.roomName === 'E45S57' || proc.metaData.roomName === 'E48S57' || proc.metaData.roomName === 'E43S55' ||
               proc.metaData.roomName === 'E41S49' || proc.metaData.roomName === 'E38S46' || proc.metaData.roomName === 'E43S52' ||
               proc.metaData.roomName === 'E35S41' || proc.metaData.roomName === 'E36S43' || proc.metaData.roomName === 'E41S41' ||
-              proc.metaData.roomName === 'E55S48')
+              proc.metaData.roomName === 'E55S48' || proc.metaData.roomName === 'E42S48' || proc.metaData.roomName === 'E43S55')
             {
               let boosts = [];
               boosts.push(RESOURCE_GHODIUM_ACID)

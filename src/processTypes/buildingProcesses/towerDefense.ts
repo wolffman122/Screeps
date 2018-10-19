@@ -14,13 +14,14 @@ export class TowerDefenseProcess extends Process{
       this.completed = true;
       return;
     }
-    
+
     let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
 
     enemies = _.filter(enemies, (e)=> {
       return !_.includes(WHITE_LIST, e.owner.username);
     })
-    let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
+
+
     let flag = Game.flags['Center-'+this.metaData.roomName];
 
     if(flag)
@@ -46,7 +47,7 @@ export class TowerDefenseProcess extends Process{
             rangedEnemies = flag.pos.findInRange(enemies, 10);
             if(rangedEnemies.length > 0)
             {
-              let targets = _.filter(rangedEnemies, e => {
+              let targets = _.filter(rangedEnemies, (e: Creep) => {
                 return (e.getActiveBodyparts(HEAL) > 0);
               });
 
@@ -91,27 +92,11 @@ export class TowerDefenseProcess extends Process{
           }
         });
       }
-      else if(damagedCreeps.length > 0)
-      {
-        flag.memory.timeEnemies = 0;
-        _.forEach(this.kernel.data.roomData[this.metaData.roomName].towers, function(tower)
-        {
-          let rangeDamage = tower.pos.findInRange(damagedCreeps, 30);
-          if(rangeDamage.length > 0)
-          {
-            let target = tower.pos.findClosestByPath(rangeDamage);
-
-            if(target)
-            {
-              tower.heal(target);
-            }
-          }
-        });
-      }
       else
       {
         flag.memory.timeEnemies = 0;
-        this.suspend = 5;
+        this.completed = true;
+        return;
       }
 
     }
@@ -140,25 +125,11 @@ export class TowerDefenseProcess extends Process{
           }
         })
       }
-      else if (damagedCreeps.length > 0)
-      {
-        _.forEach(this.kernel.data.roomData[this.metaData.roomName].towers, function(tower)
-        {
-          let rangeDamage = tower.pos.findInRange(damagedCreeps, 30);
-          if(rangeDamage.length > 0)
-          {
-            let target = tower.pos.findClosestByPath(rangeDamage);
-
-            if(target)
-            {
-              tower.heal(target);
-            }
-          }
-        });
-      }
       else
       {
-        this.suspend = 5;
+        flag.memory.timeEnemies = 0;
+        this.completed = true;
+        return;
       }
     }
   }

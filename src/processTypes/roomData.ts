@@ -7,6 +7,7 @@ import {TowerRepairProcess} from './buildingProcesses/towerRepair'
 import { MineralManagementProcess } from 'processTypes/management/mineral';
 import { ObservationProcess } from './buildingProcesses/observation';
 import { skRoomManagementProcess } from './management/skroom';
+import { TowerHealProcess } from './buildingProcesses/towerHeal';
 
 interface RoomDataMeta{
   roomName: string
@@ -98,7 +99,8 @@ export class RoomDataProcess extends Process{
 
     if(room && room.controller && room.controller.my)
     {
-      this.enemyDetection(room)
+      this.enemyDetection(room);
+      this.healDetection(room);
       this.repairDetection(room);
     }
 
@@ -526,8 +528,23 @@ export class RoomDataProcess extends Process{
     let controller = Game.rooms[this.metaData.roomName].controller;
     if(controller)
     {
-      if(enemies.length > 0 &&  controller.my && !this.kernel.hasProcess('td-' + this.metaData.roomName)){
+      if(enemies.length > 0 && !this.kernel.hasProcess('td-' + this.metaData.roomName)){
         this.kernel.addProcess(TowerDefenseProcess, 'td-' + this.metaData.roomName, 95, {
+          roomName: this.metaData.roomName
+        })
+      }
+    }
+  }
+
+  healDetection(room: Room)
+  {
+    let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
+    let controller = room.controller;
+    if(controller && controller.level >= 3)
+    {
+      if(damagedCreeps.length > 0)
+      {
+        this.kernel.addProcessIfNotExist(TowerHealProcess, 'th-' + this.metaData.roomName, 90, {
           roomName: this.metaData.roomName
         })
       }

@@ -74,7 +74,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          creep.travelTo(RoomPosition(10,10, this.metaData.spawnRoom));
+          creep.suicide();
           return;
         }
       }

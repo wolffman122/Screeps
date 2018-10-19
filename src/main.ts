@@ -22,7 +22,7 @@ Creep.prototype.fixMyRoad = function()
   }
 
   let found = this.pos.lookFor(LOOK_STRUCTURES);
-  var road = _.filter(found, (f) => {
+  var road = _.filter(found, (f: Structure) => {
               if(f.structureType === STRUCTURE_ROAD)
               {
                 return f;
@@ -31,7 +31,7 @@ Creep.prototype.fixMyRoad = function()
               {
                 return;
               }
-            })[0];
+            })[0] as StructureRoad;
 
   if(!road)
   {

@@ -114,7 +114,7 @@ Creep.prototype.yieldRoad = function(target: {pos: RoomPosition}, allowSwamps = 
   return this.travelTo(target);
 }
 
-Room.prototype.findEnemies = function(): Creep[]
+/*Room.prototype.findEnemies = function(): Creep[]
 {
   let hostileCreeps = this.find(FIND_HOSTILE_CREEPS);
   hostileCreeps = _.filter(hostileCreeps, (hc: Creep) => {
@@ -122,7 +122,7 @@ Room.prototype.findEnemies = function(): Creep[]
   });
 
   return hostileCreeps;
-}
+}*/
 
 Creep.prototype.idleOffRoad = function(anchor: {pos: RoomPosition}, maintainDistance): number
 {

@@ -48,10 +48,35 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
       let fleeFlag = Game.flags['RemoteFlee-'+spawnRoom];
       if(fleeFlag)
       {
-        if(!creep.pos.inRangeTo(fleeFlag, 5))
+        if(_.sum(creep.carry) > 0)
         {
-          creep.travelTo(fleeFlag);
-          return;
+          let storage = Game.rooms[spawnRoom].storage;
+          if(storage)
+          {
+            if(!creep.pos.inRangeTo(storage, 1))
+            {
+              creep.travelTo(storage);
+              return;
+            }
+            else
+            {
+              creep.transferEverything(storage);
+              return;
+            }
+          }
+        }
+        else
+        {
+          if(!creep.pos.inRangeTo(fleeFlag, 5))
+          {
+            creep.travelTo(fleeFlag);
+            return;
+          }
+          else
+          {
+            creep.suicide();
+            return;
+          }
         }
       }
       return;
