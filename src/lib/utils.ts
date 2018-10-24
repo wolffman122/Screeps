@@ -21,6 +21,28 @@ export const Utils = {
     })
   },
 
+  creepPreSpawnCount: function(list: string[]): Number
+  {
+    let creeps = _.transform(list, function(result, entry){
+      result.push(Game.creeps[entry]);
+    }) as Creep[];
+
+    if(creeps.length)
+    {
+      let count = 0;
+      _.forEach(creeps, (c) => {
+        let ticksNeeded = c.body.length * 3;
+        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+      })
+
+      return count;
+    }
+    else
+    {
+      return 0;
+    }
+  },
+
   workRate: function(creeps: Creep[], perWorkPart: number){
     var workRate = 0
 

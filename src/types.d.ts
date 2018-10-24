@@ -193,7 +193,6 @@ interface Flag {
       boost: boolean;
       distance?: number;
       reachedDest?: boolean;
-      angelName: string;
       devilName: string;
       target?: string;
   }
@@ -222,6 +221,7 @@ interface Flag {
     };
     assisted: boolean;
     rampartHealth?: number;
+    invadersPresent?: boolean;
   }
 
   interface SpawnMemory {}
@@ -612,7 +612,6 @@ interface Flag {
     locations: {
       [types: string]: any[]
     },
-    angels: string[],
     devils: string[],
     builderCreeps: string[],
     //workerCreeps: string[],

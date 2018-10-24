@@ -30,6 +30,10 @@ export class LabManagementProcess extends Process
 
   run()
   {
+    if(this.name === 'labm-E36S38')
+    {
+      console.log('Lab working !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    }
     //console.log(this.name);
     this.room = Game.rooms[this.metaData.roomName];
 
@@ -50,6 +54,19 @@ export class LabManagementProcess extends Process
         this.metaData.reagentLabIds = undefined;
         this.metaData.productLabIds = undefined;
       }*/
+
+      if(Game.time % 1000 === 2)
+      {
+        let totalLabs = this.reagentLabs.length + this.productLabs.length;
+        if(totalLabs !== this.roomData().labs.length)
+        {
+          this.reagentLabs = undefined;
+          this.productLabs = undefined;
+          this.metaData.reagentLabIds = undefined;
+          this.metaData.productLabIds = undefined;
+        }
+      }
+
 
       if(!this.productLabs || !this.reagentLabs)
       {
@@ -465,7 +482,7 @@ export class LabManagementProcess extends Process
       }
     }
 
-    if(Game.time % 1000 !== 2)
+    if(Game.time % 1000 !== 3)
     {
       return; // early
     }
@@ -661,7 +678,7 @@ export class LabManagementProcess extends Process
 
   private checkProgress(process: LabProcess)
   {
-    if(Game.time % 1000 !== 2)
+    if(Game.time % 1000 !== 3)
     {
       return true;
     }

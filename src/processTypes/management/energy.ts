@@ -228,10 +228,9 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E58S52':
-            upgraders = 2;
-            break;
           case 'E36S38':
+            upgraders = 4;
+            break;
           default:
             upgraders = 1;
             break;
@@ -286,11 +285,7 @@ export class EnergyManagementProcess extends Process{
           {
             this.metaData.upgradeCreeps.push(creepName)
 
-            if(proc.metaData.roomName === 'E45S48' || proc.metaData.roomName === 'E48S49' || proc.metaData.roomName === 'E43S53' ||
-              proc.metaData.roomName === 'E45S57' || proc.metaData.roomName === 'E48S57' || proc.metaData.roomName === 'E43S55' ||
-              proc.metaData.roomName === 'E41S49' || proc.metaData.roomName === 'E38S46' || proc.metaData.roomName === 'E43S52' ||
-              proc.metaData.roomName === 'E35S41' || proc.metaData.roomName === 'E36S43' || proc.metaData.roomName === 'E41S41' ||
-              proc.metaData.roomName === 'E55S48' || proc.metaData.roomName === 'E42S48' || proc.metaData.roomName === 'E43S55')
+            if(Game.rooms[proc.metaData.roomName].controller!.level === 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
             {
               let boosts = [];
               boosts.push(RESOURCE_GHODIUM_ACID)
@@ -301,7 +296,7 @@ export class EnergyManagementProcess extends Process{
                 allowUnboosted: true
               })
             }
-            else if(proc.metaData.roomName === 'E58S52')
+            else if(proc.metaData.roomName === 'E36S38')
             {
               let boosts = [];
               boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
@@ -368,9 +363,8 @@ export class EnergyManagementProcess extends Process{
 
           switch(this.metaData.roomName)
           {
-            case 'E36S43':
-            case 'E35S41':
-              upgradeDistroAmount = 3;
+            case 'E36S38':
+              upgradeDistroAmount = 2;
               break;
             default:
               upgradeDistroAmount = 1;

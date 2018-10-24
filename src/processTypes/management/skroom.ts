@@ -61,11 +61,6 @@ export class skRoomManagementProcess extends Process
             }
         }
 
-        if(!this.metaData.angels)
-        {
-            this.metaData.angels = [];
-        }
-
         if(!this.metaData.devils)
         {
             this.metaData.devils = [];
@@ -201,30 +196,12 @@ export class skRoomManagementProcess extends Process
 
                 // Spawn Attacker and Healer
 
-                this.metaData.angels = Utils.clearDeadCreeps(this.metaData.angels);
                 this.metaData.devils = Utils.clearDeadCreeps(this.metaData.devils);
+                //let creeps = Utils.inflateCreeps(this.metaData.devils);
 
-                if(this.metaData.angels.length < 1)
-                {
-                    let creepName = this.metaData.skRoomName + '-angle-' + Game.time;
-                    let spawned = Utils.spawn(
-                        this.kernel,
-                        this.metaData.roomName,
-                        'healer',
-                        creepName,
-                        {
-                            max: 38
-                        }
-                    );
+                let count = Utils.creepPreSpawnCount(this.metaData.devils);
 
-                    if(spawned)
-                    {
-                        this.metaData.angels.push(creepName);
-                    }
-
-                }
-
-                if(this.metaData.devils.length < 1)
+                if(count < 1)
                 {
                     let creepName = this.metaData.skRoomName + '-devil-' + Game.time;
                     let spawned = Utils.spawn(
@@ -249,42 +226,13 @@ export class skRoomManagementProcess extends Process
                     let devil = Game.creeps[this.metaData.devils[i]];
                     if(devil)
                     {
-                        if(!devil.memory.angelName || devil.memory.angelName != this.metaData.angels[i])
-                        {
-                            if(this.metaData.angels.length === this.metaData.devils.length)
-                            {
-                                devil.memory.angelName = this.metaData.angels[i];
-                            }
-                        }
-                        else
-                        {
-                            // Time to do some stuff
-                            this.DevilActions(devil);
-                        }
-                    }
-
-                    let angel = Game.creeps[this.metaData.angels[i]];
-                    if(angel)
-                    {
-                        if(!angel.memory.devilName)
-                        {
-                            if(this.metaData.devils.length === this.metaData.angels.length)
-                            {
-                                angel.memory.devilName = this.metaData.devils[i];
-                            }
-                        }
-                        else
-                        {
-                            // Tie to do some stuff
-                            this.AngelActions(angel);
-                        }
+											// Time to do some stuff
+                      this.DevilActions(devil);
                     }
                 }
 
 
-                console.log(this.name, 'Construction', this.metaData.devils.length, this.metaData.angels.length)
-
-                if(this.metaData.devils.length && this.metaData.angels.length)
+                if(this.metaData.devils.length) // ADD to check for enemies here if they are present and no devil then flee.
                 {
                     console.log(this.name, 'Construction', 1)
                     this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
@@ -463,128 +411,153 @@ export class skRoomManagementProcess extends Process
         {
             let targetName: string|undefined;
             console.log(this.name, 'Devil Actions')
-            let myAngel = Game.creeps[devil.memory.angelName];
-            if(!myAngel)
-            {
-                return;
-            }
 
-            if(myAngel.ticksToLive === 1)
-            {
-                devil.suicide();
-                return;
-            }
-            else if(myAngel.spawning)
-            {
-                console.log(this.name, 'Only During spawning');
-                devil.travelTo(myAngel);
-                return;
-            }
-
+            // Just spawned moving to SK Room.
             if(devil.pos.roomName !== this.skRoomName && !devil.memory.target)
             {
                 console.log(this.name, 'Travel to SK Room Code')
-                if(devil.pos.isNearTo(myAngel))
-                {
-                    devil.travelTo(new RoomPosition(25, 25, this.skRoomName));
-                }
+                devil.travelTo(new RoomPosition(25, 25, this.skRoomName));
             }
             else
             {
-                console.log(this.name, 'SK Room Code')
-                if(!devil.memory.target)
+              // SK Room Code
+              if(!devil.room.memory.invadersPresent && Game.time % 5 === 3)
+              {
+                let hostiles = devil.room.find(FIND_HOSTILE_CREEPS);
+                let invader = _.find(hostiles, (h) => {
+                  return (h.owner.username === 'Invader')
+                })
+
+                if(invader)
                 {
-                    console.log(this.name, 1)
-                    let sourceKeepers = _.filter(this.lairs, (l) => {
-                        return (l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
-                    });
-
-                    if(sourceKeepers.length)
-                    {
-                        let sl = devil.pos.findClosestByPath(sourceKeepers);
-                        if(sl)
-                        {
-                            targetName = sl.pos.findClosestByRange(FIND_HOSTILE_CREEPS).id;
-                        }
-                    }
-                    else
-                    {
-                        console.log(this.name, 'min',1)
-                        let lair = _.min(this.lairs, "ticksToSpawn");
-                        if(lair.ticksToSpawn)
-                        {
-                            targetName = lair.id;
-                        }
-                    }
+                  devil.room.memory.invadersPresent = true;
                 }
+              }
 
-                if(targetName)
-                {
-                    console.log(this.name, 2)
-                    devil.memory.target = targetName;
-                }
+              console.log(this.name, 'SK Room Code')
+              if(!devil.memory.target && !devil.room.memory.invadersPresent)    // Find a target name
+              {
+                  console.log(this.name, 1)
+                  let sourceKeepers = _.filter(this.lairs, (l) => {
+                      return (l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
+                  });
 
-                if(devil.memory.target && !targetName)
-                {
-                    console.log(this.name, 3)
-                    let SkScreep = Game.getObjectById(devil.memory.target) as Creep;
-                    if(SkScreep)
-                    {
-                        console.log(this.name, 31, SkScreep.pos)
-                        if(devil.pos.isNearTo(SkScreep))
-                        {
-                            if(SkScreep instanceof StructureKeeperLair)
-                            {
-                                devil.memory.target = undefined;
-                            }
-                            devil.attack(SkScreep);
-                        }
-                        else
-                        {
-                            if(devil.room.name !== this.skRoomName)
-                            {
-                                devil.travelTo(new RoomPosition(25,25,this.skRoomName));
-                                return;
-                            }
-                            else
-                            {
-                                if(myAngel.room.name === this.skRoomName)
-                                {
-                                    if(devil.pos.inRangeTo(myAngel,2))
-                                    {
-                                        devil.travelTo(SkScreep, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
-                                            let room = Game.rooms[roomName];
-                                            if(room)
-                                            {
-                                                room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
-                                            }
+                  if(sourceKeepers.length)  // Found screep around source.
+                  {
+                      let sl = devil.pos.findClosestByPath(sourceKeepers);
+                      if(sl)
+                      {
+                          targetName = sl.pos.findClosestByRange(FIND_HOSTILE_CREEPS).id;
+                      }
+                  }
+                  else
+                  {
+                      // No Souce Keepers move to Lair with shortest spawn time.
+                      console.log(this.name, 'min',1)
+                      let lair = _.min(this.lairs, "ticksToSpawn");
+                      if(lair.ticksToSpawn)
+                      {
+                          targetName = lair.id;
+                      }
+                  }
+              }
 
-                                            return matrix;
-                                        }
-                                        });
-                                        if(SkScreep instanceof StructureKeeperLair)
-                                        {
-                                            let skLair = SkScreep as StructureKeeperLair;
-                                            if(!skLair.ticksToSpawn)
-                                            {
-                                                devil.memory.target = undefined;
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    devil.travelTo(SkScreep);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                            console.log(this.name, 'Screep does not exist');
-                            devil.memory.target = undefined;
-                    }
-                }
+              if(targetName)
+              {
+                  console.log(this.name, 2)
+                  devil.memory.target = targetName;
+                  targetName = undefined;
+              }
+
+              if(devil.room.memory.invadersPresent)
+              {
+                // Attack Invaders
+                let invaders = devil.room.find(FIND_HOSTILE_CREEPS, {
+                  filter: c => c.owner.username === 'Invader'
+                 });
+
+                 if(invaders.length)
+                 {
+                   //Find healers
+                   let healers = _.filter(invaders, (i) =>{
+                     return i.getActiveBodyparts(HEAL) > 0;
+                   });
+
+                   if(healers.length)
+                   {
+                     let target = devil.pos.findClosestByRange(healers);
+                     if(target)
+                     {
+
+                       // Need to figure out the attack strategy
+                       
+                     }
+                   }
+                 }
+              }
+              else if(devil.memory.target && !targetName)
+              {
+                  console.log(this.name, 3)
+                  let SkScreep = Game.getObjectById(devil.memory.target) as Creep;
+                  if(SkScreep)
+                  {
+                      console.log(this.name, 31, SkScreep.pos)
+                      if(devil.pos.inRangeTo(SkScreep,3))
+                      {
+                          if(SkScreep instanceof StructureKeeperLair)
+                          {
+                              devil.memory.target = undefined;
+                          }
+                          devil.attack(SkScreep);
+                      }
+                      else
+                      {
+                          if(devil.room.name !== this.skRoomName)
+                          {
+                              devil.travelTo(new RoomPosition(25,25,this.skRoomName));
+                              return;
+                          }
+                          else
+                          {
+                              /*if(myAngel.room.name === this.skRoomName)
+                              {
+                                  if(devil.pos.inRangeTo(myAngel,2))
+                                  {
+                                      devil.travelTo(SkScreep, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
+                                          let room = Game.rooms[roomName];
+                                          if(room)
+                                          {
+                                              room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
+                                          }
+
+                                          return matrix;
+                                      }
+                                      });
+                                      if(SkScreep instanceof StructureKeeperLair)
+                                      {
+                                          let skLair = SkScreep as StructureKeeperLair;
+                                          if(!skLair.ticksToSpawn)
+                                          {
+                                              devil.memory.target = undefined;
+                                          }
+                                      }
+                                  }
+                              }
+                              else
+                              {
+                                  devil.travelTo(SkScreep);
+                              }*/
+
+                              devil.travelTo(SkScreep);
+                          }
+                      }
+                  }
+                  else
+                  {
+                          console.log(this.name, 'Screep does not exist');
+                          devil.memory.target = undefined;
+                  }
+              }
             }
         }
         catch (error)
@@ -593,41 +566,6 @@ export class skRoomManagementProcess extends Process
         }
     }
 
-    AngelActions(angel: Creep)
-    {
-        let myDevil = Game.creeps[angel.memory.devilName];
-        if(!myDevil)
-        {
-            return;
-        }
-
-        if(myDevil.ticksToLive === 1)
-        {
-            angel.suicide();
-            return;
-        }
-
-        if(angel.pos.isNearTo(myDevil))
-        {
-            if(myDevil.hits < myDevil.hitsMax)
-            {
-                angel.heal(myDevil);
-                angel.move(angel.pos.getDirectionTo(myDevil));
-            }
-            else
-            {
-                if(angel.hits < angel.hitsMax)
-                {
-                    angel.heal(angel);
-                }
-                angel.move(angel.pos.getDirectionTo(myDevil));
-            }
-        }
-        else
-        {
-            angel.travelTo(myDevil);
-        }
-    }
 
     BuilderActions(builder: Creep)
     {
