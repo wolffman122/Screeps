@@ -14,7 +14,7 @@ export class TowerHealProcess extends Process
             return;
         }
 
-        let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
+        let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.my && cp.hits < cp.hitsMax});
 
         if(damagedCreeps.length > 0)
         {

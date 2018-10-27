@@ -226,7 +226,7 @@ export class skRoomManagementProcess extends Process
                     let devil = Game.creeps[this.metaData.devils[i]];
                     if(devil)
                     {
-											// Time to do some stuff
+                      // Time to do some stuff
                       this.DevilActions(devil);
                     }
                 }
@@ -423,12 +423,12 @@ export class skRoomManagementProcess extends Process
               // SK Room Code
               if(!devil.room.memory.invadersPresent && Game.time % 5 === 3)
               {
-                let hostiles = devil.room.find(FIND_HOSTILE_CREEPS);
-                let invader = _.find(hostiles, (h) => {
-                  return (h.owner.username === 'Invader')
-                })
+                let invaders = devil.room.find(FIND_HOSTILE_CREEPS, {
+                  filter: c => c.owner.username === 'Invader'
+                });
 
-                if(invader)
+
+                if(invaders)
                 {
                   devil.room.memory.invadersPresent = true;
                 }
@@ -488,10 +488,57 @@ export class skRoomManagementProcess extends Process
                      let target = devil.pos.findClosestByRange(healers);
                      if(target)
                      {
+                        let numberInRange = devil.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+                        if(numberInRange.length > 1)
+                        {
+                          devil.rangedMassAttack();
+                        }
+                        else if(numberInRange.length == 1)
+                        {
+                          devil.rangedAttack(target);
+                        }
 
-                       // Need to figure out the attack strategy
-                       
+                        if(devil.pos.isNearTo(target))
+                        {
+                          devil.attack(target);
+                        }
+                        else
+                        {
+                          devil.heal(devil);
+                        }
+
+                        devil.move(devil.pos.getDirectionTo(target));
+                        return;
                      }
+                   }
+
+                   let range = _.filter(invaders, (i) => {
+                     return i.getActiveBodyparts(RANGED_ATTACK) > 0;
+                   })
+
+                   if(range.length)
+                   {
+                    let target = devil.pos.findClosestByRange(healers);
+                    if(target)
+                    {
+                      let numberInRange = devil.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+                      if(numberInRange.length > 1)
+                      {
+                        devil.rangedMassAttack();
+                      }
+                      else if(numberInRange.length == 1)
+                      {
+                        devil.rangedAttack(target);
+                      }
+
+                      if(devil.pos.isNearTo(target))
+                      {
+                        devil.attack(target);
+                      }
+
+                      devil.move(devil.pos.getDirectionTo(target));
+                      return;
+                    }
                    }
                  }
               }
