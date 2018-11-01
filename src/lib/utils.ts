@@ -31,7 +31,7 @@ export const Utils = {
     {
       let count = 0;
       _.forEach(creeps, (c) => {
-        let ticksNeeded = c.body.length * 3;
+        let ticksNeeded = c.body.length * 3 + 60;
         if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
       })
 

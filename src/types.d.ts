@@ -634,6 +634,9 @@ interface Flag {
     harvestCreeps: {
       [source: string]: string[]
     }
+    roadsDone: {
+      [container: string]: boolean
+    }
   }
 //// Minerals
 

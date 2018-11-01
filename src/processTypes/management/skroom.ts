@@ -74,9 +74,19 @@ export class skRoomManagementProcess extends Process
             this.metaData.distroCreeps = {};
         }
 
+        if(!this.metaData.distroDistance)
+        {
+          this.metaData.distroDistance = {};
+        }
+
         if(!this.metaData.harvestCreeps)
         {
             this.metaData.harvestCreeps = {};
+        }
+
+        if(!this.metaData.roadsDone)
+        {
+          this.metaData.roadsDone = {};
         }
     }
 
@@ -230,12 +240,10 @@ export class skRoomManagementProcess extends Process
 
           if(this.metaData.devils.length) // ADD to check for enemies here if they are present and no devil then flee.
           {
-            console.log(this.name, 'Construction', 1)
             this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
             // Construction Code
             if(!this.roomInfo(this.skRoomName).sourceContainers || (this.roomInfo(this.skRoomName).sourceContainers.length < this.roomInfo(this.skRoomName).sources.length))
             {
-              console.log(this.name, 'Construction', 2)
               if(this.metaData.builderCreeps.length < 2)
               {
                 let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
@@ -256,7 +264,6 @@ export class skRoomManagementProcess extends Process
             }
             else if(this.roomInfo(this.skRoomName).constructionSites.length > 0)
             {
-              console.log(this.name, 'Construction', 3)
               if(this.metaData.builderCreeps.length < 1)
               {
                 let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
@@ -288,21 +295,17 @@ export class skRoomManagementProcess extends Process
             }
 
             // Harvester Code
-            console.log(this.name, 'harvester', 1)
             if(this.roomInfo(this.skRoomName).sourceContainers.length > 0)
             {
-              console.log(this.name, 'harvester', 2)
               let sources = this.roomInfo(this.skRoomName).sources;
 
               _.forEach(sources, (s)=> {
 
-                console.log(this.name, 'harvester', 3, this.roomInfo(this.skRoomName).skSourceContainerMaps[s.id], this.roomInfo(this.skRoomName).sourceContainerMaps[s.id])
                 if(!this.roomInfo(this.skRoomName).skSourceContainerMaps[s.id])
                 {
                   return;
                 }
 
-                console.log(this.name, 'harvester', 4)
                 if(!this.metaData.harvestCreeps[s.id])
                 {
                   this.metaData.harvestCreeps[s.id] = [];
@@ -312,7 +315,6 @@ export class skRoomManagementProcess extends Process
                 this.metaData.harvestCreeps[s.id] = creepNames
                 let creeps = Utils.inflateCreeps(creepNames)
 
-                console.log(this.name, 'harvester', 5, this.metaData.harvestCreeps[s.id].length);
                 let count = 0;
                 _.forEach(creeps, (c) => {
                   let  ticksNeeded = c.body.length * 3;
@@ -320,14 +322,13 @@ export class skRoomManagementProcess extends Process
                 });
 
 
-                console.log(this.name, 'Harvest start');
                 if(this.metaData.harvestCreeps[s.id].length < 1)
                 {
                   let creepName = 'sk-harvest-'+this.skRoomName+'-'+Game.time;
                   let spawned = Utils.spawn(
                     this.kernel,
                     this.metaData.roomName,
-                    'harvester',
+                    'skHarvester',
                     creepName,
                     {}
                   );
@@ -345,71 +346,86 @@ export class skRoomManagementProcess extends Process
                   if(harvester)
                   {
                     console.log('harvest loop call actions')
-                    //this.HarvesterActions(harvester, s);
+                    this.HarvesterActions(harvester, s);
                   }
                 }
               });
             }
 
-/*
+
+            console.log('Hauling Code', this.roomInfo(this.skRoomName).skSourceContainerMaps);
             // Hauling Code
-            _.forEach(this.roomInfo(this.skRoomName).sourceContainers, (sc) => {
-                if(!this.metaData.distroCreeps[sc.id])
-                    this.metaData.distroCreeps[sc.id] = [];
+            _.forEach(Object.keys(this.roomInfo(this.skRoomName).skSourceContainerMaps), (key) => {
 
-                if(!this.metaData.distroDistance[sc.id])
+              console.log('Hauling Code',1 );
+                let source = Game.getObjectById(key) as Source;
+                if(source)
                 {
-                    let ret = PathFinder.search(centerFlag.pos, sc.pos, {
-                        plainCost: 2,
-                        swampCost: 10,
-                    });
+                  if(!this.metaData.distroCreeps[source.id])
+                      this.metaData.distroCreeps[source.id] = [];
 
-                    this.metaData.distroDistance[sc.id] = ret.path.length;
+                      console.log('Hauling Code',2 );
+                  if(!this.metaData.distroDistance[source.id])
+                  {
+                    console.log('Hauling Code',21);
+                      let ret = PathFinder.search(centerFlag.pos, source.pos, {
+                          plainCost: 2,
+                          swampCost: 10,
+                      });
+
+                      console.log('Hauling Code',22);
+                      this.metaData.distroDistance[source.id] = ret.path.length;
+
+                  }
+
+                  console.log('Hauling Code',3 );
+                  let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[source.id]);
+                  this.metaData.distroCreeps[source.id] = creepNames;
+                  let creeps = Utils.inflateCreeps(creepNames);
+
+                  console.log('Hauling Code',4 );
+                  let count = 0;
+                  _.forEach(creeps, (c) => {
+                      let ticksNeeded = c.body.length * 3 + this.metaData.distroDistance[source.id];
+                      if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+                  });
+
+                  let numberDistro = 1;
+                  /*if(this.metaData.distroDistance[sc.id] < 70)
+                  {
+                      numberDistro = 1;
+                  }*/
+
+                  console.log('Hauling Code',5 );
+                  if(count < numberDistro)
+                  {
+                      let creepName = 'sk-m-' + this.skRoomName + '-' + Game.time;
+                      let spawned = Utils.spawn(
+                          this.kernel,
+                          this.metaData.roomName,
+                          'holdmover',
+                          creepName,
+                          {}
+                      );
+
+                      if(spawned)
+                      {
+                          this.metaData.distroCreeps[source.id].push(creepName);
+                      }
+                  }
+
+                  //Hauler Action Code
+                  for(let i = 0; i < this.metaData.distroCreeps[source.id].length; i++)
+                  {
+                      let hauler = Game.creeps[this.metaData.distroCreeps[source.id][i]]
+                      if(hauler)
+                      {
+                          console.log('Haulers Start', hauler.name);
+                          this.HaulerActions(hauler, source);
+                      }
+                  }
                 }
-
-                let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[sc.id]);
-                this.metaData.distroCreeps[sc.id] = creepNames;
-                let creeps = Utils.inflateCreeps(creepNames);
-
-                let count = 0;
-                _.forEach(creeps, (c) => {
-                    let ticksNeeded = c.body.length * 3 + this.metaData.distroDistance[sc.id];
-                    if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
-                });
-
-                let numberDistro = 2;
-                if(this.metaData.distroDistance[sc.id] < 70)
-                {
-                    numberDistro = 1;
-                }
-
-                if(count < numberDistro)
-                {
-                    let creepName = 'sk-m-' + this.skRoomName + '-' + Game.time;
-                    let spawned = Utils.spawn(
-                        this.kernel,
-                        this.metaData.roomName,
-                        'holdmover',
-                        creepName,
-                        {}
-                    );
-
-                    if(spawned)
-                    {
-                        this.metaData.distroCreeps[sc.id].push(creepName);
-                    }
-                }
-
-                //Hauler Action Code
-                for(let i = 0; i < this.metaData.distroCreeps[sc.id].length; i++)
-                {
-                    let hauler = Game.creeps[this.metaData.distroCreeps[sc.id][i]]
-                    if(hauler)
-                    {
-                        this.HaulerActions(hauler, sc);
-                    }
-                }
-            });*/
+            });
           }
         }
       }
@@ -556,7 +572,6 @@ export class skRoomManagementProcess extends Process
           }
           else if(devil.memory.target && !targetName)
           {
-            console.log(this.name, 'Attack', 1)
             let SkScreep = Game.getObjectById(devil.memory.target) as Creep;
             if(SkScreep)
             {
@@ -581,7 +596,6 @@ export class skRoomManagementProcess extends Process
                   }
                 }
 
-                console.log(this.name , 'attack')
                 devil.attack(SkScreep);
               }
               else if(devil.pos.inRangeTo(SkScreep,3))
@@ -592,9 +606,7 @@ export class skRoomManagementProcess extends Process
                 }
 
                 devil.heal(devil);
-                console.log(this.name , 'heal')
                 devil.rangedAttack(SkScreep);
-                console.log(this.name , 'rangedAttack')
                 devil.travelTo(SkScreep);
               }
               else
@@ -616,7 +628,6 @@ export class skRoomManagementProcess extends Process
             }
             else
             {
-              console.log(this.name, 'Screep does not exist');
               devil.memory.target = undefined;
             }
           }
@@ -631,410 +642,483 @@ export class skRoomManagementProcess extends Process
 
     BuilderActions(builder: Creep)
     {
-      if(Game.time % 25 === 5)
+      try
       {
-        let hostiles = builder.room.find(FIND_HOSTILE_CREEPS);
-        let invader = _.find(hostiles, (h) => {
-          return (h.owner.username === 'Invader')
-        })
-
-        if(invader)
+        if(Game.time % 25 === 5)
         {
-          this.invaders = true;
+          let hostiles = builder.room.find(FIND_HOSTILE_CREEPS);
+          let invader = _.find(hostiles, (h) => {
+            return (h.owner.username === 'Invader')
+          })
+
+          if(invader)
+          {
+            this.invaders = true;
+          }
+          else
+          {
+            this.invaders = false;
+          }
+        }
+
+        if(builder.pos.roomName !== this.skRoomName)
+        {
+          builder.travelTo(new RoomPosition(25, 25, this.skRoomName));
+          builder.memory.filling = true
         }
         else
         {
-          this.invaders = false;
-        }
-      }
-
-      if(builder.pos.roomName !== this.skRoomName)
-      {
-        builder.travelTo(new RoomPosition(25, 25, this.skRoomName));
-      }
-      else
-      {
-        if(!this.invaders)
-        {
-          let enemies = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
-          if(enemies.length === 0)
+          if(!this.invaders)
           {
-            if(_.sum(builder.carry) != builder.carryCapacity && builder.memory.filling)
-          {
-              if(this.roomInfo(this.skRoomName).containers.length > 0)
+            let enemies = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+            if(enemies.length === 0)
+            {
+              if(_.sum(builder.carry) != builder.carryCapacity && builder.memory.filling)
               {
-                let targets = _.filter(this.kernel.data.roomData[builder.room.name].containers, (c: StructureContainer) => {
-                  return (c.store.energy > 0);
-                })
-
-                if(targets.length)
+                if(this.roomInfo(this.skRoomName).containers.length > 0)
                 {
-                  let target = builder.pos.findClosestByPath(targets);
+                  let targets = _.filter(this.kernel.data.roomData[builder.room.name].containers, (c: StructureContainer) => {
+                    return (c.store.energy > 0);
+                  })
 
-                  if(target)
+                  if(targets.length)
                   {
-                    if(!builder.pos.inRangeTo(target, 1))
-                    {
-                      builder.travelTo(target);
-                      return;
-                    }
+                    let target = builder.pos.findClosestByPath(targets);
 
-                    builder.withdraw(target, RESOURCE_ENERGY);
-                    return;
-                  }
-                }
-                else
-                {
-                  let source = builder.pos.findClosestByRange(this.kernel.data.roomData[builder.pos.roomName].sources);
-
-                  if(source)
-                  {
-                    if(!builder.pos.inRangeTo(source, 1))
+                    if(target)
                     {
-                      builder.travelTo(source);
-                      return;
-                    }
-
-                    if(builder.pos.inRangeTo(source, 1))
-                    {
-                      let sites = builder.room.find(FIND_CONSTRUCTION_SITES);
-                      if(sites.length > 0)
+                      if(!builder.pos.inRangeTo(target, 1))
                       {
-                          let site = _.filter(sites, (s) => {
-                            if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
-                            {
-                              return s;
-                            }
-                            return;
-                          });
+                        builder.travelTo(target, {range: 1});
                         return;
                       }
+
+                      if(builder.withdraw(target, RESOURCE_ENERGY) == OK)
+                      {
+                        builder.memory.filling = false;
+                      }
+                      return;
                     }
                   }
-                }
-              }
-              else
-              {
-                console.log(this.name, 'Builder Actions', 4)
-                if(this.roomInfo(this.skRoomName).sources)
-                {
-                    console.log(this.name, 'Builder Actions', 5)
-                    let source = builder.pos.findClosestByRange( this.kernel.data.roomData[builder.pos.roomName].sources);
+                  else
+                  {
+                    let source = builder.pos.findClosestByRange(this.kernel.data.roomData[builder.pos.roomName].sources);
 
                     if(source)
                     {
-                      console.log(this.name, 'Builder Actions', 51)
-                      if(this.roomInfo(this.skRoomName).containers.length > 0)
-                      {
-                        if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair.ticksToSpawn < 7)
-                        {
-                          console.log(this.name, 'Builder Actions', 52)
-                          if(builder.pos.getRangeTo(source) < 5)
-                          {
-                            console.log(this.name, 'Builder Actions', 53)
-                            let dir = builder.pos.getDirectionTo(source) as number;
-                            dir = dir + 4;
-                            if(dir > 7)
-                            {
-                              dir = dir % 7;
-                            }
-
-                            builder.move(dir as DirectionConstant);
-                          }
-                          else
-                          {
-                            builder.say('Fleeing');
-                          }
-                          return;
-                        }
-                      }
-
-                      console.log(this.name, 'Builder Actions', 6)
                       if(!builder.pos.inRangeTo(source, 1))
                       {
-                        let stones =  source.pos.findInRange(FIND_TOMBSTONES, 4);
-                        if(stones.length > 0)
-                        {
-
-                          if(builder.pos.isNearTo(stones[0]))
-                          {
-                            builder.withdraw(stones[0], RESOURCE_ENERGY);
-                            builder.memory.filling = false;
-                            return;
-                          }
-                          else
-                          {
-                            builder.travelTo(stones[0]);
-                            return;
-                          }
-                        }
-
-                        console.log(this.name, 'Builder Actions', 61)
-                        let dropped = source.pos.findInRange(FIND_DROPPED_RESOURCES, 4);
-                        if(dropped.length > 0)
-                        {
-                          console.log(this.name, 'Builder Actions', 62)
-                          if(builder.pos.isNearTo(dropped[0]))
-                          {
-                            console.log(this.name, 'Builder Actions', 63)
-                            if(dropped[0].amount >= builder.carryCapacity)
-                            {
-                              console.log(this.name, 'Builder Actions', 64)
-                              builder.memory.filling = false;
-                              builder.pickup(dropped[0])
-                              return;
-                            }
-                            else if(_.sum(builder.carry) > 0)
-                            {
-                              console.log(this.name, 'Builder Actions', 65)
-                              builder.memory.filling = false;
-                            }
-                          }
-                          else
-                          {
-                            builder.travelTo(dropped[0]);
-                            return;
-                          }
-                        }
-
-
-
-                        builder.travelTo(source);
+                        builder.travelTo(source, {range: 1});
                         return;
                       }
 
                       if(builder.pos.inRangeTo(source, 1))
                       {
-                        console.log(this.name, 'Builder Actions', 8)
                         let sites = builder.room.find(FIND_CONSTRUCTION_SITES);
                         if(sites.length > 0)
                         {
                             let site = _.filter(sites, (s) => {
-                                if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
-                                {
-                                    return s;
-                                }
-                                return;
+                              if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
+                              {
+                                return s;
+                              }
+                              return;
                             });
-
-                            if(builder.pos.isNearTo(source))
-                            {
-                                if(_.sum(builder.carry) === builder.carryCapacity)
-                                {
-                                  builder.memory.filling = false;
-                                }
-                                builder.harvest(source);
-
-                            }
-                            else
-                            {
-                                builder.travelTo(source);
-                            }
-
+                          return;
+                        }
                       }
-
-                      if(builder.pos.isNearTo(source))
-                      {
-                        console.log(this.name, 'Builder Actions', 9)
-                        builder.harvest(source);
-                      }
-                      else
-                      {
-                          builder.travelTo(source);
-                      }
-
                     }
-                  }
-                }
-              }
-            }
-
-            if(_.sum(builder.carry) === builder.carryCapacity || !builder.memory.filling)
-            {
-              let source = builder.pos.findClosestByRange( this.kernel.data.roomData[builder.pos.roomName].sources);
-              if(source)
-              {
-                if(this.roomInfo(this.skRoomName).containers.length > 0)
-                {
-                  if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair.ticksToSpawn < 7)
-                  {
-                    if(builder.pos.getRangeTo(source) < 5)
-                    {
-                      let dir = builder.pos.getDirectionTo(source) as number;
-                      dir = dir + 4;
-                      if(dir > 7)
-                      {
-                        dir = dir % 7;
-                      }
-
-                      builder.move(dir as DirectionConstant);
-                    }
-                    else
-                    {
-                      builder.say('Fleeing');
-                    }
-                    return;
-                  }
-                }
-              }
-
-              console.log(this.name, 'build', 1)
-              let sites = _.filter(this.kernel.data.roomData[builder.pos.roomName].constructionSites, (cs) => {
-                  return (cs.my);
-              })
-              console.log(this.name, 'build', 1, sites.length);
-              let target = builder.pos.findClosestByRange(sites);
-
-              if(target)
-              {
-                console.log(this.name, 'build', 2)
-                if(builder.pos.inRangeTo(target, 3))
-                {
-                  let ret = builder.build(target);
-                  if(ret === ERR_NOT_ENOUGH_RESOURCES)
-                  {
-                    console.log(this.name, 'Build challeng', ret);
-                    builder.memory.filling = true;
                   }
                 }
                 else
                 {
-                  builder.travelTo(target, {range: 3})
-                }
-              }
-              else
-              {
-                  let sources = this.kernel.data.roomData[builder.pos.roomName].sources;
-                  let sourceContainersMaps = this.kernel.data.roomData[builder.pos.roomName].sourceContainerMaps;
-
-                  if(sources.length)
+                  if(this.roomInfo(this.skRoomName).sources)
                   {
-                      let missingConatiners = _.filter(sources, (s) => {
-                          return (!sourceContainersMaps[s.id])
-                      });
+                      let source = builder.pos.findClosestByRange( this.kernel.data.roomData[builder.pos.roomName].sources);
 
-                      if(missingConatiners.length)
+                      if(source)
                       {
-                          let closestContainer = builder.pos.findClosestByPath(missingConatiners);
-                          let openSpaces = closestContainer.pos.openAdjacentSpots(true);
-                          if(openSpaces.length)
+                        if(this.roomInfo(this.skRoomName).containers.length > 0 && this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
+                        {
+                          if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair.ticksToSpawn < 7)
                           {
-                              let openSpace = openSpaces[0];
-                              missingConatiners[0].room.createConstructionSite(openSpace.x, openSpace.y, STRUCTURE_CONTAINER);
+                            if(builder.pos.getRangeTo(source) < 5)
+                            {
+                              let dir = builder.pos.getDirectionTo(source) as number;
+                              dir = dir + 4;
+                              if(dir > 7)
+                              {
+                                dir = dir % 7;
+                              }
+
+                              builder.move(dir as DirectionConstant);
+                            }
+                            else
+                            {
+                              builder.say('Fleeing');
+                            }
+                            return;
+                          }
+                        }
+
+                        if(!builder.pos.inRangeTo(source, 1))
+                        {
+                          let stones =  source.pos.findInRange(FIND_TOMBSTONES, 4);
+                          if(stones.length > 0)
+                          {
+
+                            if(builder.pos.isNearTo(stones[0]))
+                            {
+                              builder.withdraw(stones[0], RESOURCE_ENERGY);
+                              builder.memory.filling = false;
+                              return;
+                            }
+                            else
+                            {
+                              builder.travelTo(stones[0]);
+                              return;
+                            }
                           }
 
+                          let dropped = source.pos.findInRange(FIND_DROPPED_RESOURCES, 4);
+                          if(dropped.length > 0)
+                          {
+                            if(builder.pos.isNearTo(dropped[0]))
+                            {
+                              if(dropped[0].amount >= builder.carryCapacity)
+                              {
+                                builder.memory.filling = false;
+                                builder.pickup(dropped[0])
+                                return;
+                              }
+                              else if(_.sum(builder.carry) > 0)
+                              {
+                                builder.memory.filling = false;
+                              }
+                            }
+                            else
+                            {
+                              builder.travelTo(dropped[0]);
+                              return;
+                            }
+                          }
+
+
+
+                          builder.travelTo(source);
+                          return;
+                        }
+
+                        if(builder.pos.inRangeTo(source, 1))
+                        {
+                          let sites = builder.room.find(FIND_CONSTRUCTION_SITES);
+                          if(sites.length > 0)
+                          {
+                              let site = _.filter(sites, (s) => {
+                                  if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
+                                  {
+                                      return s;
+                                  }
+                                  return;
+                              });
+
+                              if(builder.pos.isNearTo(source))
+                              {
+                                  if(_.sum(builder.carry) === builder.carryCapacity)
+                                  {
+                                    builder.memory.filling = false;
+                                  }
+                                  builder.harvest(source);
+
+                              }
+                              else
+                              {
+                                  builder.travelTo(source);
+                              }
+
+                        }
+
+                        if(builder.pos.isNearTo(source))
+                        {
+                          builder.harvest(source);
+                        }
+                        else
+                        {
+                            builder.travelTo(source);
+                        }
+
                       }
-                      /*else
-                      {
-                      console.log(this.name, 'Not missing some contianers');
-                      }*/
+                    }
                   }
+                }
+              }
+
+              if(_.sum(builder.carry) === builder.carryCapacity || !builder.memory.filling)
+              {
+                let source = builder.pos.findClosestByRange( this.kernel.data.roomData[builder.pos.roomName].sources);
+                if(source)
+                {
+                  if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
+                  {
+                    if(this.roomInfo(this.skRoomName).containers.length > 0)
+                    {
+                      if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair.ticksToSpawn < 7)
+                      {
+                        if(builder.pos.getRangeTo(source) < 5)
+                        {
+                          let dir = builder.pos.getDirectionTo(source) as number;
+                          dir = dir + 4;
+                          if(dir > 7)
+                          {
+                            dir = dir % 7;
+                          }
+
+                          builder.move(dir as DirectionConstant);
+                        }
+                        else
+                        {
+                          builder.say('Fleeing');
+                        }
+                        return;
+                      }
+                    }
+                  }
+                }
+
+                let sites = _.filter(this.kernel.data.roomData[builder.pos.roomName].constructionSites, (cs) => {
+                    return (cs.my);
+                })
+                let target = builder.pos.findClosestByRange(sites);
+
+                if(target)
+                {
+                  console.log(this.name, 'build Found Target', builder.memory.filling)
+                  if(builder.pos.inRangeTo(target, 3))
+                  {
+                    console.log(this.name, 'build inrange Target', builder.memory.filling)
+                    let ret = builder.build(target);
+                    if(_.sum(builder.carry) === 0)
+                    {
+                      console.log(this.name, 'build empty', builder.memory.filling)
+                      builder.memory.filling = true;
+                    }
+                    return;
+                  }
+                  else
+                  {
+                    console.log(this.name, 'build Travel to  Target', builder.memory.filling)
+                    builder.travelTo(target, {range: 3})
+                  }
+                }
+                else
+                {
+                    let sources = this.kernel.data.roomData[builder.pos.roomName].sources;
+                    let skSourceContainersMaps = this.kernel.data.roomData[builder.pos.roomName].skSourceContainerMaps;
+
+                    if(sources.length)
+                    {
+                        let missingConatiners = _.filter(sources, (s) => {
+                            return (!skSourceContainersMaps[s.id])
+                        });
+
+                        if(missingConatiners.length)
+                        {
+                            let closestContainer = builder.pos.findClosestByPath(missingConatiners);
+                            let openSpaces = closestContainer.pos.openAdjacentSpots(true);
+                            if(openSpaces.length)
+                            {
+                                let openSpace = openSpaces[0];
+                                missingConatiners[0].room.createConstructionSite(openSpace.x, openSpace.y, STRUCTURE_CONTAINER);
+                            }
+
+                        }
+                        /*else
+                        {
+                        console.log(this.name, 'Not missing some contianers');
+                        }*/
+                    }
+                }
               }
             }
           }
+          else
+          {
+            builder.travelTo(this.skFlag);
+          }
         }
-        else
-        {
-          builder.travelTo(this.skFlag);
-        }
+      }
+      catch (error)
+      {
+        console.log(this.name, error)
       }
     }
 
     HarvesterActions(harvester: Creep, source: Source)
     {
-      /*if(Game.time % 25 === 5)
+      try
       {
-          let hostiles = harvester.room.find(FIND_HOSTILE_CREEPS);
-          let invader = _.find(hostiles, (h) => {
-              return (h.owner.username === 'Invader')
-          })
+        if(Game.time % 25 === 5)
+        {
+            let hostiles = harvester.room.find(FIND_HOSTILE_CREEPS);
+            let invader = _.find(hostiles, (h) => {
+                return (h.owner.username === 'Invader')
+            })
 
-          if(invader)
+            if(invader)
+            {
+                this.invaders = true;
+            }
+            else
+            {
+                this.invaders = false;
+            }
+        }
+
+        if(!this.invaders)
+        {
+          if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
           {
-              this.invaders = true;
+            let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
+            if(lair && lair.ticksToSpawn < 10)
+            {
+              if(harvester.pos.getRangeTo(source) < 5)
+              {
+                let dir = harvester.pos.getDirectionTo(source) as number;
+                dir = dir + 4;
+                if(dir > 7)
+                {
+                  dir = dir % 7;
+                }
+
+                harvester.move(dir as DirectionConstant);
+                return;
+              }
+            }
+          }
+          console.log('harvester actions', 1)
+          let enemies = harvester.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+          if(enemies.length === 0)
+          {
+            console.log('harvester actions', 2)
+            if(source && this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container)
+            {
+              console.log('harvester actions', 3)
+                let container = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
+
+                if(!harvester.pos.inRangeTo(container,0))
+                {
+                    harvester.travelTo(container);
+                }
+
+                console.log('harvester actions', 4)
+                if((container.storeCapacity - _.sum(container.store)) >= (harvester.getActiveBodyparts(WORK) * 2))
+                {
+                    harvester.harvest(source);
+                    return;
+                }
+
+                console.log('harvester actions', 5)
+                if(container.hits < container.hitsMax * .95 && _.sum(harvester.carry) > 0)
+                {
+                    harvester.repair(container);
+                    return;
+                }
+
+                console.log('harvester actions', 6)
+                if(container.store.energy < container.storeCapacity && _.sum(harvester.carry) === harvester.carryCapacity)
+                {
+                    harvester.transfer(container, RESOURCE_ENERGY);
+                }
+            }
           }
           else
           {
-              this.invaders = false;
-          }
-      }
+            // Need to do something when enemies are around
+            let enemy = harvester.pos.findClosestByRange(enemies);
+            if(enemy)
+            {
+                let dir = harvester.pos.getDirectionTo(enemy) as number;
+                dir = dir + 4;
+                if(dir > 7)
+                {
+                  dir = dir % 7;
+                }
 
-      if(!this.invaders)
-      {
-        console.log('harvester actions', 1)
-        let enemies = harvester.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
-        if(enemies.length === 0)
-        {
-          console.log('harvester actions', 1)
-          if(source && this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container)
-          {
-              let container = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
-
-              if(!harvester.pos.inRangeTo(container,0))
-              {
-                  harvester.travelTo(container);
-              }
-
-              if((container.storeCapacity - _.sum(container.store)) >= (harvester.getActiveBodyparts(WORK) * 2))
-              {
-                  harvester.harvest(source);
-              }
-
-              if(container.hits < container.hitsMax * .95 && _.sum(harvester.carry) > 0)
-              {
-                  harvester.repair(container);
-              }
-
-              if(container.store.energy < container.storeCapacity && _.sum(harvester.carry) === harvester.carryCapacity)
-              {
-                  harvester.transfer(container, RESOURCE_ENERGY)
-              }
+                harvester.move(dir as DirectionConstant);
+            }
           }
         }
         else
         {
-          // Need to do something when enemies are around
-          let enemy = harvester.pos.findClosestByRange(enemies);
-          if(enemy)
-          {
-              let dir = harvester.pos.getDirectionTo(enemy) as number;
-              dir = dir + 4;
-              if(dir > 7)
-              {
-                dir = dir % 7;
-              }
-
-              harvester.move(dir as DirectionConstant);
-          }
+          harvester.travelTo(this.skFlag);
         }
       }
-      else
+      catch (error)
       {
-        harvester.travelTo(this.skFlag);
-      }*/
+        console.log(this.name, error)
+      }
     }
 
-    HaulerActions(hauler: Creep, sourceContainer: StructureContainer)
+    HaulerActions(hauler: Creep, source: Source)
     {
+      try
+      {
+        if(this.metaData.roadsDone[source.id] === undefined)
+        {
+          this.metaData.roadsDone[source.id] = false;
+        }
+        console.log('Hauling Actions', 1)
         if(hauler.pos.roomName !== this.skRoomName)
         {
-            hauler.travelTo(new RoomPosition(25, 25, this.skRoomName));
+          let ret = hauler.travelTo(new RoomPosition(25, 25, this.skRoomName));
+          console.log('Hauling Actions', 2, hauler.pos, ret)
+          return;
         }
         else
         {
+          if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
+          {
+            let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
+            if(lair && lair.ticksToSpawn < 10)
+            {
+              if(hauler.pos.getRangeTo(source) < 5)
+              {
+                let dir = hauler.pos.getDirectionTo(source) as number;
+                dir = dir + 4;
+                if(dir > 7)
+                {
+                  dir = dir % 7;
+                }
+
+                hauler.move(dir as DirectionConstant);
+                return;
+              }
+              else
+                hauler.say('Fleeing');
+            }
+          }
+
+          console.log('Hauling Actions', 3)
             if(_.sum(hauler.carry) === 0 && hauler.ticksToLive! > 100)
             {
+              let sourceContainer = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
+              if(sourceContainer)
+              {
+                console.log('Hauling Actions', 4)
                 if(!hauler.pos.inRangeTo(sourceContainer, 1))
                 {
-                    if(hauler.room.name === this.skRoomName)
+                    if(hauler.room.name === this.skRoomName && !this.metaData.roadsDone[source.id])
                     {
                         hauler.room.createConstructionSite(hauler.pos, STRUCTURE_ROAD);
                     }
                     hauler.travelTo(sourceContainer);
                     return;
                 }
-
-                let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY);
+                else
+                {
+                  this.metaData.roadsDone[source.id] = true;
+                }
+                let resource = <Resource[]>source.pos.lookFor(RESOURCE_ENERGY);
                 if(resource.length > 0)
                 {
                     let withdrawAmount = hauler.carryCapacity - _.sum(hauler.carry) - resource[0].amount;
@@ -1054,9 +1138,25 @@ export class skRoomManagementProcess extends Process
                 }
                 else
                 {
+                  if(hauler.pos.getRangeTo(source) < 5)
+                  {
+                    let dir = hauler.pos.getDirectionTo(source) as number;
+                    dir = dir + 4;
+                    if(dir > 7)
+                    {
+                      dir = dir % 7;
+                    }
+
+                    hauler.move(dir as DirectionConstant);
+                    return;
+                  }
+                  else
+                  {
                     this.suspend = 20;
                     return;
+                  }
                 }
+              }
             }
         }
 
@@ -1100,7 +1200,13 @@ export class skRoomManagementProcess extends Process
                 }
             }
         }
+      }
+      catch (error)
+      {
+        console.log(this.name, error)
+      }
     }
+
 }
 ///////////////////////////////////////////////////////////
 /// E14S36
