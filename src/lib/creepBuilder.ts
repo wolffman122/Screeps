@@ -13,6 +13,14 @@ export const CreepBuilder = {
     {
       console.log('Vision problems 1')
     }
+    if(creepType === 'guard')
+    {
+      return [MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,
+              MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,
+              MOVE,   MOVE,   MOVE,   MOVE,   ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,
+              ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,
+              ATTACK, HEAL, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,  HEAL, HEAL, HEAL, MOVE, HEAL];
+    }
     let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
 

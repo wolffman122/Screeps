@@ -72,6 +72,13 @@ interface Flag {
     sources: Source[]
     sourceContainers: StructureContainer[]
     sourceContainerMaps: {[id: string]: StructureContainer}
+    skSourceContainerMaps: {
+      [id: string]:
+        {
+          container?: StructureContainer;
+          lair: StructureKeeperLair;
+        }
+      }
     towers: StructureTower[]
     enemySpawns: StructureSpawn[]
     enemyExtensions: StructureExtension[]
@@ -84,6 +91,7 @@ interface Flag {
     controllerLink: StructureLink | undefined
     controllerContainer: StructureContainer | undefined
     mineralContainer: StructureContainer | undefined
+    lairs: StructureKeeperLair[];
   }
 
   interface IPCMessage{
@@ -191,10 +199,12 @@ interface Flag {
       flagIndex: number;
       dieing: boolean;
       boost: boolean;
+      boosts: string[];
       distance?: number;
       reachedDest?: boolean;
       devilName: string;
       target?: string;
+      filling: boolean;
   }
 
   interface FlagMemory
@@ -621,7 +631,9 @@ interface Flag {
     distroDistance: {
       [container: string]: number
     }
-    harvestCreeps: string[]
+    harvestCreeps: {
+      [source: string]: string[]
+    }
   }
 //// Minerals
 

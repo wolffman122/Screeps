@@ -1,3 +1,4 @@
+
 import { WHITE_LIST } from "processTypes/buildingProcesses/mineralTerminal";
 import { Utils } from "lib/utils";
 import { LABDISTROCAPACITY } from "processTypes/management/lab";
@@ -179,14 +180,19 @@ Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
 
 Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean): any
 {
+  let totalBoosts = boosts.length;
   let boosted = true;
   for(let boost of boosts)
   {
+    console.log(this.name, 'Boost Request 1')
     if(this.memory[boost])
     {
+      totalBoosts--;
+      console.log(this.name, 'Boost Request 2')
       continue;
     }
 
+    console.log(this.name, 'Boost Request 3')
     let room = Game.rooms[this.pos.roomName];
 
     if(room)
@@ -257,5 +263,11 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
         return;
       }
     }
+  }
+
+  if(totalBoosts === 0)
+  {
+    console.log(this.name, 'Time to exit boostfxn');
+    this.memory.boost = true;
   }
 }

@@ -19,11 +19,11 @@ export class RoomDataProcess extends Process{
   metaData: RoomDataMeta
   fields = [
     'constructionSites', 'containers', 'extensions', 'generalContainers', 'labs', 'roads', 'spawns', 'sources', 'sourceContainers', 'towers', 'ramparts', 'walls',
-    'enemySpawns', 'enemyExtensions', 'links', 'sourceLinks'
+    'enemySpawns', 'enemyExtensions', 'links', 'sourceLinks', 'lairs'
   ]
 
   mapFields = [
-    'sourceContainerMaps', 'sourceLinkMaps'
+    'sourceContainerMaps', 'skSourceContainerMaps', 'sourceLinkMaps'
   ]
 
   singleFields = [
@@ -113,20 +113,65 @@ export class RoomDataProcess extends Process{
     {
       console.log(this.name, '1');
     }
+
+    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(room.name) as any;
+    let fMod = parsed[1] % 10;
+    let sMod = parsed[2] % 10;
+    let isSK =  !(fMod === 5 && sMod === 5) &&
+        ((fMod >= 4) && (fMod <= 6)) &&
+        ((sMod >= 4) && (sMod <= 6));
+
+    if(room.name === 'E45S56')
+      console.log(this.name, 2, isSK);
+
     let structures = <Structure[]>room.find(FIND_STRUCTURES)
     let myStructures = <Structure[]>room.find(FIND_MY_STRUCTURES)
+
+    let lairs: StructureKeeperLair[];
+    if(isSK)
+    {
+      lairs = <StructureKeeperLair[]>_.filter(structures, function(s){
+        return (s.structureType === STRUCTURE_KEEPER_LAIR);
+      });
+    }
 
     let containers = <StructureContainer[]>_.filter(structures, function(structure){
       return (structure.structureType === STRUCTURE_CONTAINER)
     })
 
     let sourceContainerMaps = <{[id: string]: StructureContainer}>{}
+    let skSourceContainerMaps = <{[id: string]: {container: StructureContainer, lair: StructureKeeperLair}}>{}
 
     let sourceContainers = _.filter(containers, function(container){
       var sources: Array<Source> = container.pos.findInRange(FIND_SOURCES, 1)
 
-      if(sources[0]){
-        sourceContainerMaps[sources[0].id] = container
+      if(room.name === 'E45S56')
+      {
+        console.log('Room Data sk stuff ???????????????????????????????????????????????')
+      }
+
+      if(isSK)
+      {
+        if(room.name === 'E45S56')
+        {
+          console.log('iN SK')
+        }
+        let lair = container.pos.findClosestByRange(lairs);
+        if(room.name === 'E45S56')
+        {
+          console.log('iN SK', lair)
+        }
+        skSourceContainerMaps[sources[0].id] = { container: container, lair: lair };
+        if(room.name === 'E45S56')
+        {
+          console.log('iN SK', skSourceContainerMaps[sources[0].id].container, skSourceContainerMaps[sources[0].id].lair)
+        }
+      }
+      else
+      {
+        if(sources[0]){
+          sourceContainerMaps[sources[0].id] = container
+        }
       }
 
       return (sources.length != 0)
@@ -306,6 +351,7 @@ export class RoomDataProcess extends Process{
       sources: <Source[]>room.find(FIND_SOURCES),
       sourceContainers: sourceContainers,
       sourceContainerMaps: sourceContainerMaps,
+      skSourceContainerMaps: skSourceContainerMaps,
       towers: <StructureTower[]>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_TOWER)
       }),
@@ -321,7 +367,8 @@ export class RoomDataProcess extends Process{
       storageLink: storageLink,
       controllerLink: controllerLink,
       controllerContainer: controllerContainer,
-      mineralContainer: mineralContainer
+      mineralContainer: mineralContainer,
+      lairs: lairs
     }
 
     this.kernel.data.roomData[this.metaData.roomName] = roomData
@@ -381,6 +428,7 @@ export class RoomDataProcess extends Process{
       sources: [],
       sourceContainers: [],
       sourceContainerMaps: <{[id: string]: StructureContainer}>{},
+      skSourceContainerMaps: <{[id: string]: { container: StructureContainer, lair: StructureKeeperLair}}>{},
       towers: [],
       enemySpawns: [],
       enemyExtensions: [],
@@ -392,7 +440,8 @@ export class RoomDataProcess extends Process{
       storageLink: undefined,
       controllerLink: undefined,
       controllerContainer: undefined,
-      mineralContainer: undefined
+      mineralContainer: undefined,
+      lairs: []
     }
     let run = true
     let i = 0
@@ -440,17 +489,29 @@ export class RoomDataProcess extends Process{
       {
         if(room.memory.cache[field]){
           let keys = Object.keys(room.memory.cache[field])
-          _.forEach(keys, function(key){
-            let structure = Game.getObjectById(room.memory.cache[field][key])
-
-            if(structure){
-              roomData[field][key] = structure
-            }else{
-              run = false
-              proc.build(room)
-              return
-            }
-          })
+          if(keys.length > 0)
+          {
+            if(room.name === 'E45S56')
+                console.log('SK Room keys', keys.length)
+            _.forEach(keys, function(key){
+              let structure = Game.getObjectById(room.memory.cache[field][key])
+              if(room.name === 'E45S56')
+                console.log('SK Room', field, key, room.memory.cache[field][key]);
+              if(structure){
+                roomData[field][key] = structure
+              }else{
+                run = false
+                proc.build(room)
+                return
+              }
+            });
+          }
+          else
+          {
+            run = false;
+            this.build(room);
+            return;
+          }
         }else{
           run = false
           this.build(room)

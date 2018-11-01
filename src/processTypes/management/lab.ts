@@ -57,7 +57,7 @@ export class LabManagementProcess extends Process
 
       if(Game.time % 1000 === 2)
       {
-        let totalLabs = this.reagentLabs.length + this.productLabs.length;
+        let totalLabs = this.metaData.productLabIds.length + this.metaData.reagentLabIds.length;
         if(totalLabs !== this.roomData().labs.length)
         {
           this.reagentLabs = undefined;
