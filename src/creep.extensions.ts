@@ -271,3 +271,11 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
     this.memory.boost = true;
   }
 }
+
+
+Creep.prototype.getBodyParts = function(type: BodyPartConstant): boolean
+{
+  return(_.include(this.body, (b: BodyPartDefinition) => {
+    return b.type === type;
+  }));
+}

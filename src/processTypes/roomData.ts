@@ -23,8 +23,10 @@ export class RoomDataProcess extends Process{
   ]
 
   mapFields = [
-    'sourceContainerMaps', 'skSourceContainerMaps', 'sourceLinkMaps'
+    'sourceContainerMaps', 'sourceLinkMaps'
   ]
+
+  mapObjectFields = [ 'skSourceContainerMaps' ]
 
   singleFields = [
     'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
@@ -377,7 +379,10 @@ export class RoomDataProcess extends Process{
 
     let proc = this
     _.forEach(this.fields, function(field){
-      room.memory.cache[field] = proc.deflate(roomData[field])
+      if(Game.rooms[this.metaData.roomName])
+      {
+        room.memory.cache[field] = proc.deflate(roomData[field])
+      }
     })
 
     _.forEach(this.mapFields, function(field){
@@ -389,6 +394,15 @@ export class RoomDataProcess extends Process{
       })
 
       room.memory.cache[field] = result
+    })
+
+    _.forEach(this.mapObjectFields, function(field){
+      let result = <{[id:string]: {}}>{}
+      let keys = Object.keys(roomData[field])
+
+      _.forEach(keys, function(key){
+        result[key] = roomData[field][key]
+      });
     })
 
     _.forEach(this.singleFields, function(field){
@@ -454,6 +468,11 @@ export class RoomDataProcess extends Process{
       }
     }
 
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          General Fields
+    ///
+    ////////////////////////////////////////////////////////////
     while(run){
       let field = this.fields[i]
 
@@ -479,6 +498,11 @@ export class RoomDataProcess extends Process{
       if(i === this.fields.length){ run = false }
     }
 
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Map Fields
+    ///
+    ////////////////////////////////////////////////////////////
     run = true
     i = 0
     let proc = this
@@ -489,29 +513,16 @@ export class RoomDataProcess extends Process{
       {
         if(room.memory.cache[field]){
           let keys = Object.keys(room.memory.cache[field])
-          if(keys.length > 0)
-          {
-            if(room.name === 'E45S56')
-                console.log('SK Room keys', keys.length)
-            _.forEach(keys, function(key){
-              let structure = Game.getObjectById(room.memory.cache[field][key])
-              if(room.name === 'E45S56')
-                console.log('SK Room', field, key, room.memory.cache[field][key]);
-              if(structure){
-                roomData[field][key] = structure
-              }else{
-                run = false
-                proc.build(room)
-                return
-              }
-            });
-          }
-          else
-          {
-            run = false;
-            this.build(room);
-            return;
-          }
+          _.forEach(keys, function(key){
+            let structure = Game.getObjectById(room.memory.cache[field][key])
+             if(structure){
+              roomData[field][key] = structure
+            }else{
+              run = false
+              proc.build(room)
+              return
+            }
+          });
         }else{
           run = false
           this.build(room)
@@ -523,6 +534,50 @@ export class RoomDataProcess extends Process{
       if(i === this.mapFields.length){ run = false }
     }
 
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Map Object Fields
+    ///
+    ////////////////////////////////////////////////////////////
+    run = true
+    i = 0
+    while(run){
+      let field = this.mapObjectFields[i]
+
+      if(room)
+      {
+        if(room.memory.cache[field]){
+          let keys = Object.keys(room.memory.cache[field])
+          _.forEach(keys, function(key){
+            let mapObject = room.memory.cache[field]
+            let container = Game.getObjectById(mapObject.container)
+            let lair = Game.getObjectById(mapObject.lair)
+            if(container && lair)
+            {
+              roomData[field][key] = {container, lair}
+            }else{
+              run = false
+              proc.build(room)
+              return
+            }
+          });
+        }else{
+          run = false
+          this.build(room)
+          return
+        }
+      }
+
+      i += 1
+      if(i == this.mapObjectFields.length) { run = false }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Single Fields
+    ///
+    ////////////////////////////////////////////////////////////
     run = true
     i = 0
     while(run){

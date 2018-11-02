@@ -66,6 +66,22 @@ export class ObservationProcess extends Process
             roomList += 'Total' + index;
             Game.notify(roomList);
         }
+        else if (Game.time % 10000 === 5000)
+        {
+            let index = 0;
+            let roomList: string = "SK Need Rooms";
+            _.filter(Object.keys(Memory.observeRoom), (or)=>{
+                let room = Memory.observeRoom[or];
+                if(room.mineralType === RESOURCE_KEANIUM && room.sourceCount > 2)
+                {
+                    roomList += "\n" + index++ + or;
+                }
+                return;
+            });
+
+            roomList += 'Total ' + index;
+            Game.notify(roomList);
+        }
 
     }
 
@@ -151,6 +167,20 @@ export class ObservationProcess extends Process
                 {
                     Memory.observeRoom[roomName].controllerOwner = room.controller.owner.username;
                     Memory.observeRoom[roomName].controllerLevel = room.controller.level;
+                }
+            }
+            else if(room.find(FIND_SOURCES).length > 2)
+            {
+                if(!Memory.observeRoom[roomName])
+                {
+                    Memory.observeRoom[roomName] = {};
+
+                    Memory.observeRoom[roomName].sourceCount = room.find(FIND_SOURCES).length;
+                    let mineral = room.find(FIND_MINERALS)[0];
+                    if(mineral)
+                    {
+                        Memory.observeRoom[roomName].mineralType = mineral.mineralType;
+                    }
                 }
             }
         }

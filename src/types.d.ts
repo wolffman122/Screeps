@@ -11,6 +11,7 @@ interface Creep extends RoomObject {
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
     boostRequest(boosts: string[], allowUnboosted: boolean): any
+    getBodyParts(type: BodyPartConstant): boolean;
   }
 
 interface RoomPosition {

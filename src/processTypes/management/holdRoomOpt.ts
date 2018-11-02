@@ -308,11 +308,6 @@ export class HoldRoomOptManagementProcess extends Process
                   if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
                 });
 
-                if(this.metaData.roomName === 'E51S49')
-                {
-                  console.log(this.name, "Distance", this.metaData.distroDistance[sc.id])
-                }
-
                 let numberDistro = 2;
                 if(this.metaData.distroDistance[sc.id] < 70)
                 {
