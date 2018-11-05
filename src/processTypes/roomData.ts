@@ -6,6 +6,8 @@ import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 import {TowerRepairProcess} from './buildingProcesses/towerRepair'
 import { MineralManagementProcess } from 'processTypes/management/mineral';
 import { ObservationProcess } from './buildingProcesses/observation';
+import { skRoomManagementProcess } from './management/skroom';
+import { TowerHealProcess } from './buildingProcesses/towerHeal';
 
 interface RoomDataMeta{
   roomName: string
@@ -17,12 +19,14 @@ export class RoomDataProcess extends Process{
   metaData: RoomDataMeta
   fields = [
     'constructionSites', 'containers', 'extensions', 'generalContainers', 'labs', 'roads', 'spawns', 'sources', 'sourceContainers', 'towers', 'ramparts', 'walls',
-    'enemySpawns', 'enemyExtensions', 'links', 'sourceLinks'
+    'enemySpawns', 'enemyExtensions', 'links', 'sourceLinks', 'lairs'
   ]
 
   mapFields = [
     'sourceContainerMaps', 'sourceLinkMaps'
   ]
+
+  mapObjectFields = [ 'skSourceContainerMaps' ]
 
   singleFields = [
     'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
@@ -50,14 +54,15 @@ export class RoomDataProcess extends Process{
 
     if(room)
     {
-      if((room.name ==='E45S57' || room.name == 'E43S52' || room.name == 'E44S51' || room.name == 'E43S53' ||
+      /*if((room.name ==='E45S57' || room.name == 'E43S52' || room.name == 'E44S51' || room.name == 'E43S53' ||
           room.name == 'E46S51' || room.name == 'E46S52' || room.name == 'E48S57' || room.name == 'E45S48' ||
           room.name == 'E48S49' || room.name == 'E41S49' || room.name == 'E43S55' || room.name == 'E51S49' ||
           room.name == 'E52S46' || room.name == 'E42S48' || room.name == 'E38S46' || room.name == 'E36S43' ||
-          room.name == 'E35S41' || room.name == 'E48S56' || room.name == 'E41S41')
-        && room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
+          room.name == 'E35S41' || room.name == 'E48S56' || room.name == 'E41S41' || room.name == 'E55S48' ||
+          room.name == 'E58S52')*/
+      if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
       {
-        this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {
+        this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 40, {
           roomName: room.name
         })
       }
@@ -72,15 +77,32 @@ export class RoomDataProcess extends Process{
       }
     }
 
-    if(room && room.controller!.my){
-      /*this.kernel.addProcessIfNotExist(RoomLayoutProcess, 'room-layout-' + room.name, 20, {
-        roomName: room.name
-      })*/
+    if(room && room.controller && room.controller!.my){
+      //if(Game.time % 10505 === 0)
+      {
+        let flags = <Flag[]>room.find(FIND_FLAGS);
+        flags = _.filter(flags, (f)=>{
+          return (f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW);
+        });
+
+        if(flags.length)
+        {
+          _.forEach(flags, (f) =>{
+            let skRoomName = f.name.split('-')[0];
+            this.kernel.addProcessIfNotExist(skRoomManagementProcess, 'skrmp-'+skRoomName, 30, {
+              roomName: room.name,
+              skRoomName: skRoomName,
+              flagName: f.name
+            })
+          })
+        }
+      }
     }
 
-    if(room)
+    if(room && room.controller && room.controller.my)
     {
-      this.enemyDetection(room)
+      this.enemyDetection(room);
+      this.healDetection(room);
       this.repairDetection(room);
     }
 
@@ -89,20 +111,69 @@ export class RoomDataProcess extends Process{
 
   /** Returns the room data */
   build(room: Room){
+    if(room.name === 'E45S56')
+    {
+      console.log(this.name, '1');
+    }
+
+    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(room.name) as any;
+    let fMod = parsed[1] % 10;
+    let sMod = parsed[2] % 10;
+    let isSK =  !(fMod === 5 && sMod === 5) &&
+        ((fMod >= 4) && (fMod <= 6)) &&
+        ((sMod >= 4) && (sMod <= 6));
+
+    if(room.name === 'E45S56')
+      console.log(this.name, 2, isSK);
+
     let structures = <Structure[]>room.find(FIND_STRUCTURES)
     let myStructures = <Structure[]>room.find(FIND_MY_STRUCTURES)
+
+    let lairs: StructureKeeperLair[];
+    if(isSK)
+    {
+      lairs = <StructureKeeperLair[]>_.filter(structures, function(s){
+        return (s.structureType === STRUCTURE_KEEPER_LAIR);
+      });
+    }
 
     let containers = <StructureContainer[]>_.filter(structures, function(structure){
       return (structure.structureType === STRUCTURE_CONTAINER)
     })
 
     let sourceContainerMaps = <{[id: string]: StructureContainer}>{}
+    let skSourceContainerMaps = <{[id: string]: {container: StructureContainer, lair: StructureKeeperLair}}>{}
 
     let sourceContainers = _.filter(containers, function(container){
       var sources: Array<Source> = container.pos.findInRange(FIND_SOURCES, 1)
 
-      if(sources[0]){
-        sourceContainerMaps[sources[0].id] = container
+      if(room.name === 'E45S56')
+      {
+        console.log('Room Data sk stuff ???????????????????????????????????????????????')
+      }
+
+      if(isSK)
+      {
+        if(room.name === 'E45S56')
+        {
+          console.log('iN SK')
+        }
+        let lair = container.pos.findClosestByRange(lairs);
+        if(room.name === 'E45S56')
+        {
+          console.log('iN SK', lair)
+        }
+        skSourceContainerMaps[sources[0].id] = { container: container, lair: lair };
+        if(room.name === 'E45S56')
+        {
+          console.log('iN SK', skSourceContainerMaps[sources[0].id].container, skSourceContainerMaps[sources[0].id].lair)
+        }
+      }
+      else
+      {
+        if(sources[0]){
+          sourceContainerMaps[sources[0].id] = container
+        }
       }
 
       return (sources.length != 0)
@@ -111,7 +182,14 @@ export class RoomDataProcess extends Process{
     let controllerContainers = _.filter(containers, function(container){
       if(container.room.controller)
       {
-        return (container.pos.inRangeTo(container.room.controller, 4));
+        if(container.room.name === 'E58S52')
+        {
+          return (container.pos.inRangeTo(container.room.controller, 3));
+        }
+        else
+        {
+          return (container.pos.inRangeTo(container.room.controller, 4));
+        }
       }
       else
       {
@@ -187,36 +265,40 @@ export class RoomDataProcess extends Process{
       }
     }
 
+    let controllerLink: StructureLink|undefined
+    let generalLinks: StructureLink[] = []
+    if(room.controller)
+    {
+      controllerLink = <StructureLink>room.controller!.pos.findInRange(links, 2)[0];
 
-    let controllerLink = <StructureLink>room.controller!.pos.findInRange(links, 2)[0];
 
-    let generalLinks = _.filter(links, function(l){
-      let matchedLinks = [].concat(
-        <never[]>sourceLinks) as StructureLink[];
+      generalLinks = _.filter(links, function(l){
+        let matchedLinks = [].concat(
+          <never[]>sourceLinks) as StructureLink[];
 
-      if(storageLink)
-      {
-        matchedLinks = [].concat(
-          <never[]>matchedLinks,
-          <never[]>[storageLink]
-        ) as StructureLink[];
-      }
+        if(storageLink)
+        {
+          matchedLinks = [].concat(
+            <never[]>matchedLinks,
+            <never[]>[storageLink]
+          ) as StructureLink[];
+        }
 
-      if(controllerLink)
-      {
-        matchedLinks = [].concat(
-          <never[]>matchedLinks,
-          <never[]>[controllerLink]
-        ) as StructureLink[];
-      }
+        if(controllerLink)
+        {
+          matchedLinks = [].concat(
+            <never[]>matchedLinks,
+            <never[]>[controllerLink]
+          ) as StructureLink[];
+        }
 
-      let matched = _.filter(matchedLinks, function(ml){
-        return (ml.id == l.id);
+        let matched = _.filter(matchedLinks, function(ml){
+          return (ml.id == l.id);
+        });
+
+        return (matched.length == 0);
       });
-
-      return (matched.length == 0);
-    });
-
+    }
 
     let roads = <StructureRoad[]>_.filter(structures, function(structure){
       return (structure.structureType === STRUCTURE_ROAD)
@@ -271,6 +353,7 @@ export class RoomDataProcess extends Process{
       sources: <Source[]>room.find(FIND_SOURCES),
       sourceContainers: sourceContainers,
       sourceContainerMaps: sourceContainerMaps,
+      skSourceContainerMaps: skSourceContainerMaps,
       towers: <StructureTower[]>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_TOWER)
       }),
@@ -286,7 +369,8 @@ export class RoomDataProcess extends Process{
       storageLink: storageLink,
       controllerLink: controllerLink,
       controllerContainer: controllerContainer,
-      mineralContainer: mineralContainer
+      mineralContainer: mineralContainer,
+      lairs: lairs
     }
 
     this.kernel.data.roomData[this.metaData.roomName] = roomData
@@ -295,7 +379,8 @@ export class RoomDataProcess extends Process{
 
     let proc = this
     _.forEach(this.fields, function(field){
-      room.memory.cache[field] = proc.deflate(roomData[field])
+      if(Game.rooms[proc.metaData.roomName])
+        room.memory.cache[field] = proc.deflate(roomData[field])
     })
 
     _.forEach(this.mapFields, function(field){
@@ -307,6 +392,15 @@ export class RoomDataProcess extends Process{
       })
 
       room.memory.cache[field] = result
+    })
+
+    _.forEach(this.mapObjectFields, function(field){
+      let result = <{[id:string]: {}}>{}
+      let keys = Object.keys(roomData[field])
+
+      _.forEach(keys, function(key){
+        result[key] = roomData[field][key]
+      });
     })
 
     _.forEach(this.singleFields, function(field){
@@ -346,6 +440,7 @@ export class RoomDataProcess extends Process{
       sources: [],
       sourceContainers: [],
       sourceContainerMaps: <{[id: string]: StructureContainer}>{},
+      skSourceContainerMaps: <{[id: string]: { container: StructureContainer, lair: StructureKeeperLair}}>{},
       towers: [],
       enemySpawns: [],
       enemyExtensions: [],
@@ -357,7 +452,8 @@ export class RoomDataProcess extends Process{
       storageLink: undefined,
       controllerLink: undefined,
       controllerContainer: undefined,
-      mineralContainer: undefined
+      mineralContainer: undefined,
+      lairs: []
     }
     let run = true
     let i = 0
@@ -370,6 +466,11 @@ export class RoomDataProcess extends Process{
       }
     }
 
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          General Fields
+    ///
+    ////////////////////////////////////////////////////////////
     while(run){
       let field = this.fields[i]
 
@@ -395,6 +496,11 @@ export class RoomDataProcess extends Process{
       if(i === this.fields.length){ run = false }
     }
 
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Map Fields
+    ///
+    ////////////////////////////////////////////////////////////
     run = true
     i = 0
     let proc = this
@@ -407,15 +513,14 @@ export class RoomDataProcess extends Process{
           let keys = Object.keys(room.memory.cache[field])
           _.forEach(keys, function(key){
             let structure = Game.getObjectById(room.memory.cache[field][key])
-
-            if(structure){
+             if(structure){
               roomData[field][key] = structure
             }else{
               run = false
               proc.build(room)
               return
             }
-          })
+          });
         }else{
           run = false
           this.build(room)
@@ -427,6 +532,50 @@ export class RoomDataProcess extends Process{
       if(i === this.mapFields.length){ run = false }
     }
 
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Map Object Fields
+    ///
+    ////////////////////////////////////////////////////////////
+    run = true
+    i = 0
+    while(run){
+      let field = this.mapObjectFields[i]
+
+      if(room)
+      {
+        if(room.memory.cache[field]){
+          let keys = Object.keys(room.memory.cache[field])
+          _.forEach(keys, function(key){
+            let mapObject = room.memory.cache[field]
+            let container = Game.getObjectById(mapObject.container)
+            let lair = Game.getObjectById(mapObject.lair)
+            if(container && lair)
+            {
+              roomData[field][key] = {container, lair}
+            }else{
+              run = false
+              proc.build(room)
+              return
+            }
+          });
+        }else{
+          run = false
+          this.build(room)
+          return
+        }
+      }
+
+      i += 1
+      if(i == this.mapObjectFields.length) { run = false }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Single Fields
+    ///
+    ////////////////////////////////////////////////////////////
     run = true
     i = 0
     while(run){
@@ -493,8 +642,23 @@ export class RoomDataProcess extends Process{
     let controller = Game.rooms[this.metaData.roomName].controller;
     if(controller)
     {
-      if(enemies.length > 0 &&  controller.my && !this.kernel.hasProcess('td-' + this.metaData.roomName)){
+      if(enemies.length > 0 && !this.kernel.hasProcess('td-' + this.metaData.roomName)){
         this.kernel.addProcess(TowerDefenseProcess, 'td-' + this.metaData.roomName, 95, {
+          roomName: this.metaData.roomName
+        })
+      }
+    }
+  }
+
+  healDetection(room: Room)
+  {
+    let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
+    let controller = room.controller;
+    if(controller && controller.level >= 3)
+    {
+      if(damagedCreeps.length > 0)
+      {
+        this.kernel.addProcessIfNotExist(TowerHealProcess, 'th-' + this.metaData.roomName, 90, {
           roomName: this.metaData.roomName
         })
       }

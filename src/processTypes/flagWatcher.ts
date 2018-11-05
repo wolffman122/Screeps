@@ -4,7 +4,6 @@ import {ClaimProcess} from '../processTypes/empireActions/claim'
 //import {HoldProcess} from '../processTypes/empireActions/hold'
 import {TransferProcess} from '../processTypes/empireActions/transfer'
 import { HoldRoomManagementProcess } from 'processTypes/management/holdRoom';
-import { RemoteDefenseManagementProcess } from 'processTypes/management/remoteDefense';
 import { AttackControllerManagementProcess } from 'processTypes/management/attackController';
 import { BounceAttackManagementProcess } from 'processTypes/management/bounceAttack';
 import { HealAttackProcess } from 'processTypes/management/healAttack';

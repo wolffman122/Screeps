@@ -5,6 +5,7 @@ import { Traveler } from "./lib/Traveler";
 import "creep.extensions";
 import "roomPosition.extensions";
 import "utils/constants";
+import { initRoomPrototype } from "prototypes/initRoomPrototype";
 
 Creep.prototype.fixMyRoad = function()
 {
@@ -21,7 +22,7 @@ Creep.prototype.fixMyRoad = function()
   }
 
   let found = this.pos.lookFor(LOOK_STRUCTURES);
-  var road = _.filter(found, (f) => {
+  var road = _.filter(found, (f: Structure) => {
               if(f.structureType === STRUCTURE_ROAD)
               {
                 return f;
@@ -30,7 +31,7 @@ Creep.prototype.fixMyRoad = function()
               {
                 return;
               }
-            })[0];
+            })[0] as StructureRoad;
 
   if(!road)
   {
@@ -47,11 +48,24 @@ global.conLog = (message: string) => {
   global.displayOldProcesses = true;
 }
 
+initRoomPrototype();
+
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
+  if(Game.time % 20001 === 0)
+  {
+    for(var name in Memory.creeps)
+    {
+      if(!Game.creeps[name])
+      {
+          delete Memory.creeps[name];
+          console.log('Clearing non-existing creep memory:', name);
+      }
+    }
+  }
   // Load Memory from the global object if it is there and up to date.
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){
     delete global.Memory

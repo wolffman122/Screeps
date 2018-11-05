@@ -1,4 +1,4 @@
-import {Process, InitalizationProcess} from './process'
+import {Process} from './process'
 
 import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
@@ -78,6 +78,8 @@ import { HealerLifetimeProcess } from 'processTypes/lifetimes/healer';
 import { SquadAttackerLifetimeProcess } from 'processTypes/lifetimes/squadAttacker';
 import { ObservationProcess } from 'processTypes/buildingProcesses/observation';
 import { ReportProcess } from 'processTypes/system/reports';
+import { skRoomManagementProcess } from 'processTypes/management/skroom';
+import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
 
 
 
@@ -152,7 +154,9 @@ const processTypes = <{[type: string]: any}>{
   'heallf': HealerLifetimeProcess,
   'salf': SquadAttackerLifetimeProcess,
   'op': ObservationProcess,
-  'report': ReportProcess
+  'report': ReportProcess,
+  'skrmp': skRoomManagementProcess,
+  'lh': TowerHealProcess
 }
 
 interface KernelData{
@@ -227,6 +231,7 @@ export class Kernel{
   /** Load the process table from Memory */
   loadProcessTable(){
     let kernel = this
+
     _.forEach(Memory.wolffOS.processTable, function(entry){
       if(processTypes[entry.type]){
         //kernel.processTable.push(new processTypes[entry.type](entry, kernel))
@@ -289,6 +294,13 @@ export class Kernel{
     if(!this.toRunProcesses || this.toRunProcesses.length === 0)
     {
       let toRunProcesses = _.filter(this.processTable, function(entry) {
+        /*let splits = entry.name.split('-');
+        let split = +splits[splits.length - 1];
+        if(split < Game.time - 500000)
+        {
+          console.log('Finding old process', entry.name);
+         // entry.completed = true;
+        }*/
         return (!entry.ticked && entry.suspend === false);
       });
 
@@ -310,22 +322,9 @@ export class Kernel{
     let faulted = false
 
     try{
-      if(process instanceof InitalizationProcess)
-      {
-          if(process.initialized === false)
-          {
-              let iProcess = process as InitalizationProcess;
-              iProcess.initialization(this);
-          }
-          else
-          {
-              process.run(this);
-          }
-      }
-      else
-      {
-        process.run(this)
-      }
+      process.init(this);
+      process.run(this)
+
     }catch (e){
       console.log('process ' + process.name + ' failed with error ' + e)
       faulted = true

@@ -11,6 +11,7 @@ interface Creep extends RoomObject {
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
     boostRequest(boosts: string[], allowUnboosted: boolean): any
+    getBodyParts(type: BodyPartConstant): boolean;
   }
 
 interface RoomPosition {
@@ -72,6 +73,13 @@ interface Flag {
     sources: Source[]
     sourceContainers: StructureContainer[]
     sourceContainerMaps: {[id: string]: StructureContainer}
+    skSourceContainerMaps: {
+      [id: string]:
+        {
+          container?: StructureContainer;
+          lair: StructureKeeperLair;
+        }
+      }
     towers: StructureTower[]
     enemySpawns: StructureSpawn[]
     enemyExtensions: StructureExtension[]
@@ -84,6 +92,7 @@ interface Flag {
     controllerLink: StructureLink | undefined
     controllerContainer: StructureContainer | undefined
     mineralContainer: StructureContainer | undefined
+    lairs: StructureKeeperLair[];
   }
 
   interface IPCMessage{
@@ -107,6 +116,18 @@ interface Flag {
     ticksToDecay: number
     hits: number
     hitsMax: number
+  }
+
+  interface StructureObserver
+  {
+    observation: Observation;
+  }
+
+  interface Observation
+  {
+    purpose: string,
+    roomName: string,
+    room?: Room,
   }
 
   interface SerializedProcess{
@@ -150,6 +171,13 @@ interface Flag {
   interface Memory
   {
     observeRoom: {[name: string]: ObserveMemory}
+    playerConfig: {
+      terminalNetworkRange: number;
+      enableStats: boolean;
+      muteSpawn: boolean;
+      creditReserveAmount: number;
+      powerMinimum: number;
+    };
   }
 
   interface ObserveMemory
@@ -172,8 +200,12 @@ interface Flag {
       flagIndex: number;
       dieing: boolean;
       boost: boolean;
+      boosts: string[];
       distance?: number;
       reachedDest?: boolean;
+      devilName: string;
+      target?: string;
+      filling: boolean;
   }
 
   interface FlagMemory
@@ -200,6 +232,7 @@ interface Flag {
     };
     assisted: boolean;
     rampartHealth?: number;
+    invadersPresent?: boolean;
   }
 
   interface SpawnMemory {}
@@ -560,6 +593,17 @@ interface Flag {
     allowUnboosted: boolean,
   }
 
+  interface PowerManagementProcessMetaData
+  {
+    roomName: string;
+    clydes: string[];
+    bonnies: string[];
+    carts: string[];
+    currentBank: BankData;
+    scanIndex: number;
+    scanData: {[roomName: string]: number}
+  }
+
   interface RepairerLifetimeProcessMetaData
   {
     creep: string,
@@ -567,6 +611,34 @@ interface Flag {
     boosts?: string[],
     allowUnboosted: boolean,
 
+  }
+
+  interface SKRoomManagementProcessMetaData
+  {
+    invaders: boolean,
+    flagName: string,
+    roomName: string,
+    skRoomName: string,
+    scoutName?: string,
+    vision: boolean,
+    locations: {
+      [types: string]: any[]
+    },
+    devils: string[],
+    builderCreeps: string[],
+    //workerCreeps: string[],
+    distroCreeps: {
+      [container: string]: string[]
+    }
+    distroDistance: {
+      [container: string]: number
+    }
+    harvestCreeps: {
+      [source: string]: string[]
+    }
+    roadsDone: {
+      [container: string]: boolean
+    }
   }
 //// Minerals
 
@@ -611,3 +683,28 @@ interface OpenPositionsOptions
   avoidCreeps: boolean,
   avoidConstructionSites: boolean,
 }
+
+interface BankData
+{
+  pos: RoomPosition;
+  hits: number;
+  power: number;
+  assisting?: boolean;
+  finishing?: boolean;
+  distance: number;
+  timeout: number;
+}
+ interface Room
+ {
+  findStructures<T>(structureType: string): T[];
+  findStructures<T>(structureType: string): Structure[];
+   coords: RoomCoord
+ }
+
+ interface RoomCoord
+ {
+   x: number;
+   y: number;
+   xDir: string;
+   yDir: string;
+ }

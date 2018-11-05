@@ -45,6 +45,12 @@ export class Process
     }
   }
 
+  init(kernel: Kernel)
+  {
+    //console.log('Process ' + this.name + ' did not have init function written.');
+
+  }
+
   /** Run the process */
   run(kernel: Kernel){
     console.log('Process ' + this.name + ' did not have a type.')
@@ -101,6 +107,11 @@ export class Process
     return this.kernel.data.roomData[this.metaData.roomName]
   }
 
+  roomInfo(roomName: string)
+  {
+    return this.kernel.data.roomData[roomName];
+  }
+
   /** Use the Kernels Logger */
   log(message: string){
     this.kernel.log(this, message)
@@ -117,20 +128,4 @@ export class LifetimeProcess extends Process{
       return undefined;
     }
   }
-}
-
-export class InitalizationProcess extends Process
-{
-    constructor(entry: SerializedProcess, kernel: Kernel)
-    {
-        super(entry, kernel)
-    }
-
-    initialization(kernel: Kernel)
-    {
-        console.log('Process ' + this.name + ' did not have a type.')
-        this.completed = true
-        kernel.noop()
-    }
-
 }

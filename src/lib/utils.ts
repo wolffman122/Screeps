@@ -21,6 +21,28 @@ export const Utils = {
     })
   },
 
+  creepPreSpawnCount: function(list: string[]): Number
+  {
+    let creeps = _.transform(list, function(result, entry){
+      result.push(Game.creeps[entry]);
+    }) as Creep[];
+
+    if(creeps.length)
+    {
+      let count = 0;
+      _.forEach(creeps, (c) => {
+        let ticksNeeded = c.body.length * 3 + 60;
+        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+      })
+
+      return count;
+    }
+    else
+    {
+      return 0;
+    }
+  },
+
   workRate: function(creeps: Creep[], perWorkPart: number){
     var workRate = 0
 
@@ -38,7 +60,7 @@ export const Utils = {
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
 
-    if(creepType === "rangeAttack")
+    if(creepType === "vision")
         {
           console.log('Spawn result', body.length);
         }
@@ -200,7 +222,7 @@ export const Utils = {
       }
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
-      
+
       let target = average + 10000;
       if(target > max)
       {
@@ -336,4 +358,4 @@ export const Utils = {
   }*/
 }
 
-export const RAMPARTTARGET = 531250;
+export const RAMPARTTARGET = 100000;

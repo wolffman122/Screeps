@@ -6,7 +6,7 @@ export class MinetalTerminalManagementProcess extends Process
 
   run()
   {
-    if(Game.time % 10 === 0)
+    if(Game.time % 20 === 2)
     {
       this.log('Minteral Terminal');
 
@@ -37,13 +37,18 @@ export class MinetalTerminalManagementProcess extends Process
             let terminal = r.terminal;
 
             // Upgrade
-            if(terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! > PRODUCTION_AMOUNT && r.controller.level >= 8)
+            if(terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! >= PRODUCTION_AMOUNT && r.controller.level >= 8)
             {
               //console.log(this.name, 'extra upgrade', r.name);
               extraUpgrade.push(r.name);
             }
+            /*else
+            {
+              console.log('Extra', r.name, r.terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID])
+            }*/
 
-            if((terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT))
+            if((terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT) &&
+              r.controller.level < 8)
             {
               //console.log(this.name, 'need upgrade', r.name);
               needUpgrade.push(r.name);
@@ -113,6 +118,36 @@ export class MinetalTerminalManagementProcess extends Process
         }
       });
 
+      console.log(this.name, 'extra', extraUpgrade.length);
+      console.log(this.name, 'need', needUpgrade.length);
+
+      // Upgrade
+      for(let i = 0; i < extraUpgrade.length; i++)
+      {
+        let name = extraUpgrade[i];
+
+        let terminal = Game.rooms[name].terminal;
+
+        if(terminal && terminal.cooldown === 0)
+        {
+          if(needUpgrade.length)
+          {
+            let amount = 1000;
+            if(amount > 0 && amount < 100)
+            {
+              amount = 100;
+            }
+
+            if(terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, amount, needUpgrade[0]) === OK)
+            {
+              return
+              //extraCarry = _.pull(extraCarry, name);
+              //extraMove = _.pull(extraMove, name);
+            }
+          }
+        }
+      }
+
       _.forEach(roomsExtraMinerals, (ex) => {
         let receiveRoom = _.find(recievableRooms, (rr) => {
           if(rr.mType == ex.mType && rr.rName != ex.rName)
@@ -140,34 +175,6 @@ export class MinetalTerminalManagementProcess extends Process
         }
       });
 
-      // Upgrade
-      for(let i = 0; i < extraUpgrade.length; i++)
-      {
-        let name = extraUpgrade[i];
-
-        let terminal = Game.rooms[name].terminal;
-
-        if(terminal && terminal.cooldown === 0)
-        {
-          if(needUpgrade.length)
-          {
-            let amount = terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! - PRODUCTION_AMOUNT;
-            if(amount > 0 && amount < 100)
-            {
-              amount = 100;
-            }
-
-            if(terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, amount, needUpgrade[0]) === OK)
-            {
-              return
-              //extraCarry = _.pull(extraCarry, name);
-              //extraMove = _.pull(extraMove, name);
-            }
-          }
-        }
-      }
-
-      console.log(this.name, 'Carry', needCarry.length);
       //Carry
       for(let i = 0; i < extraCarry.length; i++)
       {
@@ -220,11 +227,11 @@ export class MinetalTerminalManagementProcess extends Process
   }
 }
 
-export const ENERGY_KEEP_AMOUNT = 350000;
+export const ENERGY_KEEP_AMOUNT = 370000;
 export const KEEP_AMOUNT = 35000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
-export const PRODUCT_LIST = [RESOURCE_CATALYZED_GHODIUM_ACID,
+export const PRODUCT_LIST = [RESOURCE_LEMERGIUM_OXIDE, RESOURCE_KEANIUM_OXIDE, RESOURCE_CATALYZED_GHODIUM_ACID,
                              RESOURCE_GHODIUM_ACID, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
                              RESOURCE_CATALYZED_KEANIUM_ACID, RESOURCE_CATALYZED_LEMERGIUM_ACID, RESOURCE_GHODIUM,
                              RESOURCE_LEMERGIUM_HYDRIDE];

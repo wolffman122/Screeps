@@ -19,6 +19,15 @@ export class RepairProcess extends Process{
 
     if(!creep.pos.inRangeTo(target, 3))
     {
+      if(Game.time % 5 === 0)
+      {
+        if(target.hits > (target.hitsMax * .98))
+        {
+          this.completed = true
+          this.resumeParent()
+          return
+        }
+      }
       creep.travelTo(target);
     }
     else

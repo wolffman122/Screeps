@@ -9,6 +9,18 @@ interface WeightList{
 export const CreepBuilder = {
   design: function(creepType: string, room: Room, memory: any) : BodyPartConstant[]
   {
+    if(creepType === 'vision')
+    {
+      console.log('Vision problems 1')
+    }
+    if(creepType === 'guard')
+    {
+      return [MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,
+              MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,
+              MOVE,   MOVE,   MOVE,   MOVE,   ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,
+              ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,
+              ATTACK, HEAL, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,  HEAL, HEAL, HEAL, MOVE, HEAL];
+    }
     let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
 
@@ -26,6 +38,10 @@ export const CreepBuilder = {
     let add = true
     let extendIndex = 0
 
+    if(creepType === 'vision')
+    {
+      console.log('Vision problems 2')
+    }
     if(CreepBuilder.typeExtends[creepType].length === 0)
     {
       add = false;
@@ -62,14 +78,30 @@ export const CreepBuilder = {
       }
     }
 
-    let temp = _.chunk(body, body.length - 1)[0];
-    temp = _.sortBy(temp, function(part){
-      return CreepBuilder.partWeight[part]
-    }) as BodyPartConstant[];
+    if(creepType === 'vision')
+    {
+      console.log('Vision problems 3', body)
+    }
 
-    let last = _.chunk(body, body.length -1)[1];
-    temp.push(last[0]);
-    return temp;
+    if(body.length > 1)
+    {
+      let temp = _.chunk(body, body.length - 1)[0];
+      temp = _.sortBy(temp, function(part){
+        return CreepBuilder.partWeight[part]
+      }) as BodyPartConstant[];
+
+      let last = _.chunk(body, body.length -1)[1];
+      temp.push(last[0]);
+      if(creepType === 'vision')
+      {
+        console.log('Vision problems 4')
+      }
+      return temp;
+    }
+    else
+    {
+      return body;
+    }
   },
 
   bodyCost: function(body: BodyPartConstant[]){
@@ -96,6 +128,7 @@ export const CreepBuilder = {
   typeStarts: <PartList>{
     'claimer': [TOUGH, CLAIM, MOVE, MOVE, MOVE, MOVE],
     'harvester': [WORK, WORK, CARRY, MOVE],
+    'skHarvester': [WORK, WORK, WORK, CARRY, MOVE, MOVE],
     'hold': [CLAIM, MOVE],
     'mover': [CARRY, MOVE],
     'bigMover': [CARRY, MOVE],
@@ -106,12 +139,12 @@ export const CreepBuilder = {
     'spinner': [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
     'holdmover': [CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,WORK],
     'mineralHarvester': [MOVE,WORK,WORK,CARRY,CARRY,CARRY],
-    'remoteWorker': [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
+    'remoteWorker': [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     'upgrader1': [WORK, CARRY, CARRY, CARRY, MOVE,MOVE],
     'toughDefender': [ATTACK,TOUGH,TOUGH,MOVE],
     'healer': [HEAL, MOVE],
     'attack': [ATTACK, MOVE],
-    'attackController': [CLAIM, MOVE],
+    'attackController': [CLAIM, MOVE, MOVE],
     'dismantler': [WORK,WORK,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
@@ -120,11 +153,13 @@ export const CreepBuilder = {
       MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
       RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL],
     'vision': [MOVE],
+    'bounce': [TOUGH, MOVE],
   },
 
   typeExtends: <PartList>{
     'claimer': [TOUGH, CLAIM, MOVE, MOVE, MOVE, MOVE],
     'harvester': [MOVE, WORK],
+    'skHarvester': [WORK, WORK, MOVE],
     'bigHarvester': [WORK, WORK, MOVE],
     'hold': [CLAIM, MOVE],
     'mover': [CARRY, CARRY, MOVE],
@@ -137,23 +172,25 @@ export const CreepBuilder = {
     'spinner': [CARRY],
     'holdmover': [CARRY,CARRY,MOVE],
     'mineralHarvester': [WORK,WORK,MOVE],
-    'remoteWorker': [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
+    'remoteWorker': [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     'upgrader1': [WORK, WORK, MOVE],
     'toughDefender': [TOUGH, TOUGH, MOVE],
     'healer': [HEAL, MOVE],
     'attack': [ATTACK, MOVE],
-    'attackController': [CLAIM, MOVE],
+    'attackController': [CLAIM, MOVE, MOVE],
     'dismantler': [WORK, WORK, MOVE],
     'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
     'rangeAttack': [],
     'vision': [],
+    'bounce': [TOUGH, MOVE],
   },
 
   typeLengths: <{[name: string]: number}>{
     'claimer': 12,
     'harvester': 14,
+    'skHarvester': 15,
     'hold': 4,
     'mover': 32,
     'bigMover': 42,
@@ -164,16 +201,17 @@ export const CreepBuilder = {
     'spinner': 14,
     'holdmover': 50,
     'mineralHarvester': 48,
-    'remoteWorker': 50,
+    'remoteWorker': 48,
     'upgrader1': 27,
     'toughDefender': 48,
     'healer': 42,
     'attack': 50,
-    'attackController': 10,
+    'attackController': 15,
     'dismantler': 48,
     'labDistro': 40,
     'special': 2,
     'rangeAttack': 50,
-    'vision': 1
+    'vision': 1,
+    'bounce': 50,
   }
 }

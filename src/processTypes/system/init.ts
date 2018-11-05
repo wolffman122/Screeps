@@ -40,23 +40,26 @@ export class InitProcess extends Process{
         roomName: room.name
       })
 
-      if(!proc.kernel.getProcessByName('em-' + room.name)){
-        proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 50, {
-          roomName: room.name
-        })
-      }
-
-      if(!proc.kernel.hasProcess('sm-' + room.name)){
-        proc.kernel.addProcess(StructureManagementProcess, 'sm-' + room.name, 48, {
-          roomName: room.name
-        })
-      }
-
-      if(!proc.kernel.hasProcess('dm-' + room.name))
+      if(room.controller && room.controller.my)
       {
-        proc.kernel.addProcess(DefenseManagementProcess, 'dm-' + room.name, 70, {
-          roomName: room.name
-        })
+        if(!proc.kernel.getProcessByName('em-' + room.name)){
+          proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 50, {
+            roomName: room.name
+          })
+        }
+
+        if(!proc.kernel.hasProcess('sm-' + room.name)){
+          proc.kernel.addProcess(StructureManagementProcess, 'sm-' + room.name, 48, {
+            roomName: room.name
+          })
+        }
+
+        if(!proc.kernel.hasProcess('dm-' + room.name))
+        {
+          proc.kernel.addProcess(DefenseManagementProcess, 'dm-' + room.name, 70, {
+            roomName: room.name
+          })
+        }
       }
 
       if(Game.rooms[room.name].controller)
@@ -70,13 +73,12 @@ export class InitProcess extends Process{
             });
           }
 
-          //if(room.name == 'E45S48' || room.name === 'E48S49' || room.name === 'E43S52' ||
-          //  room.name == 'E45S57')
-          if(room.name === 'E41S49' || room.name === 'E51S49' || room.name === 'E43S53' || room.name === 'E45S48' ||
-              room.name === 'E45S57' || room.name === 'E48S49' || room.name === 'E52S46' || room.name === 'E38S46' ||
-              room.name === 'E36S43' || room.name === 'E43S52' || room.name === 'E48S57' || room.name === 'E35S41' ||
-              room.name === 'E46S51' || room.name === 'E48S56' || room.name === 'E43S55' || room.name === 'E42S48' ||
-              room.name === 'E41S41')
+
+          if(room.name === 'E35S41' || room.name === 'E36S43' || room.name === 'E38S46' || room.name === 'E41S41' ||
+             room.name === 'E55S48' || room.name === 'E45S48' || room.name === 'E48S49' || room.name === 'E43S53' ||
+             room.name === 'E45S57' || room.name === 'E52S46' || room.name === 'E51S49' || room.name === 'E58S52' ||
+             room.name === 'E41S49' || room.name === 'E42S48' || room.name === 'E43S52' || room.name === 'E43S55' ||
+             room.name === 'E36S38' || room.name === 'E48S57')
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
