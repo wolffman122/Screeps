@@ -1,4 +1,5 @@
 import { Process } from "os/process";
+import { TerminalManagementProcess } from "./terminal";
 
 export class MinetalTerminalManagementProcess extends Process
 {
@@ -12,6 +13,8 @@ export class MinetalTerminalManagementProcess extends Process
 
       let roomsExtraMinerals: {rName: string, mType: ResourceConstant} [] = [];
       let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
+      let extraProduct : { rName: string, mType: ResourceConstant, amount: number|undefined } [] = []
+      let needProduct : { rName: string, mType: ResourceConstant, amount: number|undefined } [] = []
       let needUpgrade: string[] = [];
       let extraUpgrade: string[] = [];
       let needCarry: string[] = [];
@@ -25,17 +28,27 @@ export class MinetalTerminalManagementProcess extends Process
           let mineral = <Mineral>r.find(FIND_MINERALS)[0]
           if(mineral)
           {
-            if(mineral.room!.storage && mineral.room!.terminal!.store[mineral.mineralType]! >= KEEP_AMOUNT)
+            let terminal = r.terminal;
+
+            //////////// Find Rooms with Extra Minerals ///////////////////////
+            if(mineral.room!.storage && terminal.store[mineral.mineralType]! >= KEEP_AMOUNT)
             {
-              //console.log('Room ' + mineral.room.name + ' storage ' + mineral.room.storage.store[mineral.mineralType])
               roomsExtraMinerals.push( {
                 rName: mineral.room!.name,
                 mType: mineral.mineralType
               })
             }
 
-            let terminal = r.terminal;
+            //////////// Need Way to search production amounts that have extra. ///////////////////////
+            _.forEach(PRODUCT_LIST, (p) => {
+              if(terminal.store[p] > PRODUCTION_AMOUNT)
+                extraProduct.push({rName: r.name, mType: p, amount: terminal.store[p] - PRODUCTION_AMOUNT});
 
+              if(terminal.store[p] < PRODUCTION_AMOUNT)
+                needProduct.push({rName: r.name, mType: p, amount: PRODUCTION_AMOUNT - terminal.store[p]});
+
+            });
+            /*
             // Upgrade
             if(terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! >= PRODUCTION_AMOUNT && r.controller.level >= 8)
             {
@@ -45,7 +58,7 @@ export class MinetalTerminalManagementProcess extends Process
             /*else
             {
               console.log('Extra', r.name, r.terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID])
-            }*/
+            }
 
             if((terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID] === undefined || terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]! < PRODUCTION_AMOUNT) &&
               r.controller.level < 8)
@@ -78,7 +91,7 @@ export class MinetalTerminalManagementProcess extends Process
             {
               //console.log(this.name, 'need move', r.name);
               needMove.push(r.name);
-            }
+            }*/
 
             let roomName = "";
             let type = "";
@@ -120,7 +133,7 @@ export class MinetalTerminalManagementProcess extends Process
 
       console.log(this.name, 'extra', extraUpgrade.length);
       console.log(this.name, 'need', needUpgrade.length);
-
+/*
       // Upgrade
       for(let i = 0; i < extraUpgrade.length; i++)
       {
@@ -146,8 +159,37 @@ export class MinetalTerminalManagementProcess extends Process
             }
           }
         }
-      }
+      }*/
 
+      //////////// Sending Product between the rooms. ///////////////////////
+      _.forEach(extraProduct, (ep) =>{
+        let receiveRoom = _.find(needProduct, (rr) => {
+          if(rr.mType === ep.mType && rr.rName != ep.rName)
+          {
+            return rr.rName;
+          }
+
+          return false;
+        });
+
+        if(receiveRoom)
+        {
+          let terminal = Game.rooms[ep.rName].terminal;
+          if(terminal && terminal.cooldown === 0 && receiveRoom.amount)
+          {
+            if(terminal.send(ep.mType, receiveRoom.amount, receiveRoom.rName) === OK)
+            {
+              needProduct = _.filter(needProduct, (np) => {
+                return np !== receiveRoom;
+              });
+
+              return;
+            }
+          }
+        }
+      })
+
+      ///////////// Sending Minerals between the rooms. ///////////////////////
       _.forEach(roomsExtraMinerals, (ex) => {
         let receiveRoom = _.find(recievableRooms, (rr) => {
           if(rr.mType == ex.mType && rr.rName != ex.rName)
@@ -175,6 +217,7 @@ export class MinetalTerminalManagementProcess extends Process
         }
       });
 
+      /*
       //Carry
       for(let i = 0; i < extraCarry.length; i++)
       {
@@ -222,7 +265,7 @@ export class MinetalTerminalManagementProcess extends Process
             return;
           }
         }
-      }
+      }*/
     }
   }
 }
