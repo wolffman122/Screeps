@@ -62,7 +62,7 @@ export class RoomDataProcess extends Process{
           room.name == 'E58S52')*/
       if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
       {
-        this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {
+        this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 40, {
           roomName: room.name
         })
       }
@@ -379,10 +379,8 @@ export class RoomDataProcess extends Process{
 
     let proc = this
     _.forEach(this.fields, function(field){
-      if(Game.rooms[this.metaData.roomName])
-      {
+      if(Game.rooms[proc.metaData.roomName])
         room.memory.cache[field] = proc.deflate(roomData[field])
-      }
     })
 
     _.forEach(this.mapFields, function(field){

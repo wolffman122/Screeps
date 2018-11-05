@@ -615,6 +615,7 @@ interface Flag {
 
   interface SKRoomManagementProcessMetaData
   {
+    invaders: boolean,
     flagName: string,
     roomName: string,
     skRoomName: string,

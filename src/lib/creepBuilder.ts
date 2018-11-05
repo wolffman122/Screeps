@@ -144,7 +144,7 @@ export const CreepBuilder = {
     'toughDefender': [ATTACK,TOUGH,TOUGH,MOVE],
     'healer': [HEAL, MOVE],
     'attack': [ATTACK, MOVE],
-    'attackController': [CLAIM, MOVE],
+    'attackController': [CLAIM, MOVE, MOVE],
     'dismantler': [WORK,WORK,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
@@ -153,7 +153,7 @@ export const CreepBuilder = {
       MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
       RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL],
     'vision': [MOVE],
-    'bounce': [TOUGH, TOUGH, MOVE],
+    'bounce': [TOUGH, MOVE],
   },
 
   typeExtends: <PartList>{
@@ -177,14 +177,14 @@ export const CreepBuilder = {
     'toughDefender': [TOUGH, TOUGH, MOVE],
     'healer': [HEAL, MOVE],
     'attack': [ATTACK, MOVE],
-    'attackController': [CLAIM, MOVE],
+    'attackController': [CLAIM, MOVE, MOVE],
     'dismantler': [WORK, WORK, MOVE],
     'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
     'rangeAttack': [],
     'vision': [],
-    'bounce': [TOUGH, TOUGH, MOVE],
+    'bounce': [TOUGH, MOVE],
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -206,12 +206,12 @@ export const CreepBuilder = {
     'toughDefender': 48,
     'healer': 42,
     'attack': 50,
-    'attackController': 10,
+    'attackController': 15,
     'dismantler': 48,
     'labDistro': 40,
     'special': 2,
     'rangeAttack': 50,
     'vision': 1,
-    'bounce': 39,
+    'bounce': 50,
   }
 }
