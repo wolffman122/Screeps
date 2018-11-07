@@ -617,7 +617,16 @@ export class skRoomManagementProcess extends Process
                       }
                       else
                       {
-                        devil.travelTo(target);
+                        devil.travelTo(target, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
+                          let room = Game.rooms[roomName];
+                          if(room)
+                          {
+                              room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
+                          }
+
+                          return matrix;
+                      }
+                      });
                       }
                       return;
                     }
@@ -633,7 +642,16 @@ export class skRoomManagementProcess extends Process
                   }
 
                   devil.heal(devil);
-                  devil.travelTo(SkScreep);
+                  devil.travelTo(SkScreep, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
+                    let room = Game.rooms[roomName];
+                    if(room)
+                    {
+                        room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
+                    }
+
+                    return matrix;
+                    }
+                  });
                 }
                 else
                 {
@@ -648,7 +666,16 @@ export class skRoomManagementProcess extends Process
                     {
                       devil.heal(devil);
                     }
-                    devil.travelTo(SkScreep);
+                    devil.travelTo(SkScreep, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
+                      let room = Game.rooms[roomName];
+                      if(room)
+                      {
+                          room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
+                      }
+
+                      return matrix;
+                  }
+                  });
                   }
                 }
               }
@@ -1019,6 +1046,16 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
+        if(!harvester.memory.fleePath)
+        {
+
+          let ret = PathFinder.search(harvester.pos, {pos: source.pos, range: 6}, {flee: true});
+          if(ret.path.length)
+          {
+            harvester.memory.fleePath = ret.path
+          }
+        }
+
         console.log(this.name, 'harvester invaders', this.invaders)
         if(!this.invaders)
         {
@@ -1029,7 +1066,7 @@ export class skRoomManagementProcess extends Process
             let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
             if(lair.ticksToSpawn < 10 || sk.length > 0)
             {
-              if(harvester.pos.getRangeTo(source) < 10)
+              /*if(harvester.pos.getRangeTo(source) < 10)
               {
                 let dir = harvester.pos.getDirectionTo(lair) as number;
                 dir = dir + 4;
@@ -1040,7 +1077,10 @@ export class skRoomManagementProcess extends Process
 
                 harvester.move(dir as DirectionConstant);
                 return;
-              }
+              }*/
+              let ret = PathFinder.search(harvester.pos, {pos: source.pos, range: 6}, {flee: true});
+              harvester.moveByPath(ret.path);
+              return;
             }
           }
 
@@ -1137,21 +1177,21 @@ export class skRoomManagementProcess extends Process
               let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
               if(lair.ticksToSpawn < 10 || sk.length > 0)
               {
-                if(hauler.pos.getRangeTo(source) < 5)
+               /*if(harvester.pos.getRangeTo(source) < 10)
+              {
+                let dir = harvester.pos.getDirectionTo(lair) as number;
+                dir = dir + 4;
+                if(dir > 7)
                 {
-                  let dir = hauler.pos.getDirectionTo(source) as number;
-                  dir = dir + 4;
-                  if(dir > 7)
-                  {
-                    dir = dir % 7;
-                  }
-
-                  hauler.move(dir as DirectionConstant);
-                  return;
+                  dir = dir % 7;
                 }
-                else
-                  hauler.say('Fleeing');
-                  return;
+
+                harvester.move(dir as DirectionConstant);
+                return;
+              }*/
+              let ret = PathFinder.search(hauler.pos, {pos: source.pos, range: 6}, {flee: true});
+              hauler.moveByPath(ret.path);
+              return;
               }
             }
 

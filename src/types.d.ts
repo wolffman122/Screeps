@@ -206,6 +206,7 @@ interface Flag {
       devilName: string;
       target?: string;
       filling: boolean;
+      fleePath?: RoomPosition[];
   }
 
   interface FlagMemory
