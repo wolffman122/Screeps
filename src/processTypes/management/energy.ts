@@ -367,7 +367,7 @@ export class EnergyManagementProcess extends Process{
               upgradeDistroAmount = 2;
               break;
             default:
-              upgradeDistroAmount = 2;
+              upgradeDistroAmount = 1;
               break;
           }
 
