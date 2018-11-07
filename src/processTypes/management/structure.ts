@@ -109,6 +109,7 @@ export class StructureManagementProcess extends Process{
               {
                 spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {})
               }
+              
               if(spawned)
               {
                 this.metaData.repairCreeps.push(creepName)

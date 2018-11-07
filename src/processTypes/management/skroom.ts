@@ -8,6 +8,7 @@ export class skRoomManagementProcess extends Process
     type = 'skrmp';
     metaData: SKRoomManagementProcessMetaData;
 
+    mineralMining: boolean;
     skFlag: Flag;
     scout?: Creep;
     skRoomName: string;
@@ -104,6 +105,8 @@ export class skRoomManagementProcess extends Process
           Memory.flags[this.metaData.flagName] = undefined;
           return;
       }
+
+      this.mineralMining = this.skFlag.name.split('-')[2] === 'Mining';
 
       this.ensureMetaData();
 
@@ -565,7 +568,7 @@ export class skRoomManagementProcess extends Process
             if(!devil.memory.target)    // Find a target name
             {
               let sourceKeepers = _.filter(this.lairs, (l) => {
-                return (l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
+                return (l.pos.findInRange(FIND_SOURCES, 6).length && l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
               });
 
               if(sourceKeepers.length)  // Found screep around source.
@@ -1195,7 +1198,7 @@ export class skRoomManagementProcess extends Process
               }
             }
 
-            if(_.sum(hauler.carry) === 0 && hauler.ticksToLive! > 100)
+            if(_.sum(hauler.carry) === 0 && hauler.ticksToLive! > this.metaData.distroDistance[source.id])
             {
               let tombstone = hauler.pos.findInRange(FIND_TOMBSTONES, 5)[0];
               if(tombstone && tombstone.store.energy > 0)
@@ -1245,23 +1248,8 @@ export class skRoomManagementProcess extends Process
                 }
                 else
                 {
-                  if(hauler.pos.getRangeTo(source) < 5)
-                  {
-                    let dir = hauler.pos.getDirectionTo(source) as number;
-                    dir = dir + 4;
-                    if(dir > 7)
-                    {
-                      dir = dir % 7;
-                    }
-
-                    hauler.move(dir as DirectionConstant);
+                    hauler.say('waiting');
                     return;
-                  }
-                  else
-                  {
-                    this.suspend = 20;
-                    return;
-                  }
                 }
               }
             }
@@ -1269,43 +1257,43 @@ export class skRoomManagementProcess extends Process
 
           if(Game.rooms[this.metaData.roomName].storage)
           {
-              let target = Game.rooms[this.metaData.roomName].storage;
+            let target = Game.rooms[this.metaData.roomName].storage;
 
-              if(target)
+            if(target)
+            {
+              if(!hauler.pos.inRangeTo(target,1))
               {
-                  if(!hauler.pos.inRangeTo(target,1))
-                  {
-                      if(!hauler.fixMyRoad())
-                      {
-                          hauler.travelTo(target);
-                      }
-                  }
-
-                  if(hauler.transfer(target, RESOURCE_ENERGY) === ERR_FULL)
-                  {
-                      return;
-                  }
+                if(!hauler.fixMyRoad())
+                {
+                  hauler.travelTo(target);
+                }
               }
+
+              if(hauler.transfer(target, RESOURCE_ENERGY) === ERR_FULL)
+              {
+                return;
+              }
+            }
           }
           else if (this.kernel.data.roomData[this.metaData.roomName].generalContainers.length)
           {
-              let target = this.kernel.data.roomData[this.metaData.roomName].generalContainers[0];
+            let target = this.kernel.data.roomData[this.metaData.roomName].generalContainers[0];
 
-              if(target)
+            if(target)
+            {
+              if(!hauler.pos.inRangeTo(target, 1))
               {
-                  if(!hauler.pos.inRangeTo(target, 1))
-                  {
-                      if(!hauler.fixMyRoad())
-                      {
-                          hauler.travelTo(target);
-                      }
-                  }
-
-                  if(hauler.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-                  {
-                      return;
-                  }
+                if(!hauler.fixMyRoad())
+                {
+                  hauler.travelTo(target);
+                }
               }
+
+              if(hauler.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
+              {
+                return;
+              }
+            }
           }
         }
         else

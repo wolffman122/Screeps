@@ -127,8 +127,13 @@ export const Stats = {
             Memory.stats['rooms.' + roomName + '.storage.energy'] = room.storage.store.energy
             Memory.stats['rooms.' + roomName + '.storage.minerals'] = _.sum(room.storage.store) - room.storage.store.energy;
           }
+          else
+          {
+            Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined;
+            Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined;
+          }
 
-          if(room.terminal)
+          if(room.terminal && room.terminal.my)
           {
             Memory.stats['rooms.' + roomName + '.terminal.energy'] = room.terminal.store.energy
             Memory.stats['rooms.' + roomName + '.terminal.minerals'] = _.sum(room.terminal.store) - room.terminal.store.energy;
@@ -164,6 +169,12 @@ export const Stats = {
                 basicMineralAmounts[type] += terminal.store[type]!;
               }
             }
+          }
+          else
+          {
+            Memory.stats['rooms.' + roomName + '.terminal.energy'] = undefined
+            Memory.stats['rooms.' + roomName + '.terminal.minerals'] = undefined
+
           }
 
           const mineral = <Mineral[]>room.find(FIND_MINERALS);

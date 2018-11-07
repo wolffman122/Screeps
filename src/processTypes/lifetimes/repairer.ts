@@ -17,19 +17,11 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
-    if(creep.name === 'sm-E41S41-11865461')
-    {
-      console.log(this.name, 'Problem 1')
-    }
     if(this.metaData.boosts)
     {
       let boosted = true;
       for(let boost of this.metaData.boosts)
       {
-        if(creep.name === 'sm-E41S41-11865461')
-    {
-      console.log(this.name, 'Problem 2')
-    }
         if(creep.memory[boost])
         {
           continue;
@@ -46,15 +38,6 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
             continue;
           }
 
-          if(creep.name === 'sm-E41S41-11865461')
-    {
-      console.log(this.name, 'Problem 3')
-    }
-          if(room.name === 'E41S41')
-          {
-            console.log(this.metaData, '1');
-          }
-
           if(!requests[boost])
           {
             requests[boost] = { flagName: undefined, requesterIds: [] };
@@ -69,11 +52,6 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
             continue;
           }
 
-          if(creep.name === 'sm-E41S41-11865461')
-    {
-      console.log(this.name, 'Problem 4')
-    }
-
           boosted = false;
           if(!_.include(requests[boost].requesterIds, creep.id))
           {
@@ -83,10 +61,6 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           if(creep.spawning)
             continue;
 
-            if(creep.name === 'sm-E41S41-11865461')
-    {
-      console.log(this.name, 'Problem 5')
-    }
           let flag = Game.flags[requests[boost].flagName!];
           if(!flag)
           {
@@ -303,7 +277,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           let storage = creep.room.storage;
           if(storage && storage.store.energy > 200000)
           {
-            if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= 5640000)
+            if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= 5700000)
             {
               creep.room.memory.rampartHealth += 100;
             }
@@ -312,10 +286,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           {
             if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
             {
-              if(creep.name === 'sm-E41S49-11295193')
-                  console.log(this.name, 'Second suspend');
-              else
-                this.suspend = 10;
+              this.suspend = 10;
             }
             return;
           }

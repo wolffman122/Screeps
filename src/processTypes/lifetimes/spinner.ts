@@ -1,7 +1,7 @@
 import { LifetimeProcess } from "os/process";
 import { CollectProcess } from "processTypes/creepActions/collect";
 import { DeliverProcess } from "processTypes/creepActions/deliver";
-import { KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal";
+import { KEEP_AMOUNT, ENERGY_KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal";
 
 export class  SpinnerLifetimeProcess extends LifetimeProcess
 {
@@ -30,8 +30,13 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
 
     if(_.sum(creep.carry) === 0)
     {
+      if(creep.room.terminal && creep.room.terminal.store.energy < 75000 &&
+         creep.room.storage && creep.room.storage.store.energy > ENERGY_KEEP_AMOUNT)
+      {
+        creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+      }
       // LInks
-      if(this.kernel.data.roomData[creep.room.name].sourceLinks.length > 0)
+      else if(this.kernel.data.roomData[creep.room.name].sourceLinks.length > 0)
       {
         let link = <StructureLink>Game.getObjectById(this.metaData.storageLink);
         if(link && link.energy > 0)
