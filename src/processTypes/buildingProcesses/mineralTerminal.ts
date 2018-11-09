@@ -162,6 +162,29 @@ export class MinetalTerminalManagementProcess extends Process
       }*/
 
       //////////// Sending Product between the rooms. ///////////////////////
+
+      let xgh20 = _.find(needProduct, (np) => {
+        return np.mType === RESOURCE_CATALYZED_GHODIUM_ACID;
+      });
+
+      if(xgh20)
+      {
+        let extraXgh20 = _.find(extraProduct, (ep) => {
+          return ep.mType === RESOURCE_CATALYZED_GHODIUM_ACID && ep.amount >= 100;
+        });
+
+        if(extraXgh20)
+        {
+          let terminal = Game.rooms[extraXgh20.rName].terminal;
+          if(terminal)
+          {
+            terminal.send(extraXgh20.mType, extraXgh20.amount, xgh20.rName);
+            console.log(this.name, 'Sending XHG2O');
+            return;
+          }
+        }
+      }
+      
       _.forEach(extraProduct, (ep) =>{
         let receiveRoom = _.find(needProduct, (rr) => {
           if(rr.mType === ep.mType && rr.rName != ep.rName)
@@ -270,7 +293,7 @@ export class MinetalTerminalManagementProcess extends Process
   }
 }
 
-export const ENERGY_KEEP_AMOUNT = 410000;
+export const ENERGY_KEEP_AMOUNT = 440000;
 export const KEEP_AMOUNT = 35000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
