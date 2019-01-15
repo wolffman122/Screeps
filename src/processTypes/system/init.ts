@@ -35,6 +35,15 @@ export class InitProcess extends Process{
       }
     }
 
+   /* _.forEach(Object.keys(Memory.rooms), function(r){
+      let room = Memory.rooms[r];
+      if(!Game.rooms[r] && room.cache.lastVision + 1500 < Game.time)
+      {
+        console.log('Old room', r);
+        Memory.rooms[r] = undefined;
+      }
+    })
+*/
     _.forEach(Game.rooms, function(room){
       proc.kernel.addProcess(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
@@ -78,7 +87,8 @@ export class InitProcess extends Process{
              room.name === 'E55S48' || room.name === 'E45S48' || room.name === 'E48S49' || room.name === 'E43S53' ||
              room.name === 'E45S57' || room.name === 'E52S46' || room.name === 'E51S49' || room.name === 'E58S52' ||
              room.name === 'E41S49' || room.name === 'E42S48' || room.name === 'E43S52' || room.name === 'E43S55' ||
-             room.name === 'E36S38' || room.name === 'E48S57')
+             room.name === 'E36S38' || room.name === 'E48S57' || room.name === 'E41S38' || room.name === 'E39S35' ||
+             room.name === 'E39S35' || room.name === 'E38S59' || room.name === 'E55S47')
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {

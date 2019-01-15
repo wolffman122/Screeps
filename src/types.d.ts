@@ -207,6 +207,7 @@ interface Flag {
       target?: string;
       filling: boolean;
       fleePath?: RoomPosition[];
+      full: boolean;
   }
 
   interface FlagMemory
@@ -217,6 +218,7 @@ interface Flag {
       droppedResource: boolean;
       rollCall: number;
       follower: string;
+      skMineral?: string;
   }
 
   interface RoomMemory
@@ -616,6 +618,7 @@ interface Flag {
 
   interface SKRoomManagementProcessMetaData
   {
+    mineralMining: boolean,
     invaders: boolean,
     flagName: string,
     roomName: string,
@@ -640,6 +643,9 @@ interface Flag {
     roadsDone: {
       [container: string]: boolean
     }
+    miningDistance?: number
+    miner: string[]
+    minerHauler: string[]
   }
 //// Minerals
 

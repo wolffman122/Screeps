@@ -47,13 +47,11 @@ export class HealAttackProcess extends Process
 
     if(creep.pos.roomName != flag.pos.roomName)
     {
-      console.log(this.name, 5)
-      this.kernel.addProcessIfNotExist(MoveProcess, 'move-' + creep.name, this.priority-1, {
-        creep: creep.name,
-        pos: flag.pos,
-        range: 1
-      });
-
+      if(!creep.pos.isNearTo(flag.pos))
+      {
+        creep.heal(creep);
+        creep.travelTo(flag);
+      }
       return;
     }
 

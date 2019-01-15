@@ -86,7 +86,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
       if(sourceContainer)
       {
-        if(!creep.pos.inRangeTo(sourceContainer, 1))
+        if(!creep.pos.inRangeTo(sourceContainer, 1) && _.sum(sourceContainer.store) > creep.carryCapacity * .8)
         {
           if(creep.room.name === flag.room!.name)
           {
@@ -125,6 +125,20 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         {
           creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           return;
+        }
+        else if(flag.room.storage && _.sum(flag.room.storage.store) > 0)
+        {
+          let storage = flag.room.storage;
+          if(creep.pos.isNearTo(storage))
+          {
+            creep.withdrawEverything(storage);
+            return;
+          }
+          else
+          {
+            creep.travelTo(storage);
+            return;
+          }
         }
         else
         {

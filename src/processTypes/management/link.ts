@@ -7,6 +7,12 @@ export class LinkManagementProcess extends Process
 
   run()
   {
+    if(!this.roomData())
+    {
+      this.completed = true;
+      return;
+    }
+    
     if(this.roomData().controllerLink)
     {
       let controllerLink = this.roomData().controllerLink;

@@ -52,8 +52,6 @@ export const Stats = {
       return types;
     })
 
-    console.log("Process Counts", processCounts)
-
     _.forEach(kernel.execOrder, function(execed: {type: string, cpu: number}){
       Memory.stats['processes.types.' + execed.type] += execed.cpu
     })
@@ -78,6 +76,16 @@ export const Stats = {
 
     Memory.stats['rooms.E44S51'] = undefined
 
+    let storageEnergy = 0;
+    let terminalEnergy = 0;
+
+    let mineralCountdown: {
+      [mineralType: string]: number
+    } = {}
+
+    let lowMineralRooms: {
+      [mineralType: string]: string[]
+    } = {}
 
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
@@ -147,6 +155,7 @@ export const Stats = {
           Memory.stats['rooms.' + roomName + '.link_energy'] = link_energy;
 
           if(room.storage){
+            storageEnergy += room.storage.store.energy;
             Memory.stats['rooms.' + roomName + '.storage.energy'] = room.storage.store.energy
             Memory.stats['rooms.' + roomName + '.storage.minerals'] = _.sum(room.storage.store) - room.storage.store.energy;
           }
@@ -158,6 +167,7 @@ export const Stats = {
 
           if(room.terminal && room.terminal.my)
           {
+            terminalEnergy += room.terminal.store.energy;
             Memory.stats['rooms.' + roomName + '.terminal.energy'] = room.terminal.store.energy
             Memory.stats['rooms.' + roomName + '.terminal.minerals'] = _.sum(room.terminal.store) - room.terminal.store.energy;
 
@@ -180,16 +190,26 @@ export const Stats = {
             // Basic Mineral amounts
             for(let mineral in MINERALS_RAW)
             {
+
               let type = MINERALS_RAW[mineral];
+              if(!lowMineralRooms[type])
+              {
+                lowMineralRooms[type] = [];
+              }
 
               if(!basicMineralAmounts[type])
               {
                 basicMineralAmounts[type] = 0;
+                lowMineralRooms[type].push(room.name);
               }
 
               if(terminal.store.hasOwnProperty(type))
               {
                 basicMineralAmounts[type] += terminal.store[type]!;
+                if(terminal.store[type]! < 1000)
+                {
+                  lowMineralRooms[type].push(room.name);
+                }
               }
             }
           }
@@ -202,7 +222,9 @@ export const Stats = {
 
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
           Memory.stats['rooms.' + roomName + '.mineral_available'] = mineral[0].mineralAmount
-          Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = mineral[0].ticksToRegeneration
+          Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = mineral[0].ticksToRegeneration;
+          
+
 
           //const structure_types = new Set(room.find(FIND_STRUCTURES).map((s: Structure) => s.structureType));
 
@@ -284,6 +306,27 @@ export const Stats = {
 
     Memory.stats['lab.activeLabCount'] = kernel.data.activeLabCount;
 
+    console.log("<BOLD>Stats</BOLD>", Game.time);
+    console.log("<TABLE border=1><TR><TD>Storage Total Energy</TD><TD>Terminal</TD></TR><TR><TD>", storageEnergy, "</TD><TD>", terminalEnergy, "</TD></TR></TABLE>");
+    console.log("<Bold>Minerals</BOLD");
 
+    let table = "<TABLE border=1>";
+    _.forEach(Object.keys(lowMineralRooms), (key)=>{
+      table += "<TR><TD>" + key + "</TD>";
+      _.forEach(lowMineralRooms[key], (lRoom)=>{
+        table += "<TD>" + lRoom + "</TD>";
+      })
+      table += "</TR>"
+    })
+
+
+    table += "</TABLE>";
+
+    console.log(table);
+  },
+
+  DisplayStats()
+  {
+    console.log("<BOLD>Stats</BOLD>", Game.time);
   }
 }

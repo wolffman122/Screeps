@@ -21,6 +21,23 @@ export const CreepBuilder = {
               ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,
               ATTACK, HEAL, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,  HEAL, HEAL, HEAL, MOVE, HEAL];
     }
+    else if(creepType === 'skMiner')
+    {
+      return [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,
+              CARRY, CARRY, CARRY, WORK,  WORK,  WORK,  WORK,  WORK,  WORK,  WORK,
+              WORK,  WORK,  WORK,  WORK,  WORK,  WORK,  WORK,  WORK,  WORK,  WORK,
+              WORK,  WORK,  WORK,  WORK,  WORK,  CARRY, MOVE,  MOVE,  MOVE,  MOVE,
+              MOVE,  MOVE,  MOVE,  MOVE,  MOVE,  MOVE,  MOVE,  MOVE,  WORK,  WORK];
+    }
+    else if(creepType === 'skMinerHauler')
+    {
+      return [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY,
+              MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY,
+              MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY,
+              MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY,
+              MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY];
+    }
+
     let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
 
@@ -145,7 +162,7 @@ export const CreepBuilder = {
     'healer': [HEAL, MOVE],
     'attack': [ATTACK, MOVE],
     'attackController': [CLAIM, MOVE, MOVE],
-    'dismantler': [WORK,WORK,MOVE],
+    'dismantler': [WORK,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
     'rangeAttack': [RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
@@ -178,7 +195,7 @@ export const CreepBuilder = {
     'healer': [HEAL, MOVE],
     'attack': [ATTACK, MOVE],
     'attackController': [CLAIM, MOVE, MOVE],
-    'dismantler': [WORK, WORK, MOVE],
+    'dismantler': [WORK, MOVE],
     'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
@@ -207,7 +224,7 @@ export const CreepBuilder = {
     'healer': 42,
     'attack': 50,
     'attackController': 15,
-    'dismantler': 48,
+    'dismantler': 50,
     'labDistro': 40,
     'special': 2,
     'rangeAttack': 50,

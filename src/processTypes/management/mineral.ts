@@ -75,6 +75,7 @@ export class MineralManagementProcess extends Process
         case 'E42S48':
         case 'E41S41':
         case 'E43S43':
+        case 'E55S47':
           harvesters = 1;
           break;
         case 'E43S52':
@@ -83,6 +84,7 @@ export class MineralManagementProcess extends Process
         case 'E48S56':
         case 'E55S48':
         case 'E36S38':
+        case 'E41S38':
           harvesters = 2;
           break;
         case 'E43S53':
@@ -97,6 +99,8 @@ export class MineralManagementProcess extends Process
           harvesters = 3;
           break;
         case 'E36S43':
+        case 'E39S35':
+        case 'E38S59':
           harvesters = 4;
           break;
         default:
@@ -104,7 +108,6 @@ export class MineralManagementProcess extends Process
           break;
       }
 
-      this.log('Room is mining');
       if(this.metaData.mineralHarvesters.length < harvesters) // Need to find a way of how many creeps can mine a mineral
       {
         let creepName = 'min-h-' + proc.metaData.roomName + '-' + Game.time;

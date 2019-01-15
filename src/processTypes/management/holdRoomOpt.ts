@@ -177,7 +177,7 @@ export class HoldRoomOptManagementProcess extends Process
           // Construction Code
           if(!this.roomData().sourceContainers || (this.roomData().sourceContainers.length < this.roomData().sources.length))
           {
-            if(this.roomData().sourceContainers.length < this.roomData().sources.length)
+            if(this.roomData().sourceContainers.length < this.roomData().sources.length && Game.time % 10000 === 100)
             {
               Game.notify("Problem in room " + this.metaData.roomName + " lost some contianers");
             }
@@ -256,7 +256,7 @@ export class HoldRoomOptManagementProcess extends Process
 
               if(count < 1)
               {
-                console.log("Need to make some harvesting creeps " + s.id);
+                //console.log("Need to make some harvesting creeps " + s.id);
                 let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
                 let spawned = Utils.spawn(
                   this.kernel,

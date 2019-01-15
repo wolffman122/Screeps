@@ -277,7 +277,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           let storage = creep.room.storage;
           if(storage && storage.store.energy > 200000)
           {
-            if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= 5810000)
+            if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= 7000000)
             {
               creep.room.memory.rampartHealth += 100;
             }

@@ -24,7 +24,7 @@ export class ObservationProcess extends Process
                     if(room.memory.observeTarget === undefined)
                     {
                         room.memory.observeTarget = this.getRandomRoom(room.name, 10);
-                        console.log(this.name, room.memory.observeTarget);
+                        //console.log(this.name, room.memory.observeTarget);
                         if(room.memory.observeTarget === room.name)
                         {
                             return;
@@ -50,13 +50,13 @@ export class ObservationProcess extends Process
             }
         }
 
-        if(Game.time % 10000 === 0)
+        if(Game.time % 20000 === 0)
         {
             let index = 0;
             let roomList: string = "Need Room";
             _.filter(Object.keys(Memory.observeRoom), (or) => {
                 let room = Memory.observeRoom[or];
-                if(room.mineralType === RESOURCE_KEANIUM && room.sourceCount === 2)
+                if(room.mineralType === RESOURCE_OXYGEN && room.sourceCount === 2)
                 {
                     roomList += "\n" + index++ + or;
                 }
@@ -66,13 +66,13 @@ export class ObservationProcess extends Process
             roomList += 'Total' + index;
             Game.notify(roomList);
         }
-        else if (Game.time % 10000 === 5000)
+        else if (Game.time % 20000 === 5000)
         {
             let index = 0;
             let roomList: string = "SK Need Rooms";
             _.filter(Object.keys(Memory.observeRoom), (or)=>{
                 let room = Memory.observeRoom[or];
-                if(room.mineralType === RESOURCE_KEANIUM && room.sourceCount > 2)
+                if(room.mineralType === RESOURCE_HYDROGEN && room.sourceCount > 2)
                 {
                     roomList += "\n" + index++ + or;
                 }
@@ -145,7 +145,7 @@ export class ObservationProcess extends Process
 
     private basicRoomCheck(roomName: string)
     {
-        console.log(this.name, roomName);
+        //console.log(this.name, roomName);
         let room = Game.rooms[roomName];
         if(room)
         {

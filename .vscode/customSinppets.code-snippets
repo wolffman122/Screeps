@@ -37,7 +37,7 @@
   },
 
   "Room_Log": {
-    "prefix": "logroom",
+    "prefix": "lr",
     "body": [
       "if(room.name === '${1:name}')",
         "\tconsole.log(this.name, '${2:identifier}', ${3:indexer});"

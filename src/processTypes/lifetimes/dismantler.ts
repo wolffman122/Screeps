@@ -10,8 +10,6 @@ export class DismantleLifetimeProcess extends LifetimeProcess
   {
     let creep = this.getCreep();
 
-    this.log('Creep ' + creep);
-    
     if(!creep)
     {
       return;
@@ -36,16 +34,7 @@ export class DismantleLifetimeProcess extends LifetimeProcess
     }
     else
     {
-      this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
-        creep: creep.name,
-        pos: {
-          x: flag.pos.x,
-          y: flag.pos.y,
-          roomName: flag.pos.roomName
-        },
-        range: 1
-      });
-
+      creep.travelTo(flag, {preferHighway: true});
       return;
     }
   }

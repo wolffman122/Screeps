@@ -19,9 +19,24 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
     }
 
     if(_.sum(creep.carry) === 0){
-      let target = Utils.withdrawTarget(creep, this)
+      let target: Structure<StructureConstant>;
+      let storage = creep.room.storage;
+      if(storage && !storage.my && storage.store.energy > 0)
+      {
+        target = storage;
+      }
+      else
+      {
+        let terminal = creep.room.terminal;
+        if(terminal && !terminal.my && terminal.store.energy > 0)
+        {
+          target = terminal;
+        }
+        else
+        {
+          target = Utils.withdrawTarget(creep, this)
 
-      if(!target)
+          if(!target)
       {
         if(creep.room.terminal && creep.room.terminal.my)
         {
@@ -65,6 +80,8 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
 
               return;
             }
+          }
+        }
           }
         }
       }

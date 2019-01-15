@@ -228,9 +228,11 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E43S43':
+          case 'E55S47':
             upgraders = 1;
             break;
+          case 'E41S38':
+          case 'E38S59':
           default:
             upgraders = 1;
             break;
@@ -287,16 +289,28 @@ export class EnergyManagementProcess extends Process{
 
             if(Game.rooms[proc.metaData.roomName].controller!.level === 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
             {
-              let boosts = [];
-              boosts.push(RESOURCE_GHODIUM_ACID)
-              this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                creep: creepName,
-                roomName: proc.metaData.roomName,
-                boosts: boosts,
-                allowUnboosted: true
-              })
+              let noUpgradeRooms = ['E48S57', 'E35S41', 'E43S52', 'E43S55', 'E46S51', 'E36S38', 'E58S52', 'E55S48', 'E41S38',
+                                    'E39S35']
+              if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
+              {
+                let boosts = [];
+                boosts.push(RESOURCE_GHODIUM_ACID)
+                this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+                  creep: creepName,
+                  roomName: proc.metaData.roomName,
+                  boosts: boosts,
+                  allowUnboosted: true
+                })
+              }
+              else
+              {
+                this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+                  creep: creepName,
+                  roomName: proc.metaData.roomName
+                });
+              }
             }
-            else if(proc.metaData.roomName === 'E36S38')
+            else if(proc.metaData.roomName === 'E41S38' || proc.metaData.roomName === 'E39S35' || proc.metaData.roomName === 'E55S47')
             {
               let boosts = [];
               boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
@@ -363,7 +377,8 @@ export class EnergyManagementProcess extends Process{
 
           switch(this.metaData.roomName)
           {
-            case 'E36S38':
+            case 'E38S59':
+            case 'E43S43':
               upgradeDistroAmount = 2;
               break;
             default:

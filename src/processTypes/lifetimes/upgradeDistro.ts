@@ -32,6 +32,19 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
           return;
         }
       }
+      else if (creep.room.terminal)
+      {
+        let terminal = creep.room.terminal;
+
+        if(terminal.store.energy > 0)
+        {
+          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+            target: terminal.id,
+            creep: creep.name,
+            resource: RESOURCE_ENERGY
+          })
+        }
+      }
       else if(this.kernel.data.roomData[creep.pos.roomName].generalContainers.length > 0)
       {
         let containers = _.filter(this.kernel.data.roomData[creep.pos.roomName].generalContainers, (gc) => {

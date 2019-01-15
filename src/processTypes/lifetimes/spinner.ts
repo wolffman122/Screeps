@@ -71,7 +71,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         else if(mineral.mineralAmount === 0 && mineral.ticksToRegeneration > 0)
         {
           // New part to take from storage
-          if(creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 40000 &&
+          if(creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 20000 &&
             creep.room.terminal && creep.room.terminal.store[mineral.mineralType]! < KEEP_AMOUNT)
             {
               let amount = KEEP_AMOUNT - creep.room.terminal.store[mineral.mineralType]!;
@@ -82,7 +82,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
               })
             }
         }
-        else if(mineral && creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 40000)
+        else if(mineral && creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 20000)
         {
           this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
             target: creep.room.storage.id,
@@ -138,7 +138,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             });
           }
         }
-        else if(mineral && creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 40000)
+        else if(mineral && creep.room.storage && creep.room.storage.store[mineral.mineralType]! > 20000)
         {
           this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
             target: creep.room.storage.id,

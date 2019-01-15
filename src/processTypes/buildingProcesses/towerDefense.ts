@@ -75,13 +75,48 @@ export class TowerDefenseProcess extends Process{
                 return (e.getActiveBodyparts(HEAL) > 0);
               });
 
-              if(healTargets.length > 0)
+              let regularTargets = _.filter(invaders, e => {
+                return (e.getActiveBodyparts(HEAL) === 0);
+              })
+
+              let healRange = 50;
+              let regRange = 50;
+
+              _.forEach(healTargets, (ht) => {
+                let range = flag.pos.getRangeTo(ht);
+                if(range < healRange)
+                  healRange = range;
+              })
+
+              _.forEach(regularTargets, (rt) => {
+                let range = flag.pos.getRangeTo(rt);
+                if(range < regRange)
+                  regRange = healRange;
+              })
+
+              let dif = healRange - regRange;
+
+              if(dif > 15)
               {
-                target = flag.pos.findClosestByRange(healTargets);
+                if(dif > 0)
+                {
+                  target = flag.pos.findClosestByRange(regularTargets);
+                }
+                else
+                {
+                  target = flag.pos.findClosestByRange(healTargets);
+                }
               }
               else
               {
-                target = flag.pos.findClosestByRange(invaders);
+                if(healTargets.length > 0)
+                {
+                  target = flag.pos.findClosestByRange(healTargets);
+                }
+                else
+                {
+                  target = flag.pos.findClosestByRange(invaders);
+                }
               }
             }
           }
