@@ -15,6 +15,7 @@ export class MinetalTerminalManagementProcess extends Process
       let recievableRooms: {rName: string, mType: string, amount: number|undefined } [] = [];
       let extraProduct : { rName: string, mType: ResourceConstant, amount: number|undefined } [] = []
       let needProduct : { rName: string, mType: ResourceConstant, amount: number|undefined } [] = []
+      let needSKProduct : { rName: string, mType: ResourceConstant, amount: number|undefined } [] = []
       let needUpgrade: string[] = [];
       let extraUpgrade: string[] = [];
       let needCarry: string[] = [];
@@ -44,17 +45,26 @@ export class MinetalTerminalManagementProcess extends Process
               if(p === RESOURCE_CATALYZED_GHODIUM_ACID && terminal.store[p] >= PRODUCTION_AMOUNT / 2 && r.controller.level >= 8)
                 extraProduct.push({rName: r.name, mType: p, amount: 2500});
               else if(terminal.store[p] >= PRODUCTION_AMOUNT && r.controller && r.controller.level >= 8)
-                extraProduct.push({rName: r.name, mType: p, amount: terminal.store[p] - PRODUCTION_AMOUNT});
+                extraProduct.push({rName: r.name, mType: p, amount: terminal.store[p] - PRODUCTION_AMOUNT + 500});
 
-              if(p === RESOURCE_CATALYZED_GHODIUM_ACID && (!terminal.store[p] ||terminal.store[p] < PRODUCTION_AMOUNT) && r.controller.level < 8)
+              if(r.memory.skSourceRoom && (p === RESOURCE_LEMERGIUM_OXIDE || p === RESOURCE_KEANIUM_OXIDE) &&
+                (!terminal.store[p] || terminal.store[p] < PRODUCTION_AMOUNT) && r.controller.level >= 8)
               {
                 let amount = terminal.store[p] ? PRODUCTION_AMOUNT - terminal.store[p] : 0;
-                needProduct.push({rName: r.name, mType: p, amount: amount});
+                needSKProduct.push({rName: r.name, mType: p, amount: amount});
               }
-              else if(p !== RESOURCE_CATALYZED_GHODIUM_ACID && (!terminal.store[p] || terminal.store[p] < PRODUCTION_AMOUNT) &&  r.controller.level >= 8)
+              else
               {
-                let amount = terminal.store[p] ? PRODUCTION_AMOUNT - terminal.store[p] : 0;
-                needProduct.push({rName: r.name, mType: p, amount: amount});
+                if(p === RESOURCE_CATALYZED_GHODIUM_ACID && (!terminal.store[p] ||terminal.store[p] < PRODUCTION_AMOUNT) && r.controller.level < 8)
+                {
+                  let amount = terminal.store[p] ? PRODUCTION_AMOUNT - terminal.store[p] : 0;
+                  needProduct.push({rName: r.name, mType: p, amount: amount});
+                }
+                else if(p !== RESOURCE_CATALYZED_GHODIUM_ACID && (!terminal.store[p] || terminal.store[p] < PRODUCTION_AMOUNT) &&  r.controller.level >= 8)
+                {
+                  let amount = terminal.store[p] ? PRODUCTION_AMOUNT - terminal.store[p] : 0;
+                  needProduct.push({rName: r.name, mType: p, amount: amount});
+                }
               }
             });
 
@@ -189,6 +199,27 @@ export class MinetalTerminalManagementProcess extends Process
 
       console.log(this.name, 'Extra Product');
       _.forEach(extraProduct, (ep) =>{
+        let receiveSKRoom = _.find(needSKProduct, (rr) => {
+          if(rr.mType === ep.mType && rr.rName != ep.rName)
+          {
+            return rr.rName;
+          }
+
+          return false;
+        });
+
+        if(receiveSKRoom)
+        {
+          let terminal = Game.rooms[ep.rName].terminal;
+          if(terminal && terminal.cooldown === 0 && receiveSKRoom.amount)
+          {
+            if(terminal.send(ep.mType, ep.amount, receiveSKRoom.rName) === OK)
+            {
+              return;
+            }
+          }
+        }
+
         let receiveRoom = _.find(needProduct, (rr) => {
           if(rr.mType === ep.mType && rr.rName != ep.rName)
           {

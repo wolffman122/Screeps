@@ -236,6 +236,7 @@ interface Flag {
     assisted: boolean;
     rampartHealth?: number;
     invadersPresent?: boolean;
+    skSourceRoom?: boolean;
   }
 
   interface SpawnMemory {}
@@ -278,6 +279,8 @@ interface Flag {
 
   interface SquadManagementProcessMetaData
   {
+    roomName: string,
+    attackRoomName: string,
     attackers: string[],
     healers: string[],
     flagName: string,

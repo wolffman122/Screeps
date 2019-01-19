@@ -113,7 +113,13 @@ export class skRoomManagementProcess extends Process
       {
           this.completed = true;
           Memory.flags[this.metaData.flagName] = undefined;
+          Memory.rooms[this.metaData.roomName].skSourceRoom = undefined;
           return;
+      }
+
+      if(this.skFlag.room.memory.skSourceRoom === undefined)
+      {
+        this.skFlag.room.memory.skSourceRoom = true;
       }
 
       this.ensureMetaData();

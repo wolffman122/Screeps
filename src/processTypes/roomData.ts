@@ -389,7 +389,6 @@ export class RoomDataProcess extends Process{
     _.forEach(this.singleFields, function(field){
       if(field === 'lastVision')
       {
-        if(!room.memory.cache[field])
           room.memory.cache[field] = Game.time;
       }
       else if(roomData[field])

@@ -35,15 +35,20 @@ export class InitProcess extends Process{
       }
     }
 
-   /* _.forEach(Object.keys(Memory.rooms), function(r){
+
+   _.forEach(Object.keys(Memory.rooms), function(r){
       let room = Memory.rooms[r];
       if(!Game.rooms[r] && room.cache.lastVision + 1500 < Game.time)
       {
+        console.log('Non vision room', r, room.cache.lastVision + 1500, Game.time);
+      }
+      if(!Game.rooms[r] && room.cache.lastVision + 1500 < Game.time)
+      {
         console.log('Old room', r);
-        Memory.rooms[r] = undefined;
+        //Memory.rooms[r] = undefined;
       }
     })
-*/
+
     _.forEach(Game.rooms, function(room){
       proc.kernel.addProcess(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
@@ -110,5 +115,6 @@ export class InitProcess extends Process{
 
 
     this.completed = true
+
   }
 }

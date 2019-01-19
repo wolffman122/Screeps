@@ -43,6 +43,7 @@ export class HoldRoomManagementProcess extends Process
 
   run()
   {
+    console.log(this.name, 'hrm')
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
     let spawnRoomName = this.metaData.flagName.split('-')[0];

@@ -30,11 +30,6 @@ export class LabManagementProcess extends Process
 
   run()
   {
-    /*if(this.name === 'labm-E36S38')
-    {
-      console.log('Lab working !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    }*/
-    //console.log(this.name);
     this.room = Game.rooms[this.metaData.roomName];
 
     if(this.room)
@@ -80,6 +75,7 @@ export class LabManagementProcess extends Process
 
       this.ensureMetaData();
 
+
       this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
 
       if(this.metaData.labDistros.length === 0)
@@ -94,8 +90,6 @@ export class LabManagementProcess extends Process
       {
         if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
         {
-          if(this.name === 'labm-E41S41')
-            console.log(this.name, 'test')
           let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
           let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
           if(spawned)
