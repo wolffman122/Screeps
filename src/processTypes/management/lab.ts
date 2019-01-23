@@ -19,6 +19,7 @@ export class LabManagementProcess extends Process
   powerSpawn?: StructurePowerSpawn;
   room: Room;
   nuker?: StructureNuker;
+  processFlag?: Flag;
 
   ensureMetaData()
   {
@@ -26,11 +27,18 @@ export class LabManagementProcess extends Process
     {
       this.metaData.labDistros = [];
     }
+
+    if(this.metaData.processFlag)
+    {
+      this.processFlag = Game.flags[this.metaData.processFlag];
+    }
   }
 
   run()
   {
     this.room = Game.rooms[this.metaData.roomName];
+
+    this.ensureMetaData();
 
     if(this.room)
     {
@@ -44,10 +52,6 @@ export class LabManagementProcess extends Process
         let totalLabs = this.metaData.productLabIds.length + this.metaData.reagentLabIds.length;
         if(totalLabs !== this.roomData().labs.length)
         {
-          if(this.name === 'labm-E41S41')
-          {
-            console.log(this.name, 'Errasing things');
-          }
           this.reagentLabs = undefined;
           this.productLabs = undefined;
           this.metaData.reagentLabIds = undefined;
@@ -64,6 +68,17 @@ export class LabManagementProcess extends Process
       this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
+        /*if(this.metaData.processFlag === undefined)
+        {
+          if(this.processFlag === undefined &&
+            this.reagentLabs[0].room.createFlag(this.reagentLabs[0].pos, this.room.name + '-' + this.labProcess.currentShortage.mineralType, COLOR_GREY, COLOR_GREY) === OK)
+          {
+            this.processFlag = Game.flags[this.room.name + '-' + this.labProcess.currentShortage.mineralType];
+            this.metaData.processFlag = this.processFlag.name;
+          }
+
+        }*/
+
         let target = this.labProcess.targetShortage.mineralType;
         if(!this.kernel.data.labProcesses[target])
           this.kernel.data.labProcesses[target] = 0;
@@ -72,8 +87,15 @@ export class LabManagementProcess extends Process
         //console.log(this.name, "Found a Process Current Shortage", this.labProcess.currentShortage.mineralType, this.labProcess.currentShortage.amount,
         //  "Load Porgress", this.labProcess.loadProgress, "Target Shortage", this.labProcess.targetShortage.mineralType, this.labProcess.targetShortage.amount)
       }
-
-      this.ensureMetaData();
+      else
+      {
+        /*if(this.processFlag)
+        {
+          this.processFlag.remove();
+        }
+        this.metaData.processFlag = undefined;
+        this.processFlag = undefined;*/
+      }
 
 
       this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
@@ -616,6 +638,7 @@ export class LabManagementProcess extends Process
           return this.findLabProcess();
         }
 
+        this.room.visual.text(this.labProcess.currentShortage.mineralType, this.reagentLabs[0].pos, {color: 'yellow', font: '0.8'});
         return process;
       }
 

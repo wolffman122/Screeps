@@ -68,8 +68,8 @@ export class MinetalTerminalManagementProcess extends Process
               }
             });
 
-            console.log(this.name, 'Extra Product', extraProduct.length);
-            console.log(this.name, 'Need Product', needProduct.length);
+            //console.log(this.name, 'Extra Product', extraProduct.length);
+            //console.log(this.name, 'Need Product', needProduct.length);
 
 
             let roomName = "";
@@ -108,7 +108,7 @@ export class MinetalTerminalManagementProcess extends Process
             }
           }
 
-          let flag = r.find(FIND_FLAGS, {filter: f => f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW}) as Flag[];
+          /*let flag = r.find(FIND_FLAGS, {filter: f => f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW}) as Flag[];
           if(flag.length)
           {
             _.forEach(flag, (f) => {
@@ -124,39 +124,41 @@ export class MinetalTerminalManagementProcess extends Process
                 }
               }
             })
+          }*/
+        }
+      });
+
+      ///////////// Sending Minerals between the rooms. ///////////////////////
+      console.log(this.name, 'Extra Minerals')
+      _.forEach(roomsExtraMinerals, (ex) => {
+        let receiveRoom = _.find(recievableRooms, (rr) => {
+          if(rr.mType == ex.mType && rr.rName != ex.rName)
+          {
+            return rr.rName;
+          }
+          return false;
+        });
+
+        if(receiveRoom)
+        {
+          console.log('Found receive room ', receiveRoom.rName, receiveRoom.mType, receiveRoom.amount)
+          let terminal = Game.rooms[ex.rName].terminal;
+          if(terminal && terminal.cooldown == 0 && receiveRoom.amount)
+          {
+            if(terminal.send(ex.mType, receiveRoom.amount, receiveRoom.rName) === OK)
+            {
+              recievableRooms = _.filter(recievableRooms, (r2) => {
+                return r2 !== receiveRoom;
+              });
+            }
+            else
+            {
+              console.log('Something wrong with mineral send');
+            }
           }
         }
       });
 
-      console.log(this.name, 'extra', extraUpgrade.length);
-      console.log(this.name, 'need', needUpgrade.length);
-/*
-      // Upgrade
-      for(let i = 0; i < extraUpgrade.length; i++)
-      {
-        let name = extraUpgrade[i];
-
-        let terminal = Game.rooms[name].terminal;
-
-        if(terminal && terminal.cooldown === 0)
-        {
-          if(needUpgrade.length)
-          {
-            let amount = 1000;
-            if(amount > 0 && amount < 100)
-            {
-              amount = 100;
-            }
-
-            if(terminal.send(RESOURCE_CATALYZED_GHODIUM_ACID, amount, needUpgrade[0]) === OK)
-            {
-              return
-              //extraCarry = _.pull(extraCarry, name);
-              //extraMove = _.pull(extraMove, name);
-            }
-          }
-        }
-      }*/
 
       //////////// Sending Product between the rooms. ///////////////////////
 
@@ -255,34 +257,6 @@ export class MinetalTerminalManagementProcess extends Process
         }
       })
 
-      ///////////// Sending Minerals between the rooms. ///////////////////////
-      console.log(this.name, 'Extra Minerals')
-      _.forEach(roomsExtraMinerals, (ex) => {
-        let receiveRoom = _.find(recievableRooms, (rr) => {
-          if(rr.mType == ex.mType && rr.rName != ex.rName)
-          {
-            return rr.rName;
-          }
-          return false;
-        });
-
-        if(receiveRoom)
-        {
-          console.log('Found receive room ', receiveRoom.rName, receiveRoom.mType, receiveRoom.amount)
-          let terminal = Game.rooms[ex.rName].terminal;
-          if(terminal && terminal.cooldown == 0 && receiveRoom.amount)
-          {
-            if(terminal.send(ex.mType, receiveRoom.amount, receiveRoom.rName) === OK)
-            {
-              recievableRooms = _.filter(recievableRooms, (r2) => {
-                return r2 !== receiveRoom;
-              });
-
-              return;
-            }
-          }
-        }
-      });
 
       /*
       //Carry
@@ -344,7 +318,8 @@ export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHI
 export const PRODUCT_LIST = [RESOURCE_LEMERGIUM_OXIDE, RESOURCE_KEANIUM_OXIDE, RESOURCE_GHODIUM_ACID, RESOURCE_CATALYZED_GHODIUM_ACID,
                              RESOURCE_GHODIUM_ACID,
                              RESOURCE_GHODIUM,
-                             RESOURCE_LEMERGIUM_HYDRIDE];
+                             RESOURCE_LEMERGIUM_HYDRIDE,
+                             RESOURCE_CATALYZED_GHODIUM_ALKALIDE];
 export const PRODUCTION_AMOUNT = 5000;
 
 export const REAGENT_LIST = {

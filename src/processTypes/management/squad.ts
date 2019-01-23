@@ -120,7 +120,7 @@ export class SquadManagementProcess extends Process
             let healer = Game.creeps[this.metaData.healers[i]];
             if(healer)
             {
-                this.HealerActions(healer);
+                //this.HealerActions(healer);
             }
         }
     }
@@ -129,7 +129,7 @@ export class SquadManagementProcess extends Process
     {
         try
         {
-            let blockerFlag: Flag|undefined; // Need to later code in to put on wall or rampart to attack
+            /*let blockerFlag: Flag|undefined; // Need to later code in to put on wall or rampart to attack
 
             if(!attacker.memory.boost)
             {
@@ -219,7 +219,7 @@ export class SquadManagementProcess extends Process
                             }
                         }
                     }
-            }
+            }*/
         }
         catch (error)
         {

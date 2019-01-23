@@ -485,11 +485,15 @@ export class skRoomManagementProcess extends Process
               {
                 console.log(this.name, 'SK mining find flag');
                 let flag =  room.find(FIND_FLAGS)[0];
-                let name = flag.name.split('-')[0];
-                if(flag && name === 'Mining')
+                if(flag)
                 {
-                  this.metaData.mineralMining = true;
-                  this.mineralMining = true;
+                  let name = flag.name.split('-')[0];
+                  console.log(this.name, 'Flag check', name, flag);
+                  if(flag && name === 'Mining')
+                  {
+                    this.metaData.mineralMining = true;
+                    this.mineralMining = true;
+                  }
                 }
               }
             }
@@ -686,6 +690,7 @@ export class skRoomManagementProcess extends Process
             if(!devil.memory.target)    // Find a target name
             {
               let sourceKeepers: StructureKeeperLair[] = [];
+              console.log(this.name, this.mineralMining);
               if(this.mineralMining)
               {
                 sourceKeepers = _.filter(this.lairs, (l) => {
@@ -1179,8 +1184,8 @@ export class skRoomManagementProcess extends Process
       {
         if(!harvester.memory.fleePath)
         {
-
-          let ret = PathFinder.search(harvester.pos, {pos: source.pos, range: 7}, {flee: true});
+          let sk = source.pos.findClosestByRange(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_KEEPER_LAIR });
+          let ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 7}, {flee: true});
           if(ret.path.length)
           {
             harvester.memory.fleePath = ret.path

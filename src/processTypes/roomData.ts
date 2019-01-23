@@ -35,6 +35,16 @@ export class RoomDataProcess extends Process{
 
   run(){
     let room = Game.rooms[this.metaData.roomName]
+    if(room === undefined)
+    {
+      Memory.rooms[this.metaData.roomName].cache = {};
+      this.completed;
+      return;
+    }
+    else
+    {
+      room.memory.lastVision = Game.time;
+    }
 
     this.importFromMemory(room)
 

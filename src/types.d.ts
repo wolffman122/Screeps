@@ -237,6 +237,7 @@ interface Flag {
     rampartHealth?: number;
     invadersPresent?: boolean;
     skSourceRoom?: boolean;
+    lastVision: number;
   }
 
   interface SpawnMemory {}
@@ -484,6 +485,7 @@ interface Flag {
     lastCommandTick: number;
     checkProcessTick: number;
     labProcess?: LabProcess;
+    processFlag?: string;
   }
 
   interface LabMemory
