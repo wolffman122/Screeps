@@ -638,7 +638,11 @@ export class LabManagementProcess extends Process
           return this.findLabProcess();
         }
 
-        this.room.visual.text(this.labProcess.currentShortage.mineralType, this.reagentLabs[0].pos, {color: 'yellow', font: '0.8'});
+        if(this.labProcess)
+        {
+          this.room.visual.text(this.labProcess.currentShortage.mineralType, this.reagentLabs[0].pos, {color: 'yellow', font: '0.8'});
+        }
+        
         return process;
       }
 

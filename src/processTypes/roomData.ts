@@ -78,13 +78,13 @@ export class RoomDataProcess extends Process{
       }
 
 
-      let observer = this.kernel.data.roomData[room.name].observer
+      /*let observer = this.kernel.data.roomData[room.name].observer
       if(observer)
       {
         this.kernel.addProcessIfNotExist(ObservationProcess, 'op-' + this.metaData.roomName, 18, {
           roomName: room.name
         })
-      }
+      }*/
     }
 
     if(room && room.controller && room.controller!.my){

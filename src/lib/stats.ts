@@ -223,7 +223,7 @@ export const Stats = {
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
           Memory.stats['rooms.' + roomName + '.mineral_available'] = mineral[0].mineralAmount
           Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = mineral[0].ticksToRegeneration;
-          
+
 
 
           //const structure_types = new Set(room.find(FIND_STRUCTURES).map((s: Structure) => s.structureType));

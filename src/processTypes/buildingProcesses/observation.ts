@@ -6,6 +6,9 @@ export class ObservationProcess extends Process
 
     run()
     {
+        this.completed = true;
+        return;
+        /*
         if(!Memory.observeRoom)
         {
             Memory.observeRoom = {};
@@ -184,5 +187,6 @@ export class ObservationProcess extends Process
                 }
             }
         }
+        */
     }
 }
