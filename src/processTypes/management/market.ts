@@ -8,151 +8,62 @@ export class MarketManagementProcess extends Process
 
   ensureMetaData()
   {
-    if(!this.metaData.data)
-    {
-      this.log('Meta Data Reset');
-      this.metaData.data = {}
-    }
   }
 
   run()
   {
-    this.completed = true;
-    return;
-  }
-  /*
-    this.ensureMetaData();
-
-    //this.metaData.waitingToSell = !this.metaData.waitingToSell;
-    //this.log('Waiting to sell ' + this.metaData.waitingToSell);
-
-    if(Game.time % 5 === 0)
-    {
-
-    }
-
-    _.forEach(Game.rooms, (room) => {
-
-      let buyOrders = Game.market.getAllOrders({resourceType: RESOURCE_ENERGY, type: ORDER_BUY});
-
-      buyOrders = _.sortBy(buyOrders, 'price').reverse();
-
-      if(room.controller && room.controller.my && room.controller.level >= 8)
+    _.forEach(Game.rooms, (r) => {
+      if(r.name === 'E48S56' && r.terminal && r.terminal.my)
       {
-        let storage = room.storage;
-        let terminal = room.terminal;
-        let mineral = <Mineral>room.find(FIND_MINERALS)[0];
+        let terminal = r.terminal;
+        let mineral = r.find(FIND_MINERALS)[0];
 
-        if(storage && (_.sum(storage.store) >= storage.storeCapacity * .8))
+        if(mineral && !this.metaData.orderCreated && terminal.store[mineral.mineralType] >= MINERAL_KEEP_AMOUNT)
         {
-          this.log('Energy orders');
-          if(terminal && terminal.cooldown == 0 && terminal.store.energy > 80000)
+          let orders = Game.market.getAllOrders({type: ORDER_SELL, resourceType: mineral.mineralType});
+          if(orders)
           {
-            let dealAmount = terminal.store.energy - 80000;
-            console.log('Deal ' + room.name + ' id ' + buyOrders[0] + ' amount ' + dealAmount);
-            Game.market.deal(buyOrders[0].id, dealAmount, room.name)
+            orders = _.filter(orders, (o) => {
+              return (o.amount >= 10000);
+            })
+            _.sortBy(orders, 'price');
+            let price = orders[0].price;
+            if(!this.metaData.orderCreated)
+            {
+              console.log('Mineral problem !!!!!!!!!!!!!1111')
+              Game.market.createOrder(ORDER_SELL, mineral.mineralType, price * 0.95, 10000, r.name) == OK
+              this.metaData.orderCreated = true;
+            }
           }
         }
-        else if(mineral)
+        else
         {
-          if(this.metaData.data[room.name] === undefined)
+          if(this.metaData.orderId === undefined)
           {
-            this.metaData.data[room.name] = { mining: false, amount: 0, waitingToSell: false, orderId: undefined, tickLastPriceChange: 0, sellPrice: 0};
-            this.log('Initial Set');
-          }
-
-          let terminal = room.terminal;
-          if(terminal && terminal.my)
-          {
-            if(!this.metaData.data[room.name].mining && !this.metaData.data[room.name].waitingToSell)
+            let orders = Game.market.getAllOrders({roomName: r.name});
+            if(orders.length)
             {
-              if(terminal.store[mineral.mineralType]! <= (mineral.mineralAmount + MINERAL_KEEP_AMOUNT))
-              {
-                this.log('Sending a messate to ' + mineral.room!.name);
-
-                this.kernel.sendIpc('market', 'minerals-'+mineral.room!.name, {value: "Start-Mining"})
-                this.metaData.data[room.name].mining = true;
-                this.metaData.data[room.name].waitingToSell = false;
-                this.metaData.data[room.name].amount = mineral.mineralAmount;
-              }
-            }
-
-            if(mineral.mineralAmount === 0 && this.metaData.data[room.name].mining)
-            {
-              this.log('Mineral Order Creation');
-              // Not sure if we want to send another message to Mineral process thinking not
-
-              this.kernel.sendIpc('market', 'minerals-'+mineral.room!.name, {value: "Stop-Mining"});
-
-              this.metaData.data[room.name].mining = false;
-              this.metaData.data[room.name].waitingToSell = true;
-            }
-
-            if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].amount > 0)
-            {
-              let sellOrders = Game.market.getAllOrders({resourceType: mineral.mineralType, type: ORDER_SELL});
-
-              let avgPrice = this.getSellPrice(sellOrders);
-              let minPrice = _.min(sellOrders, 'price');
-
-              this.log("Should make an order " + avgPrice);
-              if(Game.market.createOrder(ORDER_SELL, mineral.mineralType, avgPrice, this.metaData.data[room.name].amount, mineral.room!.name) === OK)
-              {
-                this.metaData.data[room.name].amount = 0;
-                this.metaData.data[room.name].sellPrice = avgPrice
-              }
-            }
-            else if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].orderId === undefined)
-            {
-              this.log("Getting the order number");
-              let orders = Game.market.getAllOrders({roomName: room.name, resourceType: mineral.mineralType});
-              if(orders.length === 1)
-              {
-                this.metaData.data[room.name].orderId = orders[0].id;
-                this.metaData.data[room.name].tickLastPriceChange = Game.time;
-              }
-            }
-            else if(this.metaData.data[room.name].waitingToSell && this.metaData.data[room.name].tickLastPriceChange === (Game.time - WAIT_FOR_PRICE_CHANGE))
-            {
-              this.metaData.data[room.name].sellPrice = this.metaData.data[room.name].sellPrice * 0.90
-              Game.market.changeOrderPrice(this.metaData.data[room.name].orderId!, this.metaData.data[room.name].sellPrice);
-            }
-            else if(this.metaData.data[room.name].waitingToSell)
-            {
-              this.log("Waiting for the sale");
-              let orders = Game.market.getAllOrders({id: this.metaData.data[room.name].orderId});
-              if(orders.length === 0)
-              {
-                this.metaData.data[room.name].waitingToSell = false;
-              }
+              console.log('Order created', orders[0].id);
+              this.metaData.orderId = orders[0].id;
             }
           }
-
+          else
+          {
+            console.log('Checking orders');
+            let order = Game.market.getOrderById(this.metaData.orderId)
+            if(order.active === false)
+            {
+              console.log('Order finished');
+              this.metaData.orderId = undefined;
+              this.metaData.orderCreated = false;
+            }
+          }
         }
       }
     });
   }
-
-  getSellPrice(orders: Order[]): number
-  {
-    orders = _.sortBy(orders, 'price');
-
-    let lowEnd = _.dropRight(orders, (orders.length - 14));
-
-    let amountTotal = 0;
-
-    let priceTotal = 0;
-
-    for(let i = 0; i < orders.length; i++)
-    {
-      priceTotal += orders[i].remainingAmount * orders[i].price;
-      amountTotal += orders[i].remainingAmount;
-    }
-
-    return (priceTotal / amountTotal);
-  }*/
 }
 
-const MINERAL_KEEP_AMOUNT = 5000;
+const MINERAL_KEEP_AMOUNT = 50000;
 const SELL_AMOUNT = 20000;
 const WAIT_FOR_PRICE_CHANGE = 1000;

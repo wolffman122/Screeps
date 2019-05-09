@@ -211,15 +211,7 @@ export const Utils = {
     }
     else
     {
-      let max;
-      if(room.memory.rampartHealth)
-      {
-        max = room.controller!.level * room.memory.rampartHealth;
-      }
-      else
-      {
-         max = room.controller!.level * RAMPARTTARGET;
-      }
+      let max = RAMPARTTARGET;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 
@@ -358,4 +350,4 @@ export const Utils = {
   }*/
 }
 
-export const RAMPARTTARGET = 100000;
+export const RAMPARTTARGET = 8700000;

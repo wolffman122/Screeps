@@ -184,15 +184,12 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
   let boosted = true;
   for(let boost of boosts)
   {
-    console.log(this.name, 'Boost Request 1')
     if(this.memory[boost])
     {
       totalBoosts--;
-      console.log(this.name, 'Boost Request 2')
       continue;
     }
 
-    console.log(this.name, 'Boost Request 3')
     let room = Game.rooms[this.pos.roomName];
 
     if(room)
@@ -267,7 +264,6 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
   if(totalBoosts === 0)
   {
-    console.log(this.name, 'Time to exit boostfxn');
     this.memory.boost = true;
   }
 }

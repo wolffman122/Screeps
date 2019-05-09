@@ -34,9 +34,13 @@ export class EnergyManagementProcess extends Process{
       this.metaData.visionCreeps = []
   }
 
+  runRoomVisuals(room: Room)
+  {
+    room.visual.text('RCL ' + (room.controller.progress / room.controller.progressTotal) * 100, 5,3, {color: 'white', align: 'left'});
+  }
+
   run(){
     this.ensureMetaData()
-
     if(!this.kernel.data.roomData[this.metaData.roomName])
     {
       this.completed = true
@@ -47,6 +51,7 @@ export class EnergyManagementProcess extends Process{
 
     if(room.controller && room.controller.my)
     {
+      this.runRoomVisuals(room)
       if(room && room.memory.assisted)
       {
         this.metaData.visionCreeps = Utils.clearDeadCreeps(this.metaData.visionCreeps);
@@ -228,11 +233,9 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E55S47':
-            upgraders = 3;
+          case 'E47S46':
+            upgraders = 2;
             break;
-          case 'E41S38':
-          case 'E38S59':
           default:
             upgraders = 1;
             break;
@@ -287,11 +290,10 @@ export class EnergyManagementProcess extends Process{
           {
             this.metaData.upgradeCreeps.push(creepName)
 
-            if(Game.rooms[proc.metaData.roomName].controller!.level === 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
+            if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
             {
-              let noUpgradeRooms = ['E48S57', 'E35S41', 'E43S52', 'E43S55', 'E46S51', 'E36S38', 'E58S52', 'E55S48', 'E41S38',
-                                    'E39S35']
-              if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
+              let noUpgradeRooms = ['E52S46', 'E48S49', 'E39S35', 'E41S41', 'E41S38', 'E36S43', 'E38S46', 'E48S56']
+              if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) !== -1)
               {
                 let boosts = [];
                 boosts.push(RESOURCE_GHODIUM_ACID)
@@ -310,7 +312,7 @@ export class EnergyManagementProcess extends Process{
                 });
               }
             }
-            else if(proc.metaData.roomName === 'E55S47')
+            else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, s => s.structureType === STRUCTURE_LAB).length >= 3)
             {
               let boosts = [];
               boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
@@ -377,7 +379,7 @@ export class EnergyManagementProcess extends Process{
 
           switch(this.metaData.roomName)
           {
-            case 'E55S47':
+            case 'E47S46':
               upgradeDistroAmount = 2;
               break;
             default:

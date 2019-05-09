@@ -80,6 +80,7 @@ import { ObservationProcess } from 'processTypes/buildingProcesses/observation';
 import { ReportProcess } from 'processTypes/system/reports';
 import { skRoomManagementProcess } from 'processTypes/management/skroom';
 import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
+import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
 
 
 
@@ -156,7 +157,8 @@ const processTypes = <{[type: string]: any}>{
   'op': ObservationProcess,
   'report': ReportProcess,
   'skrmp': skRoomManagementProcess,
-  'lh': TowerHealProcess
+  'lh': TowerHealProcess,
+  'atmp': AllTerminalManagementProcess,
 }
 
 interface KernelData{

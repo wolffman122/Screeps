@@ -47,6 +47,7 @@ interface Flag {
       sellAbove: Number
       displayOldProcesses: boolean
       conLog: (message: string) => void;
+      gcl: number
     }
   }
 
@@ -178,6 +179,7 @@ interface Flag {
       creditReserveAmount: number;
       powerMinimum: number;
     };
+    gclAmount: number;
   }
 
   interface ObserveMemory
@@ -219,6 +221,7 @@ interface Flag {
       rollCall: number;
       follower: string;
       skMineral?: string;
+      centerSKMineral?: string;
   }
 
   interface RoomMemory
@@ -350,16 +353,8 @@ interface Flag {
 
   interface MarketManagementProcessMetaData
   {
-    data: {
-      [roomName: string]: {
-        mining: boolean,
-        amount: number,
-        waitingToSell: boolean,
-        orderId?: string,
-        tickLastPriceChange: number,
-        sellPrice: number
-      }
-    }
+    orderCreated?: boolean
+    orderId?: string
   }
 
   interface BuildProcessMetaData
@@ -519,6 +514,22 @@ interface Flag {
     flagName: string
   }
 
+  interface roomAmounts
+  {
+    roomName: string,
+    amount: number,
+    terminal: string
+  }
+  interface AllTerminalManagementProcessMetaData
+  {
+    resources: {
+      [mineral: string]: roomAmounts[]
+    }
+
+    creeps: {
+      [source: string]: string[]
+    }
+  }
 
 
   interface MineralManagementProcessMetaData
@@ -604,9 +615,6 @@ interface Flag {
   interface PowerManagementProcessMetaData
   {
     roomName: string;
-    clydes: string[];
-    bonnies: string[];
-    carts: string[];
     currentBank: BankData;
     scanIndex: number;
     scanData: {[roomName: string]: number}
@@ -624,10 +632,14 @@ interface Flag {
   interface SKRoomManagementProcessMetaData
   {
     mineralMining: boolean,
+    centerSKMining: boolean,
+    miningFlag: string,
+    centerMiningFlag: string,
     invaders: boolean,
     flagName: string,
     roomName: string,
     skRoomName: string,
+    centerRoomName: string,
     scoutName?: string,
     vision: boolean,
     locations: {
@@ -649,7 +661,9 @@ interface Flag {
       [container: string]: boolean
     }
     miningDistance?: number
+    centerMiningDistance?: number
     miner: string[]
+    centerMiner: string[]
     minerHauler: string[]
   }
 //// Minerals

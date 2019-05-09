@@ -11,6 +11,7 @@ import { TerminalManagementProcess } from 'processTypes/buildingProcesses/termin
 import { MinetalTerminalManagementProcess } from '../buildingProcesses/mineralTerminal';
 import { LabManagementProcess } from 'processTypes/management/lab';
 import { ReportProcess } from './reports';
+import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
 
 /*
 
@@ -45,8 +46,10 @@ export class InitProcess extends Process{
     })
 
     _
-
+    console.log('Observer', 0)
     _.forEach(Game.rooms, function(room){
+      if(room.name === 'E50S49')
+        console.log('Observer', 11)
       proc.kernel.addProcessIfNotExist(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
       })
@@ -90,7 +93,8 @@ export class InitProcess extends Process{
              room.name === 'E45S57' || room.name === 'E52S46' || room.name === 'E51S49' || room.name === 'E58S52' ||
              room.name === 'E41S49' || room.name === 'E42S48' || room.name === 'E43S52' || room.name === 'E43S55' ||
              room.name === 'E36S38' || room.name === 'E48S57' || room.name === 'E41S38' || room.name === 'E39S35' ||
-             room.name === 'E39S35' || room.name === 'E38S59' || room.name === 'E55S47')
+             room.name === 'E39S35' || room.name === 'E38S59' || room.name === 'E55S47' || room.name === 'E48S56' ||
+             room.name === 'E56S43' || room.name === 'E47S46')
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
@@ -106,8 +110,9 @@ export class InitProcess extends Process{
     this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});
     this.kernel.addProcessIfNotExist(SuspensionProcess, 'suspension-master', 99, {master: true})
     this.kernel.addProcessIfNotExist(FlagWatcherProcess, 'flag-watcher', 98, {})
-    //this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
-    this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 15,  {});
+    this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
+    this.kernel.addProcessIfNotExist(AllTerminalManagementProcess, 'atmp', 15, {});
+    //this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 15, {});
     this.kernel.addProcessIfNotExist(TerminalManagementProcess, 'terminal', 14, {});
 
 

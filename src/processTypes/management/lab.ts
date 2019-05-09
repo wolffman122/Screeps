@@ -38,6 +38,8 @@ export class LabManagementProcess extends Process
   {
     this.room = Game.rooms[this.metaData.roomName];
 
+    if(this.name === 'labm-E48S56')
+      console.log(this.name, 'Running')
     this.ensureMetaData();
 
     if(this.room)
@@ -193,6 +195,23 @@ export class LabManagementProcess extends Process
           {
             this.creep.travelTo(this.terminal!);
           }
+          return;
+        }
+
+        let resources = this.creep.room.find(FIND_DROPPED_RESOURCES);
+        resources = _.filter(resources, (r)=>{
+          if(this.creep.pos.inRangeTo(r, 5))
+            return r;
+        });
+
+        let target = this.creep.pos.findClosestByPath(resources);
+        if(target)
+        {
+          if(this.creep.pos.isNearTo(target))
+          {
+            this.creep.pickup(target);
+          }
+          this.creep.travelTo(target, {range: 1});
           return;
         }
 
@@ -620,6 +639,7 @@ export class LabManagementProcess extends Process
       if(this.metaData.labProcess)
       {
         let process = this.metaData.labProcess;
+
         let processFinished = this.checkProcessFinished(process);
         if(processFinished)
         {
@@ -638,11 +658,14 @@ export class LabManagementProcess extends Process
           return this.findLabProcess();
         }
 
-        if(this.labProcess)
+        if(process)
         {
-          this.room.visual.text(this.labProcess.currentShortage.mineralType, this.reagentLabs[0].pos, {color: 'yellow', font: '0.8'});
+          this.room.visual.text(process.targetShortage.mineralType + ' ' + process.targetShortage.amount,
+            5,1, {color: 'yellow', align:'left'});
+          this.room.visual.text(process.currentShortage.mineralType + ' ' + process.currentShortage.amount,
+            5, 2, {color: 'yellow', align:'left'});
         }
-        
+
         return process;
       }
 

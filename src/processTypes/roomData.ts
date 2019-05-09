@@ -35,6 +35,8 @@ export class RoomDataProcess extends Process{
 
   run(){
     let room = Game.rooms[this.metaData.roomName]
+    if(room.name === 'E50S49')
+      console.log('Observer',1)
     if(room === undefined)
     {
       Memory.rooms[this.metaData.roomName].cache = {};
@@ -43,10 +45,16 @@ export class RoomDataProcess extends Process{
     }
     else
     {
+      if(room.name === 'E50S49')
+      console.log('Observer',2)
       room.memory.lastVision = Game.time;
     }
 
+    if(room.name === 'E50S49')
+      console.log('Observer',3)
     this.importFromMemory(room)
+    if(room.name === 'E50S49')
+      console.log('Observer',4)
 
     /*if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0)
     {
@@ -78,13 +86,13 @@ export class RoomDataProcess extends Process{
       }
 
 
-      /*let observer = this.kernel.data.roomData[room.name].observer
+      let observer = this.kernel.data.roomData[room.name].observer
       if(observer)
       {
         this.kernel.addProcessIfNotExist(ObservationProcess, 'op-' + this.metaData.roomName, 18, {
           roomName: room.name
         })
-      }*/
+      }
     }
 
     if(room && room.controller && room.controller!.my){
@@ -297,7 +305,7 @@ export class RoomDataProcess extends Process{
     })
 
     let labs = <StructureLab[]>_.filter(myStructures, function(structure){
-      return (structure.structureType === STRUCTURE_LAB)
+      return (structure.structureType === STRUCTURE_LAB && structure.isActive());
     })
 
 

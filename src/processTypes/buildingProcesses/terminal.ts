@@ -11,7 +11,8 @@ export class TerminalManagementProcess extends Process
     {
       //let start = Game.cpu.getUsed();
       console.log(this.name)
-
+      let minimum = 1000000;
+      let minimumRoom: string;
       let lowRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.storage)
         {
@@ -24,8 +25,22 @@ export class TerminalManagementProcess extends Process
         }
       });
 
+       _.forEach(Game.rooms, (r) =>{
+        if(r.controller && r.controller.my && r.storage)
+        {
+          let storage = r.storage;
+          if(_.sum(storage.store) < minimum)
+          {
+            minimum = _.sum(storage.store);
+            minimumRoom = r.name;
+          }
+        }
+      })
+
+      console.log('Final min', minimum, minimumRoom)
+
       let fullRooms = _.filter(Game.rooms, (r) => {
-        if(r.controller && r.controller.my && r.terminal && r.controller && r.storage)
+        if(r.controller && r.controller.my && r.terminal && r.storage)
         {
           return (r.controller.level === 8 && r.storage.store.energy > ENERGY_KEEP_AMOUNT &&
             r.terminal.cooldown == 0 && r.terminal.store.energy >= 50000);
@@ -35,6 +50,42 @@ export class TerminalManagementProcess extends Process
           return false;
         }
       });
+
+      let maxFull = _.filter(Game.rooms, (r) => {
+        if(r.controller && r.controller.my && r.terminal && r.storage)
+        {
+          return (_.sum(r.storage.store) === r.storage.storeCapacity);
+        }
+        return false;
+      })
+
+      if(maxFull.length > 0)
+      {
+        let fRooms: {name: string, amount: number}[] =[];
+        _.forEach(maxFull, (m) => {
+          if(m.storage)
+          {
+            fRooms.push({name: m.name, amount: m.storage.store.energy});
+          }
+        });
+
+        if(fRooms.length > 0)
+        {
+          fRooms = _.sortBy(fRooms, 'amount').reverse();
+
+          let room = Game.rooms[fRooms[0].name];
+
+          if(room)
+          {
+            if(room.terminal && minimumRoom !== "")
+            {
+              let amount = 50000;
+              let retVal = room.terminal.send(RESOURCE_ENERGY, amount, minimumRoom);
+              this.log('!!!!!!!!!!!!!!!!!!!!!!!!!! Sending Max Energy from ' + room.name + ' to ' + minimumRoom + ' retVal ' + retVal + ' amount ' + amount);
+            }
+          }
+        }
+      }
 
       if(lowRooms.length > 0)
       {
@@ -53,6 +104,7 @@ export class TerminalManagementProcess extends Process
         })
 
         console.log(this.name, fullRooms.length);
+
 
         if(fullRooms.length > 0)
         {

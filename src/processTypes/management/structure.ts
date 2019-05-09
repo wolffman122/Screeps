@@ -87,7 +87,7 @@ export class StructureManagementProcess extends Process{
           if(this.roomData().ramparts.length)
           {
             let health = Utils.rampartHealth(this.kernel, this.metaData.roomName);
-            let target = controller.level * RAMPARTTARGET;
+            let target = RAMPARTTARGET;
             if(health > target * .98)
             {
               reapirCount = 1;
@@ -109,14 +109,14 @@ export class StructureManagementProcess extends Process{
               {
                 spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {})
               }
-              
+
               if(spawned)
               {
                 this.metaData.repairCreeps.push(creepName)
                 if(controller && controller.my && controller.level >= 8)
                 {
                   let boosts =[];
-                  boosts.push(RESOURCE_LEMERGIUM_HYDRIDE);
+
                   this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
                     creep: creepName,
                     roomName: this.metaData.roomName,
