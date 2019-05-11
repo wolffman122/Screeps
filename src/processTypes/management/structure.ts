@@ -83,6 +83,7 @@ export class StructureManagementProcess extends Process{
         if(controller && controller.level === 8)
         {
           let reapirCount = 2;
+          let needBoosting = true;
 
           if(this.roomData().ramparts.length)
           {
@@ -90,6 +91,7 @@ export class StructureManagementProcess extends Process{
             let target = RAMPARTTARGET;
             if(health > target * .98)
             {
+              needBoosting = false;
               reapirCount = 1;
             }
           }
@@ -115,7 +117,7 @@ export class StructureManagementProcess extends Process{
                 this.metaData.repairCreeps.push(creepName)
                 if(controller && controller.my && controller.level >= 8)
                 {
-                  let boosts =[];
+                  let boosts = needBoosting ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
 
                   this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
                     creep: creepName,
