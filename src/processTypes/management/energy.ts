@@ -293,7 +293,7 @@ export class EnergyManagementProcess extends Process{
             if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
             {
               let noUpgradeRooms = ['E52S46', 'E48S49', 'E39S35', 'E41S41', 'E41S38', 'E36S43', 'E38S46', 'E48S56']
-              if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) !== -1)
+              if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
               {
                 let boosts = [];
                 boosts.push(RESOURCE_GHODIUM_ACID)
