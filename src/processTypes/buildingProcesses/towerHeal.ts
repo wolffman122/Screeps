@@ -25,7 +25,7 @@ export class TowerHealProcess extends Process
                 {
                     let target = tower.pos.findClosestByPath(rangeDamage);
 
-                    if(target)
+                    if(target && target.hits < (target.hits * .5))
                     {
                         tower.heal(target);
                     }
