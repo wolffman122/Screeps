@@ -40,11 +40,20 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       let terminal = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_TERMINAL})[0] as StructureTerminal;
       let storage = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_STORAGE})[0] as StructureStorage;
 
-      if(creep.name === 'em-s-E47S46-15840909')
-        console.log('Spinner problem', 1)
       // Empty Creep
       if(_.sum(creep.carry) === 0)
       {
+        if(_.sum(storage.store) >= storage.storeCapacity * .99)
+        {
+          let target = (storage.store[RESOURCE_ENERGY] < storage.store[mineral.mineralType]) ? mineral.mineralType : RESOURCE_ENERGY;
+          if(target)
+          {
+            creep.withdraw(storage, target);
+            creep.memory.target = storage.id;
+            return;
+          }
+        }
+
         let link = data.storageLink;
         if(link && link.energy > 0)
         {
@@ -57,29 +66,37 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         let max = KEEP_AMOUNT;
         let retValue: string;
 
-        if(creep.name === 'em-s-E36S43-17427717')
-        console.log('Spinner problem', 21)
         target = _.find(Object.keys(terminal.store), (r) => {
-          if(r === RESOURCE_ENERGY && terminal.store[r] > 75000)
-            return r;
-
-          if(r !== RESOURCE_ENERGY && terminal.store[r] > max)
-          {
-            if(creep.name === 'em-s-E36S43-17427717')
-        console.log('Spinner problem', 22)
-            max = terminal.store[r];
-            retValue = r;
-          }
-
-          if(max > 0 && retValue)
-          {
-            return retValue;
-          }
+          if(r === RESOURCE_ENERGY && terminal.store[r] < 75000)
+            return true;
         });
+
+        if(target === RESOURCE_ENERGY)
+        {
+          target = "";
+        }
+        else
+        {
+          target = _.find(Object.keys(terminal.store), (r) => {
+            if(r === RESOURCE_ENERGY && terminal.store[r] > 75000)
+              return r;
+
+            if(r !== RESOURCE_ENERGY && terminal.store[r] > max)
+            {
+              max = terminal.store[r];
+              retValue = r;
+            }
+
+            if(max > 0 && retValue)
+            {
+              return retValue;
+            }
+          });
+        }
 
         if(target && target.length > 0)
         {
-          if(creep.name === 'em-s-E36S43-17427717')
+          if(creep.name === 'em-s-E39S35-17841311')
         console.log('Spinner problem', 3)
           if(target === RESOURCE_ENERGY)
           {
@@ -90,7 +107,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
           }
           else
           {
-            if(creep.name === 'em-s-E47S46-15840909')
+            if(creep.name === 'em-s-E39S35-17841311')
         console.log('Spinner problem', 4)
             let amount = terminal.store[target] - KEEP_AMOUNT < creep.carryCapacity ? terminal.store[target] - KEEP_AMOUNT : creep.carryCapacity;
             creep.withdraw(terminal, <ResourceConstant>target, amount);
@@ -100,17 +117,18 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(creep.name === 'em-s-E36S43-17427717')
+          if(creep.name === 'em-s-E39S35-17841311')
         console.log('Spinner problem', 5)
 
           target = _.find(Object.keys(storage.store), (r) => {
-            if(r === RESOURCE_ENERGY && terminal.store[r] < 75000 && storage.store[r] >= ENERGY_KEEP_AMOUNT)
+            if((r === RESOURCE_ENERGY && terminal.store[r] < 75000 && storage.store[r] >= ENERGY_KEEP_AMOUNT)
+              || (r === RESOURCE_ENERGY && terminal.store[r] < 10000 && storage.store[r] >= 10000))
               return r;
           });
 
           if(target && target.length > 0)
           {
-            if(creep.name === 'em-s-E36S43-17427717')
+            if(creep.name === 'em-s-E39S35-17841311')
         console.log('Spinner problem', 6)
             if(target === RESOURCE_ENERGY)
             {
@@ -122,7 +140,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
           }
           else if (storage.store[mineral.mineralType] > KEEP_AMOUNT && terminal.store[mineral.mineralType] < KEEP_AMOUNT)
           {
-            if(creep.name === 'em-s-E36S43-17427717')
+            if(creep.name === 'em-s-E39S35-17841311')
         console.log('Spinner problem', 7)
             creep.withdraw(storage, mineral.mineralType)
             creep.memory.target = storage.id;
@@ -131,12 +149,12 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       }
       else
       {
-        if(creep.name === 'em-s-E36S43-17427717')
+        if(creep.name === 'em-s-E39S35-17841311')
         console.log('Spinner problem', 8)
         // Full Creep
         let target = Game.getObjectById(creep.memory.target) as Structure;
 
-        if(creep.name === 'em-s-E36S43-17427717')
+        if(creep.name === 'em-s-E39S35-17841311')
           console.log('Spinner problem', 8, target.id)
 
 
@@ -146,7 +164,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         }
         else if(target instanceof StructureStorage)
         {
-          if(creep.name === 'em-s-E36S43-17427717')
+          if(creep.name === 'em-s-E39S35-17841311')
         console.log('Spinner problem', 9)
           creep.transferEverything(terminal);
         }

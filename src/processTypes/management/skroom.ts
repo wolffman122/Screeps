@@ -483,7 +483,7 @@ export class skRoomManagementProcess extends Process
               let flag =  room.find(FIND_FLAGS)[0];
               if(flag)
               {
-                if(room.name === 'E44S54')
+                //if(room.name === 'E44S54')
                   //console.log(this.name, 'Mining', 1, this.mineralMining)
                 if(!this.mineralMining)
                 {
@@ -538,6 +538,7 @@ export class skRoomManagementProcess extends Process
                 }
 
                 this.metaData.miner = Utils.clearDeadCreeps(this.metaData.miner);
+                //console.log(this.name, 'Mineral', this.metaData.miner.length, this.mineral.mineralAmount, this.metaData.miner[0])
                 if(this.metaData.miner.length < 1 && this.mineral.mineralAmount > 0)
                 {
                   let creepName = 'sk-miner-' + this.skRoomName + '-' + Game.time;

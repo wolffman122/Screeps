@@ -169,7 +169,7 @@ export const Stats = {
             Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined;
             Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined;
           }
-
+          
           if(room.terminal && room.terminal.my)
           {
             terminalEnergy += room.terminal.store.energy;

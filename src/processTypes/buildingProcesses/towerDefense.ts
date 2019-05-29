@@ -82,20 +82,24 @@ export class TowerDefenseProcess extends Process{
               let healRange = 50;
               let regRange = 50;
 
+              console.log(this.name, 'Parts', healTargets.length, regularTargets.length);
+
               _.forEach(healTargets, (ht) => {
-                let range = flag.pos.getRangeTo(ht);
+                let range = ht.pos.getRangeTo(flag);
+                console.log(this.name, 'HRange', range);
                 if(range < healRange)
                   healRange = range;
               })
 
               _.forEach(regularTargets, (rt) => {
-                let range = flag.pos.getRangeTo(rt);
+                let range = rt.pos.getRangeTo(flag);
+                console.log(this.name, 'Range', range);
                 if(range < regRange)
-                  regRange = healRange;
+                  regRange = range;
               })
 
               let dif = healRange - regRange;
-
+              console.log(this.name, healRange, regRange, dif);
               if(dif > 15)
               {
                 if(dif > 0)

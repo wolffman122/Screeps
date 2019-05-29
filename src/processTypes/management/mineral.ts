@@ -4,7 +4,7 @@ import { MineralHarvesterLifetimeProcess } from "processTypes/lifetimes/mineralH
 import { MineralDistroLifetimeProcess } from "processTypes/lifetimes/mineralDistro";
 import { SPREAD_AMOUNT, KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal";
 
-export class MineralManagementProcess extends Process
+export class  MineralManagementProcess extends Process
 {
   type = 'minerals';
   metaData: MineralManagementProcessMetaData
@@ -22,7 +22,7 @@ export class MineralManagementProcess extends Process
     let terminal = Game.rooms[this.metaData.roomName].terminal;
     let mineral = this.kernel.data.roomData[this.metaData.roomName].mineral;
     let container = this.kernel.data.roomData[this.metaData.roomName].mineralContainer;
-    let storage = Game.rooms[this.metaData.roomName].find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_STORAGE})[0] as StructureStorage;
+    let storage = Game.rooms[this.metaData.roomName].storage;
 
     if(!mineral || !container)
     {
@@ -62,7 +62,7 @@ export class MineralManagementProcess extends Process
 
     //if(this.metaData.mining && mineral.mineralAmount > 0)
 
-    if(storage && storage.store[mineral.mineralType] < 100000)
+    if(storage && (storage.store[mineral.mineralType] < 100000 || storage.store[mineral.mineralType] === undefined))
     {
       if(this.metaData.mining || (mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
       {
@@ -103,6 +103,7 @@ export class MineralManagementProcess extends Process
           case 'E52S46':
           case 'E35S41':
           case 'E58S52':
+          case 'E38S39':
             harvesters = 3;
             break;
           case 'E36S43':

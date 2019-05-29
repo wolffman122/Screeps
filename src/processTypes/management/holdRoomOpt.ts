@@ -336,7 +336,8 @@ export class HoldRoomOptManagementProcess extends Process
                     sourceContainer: sc.id,
                     spawnRoom: spawnRoomName,
                     creep: creep.name,
-                    flagName: flag.name
+                    flagName: flag.name,
+                    roomData: flag.pos.roomName,
                   });
                 });
             });

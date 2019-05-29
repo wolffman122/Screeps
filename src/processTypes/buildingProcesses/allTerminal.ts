@@ -86,7 +86,7 @@ export class AllTerminalManagementProcess extends Process
                 {
 
                 }
-                else if(max.amount >= 6000 && min.amount < 5000)
+                else if(max.amount >= 6000 && min.amount < 5000 && _.sum(minTerminal.store) < minTerminal.storeCapacity)
                 {
                     if(_.sum(minTerminal.store) <= minTerminal.storeCapacity - 10000)
                     {

@@ -3,16 +3,20 @@ import {LifetimeProcess} from '../../os/process'
 import {CollectProcess} from '../creepActions/collect'
 
 export class DistroLifetimeOptProcess extends LifetimeProcess{
-  type = 'dlfOpt'
+  type = 'dlfOpt';
+  metaData: DistroLifetimeOptProcessMetaData
 
   run(){
     let creep = this.getCreep()
 
     if(!creep){ return }
 
-    // Idle off the road
+    // Room energy full parts
     if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable)
     {
+      if(creep.pos.roomName === 'E38S39')
+        this.kernel.sendIpc(this.name, "labm-" + this.metaData.roomName, "Testing");
+        
       let storage = creep.room.storage;
       if(storage)
         creep.idleOffRoad(storage, false);

@@ -32,7 +32,6 @@ export class DefenseManagementProcess extends Process
 
     let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
 
-
     if(room.controller && room.controller.my)
     {
       let dangerEnemies = _.filter(enemies, (e) => {
@@ -51,6 +50,7 @@ export class DefenseManagementProcess extends Process
           this.metaData.defenderCreeps.push(creepName);
           this.kernel.addProcess(DefenderLifetimeProcess, 'deflf-' + creepName, 60, {
             creep: creepName,
+            roomName: this.metaData.roomName,
             flagName: flagName
           });
         }

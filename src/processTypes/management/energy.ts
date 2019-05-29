@@ -120,6 +120,17 @@ export class EnergyManagementProcess extends Process{
             }
           }
 
+
+
+          let openSpots = source.pos.openAdjacentSpots(true);
+          if(openSpots.length === 1)
+          {
+            let container = openSpots[0].lookForStructures(STRUCTURE_CONTAINER);
+            if(container)
+              numberOfHarvesters = 1;
+          }
+
+
           if(count < numberOfHarvesters) //300
           {
             let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
@@ -233,8 +244,8 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E47S46':
-            upgraders = 2;
+          case 'E38S39':
+            upgraders = 3;
             break;
           default:
             upgraders = 1;
@@ -292,7 +303,9 @@ export class EnergyManagementProcess extends Process{
 
             if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
             {
-              let noUpgradeRooms = ['E52S46', 'E48S49', 'E39S35', 'E41S41', 'E41S38', 'E36S43', 'E38S46', 'E48S56']
+              let noUpgradeRooms = ['E52S46', 'E48S49', 'E39S35', 'E41S41', 'E41S38', 'E36S43', 'E38S46',
+/* temp no upgrades*/               'E43S52', 'E43S53', 'E43S55', 'E45S57', 'E48S57', 'E48S56', 'E58S52',
+                                    'E41S49', 'E38S59', 'E39S35', 'E41S41', 'E42S48']
               if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
               {
                 let boosts = [];
@@ -379,7 +392,7 @@ export class EnergyManagementProcess extends Process{
 
           switch(this.metaData.roomName)
           {
-            case 'E47S46':
+            case 'E38S39':
               upgradeDistroAmount = 2;
               break;
             default:

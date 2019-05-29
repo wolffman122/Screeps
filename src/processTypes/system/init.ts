@@ -94,7 +94,7 @@ export class InitProcess extends Process{
              room.name === 'E41S49' || room.name === 'E42S48' || room.name === 'E43S52' || room.name === 'E43S55' ||
              room.name === 'E36S38' || room.name === 'E48S57' || room.name === 'E41S38' || room.name === 'E39S35' ||
              room.name === 'E39S35' || room.name === 'E38S59' || room.name === 'E55S47' || room.name === 'E48S56' ||
-             room.name === 'E56S43' || room.name === 'E47S46')
+             room.name === 'E56S43' || room.name === 'E47S46' || room.name === 'E38S54')
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
@@ -102,6 +102,15 @@ export class InitProcess extends Process{
                 roomName: room.name
               });
             }
+          }
+
+          if(room.name === 'E38S39')
+          {
+            const labs = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB});
+            if(room.controller && room.controller.my && room.controller.level >= 6 && labs.length > 0)
+              proc.kernel.addProcessIfNotExist(LabManagementProcess, 'labm-' + room.name, 30, {
+                roomName: room.name
+              });
           }
         }
       }

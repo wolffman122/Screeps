@@ -32,6 +32,7 @@ export class FlagWatcherProcess extends Process
 
   claimFlag(flag: Flag)
   {
+    console.log('Blue 2', flag.pos.roomName, flag.name);
     this.kernel.addProcessIfNotExist(ClaimProcess, 'claim-' + flag.name, 20, { targetRoom: flag.pos.roomName, flagName: flag.name});
   }
 
@@ -104,6 +105,7 @@ export class FlagWatcherProcess extends Process
           switch(flag.secondaryColor)
           {
             case COLOR_BLUE:
+              console.log('Claim blue');
               proc.claimFlag(flag);
               break;
             case COLOR_RED:

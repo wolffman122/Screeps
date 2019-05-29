@@ -222,6 +222,7 @@ interface Flag {
       follower: string;
       skMineral?: string;
       centerSKMineral?: string;
+      roadComplete?: number;
   }
 
   interface RoomMemory
@@ -279,6 +280,13 @@ interface Flag {
     visionCreeps: string[]
     upgradePrespawn?: boolean
     upgradeDistroPrespawn?: boolean
+  }
+
+  interface DistroLifetimeOptProcessMetaData
+  {
+    roomName: string,
+    sourceContainer: string,
+    resource: ResourceConstant,
   }
 
   interface SquadManagementProcessMetaData
@@ -435,6 +443,7 @@ interface Flag {
 
   interface DefenderLifetimeProcessMetaData
   {
+    roomName: string
     flagName: string
   }
 
@@ -481,6 +490,7 @@ interface Flag {
     checkProcessTick: number;
     labProcess?: LabProcess;
     processFlag?: string;
+    testMessage?: string;
   }
 
   interface LabMemory
@@ -552,6 +562,7 @@ interface Flag {
     flagName: string,
     sourceContainer: string
     spawnRoom: string
+    roomData: string
   }
 
   interface GeneralAttackManagementProcessMetaData

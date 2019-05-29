@@ -67,16 +67,15 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(!creep.pos.inRangeTo(fleeFlag, 5))
-          {
-            creep.travelTo(fleeFlag);
-            return;
-          }
-          else
+          let container = this.kernel.data.roomData[creep.room.name].generalContainers[0];
+          if(creep.pos.inRangeTo(container.pos, 0))
           {
             creep.suicide();
             return;
           }
+
+          creep.travelTo(container);
+          return;
         }
       }
       return;

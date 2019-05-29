@@ -9,6 +9,8 @@ export class ClaimProcess extends Process{
   run(){
     let creep = Game.creeps[this.metaData.creep]
 
+    console.log(this.name, 'Claiming', Utils.nearestRoom(this.metaData.targetRoom, 600));
+    
     let flag = Game.flags[this.metaData.flagName]
     let baseFlagName;
     let numberOfFlags;
@@ -33,7 +35,7 @@ export class ClaimProcess extends Process{
 
       spawned = Utils.spawn(
         this.kernel,
-        Utils.nearestRoom(this.metaData.targetRoom, 550),
+        Utils.nearestRoom(this.metaData.targetRoom, 600),
         'claimer',
         creepName,
         {}

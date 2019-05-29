@@ -36,9 +36,26 @@ export class LabManagementProcess extends Process
 
   run()
   {
+    if(this.name === "labm-E38S39")
+    {
+      let msg = this.kernel.getIpc(this.name);
+      if(msg)
+      {
+        if(msg.message === "Testing")
+        {
+          this.metaData.testMessage = "Success";
+        }
+      }
+
+      if(this.metaData.testMessage)
+      {
+        console.log(this.name, "Messaging worked");
+      }
+    }
+
     this.room = Game.rooms[this.metaData.roomName];
 
-    if(this.name === 'labm-E48S56')
+    if(this.name === 'labm-E47S46')
       console.log(this.name, 'Running')
     this.ensureMetaData();
 
@@ -100,6 +117,9 @@ export class LabManagementProcess extends Process
       }
 
 
+      let temp = Game.creeps[this.metaData.labDistros[0]];
+      if(this.name === 'labm-E47S46')
+      console.log(this.name, 'Running 1', temp.name, temp.pos)
       this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
 
       if(this.metaData.labDistros.length === 0)

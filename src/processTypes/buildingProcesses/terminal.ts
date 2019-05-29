@@ -1,5 +1,5 @@
 import { Process } from "os/process";
-import { ENERGY_KEEP_AMOUNT } from "./mineralTerminal";
+import { ENERGY_KEEP_AMOUNT, KEEP_AMOUNT } from "./mineralTerminal";
 
 export class TerminalManagementProcess extends Process
 {
@@ -16,7 +16,7 @@ export class TerminalManagementProcess extends Process
       let lowRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.storage)
         {
-          return ((r.storage.store.energy < 380000 ||  r.storage.store === undefined) && r.controller && r.controller.my &&
+          return ((r.storage.store.energy < 200000 || r.storage.store === undefined) && r.controller && r.controller.my &&
             r.terminal.my);
         }
         else
@@ -26,7 +26,7 @@ export class TerminalManagementProcess extends Process
       });
 
        _.forEach(Game.rooms, (r) =>{
-        if(r.controller && r.controller.my && r.storage)
+        if(r.controller && r.controller.my && r.storage && r.terminal && r.terminal.my)
         {
           let storage = r.storage;
           if(_.sum(storage.store) < minimum)
@@ -59,6 +59,7 @@ export class TerminalManagementProcess extends Process
         return false;
       })
 
+      console.log(this.name, fullRooms.length, maxFull.length, lowRooms.length);
       if(maxFull.length > 0)
       {
         let fRooms: {name: string, amount: number}[] =[];
@@ -89,6 +90,7 @@ export class TerminalManagementProcess extends Process
 
       if(lowRooms.length > 0)
       {
+        console.log(this.name, fullRooms.length, lowRooms.length);
         let lRooms: {name: string, amount: number, storeAmount: number}[] = [];
         _.forEach(lowRooms, (f) => {
           if(f.storage)
@@ -105,6 +107,7 @@ export class TerminalManagementProcess extends Process
 
         console.log(this.name, fullRooms.length);
 
+        console.log(this.name, "Getting further");
 
         if(fullRooms.length > 0)
         {
@@ -127,9 +130,9 @@ export class TerminalManagementProcess extends Process
 
             if(room)
             {
-              if(room.terminal)
+              if(room.terminal && room.terminal.cooldown === 0)
               {
-                console.log(this.name, 'Full 1', lRooms[0].name, lRooms[0].amount);
+                console.log(this.name, room.name, 'sending to', lRooms[0].name, lRooms[0].amount);
                 let amount = 300000 - lRooms[0].amount;
                 //if(Game.map.getRoomLinearDistance(room.name, lRooms[0].name) > 10)
                 if(amount > 50000)
