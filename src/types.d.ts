@@ -180,6 +180,8 @@ interface Flag {
       powerMinimum: number;
     };
     gclAmount: number;
+    wolffOS: any;
+    stats: any;
   }
 
   interface ObserveMemory

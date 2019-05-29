@@ -325,7 +325,7 @@ export class EnergyManagementProcess extends Process{
                 });
               }
             }
-            else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, s => s.structureType === STRUCTURE_LAB).length >= 3)
+            else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB}).length >= 3)
             {
               let boosts = [];
               boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
