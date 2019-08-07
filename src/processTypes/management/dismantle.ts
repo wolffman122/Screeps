@@ -20,8 +20,6 @@ export class DismantleManagementProcess extends Process
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
 
-    this.log('Dismantle ' + flag);
-
     if(!flag)
     {
       this.completed = true;
@@ -32,6 +30,7 @@ export class DismantleManagementProcess extends Process
 
     let deliverRoom = flag.name.split('-')[0];
     let numberOfDismantlers = +flag.name.split('-')[1];
+    let boostLevel = +flag.name.split('-')[2];
 
 
     numberOfDismantlers = Math.min(numberOfDismantlers, 3);

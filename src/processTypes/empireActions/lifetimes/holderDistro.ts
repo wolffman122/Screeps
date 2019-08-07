@@ -25,6 +25,10 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    // Setup for road complete
+    if(flag.memory.roadComplete === undefined)
+      flag.memory.roadComplete = 0;
+
     if(Game.time % 10 === 5 && creep.room.name  !== spawnName)
     {
       let enemies = creep.room!.find(FIND_HOSTILE_CREEPS);
@@ -86,14 +90,25 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
       if(sourceContainer)
       {
-        if(!creep.pos.inRangeTo(sourceContainer, 1))
+        const sources = this.kernel.data.roomData[flag.pos.roomName].sources;
+        if(!creep.pos.inRangeTo(sourceContainer, 1) && _.sum(sourceContainer.store) > creep.carryCapacity * .5)
         {
           if(creep.room.name === flag.room!.name)
           {
-            creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+
+            if(flag.memory.roadComplete < sources.length)
+            {
+              creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+            }
           }
+
           creep.travelTo(sourceContainer);
           return;
+        }
+        else
+        {
+          if(flag.memory.roadComplete < sources.length)
+            flag.memory.roadComplete++;
         }
 
         let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
@@ -126,6 +141,20 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
           creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           return;
         }
+        else if(flag.room.storage && _.sum(flag.room.storage.store) > 0)
+        {
+          let storage = flag.room.storage;
+          if(creep.pos.isNearTo(storage))
+          {
+            creep.withdrawEverything(storage);
+            return;
+          }
+          else
+          {
+            creep.travelTo(storage);
+            return;
+          }
+        }
         else
         {
           this.suspend = 20;
@@ -134,6 +163,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       }
     }
 
+    if(this.kernel.data.roomData[this.metaData.spawnRoom])
+    {
     if(this.kernel.data.roomData[this.metaData.spawnRoom].links.length > 0)
     {
       let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
@@ -290,5 +321,6 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         }
       }
     }
+  }
   }
 }

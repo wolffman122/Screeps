@@ -20,12 +20,19 @@ Creep.prototype.fixMyRoad = function()
   {
     return false;
   }
-
+  let terrain = this.pos.lookFor(LOOK_TERRAIN);
   let found = this.pos.lookFor(LOOK_STRUCTURES);
   var road = _.filter(found, (f: Structure) => {
               if(f.structureType === STRUCTURE_ROAD)
               {
-                return f;
+                if(terrain)
+                {
+                  let t = terrain[0] as Terrain;
+                  if(t !== "wall")
+                    return f;
+                }
+                else
+                  return;
               }
               else
               {
@@ -66,6 +73,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       }
     }
   }
+
   // Load Memory from the global object if it is there and up to date.
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){
     delete global.Memory

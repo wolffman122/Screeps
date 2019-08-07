@@ -80,6 +80,7 @@ import { ObservationProcess } from 'processTypes/buildingProcesses/observation';
 import { ReportProcess } from 'processTypes/system/reports';
 import { skRoomManagementProcess } from 'processTypes/management/skroom';
 import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
+import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
 
 
 
@@ -156,7 +157,8 @@ const processTypes = <{[type: string]: any}>{
   'op': ObservationProcess,
   'report': ReportProcess,
   'skrmp': skRoomManagementProcess,
-  'lh': TowerHealProcess
+  'lh': TowerHealProcess,
+  'atmp': AllTerminalManagementProcess,
 }
 
 interface KernelData{
@@ -385,10 +387,16 @@ export class Kernel{
         read: false
       })
     }
+
+    console.log('IPC', this.ipc.length);
   }
 
   /** Get ipc messages for the given process */
   getIpc(targetProcess: string){
+    //console.log('IPC get', this.ipc.length);
+    _.forEach(this.ipc, (i) => {
+    //  console.log('IPC list', i.to);
+    })
     let index =  _.findIndex(this.ipc, function(entry){
       if(entry.to == targetProcess)
       {
@@ -397,6 +405,7 @@ export class Kernel{
       return;
     });
 
+    //console.log('IPC get', 2, index);
     if(index >= 0)
     {
       this.ipc[index].read = true;

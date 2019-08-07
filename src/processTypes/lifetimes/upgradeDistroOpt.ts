@@ -56,22 +56,24 @@ export class UpgradeDistroLifetimeOptProcess extends LifetimeProcess
     }
 
 
-
-    let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
-
-    if(target && _.sum(target.store) < target.storeCapacity)
+    if(this.kernel.data.roomData[creep.room.name])
     {
-      if(creep.pos.isNearTo(target))
+      let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
+      if(target && _.sum(target.store) < target.storeCapacity)
       {
-          creep.transfer(target, RESOURCE_ENERGY);
-          return;
-      }
+        if(creep.pos.isNearTo(target))
+        {
+            creep.transfer(target, RESOURCE_ENERGY);
+            return;
+        }
 
-      creep.travelTo(target, {range: 1});
-    }
-    else
-    {
-      this.suspend = 5;
+        creep.travelTo(target, {range: 1});
+      }
+      else
+      {
+        this.suspend = 5;
+      }
     }
   }
 }

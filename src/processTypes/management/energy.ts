@@ -34,9 +34,13 @@ export class EnergyManagementProcess extends Process{
       this.metaData.visionCreeps = []
   }
 
+  runRoomVisuals(room: Room)
+  {
+    room.visual.text('RCL ' + (room.controller.progress / room.controller.progressTotal) * 100, 5,3, {color: 'white', align: 'left'});
+  }
+
   run(){
     this.ensureMetaData()
-
     if(!this.kernel.data.roomData[this.metaData.roomName])
     {
       this.completed = true
@@ -47,6 +51,7 @@ export class EnergyManagementProcess extends Process{
 
     if(room.controller && room.controller.my)
     {
+      this.runRoomVisuals(room)
       if(room && room.memory.assisted)
       {
         this.metaData.visionCreeps = Utils.clearDeadCreeps(this.metaData.visionCreeps);
@@ -114,6 +119,17 @@ export class EnergyManagementProcess extends Process{
                 break;
             }
           }
+
+
+
+          let openSpots = source.pos.openAdjacentSpots(true);
+          if(openSpots.length === 1)
+          {
+            let container = openSpots[0].lookForStructures(STRUCTURE_CONTAINER);
+            if(container)
+              numberOfHarvesters = 1;
+          }
+
 
           if(count < numberOfHarvesters) //300
           {
@@ -228,7 +244,7 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E36S38':
+          case 'E27S38':
             upgraders = 2;
             break;
           default:
@@ -285,18 +301,31 @@ export class EnergyManagementProcess extends Process{
           {
             this.metaData.upgradeCreeps.push(creepName)
 
-            if(Game.rooms[proc.metaData.roomName].controller!.level === 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
+            if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
             {
-              let boosts = [];
-              boosts.push(RESOURCE_GHODIUM_ACID)
-              this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                creep: creepName,
-                roomName: proc.metaData.roomName,
-                boosts: boosts,
-                allowUnboosted: true
-              })
+              let noUpgradeRooms = ['E52S46', 'E48S49', 'E39S35', 'E41S41', 'E41S38', 'E36S43', 'E38S46',
+/* temp no upgrades*/               'E43S52', 'E43S53', 'E43S55', 'E45S57', 'E48S57', 'E48S56', 'E58S52',
+                                    'E41S49', 'E38S59', 'E39S35', 'E41S41', 'E42S48', 'E58S44']
+              // if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
+              // {
+              //   let boosts = [];
+              //   boosts.push(RESOURCE_GHODIUM_ACID)
+              //   this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+              //     creep: creepName,
+              //     roomName: proc.metaData.roomName,
+              //     boosts: boosts,
+              //     allowUnboosted: true
+              //   })
+              // }
+              // else
+              // {
+                this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+                  creep: creepName,
+                  roomName: proc.metaData.roomName
+                });
+              //}
             }
-            else if(proc.metaData.roomName === 'E36S38')
+            else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB}).length >= 3)
             {
               let boosts = [];
               boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
@@ -363,11 +392,11 @@ export class EnergyManagementProcess extends Process{
 
           switch(this.metaData.roomName)
           {
-            case 'E36S38':
-              upgradeDistroAmount = 2;
+            case 'E27S38':
+              upgradeDistroAmount = 1;
               break;
             default:
-              upgradeDistroAmount = 2;
+              upgradeDistroAmount = 1;
               break;
           }
 

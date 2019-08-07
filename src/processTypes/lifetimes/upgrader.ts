@@ -20,6 +20,9 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       this.metaData.boosts = undefined;
     }
 
+    if(creep.name === 'em-u-E39S35-13761633')
+      console.log(this.name, 'problem')
+
     if(this.metaData.boosts)
     {
       let boosted = true;

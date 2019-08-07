@@ -592,7 +592,7 @@ export class Traveler {
        * @param cleanup
        */
 
-      public static patchMemory(cleanup = false) {
+      /*public static patchMemory(cleanup = false) {
           if (!Memory.empire) { return; }
           if (!Memory.empire.hostileRooms) { return; }
           let count = 0;
@@ -611,7 +611,7 @@ export class Traveler {
           }
 
           console.log(`TRAVELER: room avoidance data patched for ${count} rooms`);
-      }
+      }*/
 
       private static deserializeState(travelData: TravelData, destination: RoomPosition): TravelState {
           let state = {} as TravelState;

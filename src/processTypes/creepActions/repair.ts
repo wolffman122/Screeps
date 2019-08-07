@@ -28,7 +28,7 @@ export class RepairProcess extends Process{
           return
         }
       }
-      creep.travelTo(target);
+      creep.travelTo(target, {range: 3});
     }
     else
     {

@@ -18,7 +18,6 @@ export class DismantleProcess extends Process
 
     let targets = <Structure[]>flag.pos.lookFor(LOOK_STRUCTURES);
 
-    this.log('Targets ' + targets.length);
     if(targets.length == 0)
     {
       let spawn = this.kernel.data.roomData[creep.pos.roomName].enemySpawns[0];
@@ -31,7 +30,6 @@ export class DismantleProcess extends Process
       else
       {
         let ret = creep.dismantle(spawn);
-        console.log(this.name, ret, 11111);
       }
     }
     else
@@ -41,7 +39,6 @@ export class DismantleProcess extends Process
 
       if(_.sum(creep.carry) < creep.carryCapacity)
       {
-        this.log('wtf 1')
         if(!creep.pos.inRangeTo(targetPos, 1))
         {
           creep.travelTo(targetPos);
@@ -54,7 +51,6 @@ export class DismantleProcess extends Process
       }
       else
       {
-        this.log('wtf 2')
         if(creep.pos.isNearTo(target))
         {
           creep.dismantle(target);

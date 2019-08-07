@@ -30,6 +30,10 @@ export class Process
   /** Messages */
   messages: {[name: string]: any} = {}
 
+  logging: boolean = false
+
+  logName?: string;
+
   /** Creates a new Process from the entry supplied */
   constructor(entry: SerializedProcess, kernel: Kernel){
     this.priority = entry.priority
@@ -104,7 +108,8 @@ export class Process
 
   /** Returns the room Data */
   roomData(){
-    return this.kernel.data.roomData[this.metaData.roomName]
+    if(this.kernel.data.roomData)
+      return this.kernel.data.roomData[this.metaData.roomName]
   }
 
   roomInfo(roomName: string)

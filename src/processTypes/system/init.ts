@@ -11,6 +11,7 @@ import { TerminalManagementProcess } from 'processTypes/buildingProcesses/termin
 import { MinetalTerminalManagementProcess } from '../buildingProcesses/mineralTerminal';
 import { LabManagementProcess } from 'processTypes/management/lab';
 import { ReportProcess } from './reports';
+import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
 
 /*
 
@@ -35,8 +36,24 @@ export class InitProcess extends Process{
       }
     }
 
+    let gRooms = Object.keys(Game.rooms);
+    let mRooms = Object.keys(Memory.rooms);
+
+    let observedRooms = _.difference(mRooms, gRooms);
+    if(observedRooms.length)
+    {
+      _.forEach(observedRooms, (or) => {
+        console.log('Hoping observed rooms ', or );
+        if(!Game.rooms[or])
+          Memory.rooms[or] = undefined;
+      })
+    }
+    _
+    console.log('Observer', 0)
     _.forEach(Game.rooms, function(room){
-      proc.kernel.addProcess(RoomDataProcess, 'roomData-' + room.name, 99, {
+      if(room.name === 'E50S49')
+        console.log('Observer', 11)
+      proc.kernel.addProcessIfNotExist(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
       })
 
@@ -78,7 +95,10 @@ export class InitProcess extends Process{
              room.name === 'E55S48' || room.name === 'E45S48' || room.name === 'E48S49' || room.name === 'E43S53' ||
              room.name === 'E45S57' || room.name === 'E52S46' || room.name === 'E51S49' || room.name === 'E58S52' ||
              room.name === 'E41S49' || room.name === 'E42S48' || room.name === 'E43S52' || room.name === 'E43S55' ||
-             room.name === 'E36S38' || room.name === 'E48S57')
+             room.name === 'E36S38' || room.name === 'E48S57' || room.name === 'E41S38' || room.name === 'E39S35' ||
+             room.name === 'E39S35' || room.name === 'E38S59' || room.name === 'E55S47' || room.name === 'E48S56' ||
+             room.name === 'E56S43' || room.name === 'E47S46' || room.name === 'E38S54' || room.name === 'E45S53' ||
+             room.name === 'E27S38' || room.name === 'E58S44')
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
@@ -87,6 +107,15 @@ export class InitProcess extends Process{
               });
             }
           }
+
+          if(room.name === 'E38S39')
+          {
+            const labs = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB});
+            if(room.controller && room.controller.my && room.controller.level >= 6 && labs.length > 0)
+              proc.kernel.addProcessIfNotExist(LabManagementProcess, 'labm-' + room.name, 30, {
+                roomName: room.name
+              });
+          }
         }
       }
     })
@@ -94,11 +123,13 @@ export class InitProcess extends Process{
     this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});
     this.kernel.addProcessIfNotExist(SuspensionProcess, 'suspension-master', 99, {master: true})
     this.kernel.addProcessIfNotExist(FlagWatcherProcess, 'flag-watcher', 98, {})
-    //this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
-    this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 15,  {});
+    this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
+    this.kernel.addProcessIfNotExist(AllTerminalManagementProcess, 'atmp', 15, {});
+    //this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 15, {});
     this.kernel.addProcessIfNotExist(TerminalManagementProcess, 'terminal', 14, {});
 
 
     this.completed = true
+
   }
 }

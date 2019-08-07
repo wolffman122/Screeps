@@ -25,6 +25,19 @@ export class DefenderLifetimeProcess extends LifetimeProcess
     {
       let enemies  = <Creep[]>centerFlag.pos.findInRange(FIND_HOSTILE_CREEPS, 14);
 
+      if(enemies.length === 0)
+      {
+        let container = this.kernel.data.roomData[creep.pos.roomName].generalContainers[0];
+        if(creep.pos.inRangeTo(container.pos, 0))
+        {
+          creep.suicide();
+          return;
+        }
+
+        creep.travelTo(container);
+        return;
+      }
+
       if(enemies.length > 0)
       {
         let targets = _.filter(enemies, (e)=> {

@@ -43,6 +43,7 @@ export class HoldRoomManagementProcess extends Process
 
   run()
   {
+    //console.log(this.name, 'hrm')
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
     let spawnRoomName = this.metaData.flagName.split('-')[0];
@@ -62,7 +63,7 @@ export class HoldRoomManagementProcess extends Process
 
     if(flag.memory.enemies)
     {
-      this.log('Remote room enemy present ticks left ' + (flag.memory.timeEnemies! + 1500 - Game.time));
+      //this.log('Remote room enemy present ticks left ' + (flag.memory.timeEnemies! + 1500 - Game.time));
       if(flag.memory.timeEnemies! + 1500 <= Game.time)
       {
         flag.memory.enemies = false;
@@ -233,7 +234,7 @@ export class HoldRoomManagementProcess extends Process
 
               if(this.metaData.harvestCreeps[s.id].length < 1)
               {
-                console.log("Need to make some harvesting creeps " + s.id);
+                //console.log("Need to make some harvesting creeps " + s.id);
                   let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
                   let spawned = Utils.spawn(
                     this.kernel,

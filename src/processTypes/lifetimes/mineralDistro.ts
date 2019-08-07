@@ -22,33 +22,22 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
 
       if(container)
       {
-        if(container.store[this.metaData.mineralType]! >= creep.carryCapacity)    // TODO not sure if this is the best way either.
+        if(_.sum(container.store) >= creep.carryCapacity)    // TODO not sure if this is the best way either.
         {
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-            target: container.id,
-            creep: creep.name,
-            resource: this.metaData.mineralType
-          });
+          if(creep.pos.inRangeTo(container, 1))
+          {
+            creep.withdrawEverything(container);
+            return;
+          }
 
-          return;
-        }
-        else if(container.store[RESOURCE_ENERGY] > 0)
-        {
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-            target: container.id,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          });
-
-          return;
-        }
-        else if(!creep.pos.inRangeTo(container, 1))
-        {
           creep.travelTo(container);
+          return;
         }
         else
         {
+          creep.idleOffRoad(container, true);
           this.suspend = 10;
+          return;
         }
       }
     }
@@ -57,19 +46,25 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
     {
       if(creep.room.storage.store[this.metaData.mineralType]! > 20000 && (_.sum(creep.room.terminal!.store) !== creep.room.terminal!.storeCapacity))
       {
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-          target: creep.room.terminal.id,
-          creep: creep.name,
-          resource: this.metaData.mineralType
-        });
+        if(creep.pos.inRangeTo(creep.room.terminal,1))
+        {
+          creep.transferEverything(creep.room.terminal);
+          return;
+        }
+
+        creep.travelTo(creep.room.terminal);
+        return;
       }
       else
       {
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-          target: creep.room.storage.id,
-          creep: creep.name,
-          resource: this.metaData.mineralType
-        });
+        if(creep.pos.inRangeTo(creep.room.storage,1))
+        {
+          creep.transferEverything(creep.room.storage);
+          return;
+        }
+
+        creep.travelTo(creep.room.storage);
+        return;
       }
     }
   }

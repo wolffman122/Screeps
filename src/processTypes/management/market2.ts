@@ -9,20 +9,18 @@ export class MarketManagementProces2s extends Process
 
   run()
   {
-    this.completed = true;
-    return;
     let proc = this;
     //this.kernel.sendIpc('market', 'minerals-E48S57', {value: "Testing Send"});
 
 
     // TODO need to make metaData.mining an array to store if it is mining for each room.
-    if(proc.metaData.mining === undefined)
+    /*if(proc.metaData.mining === undefined)
     {
       proc.log('Reseting Mining');
       proc.metaData.mining = {};
-    }
+    }*/
 
-    proc.log('Beginning');
+    
     if(Game.time % 5 === 0)
     {
       let buyOrders = Game.market.getAllOrders({resourceType: RESOURCE_ENERGY, type: ORDER_BUY});

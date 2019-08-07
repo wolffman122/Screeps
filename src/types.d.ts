@@ -47,6 +47,7 @@ interface Flag {
       sellAbove: Number
       displayOldProcesses: boolean
       conLog: (message: string) => void;
+      gcl: number
     }
   }
 
@@ -178,6 +179,10 @@ interface Flag {
       creditReserveAmount: number;
       powerMinimum: number;
     };
+    gclAmount: number;
+    wolffOS: any;
+    stats: any;
+    powerObservers: {[scanningRoomName: string]: {[roomName: string]: number}};
   }
 
   interface ObserveMemory
@@ -206,6 +211,9 @@ interface Flag {
       devilName: string;
       target?: string;
       filling: boolean;
+      pickup: boolean;
+      fleePath?: RoomPosition[];
+      full: boolean;
   }
 
   interface FlagMemory
@@ -216,6 +224,11 @@ interface Flag {
       droppedResource: boolean;
       rollCall: number;
       follower: string;
+      skMineral?: string;
+      centerSKMineral?: string;
+      roadComplete?: number;
+      healer?: string;
+      attacker?: string;
   }
 
   interface RoomMemory
@@ -233,6 +246,8 @@ interface Flag {
     assisted: boolean;
     rampartHealth?: number;
     invadersPresent?: boolean;
+    skSourceRoom?: boolean;
+    lastVision: number;
   }
 
   interface SpawnMemory {}
@@ -273,8 +288,17 @@ interface Flag {
     upgradeDistroPrespawn?: boolean
   }
 
+  interface DistroLifetimeOptProcessMetaData
+  {
+    roomName: string,
+    sourceContainer: string,
+    resource: ResourceConstant,
+  }
+
   interface SquadManagementProcessMetaData
   {
+    roomName: string,
+    attackRoomName: string,
     attackers: string[],
     healers: string[],
     flagName: string,
@@ -343,16 +367,8 @@ interface Flag {
 
   interface MarketManagementProcessMetaData
   {
-    data: {
-      [roomName: string]: {
-        mining: boolean,
-        amount: number,
-        waitingToSell: boolean,
-        orderId?: string,
-        tickLastPriceChange: number,
-        sellPrice: number
-      }
-    }
+    orderCreated?: boolean
+    orderId?: string
   }
 
   interface BuildProcessMetaData
@@ -433,6 +449,7 @@ interface Flag {
 
   interface DefenderLifetimeProcessMetaData
   {
+    roomName: string
     flagName: string
   }
 
@@ -478,6 +495,8 @@ interface Flag {
     lastCommandTick: number;
     checkProcessTick: number;
     labProcess?: LabProcess;
+    processFlag?: string;
+    testMessage?: string;
   }
 
   interface LabMemory
@@ -511,6 +530,22 @@ interface Flag {
     flagName: string
   }
 
+  interface roomAmounts
+  {
+    roomName: string,
+    amount: number,
+    terminal: string
+  }
+  interface AllTerminalManagementProcessMetaData
+  {
+    resources: {
+      [mineral: string]: roomAmounts[]
+    }
+
+    creeps: {
+      [source: string]: string[]
+    }
+  }
 
 
   interface MineralManagementProcessMetaData
@@ -518,7 +553,7 @@ interface Flag {
     roomName: string
     mineralHarvesters: string[]
     mineralHaulers: string[]
-    mining: boolean
+    mining: boolean;
   }
 
   interface RemoteDefenseManagementProcessMetaData
@@ -533,6 +568,7 @@ interface Flag {
     flagName: string,
     sourceContainer: string
     spawnRoom: string
+    roomData: string
   }
 
   interface GeneralAttackManagementProcessMetaData
@@ -550,6 +586,12 @@ interface Flag {
   }
 
   interface AttackerLifetimeProcessMetaData
+  {
+    creep: string[],
+    flagName: string,
+  }
+
+  interface HealerLifetimeProcessMetaData
   {
     creep: string[],
     flagName: string,
@@ -596,9 +638,6 @@ interface Flag {
   interface PowerManagementProcessMetaData
   {
     roomName: string;
-    clydes: string[];
-    bonnies: string[];
-    carts: string[];
     currentBank: BankData;
     scanIndex: number;
     scanData: {[roomName: string]: number}
@@ -615,10 +654,15 @@ interface Flag {
 
   interface SKRoomManagementProcessMetaData
   {
+    mineralMining: boolean,
+    centerSKMining: boolean,
+    miningFlag: string,
+    centerMiningFlag: string,
     invaders: boolean,
     flagName: string,
     roomName: string,
     skRoomName: string,
+    centerRoomName: string,
     scoutName?: string,
     vision: boolean,
     locations: {
@@ -639,6 +683,20 @@ interface Flag {
     roadsDone: {
       [container: string]: boolean
     }
+    miningDistance?: number
+    centerMiningDistance?: number
+    miner: string[]
+    centerMiner: string[]
+    minerHauler: string[]
+  }
+
+  interface ObservationProcessMetaData
+  {
+    roomName: string;
+    scanRooms?: string[];
+    initializeData: boolean;
+    currentBank: BankData;
+    scanIndex: number;
   }
 //// Minerals
 

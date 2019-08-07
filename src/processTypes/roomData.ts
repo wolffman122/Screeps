@@ -29,19 +29,37 @@ export class RoomDataProcess extends Process{
   mapObjectFields = [ 'skSourceContainerMaps' ]
 
   singleFields = [
-    'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
+    'lastVision', 'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
     'nuker', 'observer', 'powerBank'
   ]
 
   run(){
     let room = Game.rooms[this.metaData.roomName]
+    if(room.name === 'E50S49')
+      console.log('Observer',1)
+    if(room === undefined)
+    {
+      Memory.rooms[this.metaData.roomName].cache = {};
+      this.completed;
+      return;
+    }
+    else
+    {
+      if(room.name === 'E50S49')
+        console.log('Observer',2)
+      room.memory.lastVision = Game.time;
+    }
 
+    if(room.name === 'E50S49')
+      console.log('Observer',3)
     this.importFromMemory(room)
+    if(room.name === 'E50S49')
+      console.log('Observer',4)
 
-    if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0)
+    /*if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0)
     {
       console.log(this.metaData.roomName, "construciton sites")
-    }
+    }*/
 
     if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
       if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
@@ -111,10 +129,6 @@ export class RoomDataProcess extends Process{
 
   /** Returns the room data */
   build(room: Room){
-    if(room.name === 'E45S56')
-    {
-      console.log(this.name, '1');
-    }
 
     let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(room.name) as any;
     let fMod = parsed[1] % 10;
@@ -122,9 +136,6 @@ export class RoomDataProcess extends Process{
     let isSK =  !(fMod === 5 && sMod === 5) &&
         ((fMod >= 4) && (fMod <= 6)) &&
         ((sMod >= 4) && (sMod <= 6));
-
-    if(room.name === 'E45S56')
-      console.log(this.name, 2, isSK);
 
     let structures = <Structure[]>room.find(FIND_STRUCTURES)
     let myStructures = <Structure[]>room.find(FIND_MY_STRUCTURES)
@@ -147,27 +158,10 @@ export class RoomDataProcess extends Process{
     let sourceContainers = _.filter(containers, function(container){
       var sources: Array<Source> = container.pos.findInRange(FIND_SOURCES, 1)
 
-      if(room.name === 'E45S56')
-      {
-        console.log('Room Data sk stuff ???????????????????????????????????????????????')
-      }
-
       if(isSK)
       {
-        if(room.name === 'E45S56')
-        {
-          console.log('iN SK')
-        }
         let lair = container.pos.findClosestByRange(lairs);
-        if(room.name === 'E45S56')
-        {
-          console.log('iN SK', lair)
-        }
         skSourceContainerMaps[sources[0].id] = { container: container, lair: lair };
-        if(room.name === 'E45S56')
-        {
-          console.log('iN SK', skSourceContainerMaps[sources[0].id].container, skSourceContainerMaps[sources[0].id].lair)
-        }
       }
       else
       {
@@ -188,6 +182,12 @@ export class RoomDataProcess extends Process{
         }
         else
         {
+          let sources = container.pos.findInRange(FIND_SOURCES, 1);
+          if(sources.length)
+          {
+            return false;
+          }
+
           return (container.pos.inRangeTo(container.room.controller, 4));
         }
       }
@@ -305,7 +305,7 @@ export class RoomDataProcess extends Process{
     })
 
     let labs = <StructureLab[]>_.filter(myStructures, function(structure){
-      return (structure.structureType === STRUCTURE_LAB)
+      return (structure.structureType === STRUCTURE_LAB && structure.isActive());
     })
 
 
@@ -313,6 +313,7 @@ export class RoomDataProcess extends Process{
 
 
     let roomData: RoomData = {
+      lastVision: Number,
       constructionSites: <ConstructionSite[]>room.find(FIND_CONSTRUCTION_SITES),
       containers: containers,
       extensions: <StructureExtension[]>_.filter(myStructures, function(structure){
@@ -404,7 +405,11 @@ export class RoomDataProcess extends Process{
     })
 
     _.forEach(this.singleFields, function(field){
-      if(roomData[field])
+      if(field === 'lastVision')
+      {
+          room.memory.cache[field] = Game.time;
+      }
+      else if(roomData[field])
       {
         if(roomData[field].id)
         {
@@ -425,6 +430,7 @@ export class RoomDataProcess extends Process{
     }
 
     let roomData: RoomData = {
+      lastVision: Number,
       constructionSites: [],
       containers: [],
       extensions: [],
@@ -599,7 +605,6 @@ export class RoomDataProcess extends Process{
       i += 1
       if(i === this.singleFields.length){ run = false }
     }
-
 
     this.kernel.data.roomData[this.metaData.roomName] = roomData
   }

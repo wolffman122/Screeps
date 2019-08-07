@@ -1,6 +1,7 @@
 import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { AttackerLifetimeProcess } from "../lifetimes/attacker";
+import { HealerLifetimeProcess } from "processTypes/lifetimes/healer";
 
 export class GeneralAttackManagementProcess extends Process
 {
@@ -36,7 +37,7 @@ export class GeneralAttackManagementProcess extends Process
         }
 
         this.metaData.attackers = Utils.clearDeadCreeps(this.metaData.attackers);
-
+        this.metaData.healers = Utils.clearDeadCreeps(this.metaData.healers);
         console.log("Number Of Attackers", numberOfAttackers, "Number of healers", numberOfHealers, spawnRoom);
 
 
@@ -53,6 +54,7 @@ export class GeneralAttackManagementProcess extends Process
 
             if(spawned)
             {
+                flag.memory.attacker = creepName;
                 this.metaData.attackers.push(creepName);
                 this.kernel.addProcessIfNotExist(AttackerLifetimeProcess, 'attacklf-' + creepName, this.priority-1, {
                     creep: creepName,
@@ -61,10 +63,27 @@ export class GeneralAttackManagementProcess extends Process
             }
         }
 
-        /*if(this.metaData.healers.length < numberOfHealers)
+        if(this.metaData.healers.length < numberOfHealers)
         {
+            let creepName = 'gamp-healer-' + flag.pos.roomName + '-' + Game.time;
+            let spawned = Utils.spawn(
+                this.kernel,
+                spawnRoom,
+                'healer',
+                creepName,
+                {}
+            );
 
-        }*/
+            if(spawned)
+            {
+                flag.memory.healer = creepName;
+                this.metaData.healers.push(creepName);
+                this.kernel.addProcessIfNotExist(HealerLifetimeProcess, 'healerlf-' + creepName, this.priority-1, {
+                    creep: creepName,
+                    flagName: this.metaData.flagName
+                })
+            }
+        }
     }
 
 }

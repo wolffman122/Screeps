@@ -8,6 +8,7 @@ export class skRoomManagementProcess extends Process
     type = 'skrmp';
     metaData: SKRoomManagementProcessMetaData;
 
+    mineralMining: boolean;
     skFlag: Flag;
     scout?: Creep;
     skRoomName: string;
@@ -17,10 +18,12 @@ export class skRoomManagementProcess extends Process
     lairs: StructureKeeperLair[];
     sources: Source[];
     invaders: boolean;
+    mineral: Mineral;
 
 
     ensureMetaData()
     {
+      this.mineralMining = this.metaData.mineralMining;
       this.invaders = this.metaData.invaders;
         this.skRoomName = this.metaData.skRoomName
         this.scout = this.metaData.scoutName ? Game.creeps[this.metaData.scoutName] : undefined;
@@ -89,12 +92,22 @@ export class skRoomManagementProcess extends Process
         {
           this.metaData.roadsDone = {};
         }
+
+        if(!this.metaData.miner)
+        {
+          this.metaData.miner = [];
+        }
+
+        if(!this.metaData.minerHauler)
+        {
+          this.metaData.minerHauler = [];
+        }
     }
 
     run()
     {
-      console.log(this.name);
-
+      if(Game.cpu.bucket < 8000)
+        return;
       let centerFlag = Game.flags['Center-'+this.metaData.roomName];
 
       this.skFlag = Game.flags[this.metaData.flagName];
@@ -102,11 +115,16 @@ export class skRoomManagementProcess extends Process
       {
           this.completed = true;
           Memory.flags[this.metaData.flagName] = undefined;
+          Memory.rooms[this.metaData.roomName].skSourceRoom = undefined;
           return;
       }
 
-      this.ensureMetaData();
+      if(this.skFlag.room.memory.skSourceRoom === undefined)
+      {
+        this.skFlag.room.memory.skSourceRoom = true;
+      }
 
+      this.ensureMetaData();
 
       if(!this.metaData.vision)
       {
@@ -235,6 +253,8 @@ export class skRoomManagementProcess extends Process
             console.log(this.name, error);
           }
 
+
+
           ////////////////////////////////////////////////////////////
           ///
           ///          Devil Spawn Code
@@ -273,7 +293,7 @@ export class skRoomManagementProcess extends Process
           }
 
 
-          if(this.metaData.devils.length && !this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
+          if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
           {
 
             /////////////////////////////////////////////////////////////
@@ -283,44 +303,47 @@ export class skRoomManagementProcess extends Process
             ////////////////////////////////////////////////////////////
 
             this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
-            if(!this.roomInfo(this.skRoomName).sourceContainers ||
-              (this.roomInfo(this.skRoomName).sourceContainers.length < this.roomInfo(this.skRoomName).sources.length))
+            if(this.roomInfo(this.skRoomName))
             {
-              if(this.metaData.builderCreeps.length < 2)
+              if(this.roomInfo(this.skRoomName).sourceContainers.length < this.roomInfo(this.skRoomName).sources.length)
               {
-                let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
-                let spawned = Utils.spawn(
-                  this.kernel,
-                  this.metaData.roomName,
-                  'worker',
-                  creepName,
-                  {}
-                );
-
-                if(spawned)
+                if(this.metaData.builderCreeps.length < 2)
                 {
-                  // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
-                  this.metaData.builderCreeps.push(creepName);
+                  let creepName = 'sk-build-' + this.skRoomName + '-' + Game.time;
+                  let spawned = Utils.spawn(
+                    this.kernel,
+                    this.metaData.roomName,
+                    'worker',
+                    creepName,
+                    {}
+                  );
+
+                  if(spawned)
+                  {
+                    // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
+                    this.metaData.builderCreeps.push(creepName);
+                  }
                 }
               }
-            }
-            else if(this.roomInfo(this.skRoomName).constructionSites.length > 0)
-            {
-              if(this.metaData.builderCreeps.length < 1)
+              else if(this.roomInfo(this.skRoomName).constructionSites.length > 0)
               {
-                let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
-                let spawned = Utils.spawn(
-                  this.kernel,
-                  this.metaData.roomName,
-                  'worker',
-                  creepName,
-                  {}
-                );
-
-                if(spawned)
+                console.log('Provlem 2', this.metaData.builderCreeps.length)
+                if(this.metaData.builderCreeps.length < 1)
                 {
-                  // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
-                  this.metaData.builderCreeps.push(creepName);
+                  let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
+                  let spawned = Utils.spawn(
+                    this.kernel,
+                    this.metaData.roomName,
+                    'worker',
+                    creepName,
+                    {}
+                  );
+
+                  if(spawned)
+                  {
+                    // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
+                    this.metaData.builderCreeps.push(creepName);
+                  }
                 }
               }
             }
@@ -328,7 +351,6 @@ export class skRoomManagementProcess extends Process
             for(let i = 0; i < this.metaData.builderCreeps.length; i++)
             {
               let builder = Game.creeps[this.metaData.builderCreeps[i]];
-              console.log(this.name, 'Builder', builder.name);
               if(builder)
               {
                 this.BuilderActions(builder);
@@ -340,13 +362,12 @@ export class skRoomManagementProcess extends Process
             ///          Harvester Spawn Code
             ///
             ////////////////////////////////////////////////////////////
-            if(this.roomInfo(this.skRoomName).sourceContainers.length > 0)
+            if(this.roomInfo(this.skRoomName) && this.roomInfo(this.skRoomName).sourceContainers.length > 0)
             {
               let sources = this.roomInfo(this.skRoomName).sources;
 
               _.forEach(sources, (s)=> {
-
-                if(!this.roomInfo(this.skRoomName).skSourceContainerMaps[s.id])
+                if(this.roomInfo(this.skRoomName) && !this.roomInfo(this.skRoomName).skSourceContainerMaps[s.id])
                 {
                   return;
                 }
@@ -384,7 +405,6 @@ export class skRoomManagementProcess extends Process
                   }
                 }
 
-                console.log('Harvest loop', this.metaData.harvestCreeps[s.id].length)
                 for(let i = 0; i < this.metaData.harvestCreeps[s.id].length; i++)
                 {
                   let harvester = Game.creeps[this.metaData.harvestCreeps[s.id][i]];
@@ -402,64 +422,193 @@ export class skRoomManagementProcess extends Process
             ///          Hauling Spawn Code
             ///
             ////////////////////////////////////////////////////////////
-            _.forEach(Object.keys(this.roomInfo(this.skRoomName).skSourceContainerMaps), (key) => {
+            if(this.roomInfo(this.skRoomName))
+            {
+              _.forEach(Object.keys(this.roomInfo(this.skRoomName).skSourceContainerMaps), (key) => {
 
-                let source = Game.getObjectById(key) as Source;
-                if(source)
+                  let source = Game.getObjectById(key) as Source;
+                  if(source)
+                  {
+                    if(!this.metaData.distroCreeps[source.id])
+                        this.metaData.distroCreeps[source.id] = [];
+
+                    if(!this.metaData.distroDistance[source.id])
+                    {
+                        let ret = PathFinder.search(centerFlag.pos, source.pos, {
+                            plainCost: 2,
+                            swampCost: 10,
+                        });
+
+                        this.metaData.distroDistance[source.id] = ret.path.length;
+                    }
+
+                    let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[source.id]);
+                    this.metaData.distroCreeps[source.id] = creepNames;
+                    let creeps = Utils.inflateCreeps(creepNames);
+
+                    let count = 0;
+                    _.forEach(creeps, (c) => {
+                        let ticksNeeded = c.body.length * 3 + this.metaData.distroDistance[source.id];
+                        if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+                    });
+
+                    let numberDistro = 1;
+                    if(this.metaData.distroDistance[source.id] > 55)
+                    {
+                        numberDistro = 2;
+                    }
+
+                    if(count < numberDistro)
+                    {
+                        let creepName = 'sk-m-' + this.skRoomName + '-' + Game.time;
+                        let spawned = Utils.spawn(
+                            this.kernel,
+                            this.metaData.roomName,
+                            'holdmover',
+                            creepName,
+                            {}
+                        );
+
+                        if(spawned)
+                        {
+                            this.metaData.distroCreeps[source.id].push(creepName);
+                        }
+                    }
+
+                    //Hauler Action Code
+                    _.forEach(creeps, (creep) => {
+                      this.HaulerActions(creep, source);
+                    });
+                  }
+                });
+              }
+
+            let room = Game.rooms[this.skRoomName];
+            if(room)
+            {
+              //console.log(this.name, 'SK mining find flag');
+              let flag =  room.find(FIND_FLAGS)[0];
+              if(flag)
+              {
+                //if(room.name === 'E44S54')
+                  //console.log(this.name, 'Mining', 1, this.mineralMining)
+                if(!this.mineralMining)
                 {
-                  if(!this.metaData.distroCreeps[source.id])
-                      this.metaData.distroCreeps[source.id] = [];
+                 // console.log(this.name, 'SK mining', this.mineralMining);
 
-                  if(!this.metaData.distroDistance[source.id])
+                  let name = flag.name.split('-')[0];
+                  //console.log(this.name, 'Flag check', name, flag);
+                  if(flag && name === 'Mining')
                   {
-                      let ret = PathFinder.search(centerFlag.pos, source.pos, {
-                          plainCost: 2,
-                          swampCost: 10,
-                      });
-
-                      this.metaData.distroDistance[source.id] = ret.path.length;
+                    this.metaData.miningFlag = flag.name;
+                    this.metaData.mineralMining = true;
+                    this.mineralMining = true;
                   }
-
-                  let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[source.id]);
-                  this.metaData.distroCreeps[source.id] = creepNames;
-                  let creeps = Utils.inflateCreeps(creepNames);
-
-                  let count = 0;
-                  _.forEach(creeps, (c) => {
-                      let ticksNeeded = c.body.length * 3 + this.metaData.distroDistance[source.id];
-                      if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
-                  });
-
-                  let numberDistro = 1;
-                  if(this.metaData.distroDistance[source.id] > 65)
-                  {
-                      numberDistro = 2;
-                  }
-
-                  if(count < numberDistro)
-                  {
-                      let creepName = 'sk-m-' + this.skRoomName + '-' + Game.time;
-                      let spawned = Utils.spawn(
-                          this.kernel,
-                          this.metaData.roomName,
-                          'holdmover',
-                          creepName,
-                          {}
-                      );
-
-                      if(spawned)
-                      {
-                          this.metaData.distroCreeps[source.id].push(creepName);
-                      }
-                  }
-
-                  //Hauler Action Code
-                  _.forEach(creeps, (creep) => {
-                    console.log('Haulers Start', creep.name);
-                    this.HaulerActions(creep, source);
-                  });
                 }
-              });
+                //if(room.name === 'E44S54')
+                  //console.log(this.name, 'Mining', 2)
+              }
+              else
+              {
+                this.metaData.miningFlag = undefined;
+                this.metaData.mineralMining = false;
+                this.mineralMining = false;
+              }
+            }
+
+            if(this.metaData.mineralMining)
+            {
+              ////////////////////////////////////////////////////////////
+              ///
+              ///          Mining Spawn Code
+              ///
+              ////////////////////////////////////////////////////////////
+              if(this.roomInfo(this.skRoomName))
+              {
+                this.mineral = this.roomInfo(this.skRoomName).mineral;
+                let terminal = Game.rooms[this.metaData.roomName].terminal;
+                // Check if terminal has capacity
+                //console.log(this.name, 'Mining prob', this.mineral.mineralAmount <= (terminal.storeCapacity -_.sum(terminal.store)))
+                if(terminal && (this.mineral.mineralAmount <= (terminal.storeCapacity -_.sum(terminal.store))))
+                {
+                  if(this.skFlag.memory.skMineral === undefined)
+                  {
+                    this.skFlag.memory.skMineral = this.mineral.id;
+                  }
+
+                  if(this.metaData.miningDistance === undefined)
+                  {
+                    let ret = PathFinder.search(centerFlag.pos, this.mineral.pos, {
+                      plainCost: 2,
+                      swampCost: 10,
+                    });
+
+                    this.metaData.miningDistance = ret.path.length;
+                  }
+
+                  this.metaData.miner = Utils.clearDeadCreeps(this.metaData.miner);
+                  //console.log(this.name, 'Mineral', this.metaData.miner.length, this.mineral.mineralAmount, this.metaData.miner[0])
+                  if(this.metaData.miner.length < 1 && this.mineral.mineralAmount > 0)
+                  {
+                    let creepName = 'sk-miner-' + this.skRoomName + '-' + Game.time;
+                    let spawned = Utils.spawn(
+                      this.kernel,
+                      this.metaData.roomName,
+                      'skMiner',
+                      creepName,
+                      {}
+                    );
+
+                    if(spawned)
+                    {
+                      this.metaData.miner.push(creepName);
+                    }
+                  }
+
+                  ////////////////////////////////////////////////////////////
+                  ///
+                  ///          Mine Hauler Spawn Code
+                  ///
+                  ////////////////////////////////////////////////////////////
+                  this.metaData.minerHauler = Utils.clearDeadCreeps(this.metaData.minerHauler);
+
+                  if(this.metaData.minerHauler.length < 1 && this.metaData.miner.length === 1)
+                  {
+                    let creepName = 'sk-mineHauler-' + this.skRoomName + '-' + Game.time;
+                    let spawned = Utils.spawn(
+                      this.kernel,
+                      this.metaData.roomName,
+                      'skMinerHauler',
+                      creepName,
+                      {}
+                    );
+
+                    if(spawned)
+                    {
+                      this.metaData.minerHauler.push(creepName);
+                    }
+                  }
+                }
+              }
+
+              for(let i = 0; i < this.metaData.miner.length; i++)
+                {
+                  let miner = Game.creeps[this.metaData.miner[i]];
+                  if(miner)
+                  {
+                    this.MinerActions(miner);
+                  }
+                }
+
+                for(let i = 0; i < this.metaData.minerHauler.length; i++)
+                {
+                  let hauler = Game.creeps[this.metaData.minerHauler[i]];
+                  if(hauler)
+                  {
+                    this.MinerHaulerActions(hauler, this.mineral);
+                  }
+                }
+            }
           }
         }
       }
@@ -474,15 +623,21 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
+        if(devil.name === 'E44S55-devil-19274309')
+          console.log('Devil Problems', 1)
         if(!devil.memory.boost)
         {
+          if(devil.name === 'E44S55-devil-19274309')
+          console.log('Devil Problems', 2)
           devil.boostRequest([RESOURCE_LEMERGIUM_OXIDE, RESOURCE_KEANIUM_OXIDE], false);
           return;
         }
+        if(devil.name === 'E44S55-devil-19274309')
+          console.log('Devil Problems', 3)
         let targetName: string|undefined;
 
         // Just spawned moving to SK Room.
-        if(devil.pos.roomName !== this.skRoomName && !devil.memory.target)
+        if((devil.pos.roomName == this.metaData.roomName && !devil.memory.target) || devil.pos.roomName !== this.skRoomName)
         {
           devil.travelTo(new RoomPosition(25, 25, this.skRoomName));
         }
@@ -503,10 +658,8 @@ export class skRoomManagementProcess extends Process
               let target: Creep;
               //Find healers
               let healers = _.filter(invaders, (i) =>{
-                return i.getBodyParts(HEAL);
+                return i.getActiveBodyparts(HEAL) > 0;
               });
-
-              let closeTarget = devil.pos.findClosestByRange(invaders);
 
               if(healers.length)
               {
@@ -533,10 +686,14 @@ export class skRoomManagementProcess extends Process
                 let numberInRange = devil.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
                 if(numberInRange.length > 1)
                 {
-                  devil.rangedMassAttack();
-                  if(closeTarget)
+                  if(devil.pos.inRangeTo(target, 3))
                   {
-                    devil.attack(closeTarget);
+                    devil.rangedAttack(target);
+                  }
+                  else if(devil.pos.inRangeTo(target, 1))
+                  {
+                    devil.rangedMassAttack();
+                    devil.attack(target);
                   }
 
                 }
@@ -564,9 +721,19 @@ export class skRoomManagementProcess extends Process
           {
             if(!devil.memory.target)    // Find a target name
             {
-              let sourceKeepers = _.filter(this.lairs, (l) => {
-                return (l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
-              });
+              let sourceKeepers: StructureKeeperLair[] = [];
+              if(this.mineralMining)
+              {
+                sourceKeepers = _.filter(this.lairs, (l) => {
+                  return (l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
+                });
+              }
+              else
+              {
+                sourceKeepers = _.filter(this.lairs, (l) => {
+                  return (l.pos.findInRange(FIND_SOURCES, 6).length && l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
+                });
+              }
 
               if(sourceKeepers.length)  // Found screep around source.
               {
@@ -604,8 +771,8 @@ export class skRoomManagementProcess extends Process
                   if(SkScreep instanceof StructureKeeperLair)
                   {
                     devil.memory.target = undefined;
-                    let damaged = devil.pos.findInRange(FIND_CREEPS, 5, {
-                      filter: c => c.my && c.hits < c.hitsMax
+                    let damaged = devil.pos.findInRange(FIND_CREEPS, 10, {
+                      filter: c => c.my && c.hits < c.hitsMax && c.getActiveBodyparts(WORK) === 9
                     });
                     if(damaged.length)
                     {
@@ -617,12 +784,22 @@ export class skRoomManagementProcess extends Process
                       }
                       else
                       {
-                        devil.travelTo(target);
+                        devil.travelTo(target, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
+                          let room = Game.rooms[roomName];
+                          if(room)
+                          {
+                              room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
+                          }
+
+                          return matrix;
+                      }
+                      });
                       }
                       return;
                     }
                   }
 
+                  devil.rangedAttack(SkScreep);
                   devil.attack(SkScreep);
                 }
                 else if(devil.pos.inRangeTo(SkScreep,3))
@@ -631,9 +808,18 @@ export class skRoomManagementProcess extends Process
                   {
                       devil.memory.target = undefined;
                   }
-
+                  devil.rangedAttack(SkScreep);
                   devil.heal(devil);
-                  devil.travelTo(SkScreep);
+                  devil.travelTo(SkScreep, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
+                    let room = Game.rooms[roomName];
+                    if(room)
+                    {
+                        room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
+                    }
+
+                    return matrix;
+                    }
+                  });
                 }
                 else
                 {
@@ -648,7 +834,31 @@ export class skRoomManagementProcess extends Process
                     {
                       devil.heal(devil);
                     }
-                    devil.travelTo(SkScreep);
+                    else
+                    {
+                      let damCreeps = devil.room.find(FIND_CREEPS, {filter: c => c.hits < c.hitsMax});
+                      if(damCreeps.length)
+                      {
+                        let healTarget = devil.pos.findInRange(damCreeps, 3)[0];
+                        if(healTarget)
+                        {
+                          if(devil.pos.isNearTo(healTarget))
+                            devil.heal(healTarget);
+                          else
+                            devil.rangedHeal(healTarget);
+                        }
+                      }
+                    }
+                    devil.travelTo(SkScreep, {maxRooms: 1, roomCallback:(roomName, matrix)=>{
+                      let room = Game.rooms[roomName];
+                      if(room)
+                      {
+                          room.find(FIND_EXIT).forEach(exit=>matrix.set(exit.x, exit.y, 0xff))
+                      }
+
+                      return matrix;
+                  }
+                  });
                   }
                 }
               }
@@ -684,7 +894,6 @@ export class skRoomManagementProcess extends Process
         {
           if(!this.invaders)
           {
-            console.log('Builders', 1)
             let enemies = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
             if(enemies.length === 0)
             {
@@ -847,6 +1056,15 @@ export class skRoomManagementProcess extends Process
                             }
                           }
 
+                          //console.log(this.name, 'open spots', source.pos.openAdjacentSpots(false).length);
+                          if(source.pos.openAdjacentSpots(false).length == 0)
+                          {
+                            let sources = this.kernel.data.roomData[builder.pos.roomName].sources;
+                            _.remove(sources, (s) => {
+                              return s.id === source.id;
+                            });
+                            source = builder.pos.findClosestByRange(sources);
+                          }
 
 
                           builder.travelTo(source);
@@ -868,7 +1086,7 @@ export class skRoomManagementProcess extends Process
 
                               if(builder.pos.isNearTo(source))
                               {
-                                  if(_.sum(builder.carry) === builder.carryCapacity)
+                                  if(_.sum(builder.carry) >= (builder.carryCapacity - builder.getActiveBodyparts(WORK) * HARVEST_POWER))
                                   {
                                     builder.memory.filling = false;
                                   }
@@ -960,8 +1178,10 @@ export class skRoomManagementProcess extends Process
                   if(builder.pos.inRangeTo(target, 3))
                   {
                     let ret = builder.build(target);
+                    //console.log('Builder issue', _.sum(builder.carry), builder.memory.filling)
                     if(_.sum(builder.carry) === 0)
                     {
+                      //console.log('Builder should not be in here');
                       builder.memory.filling = true;
                     }
                     return;
@@ -1019,7 +1239,16 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
-        console.log(this.name, 'harvester invaders', this.invaders)
+        if(!harvester.memory.fleePath)
+        {
+          let sk = source.pos.findClosestByRange(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_KEEPER_LAIR });
+          let ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 7}, {flee: true});
+          if(ret.path.length)
+          {
+            harvester.memory.fleePath = ret.path
+          }
+        }
+
         if(!this.invaders)
         {
           //////////// SK Lair Checking ///////////////////////
@@ -1027,20 +1256,11 @@ export class skRoomManagementProcess extends Process
           {
             let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
             let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
-            if(lair.ticksToSpawn < 10 || sk.length > 0)
+            if(lair.ticksToSpawn < 16 || sk.length > 0)
             {
-              if(harvester.pos.getRangeTo(source) < 10)
-              {
-                let dir = harvester.pos.getDirectionTo(lair) as number;
-                dir = dir + 4;
-                if(dir > 7)
-                {
-                  dir = dir % 7;
-                }
-
-                harvester.move(dir as DirectionConstant);
-                return;
-              }
+              let ret = PathFinder.search(harvester.pos, {pos: source.pos, range: 8}, {flee: true});
+              harvester.moveByPath(ret.path);
+              return;
             }
           }
 
@@ -1057,11 +1277,8 @@ export class skRoomManagementProcess extends Process
             if(container.hits < container.hitsMax * .95 ||
               (source.energy > 0 && _.sum(container.store) === container.storeCapacity && container.hits < container.hitsMax))
             {
-              console.log(this.name, 'Container', 1, harvester.memory.filling);
-
               if(_.sum(harvester.carry) == 0 || harvester.memory.filling)
               {
-                console.log(this.name, 'Container', 2);
                 if(_.sum(harvester.carry) === harvester.carryCapacity)
                 {
                   harvester.memory.filling = false;
@@ -1072,7 +1289,6 @@ export class skRoomManagementProcess extends Process
               }
               else if(_.sum(harvester.carry) != 0 || harvester.memory.filling === false)
               {
-                console.log(this.name, 'Container', 3);
                 if(_.sum(harvester.carry) === 0)
                   harvester.memory.filling = true;
 
@@ -1103,7 +1319,6 @@ export class skRoomManagementProcess extends Process
         else
         {
           let ret = harvester.travelTo(this.skFlag);
-          console.log(this.name, 'harvester flee', ret);
         }
       }
       catch (error)
@@ -1131,141 +1346,147 @@ export class skRoomManagementProcess extends Process
           }
           else
           {
-            if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
+            if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id] && hauler.room.name === this.skRoomName)
             {
               let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
               let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
               if(lair.ticksToSpawn < 10 || sk.length > 0)
               {
-                if(hauler.pos.getRangeTo(source) < 5)
-                {
-                  let dir = hauler.pos.getDirectionTo(source) as number;
-                  dir = dir + 4;
-                  if(dir > 7)
-                  {
-                    dir = dir % 7;
-                  }
-
-                  hauler.move(dir as DirectionConstant);
-                  return;
-                }
-                else
-                  hauler.say('Fleeing');
-                  return;
+                let ret = PathFinder.search(hauler.pos, {pos: source.pos, range: 6}, {flee: true});
+                hauler.moveByPath(ret.path);
+                return;
               }
             }
 
-            if(_.sum(hauler.carry) === 0 && hauler.ticksToLive! > 100)
+            if(!hauler.memory.full && hauler.ticksToLive! > this.metaData.distroDistance[source.id])
             {
-              let tombstone = hauler.pos.findInRange(FIND_TOMBSTONES, 5)[0];
-              if(tombstone && tombstone.store.energy > 0)
+              if(_.sum(hauler.carry) === hauler.carryCapacity)
               {
-                if(hauler.pos.isNearTo(tombstone))
-                {
-                  hauler.withdraw(tombstone, RESOURCE_ENERGY);
-                }
-
-                hauler.travelTo(tombstone, {range: 1});
-                return;
+                hauler.memory.full = true;
               }
-
-              let sourceContainer = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
-              if(sourceContainer)
+              else
               {
-                if(!hauler.pos.inRangeTo(sourceContainer, 1))
+                let tombstone = hauler.pos.findInRange(FIND_TOMBSTONES, 10)[0];
+                if(tombstone && tombstone.store.energy > 600)
                 {
-                    if(hauler.room.name === this.skRoomName && !this.metaData.roadsDone[source.id])
-                    {
-                        hauler.room.createConstructionSite(hauler.pos, STRUCTURE_ROAD);
-                    }
-                    hauler.travelTo(sourceContainer);
-                    return;
-                }
-                else
-                {
-                  this.metaData.roadsDone[source.id] = true;
-                }
-                let resource = <Resource[]>source.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
-                if(resource.length > 0)
-                {
-                    let withdrawAmount = hauler.carryCapacity - _.sum(hauler.carry) - resource[0].amount;
-
-                    if(withdrawAmount >=0)
-                    {
-                        hauler.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
-                    }
-
-                    hauler.pickup(resource[0]);
-                    return;
-                }
-                else if(sourceContainer.store.energy > hauler.carryCapacity)
-                {
-                    hauler.withdraw(sourceContainer, RESOURCE_ENERGY);
-                    return;
-                }
-                else
-                {
-                  if(hauler.pos.getRangeTo(source) < 5)
+                  if(hauler.pos.isNearTo(tombstone))
                   {
-                    let dir = hauler.pos.getDirectionTo(source) as number;
-                    dir = dir + 4;
-                    if(dir > 7)
-                    {
-                      dir = dir % 7;
-                    }
+                    hauler.withdraw(tombstone, RESOURCE_ENERGY);
+                  }
 
-                    hauler.move(dir as DirectionConstant);
+                  hauler.travelTo(tombstone, {range: 1});
+                  return;
+                }
+
+                let sourceContainer = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
+                if(sourceContainer)
+                {
+                  if(!hauler.pos.inRangeTo(sourceContainer, 1))
+                  {
+                      if(hauler.room.name === this.skRoomName && !this.metaData.roadsDone[source.id])
+                      {
+                          hauler.room.createConstructionSite(hauler.pos, STRUCTURE_ROAD);
+                      }
+                      hauler.travelTo(sourceContainer);
+                      return;
+                  }
+                  else
+                  {
+                    this.metaData.roadsDone[source.id] = true;
+                  }
+                  let resource = <Resource[]>source.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
+                  if(resource.length > 0)
+                  {
+                      let withdrawAmount = hauler.carryCapacity - _.sum(hauler.carry) - resource[0].amount;
+
+                      if(withdrawAmount >=0)
+                      {
+                          hauler.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
+                      }
+
+                      hauler.pickup(resource[0]);
+                      return;
+                  }
+                  else if(sourceContainer.store.energy > hauler.carryCapacity)
+                  {
+                      hauler.withdraw(sourceContainer, RESOURCE_ENERGY);
+                      return;
+                  }
+                  else if(source.energy === 0 && sourceContainer.store.energy > 0)
+                  {
+                    hauler.withdraw(sourceContainer, RESOURCE_ENERGY);
+                    hauler.memory.full = true;
                     return;
                   }
                   else
                   {
-                    this.suspend = 20;
-                    return;
+                      hauler.say('waiting');
+                      return;
                   }
                 }
               }
+            }
+            else if(hauler.ticksToLive! < this.metaData.distroDistance[source.id] && _.sum(hauler.carry) === 0)
+            {
+              let container = this.kernel.data.roomData[this.metaData.roomName].generalContainers[0];
+              if(hauler.pos.inRangeTo(container, 0))
+              {
+                hauler.suicide();
+                return;
+              }
+
+              hauler.travelTo(container);
+              return;
             }
           }
 
           if(Game.rooms[this.metaData.roomName].storage)
           {
-              let target = Game.rooms[this.metaData.roomName].storage;
+            let target = Game.rooms[this.metaData.roomName].storage;
 
-              if(target)
+            if(target)
+            {
+              if(!hauler.pos.isNearTo(target))
               {
-                  if(!hauler.pos.inRangeTo(target,1))
-                  {
-                      if(!hauler.fixMyRoad())
-                      {
-                          hauler.travelTo(target);
-                      }
-                  }
-
-                  if(hauler.transfer(target, RESOURCE_ENERGY) === ERR_FULL)
-                  {
-                      return;
-                  }
+                if(!hauler.fixMyRoad())
+                {
+                  hauler.travelTo(target);
+                  return;
+                }
               }
+              else
+              {
+                let ret = hauler.transfer(target, RESOURCE_ENERGY)
+                if(ret === ERR_FULL)
+                {
+                  return;
+                }
+                else if(ret === OK)
+                {
+                  hauler.memory.full = false;
+                }
+              }
+            }
           }
           else if (this.kernel.data.roomData[this.metaData.roomName].generalContainers.length)
           {
-              let target = this.kernel.data.roomData[this.metaData.roomName].generalContainers[0];
+            let target = this.kernel.data.roomData[this.metaData.roomName].generalContainers[0];
 
-              if(target)
+            if(target)
+            {
+              if(!hauler.pos.inRangeTo(target, 1))
               {
-                  if(!hauler.pos.inRangeTo(target, 1))
-                  {
-                      if(!hauler.fixMyRoad())
-                      {
-                          hauler.travelTo(target);
-                      }
-                  }
-
-                  if(hauler.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-                  {
-                      return;
-                  }
+                if(!hauler.fixMyRoad())
+                {
+                  hauler.travelTo(target);
+                }
               }
+
+              if(hauler.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
+              {
+                return;
+              }
+            }
           }
         }
         else
@@ -1279,6 +1500,293 @@ export class skRoomManagementProcess extends Process
       }
     }
 
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Miner Action code.
+    ///
+    ////////////////////////////////////////////////////////////
+    MinerActions(miner: Creep)
+    {
+      try
+      {
+        let mineral = this.roomInfo(this.skRoomName).mineral;
+        if(!mineral)
+        {
+          //console.log(this.name, 'Mineral Problem 1', mineral);
+          //miner.suicide();
+        }
+
+        if(!miner.memory.fleePath)
+        {
+          let ret = PathFinder.search(miner.pos, {pos: mineral.pos, range: 7}, {flee: true});
+          if(ret.path.length)
+          {
+            miner.memory.fleePath = ret.path;
+          }
+        }
+
+        if(!this.invaders)
+        {
+          let lairs = mineral.room.find(FIND_STRUCTURES, {filter: s => s.structureType == STRUCTURE_KEEPER_LAIR});
+          if(lairs.length)
+          {
+            let lair = mineral.pos.findClosestByRange(lairs) as StructureKeeperLair;
+            let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+            if(lair.ticksToSpawn < 20 || sk.length > 0)
+            {
+              let ret = PathFinder.search(miner.pos, {pos: mineral.pos, range: 6}, {flee: true});
+              miner.moveByPath(ret.path);
+              return;
+            }
+          }
+
+          if(_.sum(miner.carry) < miner.carryCapacity && mineral.mineralAmount > 0)
+          {
+            let extractor = <StructureExtractor[]>Game.rooms[this.skRoomName].find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_EXTRACTOR});
+            if(extractor[0] && miner.pos.inRangeTo(extractor[0], 1))
+            {
+              if(extractor[0].cooldown == 0)
+              {
+                miner.harvest(mineral);
+              }
+            }
+            else
+            {
+              miner.travelTo(mineral);
+            }
+          }
+          else if(_.sum(miner.carry) > 0 && miner.ticksToLive < this.metaData.miningDistance * 1.25)
+          {
+            let terminal = Game.rooms[this.metaData.roomName].terminal;
+            if(terminal)
+            {
+              if(!miner.pos.isNearTo(terminal))
+              {
+                miner.travelTo(terminal);
+                return;
+              }
+              else
+              {
+                miner.transferEverything(terminal);
+                return;
+              }
+            }
+          }
+          else if(_.sum(miner.carry) >= miner.carryCapacity - miner.getActiveBodyparts(WORK))
+          {
+            let mineHauler = Game.creeps[this.metaData.minerHauler[0]];
+            if(mineHauler)
+            {
+              if(mineHauler.pos.isNearTo(miner))
+              {
+                miner.transferEverything(mineHauler);
+              }
+            }
+          }
+        }
+        else
+        {
+          if(_.sum(miner.carry) > 0)
+          {
+            let terminal = Game.rooms[this.metaData.roomName].terminal;
+            if(terminal)
+            {
+              if(!miner.pos.isNearTo(terminal))
+              {
+                miner.travelTo(terminal);
+                return;
+              }
+              else
+              {
+                miner.transferEverything(terminal);
+                return;
+              }
+            }
+          }
+          else
+          {
+            if(!miner.pos.isNearTo(this.skFlag))
+            {
+              miner.travelTo(this.skFlag);
+            }
+          }
+        }
+      }
+      catch (error)
+      {
+        console.log(this.name, 'Miner Actions', error);
+      }
+    }
+
+    ////////////////////////////////////////////////////////////
+    ///
+    ///          Miner Hauler Action code.
+    ///
+    ////////////////////////////////////////////////////////////
+    MinerHaulerActions(hauler: Creep, mineral: Mineral)
+    {
+      try
+      {
+        if(!this.invaders)
+        {
+          let lairs = mineral.room.find(FIND_STRUCTURES, {filter: s => s.structureType == STRUCTURE_KEEPER_LAIR});
+          if(lairs.length)
+          {
+            let lair = mineral.pos.findClosestByRange(lairs) as StructureKeeperLair;
+            let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+            if(lair.ticksToSpawn < 20 || sk.length > 0)
+            {
+              let ret = PathFinder.search(hauler.pos, {pos: mineral.pos, range: 10}, {flee: true});
+              hauler.moveByPath(ret.path);
+              return;
+            }
+          }
+
+          if(_.sum(hauler.carry) === hauler.carryCapacity)
+          {
+            hauler.memory.filling = false;
+          }
+
+
+          let miner = Game.creeps[this.metaData.miner[0]];
+          if(_.sum(hauler.carry) !== hauler.carryCapacity && mineral.mineralAmount >= 0 && hauler.memory.filling)
+          {
+            if(this.mineral.mineralAmount === 0)
+            {
+              let container = this.roomData().generalContainers[0];
+              if(container)
+              {
+                if(!hauler.pos.inRangeTo(container, 0))
+                {
+                  hauler.travelTo(container);
+                  return;
+                }
+                else
+                {
+                  hauler.suicide();
+                  return;
+                }
+              }
+            }
+
+            if(miner && !hauler.pos.isNearTo(miner) && !hauler.memory.pickup)
+            {
+              hauler.travelTo(miner, {range: 1});
+              return;
+            }
+
+            let tombStone = hauler.pos.findInRange(FIND_TOMBSTONES, 4)[0]
+
+            if(tombStone && tombStone.store.energy > 0)
+            {
+              if(hauler.pos.isNearTo(tombStone))
+              {
+                hauler.withdrawEverything(tombStone);
+                return;
+              }
+              else
+              {
+                hauler.travelTo(tombStone);
+                return;
+              }
+            }
+
+            let dropped = hauler.pos.findInRange(FIND_DROPPED_RESOURCES, 6)[0];
+
+            if(dropped)
+            {
+              hauler.memory.pickup = true;
+              if(hauler.pos.isNearTo(dropped))
+              {
+                hauler.pickup(dropped);
+                hauler.memory.pickup = false;
+                return;
+              }
+              else
+              {
+                hauler.travelTo(dropped);
+                return;
+              }
+            }
+
+            if(_.sum(hauler.carry) === hauler.carryCapacity)
+            {
+              hauler.memory.filling = false;
+            }
+          }
+          else if(_.sum(hauler.carry) > 0 && hauler.ticksToLive < this.metaData.miningDistance * 1.25)
+          {
+            let terminal = Game.rooms[this.metaData.roomName].terminal;
+            if(terminal)
+            {
+              if(!hauler.pos.isNearTo(terminal))
+              {
+                hauler.travelTo(terminal);
+                return;
+              }
+              else
+              {
+                hauler.transferEverything(terminal);
+                return;
+              }
+            }
+          }
+          else if((_.sum(hauler.carry) === hauler.carryCapacity) || !hauler.memory.filling || (_.sum(hauler.carry) > 0 && mineral.mineralAmount === 0))
+          {
+
+            let terminal = Game.rooms[this.metaData.roomName].terminal;
+            if(terminal)
+            {
+              if(!hauler.pos.isNearTo(terminal))
+              {
+                hauler.travelTo(terminal);
+                return;
+              }
+              else
+              {
+                hauler.transferEverything(terminal);
+                if(_.sum(hauler.carry) === 0)
+                {
+                  hauler.memory.filling = true;
+                }
+                return;
+              }
+            }
+          }
+        }
+        else
+        {
+          if(_.sum(hauler.carry) > 0)
+          {
+            let terminal = Game.rooms[this.metaData.roomName].terminal;
+            if(terminal)
+            {
+              if(!hauler.pos.isNearTo(terminal))
+              {
+                hauler.travelTo(terminal);
+                return;
+              }
+              else
+              {
+                hauler.transferEverything(terminal);
+                return;
+              }
+            }
+          }
+          else
+          {
+            if(!hauler.pos.isNearTo(this.skFlag))
+            {
+              hauler.travelTo(this.skFlag);
+            }
+          }
+        }
+      }
+      catch(error)
+      {
+        console.log(this.name, 'Miner Hauler Actions', error);
+      }
+    }
 }
 ///////////////////////////////////////////////////////////
 /// E14S36
@@ -1286,3 +1794,5 @@ export class skRoomManagementProcess extends Process
 // Harvester 12W, 6M, 1C
 // Hauler 2W, 11M, 20C
 // Home Defender 25M, 11A, 11RA, 1C, 2H
+//_.forEach(Game.rooms, (r)=> console.log(r.name, r.find(FIND_CONSTRUCTION_SITES).length)
+//_.forEach(Game.rooms, (r)=> r.find(FIND_CONSTRUCTION_SITES).length > 0 ? console.log(r.name, r.find(FIND_CONSTRUCTION_SITES).length) : 0)

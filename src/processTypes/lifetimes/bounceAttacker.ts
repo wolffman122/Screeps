@@ -8,6 +8,7 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
 
     run()
     {
+        console.log(this.name, 'testing ', 1)
         let creep = this.getCreep();
 
         let roomName = this.metaData.flagName.split('-')[0];
@@ -17,11 +18,13 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
 
         if(!creep || !healFlag || !flag)
         {
+            console.log(this.name, 'Stopping')
             this.completed = true;
             return;
         }
+        console.log(this.name, 'running')
 
-        if(creep.hits < creep.hitsMax * .85)
+        if(creep.hits < creep.hitsMax * .50)
         {
             creep.travelTo(healFlag.pos, {range: 1});
             return;
@@ -29,7 +32,7 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
 
         if(!creep.pos.inRangeTo(flag,1) && creep.hits === creep.hitsMax)
         {
-            creep.travelTo(flag, {range: 1});
+            creep.travelTo(flag.pos, {range: 1});
             return;
         }
 
