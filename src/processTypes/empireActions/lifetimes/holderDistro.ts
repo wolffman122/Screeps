@@ -91,7 +91,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       if(sourceContainer)
       {
         const sources = this.kernel.data.roomData[flag.pos.roomName].sources;
-        if(!creep.pos.inRangeTo(sourceContainer, 1) && _.sum(sourceContainer.store) > creep.carryCapacity * .8)
+        if(!creep.pos.inRangeTo(sourceContainer, 1) && _.sum(sourceContainer.store) > creep.carryCapacity * .5)
         {
           if(creep.room.name === flag.room!.name)
           {
@@ -163,6 +163,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       }
     }
 
+    if(this.kernel.data.roomData[this.metaData.spawnRoom])
+    {
     if(this.kernel.data.roomData[this.metaData.spawnRoom].links.length > 0)
     {
       let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
@@ -319,5 +321,6 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         }
       }
     }
+  }
   }
 }

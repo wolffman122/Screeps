@@ -30,6 +30,7 @@ export class DismantleManagementProcess extends Process
 
     let deliverRoom = flag.name.split('-')[0];
     let numberOfDismantlers = +flag.name.split('-')[1];
+    let boostLevel = +flag.name.split('-')[2];
 
 
     numberOfDismantlers = Math.min(numberOfDismantlers, 3);

@@ -244,8 +244,8 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E38S39':
-            upgraders = 3;
+          case 'E27S38':
+            upgraders = 2;
             break;
           default:
             upgraders = 1;
@@ -305,25 +305,25 @@ export class EnergyManagementProcess extends Process{
             {
               let noUpgradeRooms = ['E52S46', 'E48S49', 'E39S35', 'E41S41', 'E41S38', 'E36S43', 'E38S46',
 /* temp no upgrades*/               'E43S52', 'E43S53', 'E43S55', 'E45S57', 'E48S57', 'E48S56', 'E58S52',
-                                    'E41S49', 'E38S59', 'E39S35', 'E41S41', 'E42S48']
-              if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
-              {
-                let boosts = [];
-                boosts.push(RESOURCE_GHODIUM_ACID)
-                this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                  creep: creepName,
-                  roomName: proc.metaData.roomName,
-                  boosts: boosts,
-                  allowUnboosted: true
-                })
-              }
-              else
-              {
+                                    'E41S49', 'E38S59', 'E39S35', 'E41S41', 'E42S48', 'E58S44']
+              // if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
+              // {
+              //   let boosts = [];
+              //   boosts.push(RESOURCE_GHODIUM_ACID)
+              //   this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+              //     creep: creepName,
+              //     roomName: proc.metaData.roomName,
+              //     boosts: boosts,
+              //     allowUnboosted: true
+              //   })
+              // }
+              // else
+              // {
                 this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
                   creep: creepName,
                   roomName: proc.metaData.roomName
                 });
-              }
+              //}
             }
             else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB}).length >= 3)
             {
@@ -392,8 +392,8 @@ export class EnergyManagementProcess extends Process{
 
           switch(this.metaData.roomName)
           {
-            case 'E38S39':
-              upgradeDistroAmount = 2;
+            case 'E27S38':
+              upgradeDistroAmount = 1;
               break;
             default:
               upgradeDistroAmount = 1;

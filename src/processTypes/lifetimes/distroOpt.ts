@@ -9,14 +9,37 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
   run(){
     let creep = this.getCreep()
 
+    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
     if(!creep){ return }
+
+    if(creep.room.energyAvailable === creep.room.energyCapacityAvailable)
+    {
+      if(creep.pos.roomName === 'E38S39')
+      {
+        console.log(this.name, 'Testing IPC', creep.pos.roomName);
+        this.kernel.sendIpc(this.name, "labm-" + creep.pos.roomName, "Testing");
+      }
+    }
 
     // Room energy full parts
     if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable)
     {
-      if(creep.pos.roomName === 'E38S39')
-        this.kernel.sendIpc(this.name, "labm-" + this.metaData.roomName, "Testing");
-        
+      if(sourceContainer && _.sum(sourceContainer.store) <= creep.carryCapacity * .85)
+      {
+        let minContainer = this.kernel.data.roomData[creep.room.name].mineralContainer;
+        if(minContainer && _.sum(minContainer.store) > 0)
+        {
+          if(creep.pos.isNearTo(minContainer))
+          {
+            creep.withdrawEverything(minContainer);
+            return;
+          }
+
+          creep.travelTo(minContainer, {range: 1});
+          return;
+        }
+      }
+
       let storage = creep.room.storage;
       if(storage)
         creep.idleOffRoad(storage, false);
@@ -34,7 +57,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
       if(this.kernel.data.roomData[creep.pos.roomName].sourceLinks.length == 2)
       {
-        let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
+        if(!sourceContainer)
+          return;
 
         let storage = creep.room.storage;
 

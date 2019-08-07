@@ -76,5 +76,9 @@ export class HealAttackProcess extends Process
         }
       }
     }
+    else
+    {
+      creep.travelTo(flag, {range: 2})
+    }
   }
 }

@@ -49,14 +49,18 @@ export class HoldRoomOptManagementProcess extends Process
 
   run()
   {
-    if(this.metaData.flagName === 'E35S41-Hold-1')
-    {
-      console.log(this.name, this.metaData.flagName);
-    }
+    if(Game.cpu.bucket < 2000)
+      return;
+
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
     let spawnRoomName = this.metaData.flagName.split('-')[0];
     let centerFlag = Game.flags['Center-'+spawnRoomName];
+
+    let room = Game.rooms[spawnRoomName];
+    let storage = room.storage;
+    //if(storage && storage.store.energy < 5000)
+    //  return;
 
     if(!flag)
     {
@@ -174,173 +178,176 @@ export class HoldRoomOptManagementProcess extends Process
 
           this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
 
-          // Construction Code
-          if(!this.roomData().sourceContainers || (this.roomData().sourceContainers.length < this.roomData().sources.length))
+          if(this.roomData())
           {
-            if(this.roomData().sourceContainers.length < this.roomData().sources.length && Game.time % 10000 === 100)
+            // Construction Code
+            if(!this.roomData().sourceContainers || (this.roomData().sourceContainers.length < this.roomData().sources.length))
             {
-              Game.notify("Problem in room " + this.metaData.roomName + " lost some contianers");
-            }
-            if(this.metaData.builderCreeps.length < this.roomData().sources.length)
-            {
-              let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
-              let spawned = Utils.spawn(
-                this.kernel,
-                spawnRoomName,
-                'worker',
-                creepName,
-                {}
-              );
-
-              if(spawned)
+              if(this.roomData().sourceContainers.length < this.roomData().sources.length && Game.time % 10000 === 100)
               {
-                // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
-                this.metaData.builderCreeps.push(creepName);
-                this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
-                  creep: creepName,
-                  flagName: this.metaData.flagName
-                })
+                Game.notify("Problem in room " + this.metaData.roomName + " lost some contianers");
               }
-            }
-          }
-          else if(this.roomData().constructionSites.length > 0)
-          {
-            if(this.metaData.builderCreeps.length < this.roomData().sources.length)
-            {
-              let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
-              let spawned = Utils.spawn(
-                this.kernel,
-                spawnRoomName,
-                'worker',
-                creepName,
-                {}
-              );
-
-              if(spawned)
+              if(this.metaData.builderCreeps.length < this.roomData().sources.length)
               {
-                // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
-                this.metaData.builderCreeps.push(creepName);
-                this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
-                  creep: creepName,
-                  flagName: this.metaData.flagName
-                })
-              }
-            }
-          }
-
-
-          if(this.roomData().sourceContainers.length > 0)
-          {
-            // Havester code
-            let containers = this.roomData().sourceContainers;
-            let sources = this.roomData().sources;
-
-            _.forEach(sources, (s) => {
-              if(!this.metaData.harvestCreeps[s.id])
-              {
-                this.metaData.harvestCreeps[s.id] = [];
-              }
-
-              let creepNames = Utils.clearDeadCreeps(this.metaData.harvestCreeps[s.id]);
-              this.metaData.harvestCreeps[s.id] = creepNames;
-              let creeps = Utils.inflateCreeps(creepNames);
-
-              let count = 0;
-              _.forEach(creeps, (c) => {
-                let ticksNeeded = c.body.length * 3 + 10;
-                if(!c.ticksToLive || c.ticksToLive > ticksNeeded)
-                {
-                  count++;
-                }
-              })
-
-              if(count < 1)
-              {
-                //console.log("Need to make some harvesting creeps " + s.id);
-                let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
+                let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
                 let spawned = Utils.spawn(
                   this.kernel,
                   spawnRoomName,
-                  'harvester',
+                  'worker',
                   creepName,
                   {}
-                )
+                );
 
                 if(spawned)
                 {
-                  this.metaData.harvestCreeps[s.id].push(creepName);
+                  // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
+                  this.metaData.builderCreeps.push(creepName);
+                  this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
+                    creep: creepName,
+                    flagName: this.metaData.flagName
+                  })
                 }
               }
+            }
+            else if(this.roomData().constructionSites.length > 0)
+            {
+              if(this.metaData.builderCreeps.length < this.roomData().sources.length)
+              {
+                let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
+                let spawned = Utils.spawn(
+                  this.kernel,
+                  spawnRoomName,
+                  'worker',
+                  creepName,
+                  {}
+                );
 
-              _.forEach(creeps, (c) => {
-                this.kernel.addProcessIfNotExist(HoldHarvesterOptLifetimeProcess, 'holdHarvesterlfOpt-' + c.name, 27, {
-                  creep: c.name,
-                  source: s.id,
-                  flagName: flag.name
-                });
-              });
-            });
-
-
-            // Hauling code
-            _.forEach(this.roomData().sourceContainers, (sc) => {
-                if(!this.metaData.distroCreeps[sc.id])
-                    this.metaData.distroCreeps[sc.id] = [];
-
-                if(!this.metaData.distroDistance[sc.id])
+                if(spawned)
                 {
-                  let ret = PathFinder.search(centerFlag.pos, sc.pos, {
-                    plainCost: 2,
-                    swampCost: 10,
-                  });
+                  // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
+                  this.metaData.builderCreeps.push(creepName);
+                  this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
+                    creep: creepName,
+                    flagName: this.metaData.flagName
+                  })
+                }
+              }
+            }
 
-                  this.metaData.distroDistance[sc.id] = ret.path.length;
+
+            if(this.roomData().sourceContainers.length > 0)
+            {
+              // Havester code
+              let containers = this.roomData().sourceContainers;
+              let sources = this.roomData().sources;
+
+              _.forEach(sources, (s) => {
+                if(!this.metaData.harvestCreeps[s.id])
+                {
+                  this.metaData.harvestCreeps[s.id] = [];
                 }
 
-
-                let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[sc.id]);
-                this.metaData.distroCreeps[sc.id] = creepNames;
+                let creepNames = Utils.clearDeadCreeps(this.metaData.harvestCreeps[s.id]);
+                this.metaData.harvestCreeps[s.id] = creepNames;
                 let creeps = Utils.inflateCreeps(creepNames);
 
                 let count = 0;
                 _.forEach(creeps, (c) => {
-                  let  ticksNeeded = c.body.length * 3 +  this.metaData.distroDistance[sc.id];
-                  if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
-                });
+                  let ticksNeeded = c.body.length * 3 + 10;
+                  if(!c.ticksToLive || c.ticksToLive > ticksNeeded)
+                  {
+                    count++;
+                  }
+                })
 
-                let numberDistro = 2;
-                if(this.metaData.distroDistance[sc.id] < 70)
+                if(count < 1)
                 {
-                  numberDistro = 1;
-                }
-
-                if(count < numberDistro)
-                {
-                  let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
+                  //console.log("Need to make some harvesting creeps " + s.id);
+                  let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
                   let spawned = Utils.spawn(
-                      this.kernel,
-                      spawnRoomName,
-                      'holdmover',
-                      creepName,
-                      {}
-                  );
+                    this.kernel,
+                    spawnRoomName,
+                    'harvester',
+                    creepName,
+                    {}
+                  )
 
                   if(spawned)
                   {
-                      this.metaData.distroCreeps[sc.id].push(creepName);
+                    this.metaData.harvestCreeps[s.id].push(creepName);
                   }
                 }
 
-                _.forEach(creeps, (creep) => {
-                  this.kernel.addProcessIfNotExist(HoldDistroLifetimeProcess, 'holdDistrolf-' + creep.name, 26, {
-                    sourceContainer: sc.id,
-                    spawnRoom: spawnRoomName,
-                    creep: creep.name,
-                    flagName: flag.name,
-                    roomData: flag.pos.roomName,
+                _.forEach(creeps, (c) => {
+                  this.kernel.addProcessIfNotExist(HoldHarvesterOptLifetimeProcess, 'holdHarvesterlfOpt-' + c.name, 27, {
+                    creep: c.name,
+                    source: s.id,
+                    flagName: flag.name
                   });
                 });
-            });
+              });
+
+
+              // Hauling code
+              _.forEach(this.roomData().sourceContainers, (sc) => {
+                  if(!this.metaData.distroCreeps[sc.id])
+                      this.metaData.distroCreeps[sc.id] = [];
+
+                  if(!this.metaData.distroDistance[sc.id])
+                  {
+                    let ret = PathFinder.search(centerFlag.pos, sc.pos, {
+                      plainCost: 2,
+                      swampCost: 10,
+                    });
+
+                    this.metaData.distroDistance[sc.id] = ret.path.length;
+                  }
+
+
+                  let creepNames = Utils.clearDeadCreeps(this.metaData.distroCreeps[sc.id]);
+                  this.metaData.distroCreeps[sc.id] = creepNames;
+                  let creeps = Utils.inflateCreeps(creepNames);
+
+                  let count = 0;
+                  _.forEach(creeps, (c) => {
+                    let  ticksNeeded = c.body.length * 3 +  this.metaData.distroDistance[sc.id];
+                    if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
+                  });
+
+                  let numberDistro = 2;
+                  if(this.metaData.distroDistance[sc.id] < 70)
+                  {
+                    numberDistro = 1;
+                  }
+
+                  if(count < numberDistro)
+                  {
+                    let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
+                    let spawned = Utils.spawn(
+                        this.kernel,
+                        spawnRoomName,
+                        'holdmover',
+                        creepName,
+                        {}
+                    );
+
+                    if(spawned)
+                    {
+                        this.metaData.distroCreeps[sc.id].push(creepName);
+                    }
+                  }
+
+                  _.forEach(creeps, (creep) => {
+                    this.kernel.addProcessIfNotExist(HoldDistroLifetimeProcess, 'holdDistrolf-' + creep.name, 26, {
+                      sourceContainer: sc.id,
+                      spawnRoom: spawnRoomName,
+                      creep: creep.name,
+                      flagName: flag.name,
+                      roomData: flag.pos.roomName,
+                    });
+                  });
+              });
+            }
           }
         }
       }
@@ -351,3 +358,4 @@ export class HoldRoomOptManagementProcess extends Process
     }
   }
 }
+

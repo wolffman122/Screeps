@@ -387,10 +387,16 @@ export class Kernel{
         read: false
       })
     }
+
+    console.log('IPC', this.ipc.length);
   }
 
   /** Get ipc messages for the given process */
   getIpc(targetProcess: string){
+    //console.log('IPC get', this.ipc.length);
+    _.forEach(this.ipc, (i) => {
+    //  console.log('IPC list', i.to);
+    })
     let index =  _.findIndex(this.ipc, function(entry){
       if(entry.to == targetProcess)
       {
@@ -399,6 +405,7 @@ export class Kernel{
       return;
     });
 
+    //console.log('IPC get', 2, index);
     if(index >= 0)
     {
       this.ipc[index].read = true;

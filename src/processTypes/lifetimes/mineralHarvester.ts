@@ -17,6 +17,9 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
 
     let extractor = this.kernel.data.roomData[creep.pos.roomName].extractor;
     let mineral = this.kernel.data.roomData[creep.pos.roomName].mineral;
+    let openPositions: RoomPosition[]
+    if(mineral)
+      openPositions = mineral.pos.openAdjacentSpots();
     let container: StructureContainer | undefined = this.kernel.data.roomData[creep.pos.roomName].mineralContainer;
 
     if(!extractor || !mineral || !container)
@@ -41,12 +44,30 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
       })
     }
 
+    if(creep.room.name === 'E45S53')
+    {
+      let target: RoomPosition;
+      let spots: { dist: number, pos: RoomPosition }[] = [];
+      if(openPositions)
+      {
+        let flag = Game.flags['Center-' + creep.room.name];
+        _.forEach(openPositions, (o) => {
+          const distance = PathFinder.search(flag.pos, o).path.length
+          spots.push({dist: distance, pos: o});
+        });
+
+        target = _.max(spots, 'dist').pos
+
+        console.log(this.name, 'Mineral Pos', target.x, target.y);
+      }
+    }
+
     if(_.sum(creep.carry) === 0)
     {
       this.fork(MineralHarvest, 'mineral-harvest-' + creep.name, this.priority = 1, {
         extractor: extractor.id,
         mineral : mineral.id,
-        creep: creep.name
+        creep: creep.name,
       });
 
       return;

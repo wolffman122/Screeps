@@ -148,7 +148,7 @@ export class FlagWatcherProcess extends Process
             case COLOR_BLUE:
               proc.RangeAttack(flag);
               break;
-            case COLOR_BROWN:
+            case COLOR_BROWN:     // Place the heal flag first always.
               proc.BounceAttack(flag);
               break;
             case COLOR_GREY:

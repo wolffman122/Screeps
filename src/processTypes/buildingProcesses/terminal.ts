@@ -16,7 +16,7 @@ export class TerminalManagementProcess extends Process
       let lowRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.storage)
         {
-          return ((r.storage.store.energy < 200000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+          return ((r.storage.store.energy < 300000 || r.storage.store === undefined) && r.controller && r.controller.my &&
             r.terminal.my);
         }
         else
@@ -37,7 +37,7 @@ export class TerminalManagementProcess extends Process
         }
       })
 
-      console.log('Final min', minimum, minimumRoom)
+      //console.log('Final min', minimum, minimumRoom)
 
       let fullRooms = _.filter(Game.rooms, (r) => {
         if(r.controller && r.controller.my && r.terminal && r.storage)
@@ -51,6 +51,20 @@ export class TerminalManagementProcess extends Process
         }
       });
 
+      let fRooms: {name: string, amount: number}[] = [];
+      if(fullRooms.length > 0)
+      {
+        _.forEach(fullRooms, (f) =>{
+          if(f.storage)
+          {
+            fRooms.push({name: f.name, amount: f.storage.store.energy});
+          }
+        });
+      }
+      fRooms = _.sortBy(fRooms, 'amount').reverse();
+
+      console.log(this.name, "Fullest room", fRooms[0].name, fRooms[0].amount);
+
       let maxFull = _.filter(Game.rooms, (r) => {
         if(r.controller && r.controller.my && r.terminal && r.storage)
         {
@@ -59,7 +73,7 @@ export class TerminalManagementProcess extends Process
         return false;
       })
 
-      console.log(this.name, fullRooms.length, maxFull.length, lowRooms.length);
+      //console.log(this.name, fullRooms.length, maxFull.length, lowRooms.length);
       if(maxFull.length > 0)
       {
         let fRooms: {name: string, amount: number}[] =[];
@@ -90,7 +104,7 @@ export class TerminalManagementProcess extends Process
 
       if(lowRooms.length > 0)
       {
-        console.log(this.name, fullRooms.length, lowRooms.length);
+        //console.log(this.name, fullRooms.length, lowRooms.length);
         let lRooms: {name: string, amount: number, storeAmount: number}[] = [];
         _.forEach(lowRooms, (f) => {
           if(f.storage)
@@ -101,48 +115,32 @@ export class TerminalManagementProcess extends Process
 
         lRooms = _.sortBy(lRooms, 'storeAmount');
 
-        _.forEach(lRooms, (l)=>{
-          console.log(this.name, l.name, l.amount, l.storeAmount);
-        })
+        //_.forEach(lRooms, (l)=>{
+        //  console.log(this.name, l.name, l.amount, l.storeAmount);
+        //})
 
-        console.log(this.name, fullRooms.length);
+        //console.log(this.name, fullRooms.length);
 
-        console.log(this.name, "Getting further");
+        //console.log(this.name, "Getting further")
 
-        if(fullRooms.length > 0)
+        if(fRooms.length > 0)
         {
-          let fRooms: {name: string, amount: number}[] = [];
-          _.forEach(fullRooms, (f) =>{
-            if(f.storage)
-            {
-              fRooms.push({name: f.name, amount: f.storage.store.energy});
-            }
-          });
+          let room = Game.rooms[fRooms[0].name];
 
-          if(fRooms.length > 0)
+          if(room)
           {
-            /*fRooms = _.filter(fRooms, (f) =>{
-              return (Game.map.getRoomLinearDistance(f.name, lRooms[0].name) < 20);
-            })*/
-            fRooms = _.sortBy(fRooms, 'amount').reverse();
-
-            let room = Game.rooms[fRooms[0].name];
-
-            if(room)
+            if(room.terminal && room.terminal.cooldown === 0)
             {
-              if(room.terminal && room.terminal.cooldown === 0)
+              console.log(this.name, room.name, 'sending to', lRooms[0].name, lRooms[0].amount);
+              let amount = 300000 - lRooms[0].amount;
+              console.log(this.name, "amount", amount);
+              if(amount > 50000)
               {
-                console.log(this.name, room.name, 'sending to', lRooms[0].name, lRooms[0].amount);
-                let amount = 300000 - lRooms[0].amount;
-                //if(Game.map.getRoomLinearDistance(room.name, lRooms[0].name) > 10)
-                if(amount > 50000)
-                {
-                  amount = 50000;
-                }
-                let cost = Game.market.calcTransactionCost(amount, room.name, lRooms[0].name);
-                let retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
-                this.log('!!!!!!!!!!!!!!!!!!!!!!!!!! Sending Energy from ' + room.name + ' to ' + lRooms[0].name + ' retVal ' + retVal + ' amount ' + amount + ' cost ' + cost);
+                amount = 50000;
               }
+              let cost = Game.market.calcTransactionCost(amount, room.name, lRooms[0].name);
+              let retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
+              this.log('!!!!!!!!!!!!!!!!!!!!!!!!!! Sending Energy from ' + room.name + ' to ' + lRooms[0].name + ' retVal ' + retVal + ' amount ' + amount + ' cost ' + cost);
             }
           }
         }

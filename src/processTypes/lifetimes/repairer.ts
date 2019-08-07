@@ -163,132 +163,135 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    let rampartSites = _.filter(this.kernel.data.roomData[this.metaData.roomName].constructionSites, (cs) => {
-      return (cs.structureType === STRUCTURE_RAMPART || cs.structureType === STRUCTURE_WALL);
-    });
-
-    if(rampartSites.length > 0)
+    if(this.kernel.data.roomData[this.metaData.roomName])
     {
-      let rampartSite = creep.pos.findClosestByPath(rampartSites);
-
-      if(rampartSite)
-      {
-        if(!creep.pos.inRangeTo(rampartSite, 3))
-        {
-          creep.travelTo(rampartSite);
-        }
-
-        creep.build(rampartSite);
-      }
-    }
-    else
-    {
-      // If the creep has been refilled
-      let repairableObjects = <RepairTarget[]>[].concat(
-        <never[]>this.kernel.data.roomData[this.metaData.roomName].containers,
-        <never[]>this.kernel.data.roomData[this.metaData.roomName].ramparts,
-        <never[]>this.kernel.data.roomData[this.metaData.roomName].walls
-      )
-
-      let shortestDecay = 100
-
-      let proc = this;
-
-      let repairTargets = _.filter(repairableObjects, function(object){
-        if(object.ticksToDecay < shortestDecay)
-        {
-          shortestDecay = object.ticksToDecay
-        }
-
-        switch (object.structureType)
-        {
-          case STRUCTURE_RAMPART:
-            return (object.hits < Utils.rampartHealth(proc.kernel, proc.metaData.roomName));
-          case STRUCTURE_WALL:
-            return (object.hits < Utils.wallHealth(proc.kernel, proc.metaData.roomName));
-          default:
-            return (object.hits < object.hitsMax);
-        }
-
+      let rampartSites = _.filter(this.kernel.data.roomData[this.metaData.roomName].constructionSites, (cs) => {
+        return (cs.structureType === STRUCTURE_RAMPART || cs.structureType === STRUCTURE_WALL);
       });
 
-
-      /*if(repairTargets.length === 0)
+      if(rampartSites.length > 0)
       {
-        let repairableObjects = <StructureRoad[]>[].concat(
-          <never[]>this.kernel.data.roomData[this.metaData.roomName].roads
-        );
+        let rampartSite = creep.pos.findClosestByPath(rampartSites);
 
-        let shortestDecay = 100;
-
-        repairTargets = _.filter(repairableObjects, function(object){
-          if(object.ticksToDecay < shortestDecay)
-          {
-            shortestDecay = object.ticksToDecay;
-          }
-
-          return (object.hits <  object.hitsMax);
-        });
-      }*/
-
-
-      if(repairTargets.length > 0)
-      {
-        let target = creep.pos.findClosestByPath(repairTargets)
-
-        if(target)
+        if(rampartSite)
         {
-          let enemies = target.room.find(FIND_HOSTILE_CREEPS);
-          let inRangeEnemies = target.pos.findInRange(enemies, 4);
+          if(!creep.pos.inRangeTo(rampartSite, 3))
+          {
+            creep.travelTo(rampartSite);
+          }
 
-          if(inRangeEnemies.length === 0)
-          {
-            this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
-              creep: creep.name,
-              target: target.id
-            });
-          }
-          else
-          {
-            if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
-            {
-              if(creep.name === 'sm-E41S49-11295193')
-                console.log(this.name, 'First suspend')
-              else
-                this.suspend = 10;
-            }
-            return;
-          }
+          creep.build(rampartSite);
         }
       }
       else
       {
-        let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
+        // If the creep has been refilled
+        let repairableObjects = <RepairTarget[]>[].concat(
+          <never[]>this.kernel.data.roomData[this.metaData.roomName].containers,
+          <never[]>this.kernel.data.roomData[this.metaData.roomName].ramparts,
+          <never[]>this.kernel.data.roomData[this.metaData.roomName].walls
+        )
 
-        if(target)
+        let shortestDecay = 100
+
+        let proc = this;
+
+        let repairTargets = _.filter(repairableObjects, function(object){
+          if(object.ticksToDecay < shortestDecay)
+          {
+            shortestDecay = object.ticksToDecay
+          }
+
+          switch (object.structureType)
+          {
+            case STRUCTURE_RAMPART:
+              return (object.hits < Utils.rampartHealth(proc.kernel, proc.metaData.roomName));
+            case STRUCTURE_WALL:
+              return (object.hits < Utils.wallHealth(proc.kernel, proc.metaData.roomName));
+            default:
+              return (object.hits < object.hitsMax);
+          }
+
+        });
+
+
+        /*if(repairTargets.length === 0)
         {
-          this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-            creep: creep.name,
-            site: target.id
-          })
+          let repairableObjects = <StructureRoad[]>[].concat(
+            <never[]>this.kernel.data.roomData[this.metaData.roomName].roads
+          );
+
+          let shortestDecay = 100;
+
+          repairTargets = _.filter(repairableObjects, function(object){
+            if(object.ticksToDecay < shortestDecay)
+            {
+              shortestDecay = object.ticksToDecay;
+            }
+
+            return (object.hits <  object.hitsMax);
+          });
+        }*/
+
+
+        if(repairTargets.length > 0)
+        {
+          let target = creep.pos.findClosestByPath(repairTargets)
+
+          if(target)
+          {
+            let enemies = target.room.find(FIND_HOSTILE_CREEPS);
+            let inRangeEnemies = target.pos.findInRange(enemies, 4);
+
+            if(inRangeEnemies.length === 0)
+            {
+              this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
+                creep: creep.name,
+                target: target.id
+              });
+            }
+            else
+            {
+              if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+              {
+                if(creep.name === 'sm-E41S49-11295193')
+                  console.log(this.name, 'First suspend')
+                else
+                  this.suspend = 10;
+              }
+              return;
+            }
+          }
         }
         else
         {
-          let storage = creep.room.storage;
-          if(storage && storage.store.energy > 200000)
+          let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
+
+          if(target)
           {
-            if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= RAMPARTTARGET)
-            {
-              creep.room.memory.rampartHealth += 100;
-            }
+            this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
+              creep: creep.name,
+              site: target.id
+            })
           }
           else
           {
-            if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+            let storage = creep.room.storage;
+            if(storage && storage.store.energy > 200000)
             {
-              this.suspend = 10;
+              if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= RAMPARTTARGET)
+              {
+                creep.room.memory.rampartHealth += 100;
+              }
             }
-            return;
+            else
+            {
+              if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+              {
+                this.suspend = 10;
+              }
+              return;
+            }
           }
         }
       }

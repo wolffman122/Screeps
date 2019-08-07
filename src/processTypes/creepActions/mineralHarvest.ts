@@ -34,7 +34,8 @@ export class MineralHarvest extends Process
     {
       if(extractor.cooldown == 0)
       {
-        creep.harvest(mineral);
+        if(Game.cpu.bucket > 8000)
+          creep.harvest(mineral);
       }
       else
       {

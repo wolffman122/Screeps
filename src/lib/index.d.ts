@@ -52,6 +52,14 @@ interface TravelState {
 
 interface Creep {
   travelTo(destination: HasPos|RoomPosition, ops?: TravelToOptions): number;
+  partCount(partType: string): number;
+}
+
+interface StructureObserver
+{
+  observation: Observation;
+  _observeRoom(roomName: string): number;
+  observeRoom(roomName: string, purpose?: string, override?: boolean): number;
 }
 
 type Coord = {x: number, y: number};

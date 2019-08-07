@@ -46,7 +46,7 @@ export class RoomDataProcess extends Process{
     else
     {
       if(room.name === 'E50S49')
-      console.log('Observer',2)
+        console.log('Observer',2)
       room.memory.lastVision = Game.time;
     }
 

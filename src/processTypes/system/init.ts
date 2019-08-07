@@ -36,15 +36,18 @@ export class InitProcess extends Process{
       }
     }
 
+    let gRooms = Object.keys(Game.rooms);
+    let mRooms = Object.keys(Memory.rooms);
 
-   _.forEach(Object.keys(Memory.rooms), function(r){
-      let room = Memory.rooms[r];
-      if(Game.rooms[r] === undefined && room.lastVision + 3000 < Game.time)
-      {
-        //Memory.rooms[r] = undefined;
-      }
-    })
-
+    let observedRooms = _.difference(mRooms, gRooms);
+    if(observedRooms.length)
+    {
+      _.forEach(observedRooms, (or) => {
+        console.log('Hoping observed rooms ', or );
+        if(!Game.rooms[or])
+          Memory.rooms[or] = undefined;
+      })
+    }
     _
     console.log('Observer', 0)
     _.forEach(Game.rooms, function(room){
@@ -94,7 +97,8 @@ export class InitProcess extends Process{
              room.name === 'E41S49' || room.name === 'E42S48' || room.name === 'E43S52' || room.name === 'E43S55' ||
              room.name === 'E36S38' || room.name === 'E48S57' || room.name === 'E41S38' || room.name === 'E39S35' ||
              room.name === 'E39S35' || room.name === 'E38S59' || room.name === 'E55S47' || room.name === 'E48S56' ||
-             room.name === 'E56S43' || room.name === 'E47S46' || room.name === 'E38S54')
+             room.name === 'E56S43' || room.name === 'E47S46' || room.name === 'E38S54' || room.name === 'E45S53' ||
+             room.name === 'E27S38' || room.name === 'E58S44')
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {

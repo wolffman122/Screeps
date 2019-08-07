@@ -85,7 +85,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
               {
                 let container = creep.pos.findClosestByPath(this.kernel.data.roomData[creep.room.name].sourceContainers);
 
-                if(container)
+                if(container && container.store.energy >= creep.carryCapacity)
                 {
                   if(creep.pos.isNearTo(container))
                   {
@@ -95,6 +95,21 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
                   creep.travelTo(container);
                   return;
+                }
+                else
+                {
+                  let source = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.pos.roomName].sources);
+
+                  if(source)
+                  {
+                    if(!creep.pos.inRangeTo(source, 1))
+                    {
+                      creep.travelTo(source);
+                      return;
+                    }
+                    creep.harvest(source);
+                    return;
+                  }
                 }
               }
             }

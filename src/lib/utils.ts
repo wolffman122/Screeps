@@ -350,4 +350,4 @@ export const Utils = {
   }*/
 }
 
-export const RAMPARTTARGET = 8700000;
+export const RAMPARTTARGET = 9500000;

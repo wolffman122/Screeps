@@ -11,6 +11,8 @@ export class  MineralManagementProcess extends Process
 
   run()
   {
+    if(Game.cpu.bucket < 8000)
+      return;
     if(!this.kernel.data.roomData[this.metaData.roomName])
     {
       this.completed = true;
@@ -83,6 +85,7 @@ export class  MineralManagementProcess extends Process
           case 'E55S47':
           case 'E56S43':
           case 'E47S46':
+          case 'E45S53':
             harvesters = 1;
             break;
           case 'E43S52':
@@ -170,3 +173,4 @@ export class  MineralManagementProcess extends Process
     }
   }
 }
+

@@ -182,6 +182,7 @@ interface Flag {
     gclAmount: number;
     wolffOS: any;
     stats: any;
+    powerObservers: {[scanningRoomName: string]: {[roomName: string]: number}};
   }
 
   interface ObserveMemory
@@ -210,6 +211,7 @@ interface Flag {
       devilName: string;
       target?: string;
       filling: boolean;
+      pickup: boolean;
       fleePath?: RoomPosition[];
       full: boolean;
   }
@@ -225,6 +227,8 @@ interface Flag {
       skMineral?: string;
       centerSKMineral?: string;
       roadComplete?: number;
+      healer?: string;
+      attacker?: string;
   }
 
   interface RoomMemory
@@ -549,7 +553,7 @@ interface Flag {
     roomName: string
     mineralHarvesters: string[]
     mineralHaulers: string[]
-    mining: boolean
+    mining: boolean;
   }
 
   interface RemoteDefenseManagementProcessMetaData
@@ -582,6 +586,12 @@ interface Flag {
   }
 
   interface AttackerLifetimeProcessMetaData
+  {
+    creep: string[],
+    flagName: string,
+  }
+
+  interface HealerLifetimeProcessMetaData
   {
     creep: string[],
     flagName: string,
@@ -678,6 +688,15 @@ interface Flag {
     miner: string[]
     centerMiner: string[]
     minerHauler: string[]
+  }
+
+  interface ObservationProcessMetaData
+  {
+    roomName: string;
+    scanRooms?: string[];
+    initializeData: boolean;
+    currentBank: BankData;
+    scanIndex: number;
   }
 //// Minerals
 

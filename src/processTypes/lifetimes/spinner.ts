@@ -10,6 +10,8 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
   run()
   {
     let creep = this.getCreep()
+    this.logName = 'em-s-E45S53-18640980';
+    this.logging = false;
 
     if(!creep)
     {
@@ -19,8 +21,30 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
     let flag = Game.flags['DJ-' + creep.pos.roomName];
     let mineral = <Mineral>creep.room.find(FIND_MINERALS)[0];
 
+    let skMinerals: Mineral[] = [];
+
     if(flag)
     {
+      let room = flag.room;
+      let flags = room.find(FIND_FLAGS);
+      if(flags)
+      {
+        _.forEach(flags, (f)=> {
+          if(f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW)
+          {
+            const rName = f.name.split('-')[0];
+            console.log(this.name, rName);
+            const skRoom = Game.rooms[rName];
+            if(skRoom)
+            {
+            let skMineral = <Mineral>skRoom.find(FIND_MINERALS)[0];
+            if(skMineral)
+              skMinerals.push(skMineral);
+            }
+          }
+        })
+      }
+
       if(!creep.pos.inRangeTo(flag, 0))
       {
         creep.travelTo(flag);
@@ -38,11 +62,19 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       });
       let resources = _.union(MINERALS_RAW, regList);
       let terminal = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_TERMINAL})[0] as StructureTerminal;
-      let storage = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_STORAGE})[0] as StructureStorage;
+      let storage = creep.room.storage;
 
+      if(!storage)
+      {
+        console.log(this.name,'spinner problem')
+        return;
+      }
       // Empty Creep
       if(_.sum(creep.carry) === 0)
       {
+        if(this.logging && creep.name === this.logName)
+          console.log(this.name, storage, storage.id);
+
         if(_.sum(storage.store) >= storage.storeCapacity * .99)
         {
           let target = (storage.store[RESOURCE_ENERGY] < storage.store[mineral.mineralType]) ? mineral.mineralType : RESOURCE_ENERGY;
@@ -55,13 +87,23 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         }
 
         let link = data.storageLink;
+        if(this.logging && creep.name === this.logName)
+          console.log(this.name, 1, link.id, link.energy > 0)
+
         if(link && link.energy > 0)
         {
+          if(!creep.pos.isNearTo(link))
+          {
+            creep.travelTo(flag);
+            return;
+          }
           creep.memory.target = link.id;
           creep.withdraw(link, RESOURCE_ENERGY);
           return;
         }
 
+        if(this.logging && creep.name === this.logName)
+          console.log(this.name, 2)
         let target: string;
         let max = KEEP_AMOUNT;
         let retValue: string;
@@ -71,6 +113,8 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             return true;
         });
 
+        if(this.logging && creep.name === this.logName)
+          console.log(this.name, 3)
         if(target === RESOURCE_ENERGY)
         {
           target = "";
@@ -94,10 +138,10 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
           });
         }
 
+        if(this.logging && creep.name === this.logName)
+          console.log(this.name, 4)
         if(target && target.length > 0)
         {
-          if(creep.name === 'em-s-E39S35-17841311')
-        console.log('Spinner problem', 3)
           if(target === RESOURCE_ENERGY)
           {
             let amount = terminal.store[target] - 75000 < creep.carryCapacity ? terminal.store[target] - 75000 : creep.carryCapacity;
@@ -117,9 +161,6 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(creep.name === 'em-s-E39S35-17841311')
-        console.log('Spinner problem', 5)
-
           target = _.find(Object.keys(storage.store), (r) => {
             if((r === RESOURCE_ENERGY && terminal.store[r] < 75000 && storage.store[r] >= ENERGY_KEEP_AMOUNT)
               || (r === RESOURCE_ENERGY && terminal.store[r] < 10000 && storage.store[r] >= 10000))
@@ -144,8 +185,22 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         console.log('Spinner problem', 7)
             creep.withdraw(storage, mineral.mineralType)
             creep.memory.target = storage.id;
+            return;
+          }
+          else
+          {
+            _.forEach(skMinerals, (m)=>{
+              if(storage.store[m.mineralType] > KEEP_AMOUNT && terminal.store[m.mineralType] < KEEP_AMOUNT)
+              {
+                creep.withdraw(storage, m.mineralType)
+                creep.memory.target = storage.id;
+                return;
+              }
+            })
           }
         }
+        if(this.logging && creep.name === this.logName)
+          console.log(this.name, 5)
       }
       else
       {
