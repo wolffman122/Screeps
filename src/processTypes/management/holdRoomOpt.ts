@@ -58,9 +58,6 @@ export class HoldRoomOptManagementProcess extends Process
     let centerFlag = Game.flags['Center-'+spawnRoomName];
 
     let room = Game.rooms[spawnRoomName];
-    let storage = room.storage;
-    //if(storage && storage.store.energy < 5000)
-    //  return;
 
     if(!flag)
     {
