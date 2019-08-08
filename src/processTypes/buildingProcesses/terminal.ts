@@ -16,7 +16,7 @@ export class TerminalManagementProcess extends Process
       let lowRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.storage)
         {
-          return ((r.storage.store.energy < 300000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+          return ((r.storage.store.energy < 310000 || r.storage.store === undefined) && r.controller && r.controller.my &&
             r.terminal.my);
         }
         else
@@ -125,24 +125,37 @@ export class TerminalManagementProcess extends Process
 
         if(fRooms.length > 0)
         {
-          let room = Game.rooms[fRooms[0].name];
+          let retVal = -1;
+          let index = 0;
 
-          if(room)
+          do
           {
-            if(room.terminal && room.terminal.cooldown === 0)
+            let room = Game.rooms[fRooms[index].name];
+
+            if(room)
             {
-              console.log(this.name, room.name, 'sending to', lRooms[0].name, lRooms[0].amount);
-              let amount = 300000 - lRooms[0].amount;
-              console.log(this.name, "amount", amount);
-              if(amount > 50000)
+              if(room.terminal && room.terminal.cooldown === 0)
               {
-                amount = 50000;
+                console.log(this.name, room.name, 'sending to', lRooms[0].name, lRooms[0].amount);
+                let amount = 300000 - lRooms[0].amount;
+                console.log(this.name, "amount", amount);
+                if(amount > 50000)
+                {
+                  amount = 50000;
+                }
+                let cost = Game.market.calcTransactionCost(amount, room.name, lRooms[0].name);
+                if((cost + amount) < room.terminal.store.energy)
+                {
+                  retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
+                  this.log('!!!!!!!!!!!!!!!!!!!!!!!!!! Sending Energy from ' + room.name + ' to ' + lRooms[0].name + ' retVal ' + retVal + ' amount ' + amount + ' cost ' + cost);
+                }
+                else
+                  index++;
               }
-              let cost = Game.market.calcTransactionCost(amount, room.name, lRooms[0].name);
-              let retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
-              this.log('!!!!!!!!!!!!!!!!!!!!!!!!!! Sending Energy from ' + room.name + ' to ' + lRooms[0].name + ' retVal ' + retVal + ' amount ' + amount + ' cost ' + cost);
+              else index++;
             }
-          }
+            console.log(this.name, index, fRooms.length);
+          } while (retVal != 0 || index >= fRooms.length);
         }
       }
       //this.log('Cpu used ' + (Game.cpu.getUsed() - start));
