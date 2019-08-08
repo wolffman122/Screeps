@@ -22,27 +22,21 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     }
 
     // Room energy full parts
-    if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable)
+    if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable &&
+      sourceContainer && _.sum(sourceContainer.store) <= creep.carryCapacity * .85)
     {
-      if(sourceContainer && _.sum(sourceContainer.store) <= creep.carryCapacity * .85)
+      let minContainer = this.kernel.data.roomData[creep.room.name].mineralContainer;
+      if(minContainer && _.sum(minContainer.store) > 0)
       {
-        let minContainer = this.kernel.data.roomData[creep.room.name].mineralContainer;
-        if(minContainer && _.sum(minContainer.store) > 0)
+        if(creep.pos.isNearTo(minContainer))
         {
-          if(creep.pos.isNearTo(minContainer))
-          {
-            creep.withdrawEverything(minContainer);
-            return;
-          }
-
-          creep.travelTo(minContainer, {range: 1});
+          creep.withdrawEverything(minContainer);
           return;
         }
-      }
 
-      let storage = creep.room.storage;
-      if(storage)
-        creep.idleOffRoad(storage, false);
+        creep.travelTo(minContainer, {range: 1});
+        return;
+      }
     }
 
     // Empty Creep

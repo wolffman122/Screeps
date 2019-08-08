@@ -75,7 +75,11 @@ export const Stats = {
       [mineralType: string]: number
     } = {};
 
-    let basicMineralAmounts: {
+    let basicTerminalMineralAmounts: {
+      [mineralType: string]: number
+    } = {};
+
+    let basicStorageMineralAmounts: {
       [mineralType: string]: number
     } = {};
 
@@ -92,28 +96,10 @@ export const Stats = {
       [mineralType: string]: string[]
     } = {}
 
+
+
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
-
-        /*Memory.stats['rooms.E43S58.storage.energy'] = undefined
-        Memory.stats['rooms.E43S58.storage.minerals'] = undefined
-        Memory.stats['rooms.E43S58.rcl.level'] = undefined
-        Memory.stats['rooms.E43S58.rcl.progress'] = undefined
-        Memory.stats['rooms.E43S58.rcl.progressTotal'] = undefined
-        Memory.stats['rooms.E43S58.rcl.ticksToDowngrade'] = undefined
-
-        Memory.stats['rooms.E43S58.energy_available'] = undefined
-        Memory.stats['rooms.E43S58.energy_capacity_available'] = undefined
-        Memory.stats['rooms.E43S58.num_creeps'] = undefined
-        Memory.stats['rooms.E43S58.link_energy'] = undefined
-        Memory.stats['rooms.E43S58.source_energy'] = undefined
-        Memory.stats['rooms.E43S58.spawns_spawning'] = undefined
-        Memory.stats['rooms.E43S58.construction_sites'] = undefined
-        Memory.stats['rooms.E43S58.tower_energy'] = undefined
-        Memory.stats['rooms.E43S58.container_energy'] = undefined
-        Memory.stats['rooms.E43S58.creep_energy'] = undefined
-        Memory.stats['rooms.E43S58.num_enemy_creeps'] = undefined
-*/
 
       if(room)
       {
@@ -169,7 +155,7 @@ export const Stats = {
             Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined;
             Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined;
           }
-          
+
           if(room.terminal && room.terminal.my)
           {
             terminalEnergy += room.terminal.store.energy;
@@ -178,6 +164,7 @@ export const Stats = {
 
             // Total Production boost amounts in terminals.
             let terminal = room.terminal;
+            let storage = room.storage;
             for(let mineral in PRODUCT_LIST)
             {
               let type = PRODUCT_LIST[mineral];
@@ -202,20 +189,27 @@ export const Stats = {
                 lowMineralRooms[type] = [];
               }
 
-              if(!basicMineralAmounts[type])
+              if(!basicTerminalMineralAmounts[type])
               {
-                basicMineralAmounts[type] = 0;
+                basicTerminalMineralAmounts[type] = 0;
                 lowMineralRooms[type].push(room.name);
               }
 
               if(terminal.store.hasOwnProperty(type))
               {
-                basicMineralAmounts[type] += terminal.store[type]!;
+                basicTerminalMineralAmounts[type] += terminal.store[type]!;
                 if(terminal.store[type]! < 1000)
                 {
                   lowMineralRooms[type].push(room.name);
                 }
               }
+
+              if(!basicStorageMineralAmounts[type])
+                basicStorageMineralAmounts[type] = 0;
+
+              if(storage.store.hasOwnProperty(type))
+                basicStorageMineralAmounts[type] += storage.store[type]!;
+
             }
           }
           else
@@ -228,6 +222,16 @@ export const Stats = {
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
           Memory.stats['rooms.' + roomName + '.mineral_available'] = mineral[0].mineralAmount
           Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = mineral[0].ticksToRegeneration;
+
+          if(mineral[0].ticksToRegeneration !== undefined)
+          {
+            if(mineralCountdown[mineral[0].mineralType] === undefined)
+              mineralCountdown[mineral[0].mineralType] = 50000;
+
+            if(mineralCountdown[mineral[0].mineralType] > mineral[0].ticksToRegeneration)
+              mineralCountdown[mineral[0].mineralType] = mineral[0].ticksToRegeneration;
+          }
+
 
 
 
@@ -294,14 +298,23 @@ export const Stats = {
       }
     })
 
+    ///////////// Log minimum mineral regeneration tickst ///////////////////////
+    _.forEach(Object.keys(mineralCountdown), (mc) => {
+      Memory.stats['Resources.Regeneration.' + mc] = mineralCountdown[mc];
+    });
+
     //console.log('Stats stats', boostAmounts, Object.keys(boostAmounts).length)
     _.forEach(Object.keys(boostAmounts), (ba) => {
       Memory.stats['terminals.' + ba + '.amount'] = boostAmounts[ba];
     })
 
 
-    _.forEach(Object.keys(basicMineralAmounts), (bm) => {
-      Memory.stats['terminals.basic.' + bm + '.amount'] = basicMineralAmounts[bm];
+    _.forEach(Object.keys(basicTerminalMineralAmounts), (bm) => {
+      Memory.stats['terminals.basic.' + bm + '.amount'] = basicTerminalMineralAmounts[bm];
+    })
+
+    _.forEach(Object.keys(basicStorageMineralAmounts), (bm) => {
+      Memory.stats['storages.basic.' + bm + '.amount'] = basicStorageMineralAmounts[bm];
     })
 
     for(let resourceType of PRODUCT_LIST)
