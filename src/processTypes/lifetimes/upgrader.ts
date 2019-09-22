@@ -1,7 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
 import {Utils} from '../../lib/utils'
-
-import {CollectProcess} from '../creepActions/collect'
 import {UpgradeProcess} from '../creepActions/upgrade'
 import { LABDISTROCAPACITY } from '../management/lab';
 import { LabDistroLifetimeProcess } from './labDistro';
@@ -134,11 +132,10 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
           if(controllerLink && controllerLink.energy > 500)
           {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: controllerLink.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            });
+            if(!creep.pos.isNearTo(controllerLink))
+              creep.travelTo(controllerLink);
+            else
+              creep.withdraw(controllerLink, RESOURCE_ENERGY);
 
             return;
           }
@@ -146,11 +143,10 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
           {
             let target = Utils.withdrawTarget(creep, this);
 
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: target.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            });
+            if(!creep.pos.isNearTo(target))
+              creep.travelTo(target);
+            else
+              creep.withdraw(target, RESOURCE_ENERGY);
 
             return;
           }
@@ -194,11 +190,10 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
         {
           let target = Utils.withdrawTarget(creep, this);
 
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-            target: target.id,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          })
+          if(!creep.pos.isNearTo(target))
+              creep.travelTo(target);
+            else
+              creep.withdraw(target, RESOURCE_ENERGY);
 
           return
         }

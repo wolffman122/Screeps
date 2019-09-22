@@ -255,14 +255,6 @@ interface Flag {
 
 
   /// Meta Data's
-
-  interface DeliverProcessMetaData
-  {
-    creep: string;
-    target: string;
-    resource: ResourceConstant;
-  }
-
   interface MineralDistroLifetimeProcessMetaData
   {
       creep: string;
@@ -369,20 +361,6 @@ interface Flag {
   {
     orderCreated?: boolean
     orderId?: string
-  }
-
-  interface BuildProcessMetaData
-  {
-    creep: string;
-    site: string;
-  }
-
-  interface CollectProcessMetaData
-  {
-    creep: string
-    target: string,
-    resource: ResourceConstant,
-    collectAmount: number
   }
 
   interface DismantleManagementProcessMetaData
@@ -728,6 +706,13 @@ interface ExecOrder {
   cpu: number,
   type: string,
   faulted: boolean
+}
+
+interface ProcessLog {
+  [type:string]: {
+    cpuUsed:number;
+    count:number;
+  }
 }
 
 interface OpenPositionsOptions

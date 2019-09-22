@@ -1,7 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
 
-import {CollectProcess} from '../creepActions/collect'
-
 export class DistroLifetimeProcess extends LifetimeProcess{
   type = 'dlf'
 
@@ -27,22 +25,20 @@ export class DistroLifetimeProcess extends LifetimeProcess{
 
         if(storage && storage.store.energy > 0 && sourceContainer && sourceContainer.store.energy <= sourceContainer.storeCapacity * .9)
         {
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority -1, {
-            target: storage.id,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          })
+          if(!creep.pos.isNearTo(storage))
+            creep.travelTo(storage);
+          else
+            creep.withdraw(storage, RESOURCE_ENERGY);
 
           return;
         }
 
         if(sourceContainer && sourceContainer.store.energy > creep.carryCapacity)
         {
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-            target: this.metaData.sourceContainer,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          });
+          if(!creep.pos.isNearTo(sourceContainer))
+            creep.travelTo(sourceContainer);
+          else
+            creep.withdraw(sourceContainer, RESOURCE_ENERGY);
 
           return;
         }
@@ -100,11 +96,10 @@ export class DistroLifetimeProcess extends LifetimeProcess{
         if(sourceContainer && sourceContainer.store.energy >= creep.carryCapacity)
         {
 
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-            target: this.metaData.sourceContainer,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          })
+          if(!creep.pos.isNearTo(sourceContainer))
+            creep.travelTo(sourceContainer);
+          else
+            creep.withdraw(sourceContainer, RESOURCE_ENERGY);
 
           return;
         }
@@ -114,11 +109,10 @@ export class DistroLifetimeProcess extends LifetimeProcess{
 
           if(storage && storage.store.energy > creep.carryCapacity)
           {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority -1, {
-              target: storage.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            })
+            if(!creep.pos.isNearTo(storage))
+              creep.travelTo(storage);
+            else
+              creep.withdraw(storage, RESOURCE_ENERGY);
 
             return;
           }

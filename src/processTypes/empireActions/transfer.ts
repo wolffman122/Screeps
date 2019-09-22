@@ -1,7 +1,5 @@
 import {Process} from '../../os/process'
 import { Utils } from 'lib/utils';
-import { DeliverProcess } from '../creepActions/deliver';
-import {CollectProcess} from '../creepActions/collect';
 import { MoveProcess } from 'processTypes/creepActions/move';
 
 interface TransferProcessMetaData
@@ -124,11 +122,12 @@ export class TransferProcess extends Process
 
       if(target)
       {
-        this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          target: target.id,
-          resource: RESOURCE_ENERGY
-        });
+        if(!creep.pos.isNearTo(target))
+          creep.travelTo(target);
+        else
+          creep.withdraw(target, RESOURCE_ENERGY);
+
+        return;
       }
       else
       {
@@ -146,11 +145,17 @@ export class TransferProcess extends Process
 
     if(deliveryStorage)
     {
-      this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-        creep: creep.name,
-        target: deliveryStorage.id,
-        resource: RESOURCE_ENERGY
-      });
+      if(!creep.pos.inRangeTo(deliveryStorage, 1))
+      {
+        if(!creep.fixMyRoad())
+        {
+          creep.travelTo(deliveryStorage);
+          return;
+        }
+      }
+
+      creep.transfer(deliveryStorage, RESOURCE_ENERGY);
+      return;
     }
     else
     {

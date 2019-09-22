@@ -1,8 +1,6 @@
 import {Process} from '../../os/process'
 import {Utils} from '../../lib/utils'
 
-import {DefenderLifetimeProcess} from '../lifetimes/defender'
-
 export class DefenseManagementProcess extends Process
 {
   metaData: DefenseManagementProcessMetaData;
@@ -48,11 +46,11 @@ export class DefenseManagementProcess extends Process
         if(spawned)
         {
           this.metaData.defenderCreeps.push(creepName);
-          this.kernel.addProcess(DefenderLifetimeProcess, 'deflf-' + creepName, 60, {
+          /*this.kernel.addProcess(DefenderLifetimeProcess, 'deflf-' + creepName, 60, {
             creep: creepName,
             roomName: this.metaData.roomName,
             flagName: flagName
-          });
+          });*/
         }
       }
     }

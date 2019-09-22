@@ -1,6 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { BuildProcess } from "processTypes/creepActions/build";
-import { CollectProcess } from "processTypes/creepActions/collect";
 import { HarvestProcess } from "processTypes/creepActions/harvest";
 import { MoveProcess } from "../../creepActions/move";
 
@@ -51,11 +49,10 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
               if(target)
               {
-                  this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-                    creep: creep.name,
-                    target: target.id,
-                    resource: RESOURCE_ENERGY
-                  });
+                  if(!creep.pos.isNearTo(target))
+                    creep.travelTo(target);
+                  else
+                    creep.withdraw(target, RESOURCE_ENERGY);
 
                   return;
               }
@@ -72,11 +69,10 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
                 if(target)
                 {
-                  this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-                    creep: creep.name,
-                    target: target.id,
-                    resource: RESOURCE_ENERGY
-                  });
+                  if(!creep.pos.isNearTo(target))
+                    creep.travelTo(target);
+                  else
+                    creep.withdraw(target, RESOURCE_ENERGY);
 
                   return;
                 }
@@ -194,11 +190,10 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
               if(target)
               {
-                  this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-                    creep: creep.name,
-                    target: target.id,
-                    resource: RESOURCE_ENERGY
-                  });
+                if(!creep.pos.isNearTo(target))
+                  creep.travelTo(target);
+                else
+                  creep.withdraw(target, RESOURCE_ENERGY);
 
                   return;
               }
@@ -215,11 +210,10 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
                 if(target)
                 {
-                  this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-                    creep: creep.name,
-                    target: target.id,
-                    resource: RESOURCE_ENERGY
-                  });
+                  if(!creep.pos.isNearTo(target))
+                    creep.travelTo(target);
+                  else
+                    creep.withdraw(target, RESOURCE_ENERGY);
 
                   return;
                 }
@@ -285,10 +279,10 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
         if(target)
         {
-          this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-            creep: creep.name,
-            site: target.id
-          });
+          if(!creep.pos.inRangeTo(target, 3))
+            creep.travelTo(target, {range: 3});
+          else
+            creep.build(target);
 
           return;
         }

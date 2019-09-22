@@ -1,6 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { CollectProcess } from "processTypes/creepActions/collect";
-import { DeliverProcess } from "processTypes/creepActions/deliver";
 
 export class UpgradeDistroLifetimeOptProcess extends LifetimeProcess
 {

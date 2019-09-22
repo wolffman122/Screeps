@@ -1,9 +1,6 @@
 import {LifetimeProcess} from '../../os/process'
 import {Utils, RAMPARTTARGET} from '../../lib/utils'
-
-import {CollectProcess} from '../creepActions/collect'
 import {RepairProcess} from '../creepActions/repair'
-import { BuildProcess } from '../creepActions/build';
 import { HarvestProcess } from '../creepActions/harvest';
 import { LABDISTROCAPACITY } from '../management/lab';
 
@@ -67,8 +64,6 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
             continue;
           }
 
-
-
           let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
           let terminal = flag.room!.terminal;
 
@@ -116,21 +111,24 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
         if(creep.transferEverything(storage) == OK)
         {
-          creep.suicide();
+          if(_.sum(creep.carry) === 0)
+            creep.suicide();
+
           return;
         }
       }
     }
 
-    if(_.sum(creep.carry) === 0){
+    if(_.sum(creep.carry) === 0)
+    {
       let target = Utils.withdrawTarget(creep, this)
 
-      if(target){
-        this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          target: target.id,
-          resource: RESOURCE_ENERGY
-        })
+      if (target)
+      {
+      if(!creep.pos.isNearTo(target))
+        creep.travelTo(target);
+      else
+        creep.withdraw(target, RESOURCE_ENERGY);
 
         return
       }
@@ -269,10 +267,12 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
           if(target)
           {
-            this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-              creep: creep.name,
-              site: target.id
-            })
+            if(!creep.pos.inRangeTo(target, 3))
+              creep.travelTo(target, {range: 3});
+            else
+              creep.build(target);
+
+            return;
           }
           else
           {

@@ -35,9 +35,11 @@ export const Stats = {
       Memory.stats['processes.types.' + type] = 0
     })
 
-    Memory.stats['processes.types.undefined'] = 0
-    Memory.stats['processes.types.init'] = 0
-    Memory.stats['processes.types.flagWatcher'] = 0
+    _.forEach(Object.keys(kernel.processLogs), pl => {
+      Memory.stats['processLogs.' + pl + '.cpuUsed'] = kernel.processLogs[pl].cpuUsed;
+      Memory.stats['processLogs.' + pl + '.count'] = kernel.processLogs[pl].count;
+      Memory.stats['processLogs.' + pl + '.average'] = kernel.processLogs[pl].cpuUsed / kernel.processLogs[pl].count;
+    })
 
     if(typeof Game.cpu.getHeapStatistics === "function")
     {
@@ -47,7 +49,7 @@ export const Stats = {
       Memory.stats['memory.heapPercent'] = heapPercent;
     }
 
-    let processCounts = _.reduce(kernel.execOrder, (types: {type: string, count: number}[], item: {type: string}) => {
+    /*let processCounts = _.reduce(kernel.execOrder, (types: {type: string, count: number}[], item: {type: string}) => {
       if(!types[item.type])
       {
         types[item.type] = {type: item.type, count: 0};
@@ -67,7 +69,7 @@ export const Stats = {
       Memory.stats['processes.average.types.' + p.type] = holder;
 
       //console.log(p.type, "average", Memory.stats['processes.average.types.' + p.type]);
-    })
+    })*/
 
     let remoteIndex = 0;
 

@@ -237,7 +237,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 375000;
+      let max = WALLTARGET;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].walls, 'hits') / kernel.data.roomData[roomName].walls.length);
 
@@ -350,4 +350,5 @@ export const Utils = {
   }*/
 }
 
-export const RAMPARTTARGET = 9500000;
+export const RAMPARTTARGET = 10400000;
+export const WALLTARGET = 3350000;

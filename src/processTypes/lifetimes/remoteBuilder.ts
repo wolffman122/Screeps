@@ -1,8 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
-
-import {BuildProcess} from '../creepActions/build'
 import {HarvestProcess} from '../creepActions/harvest'
-import { CollectProcess } from 'processTypes/creepActions/collect';
 
 export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
   type = 'rblf'
@@ -62,11 +59,10 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
 
             if(target)
             {
-                this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-                  creep: creep.name,
-                  target: target.id,
-                  resource: RESOURCE_ENERGY
-                });
+              if(!creep.pos.isNearTo(target))
+                creep.travelTo(target);
+              else
+                creep.withdraw(target, RESOURCE_ENERGY);
 
                 return;
             }
@@ -83,11 +79,10 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
 
               if(target)
               {
-                this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-                  creep: creep.name,
-                  target: target.id,
-                  resource: RESOURCE_ENERGY
-                });
+                if(!creep.pos.isNearTo(target))
+                  creep.travelTo(target);
+                else
+                  creep.withdraw(target, RESOURCE_ENERGY);
 
                 return;
               }
@@ -119,9 +114,11 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-      creep: creep.name,
-      site: site.id
-    })
+    if(!creep.pos.inRangeTo(site, 3))
+        creep.travelTo(site, {range: 3});
+      else
+        creep.build(site);
+
+    return;
   }
 }

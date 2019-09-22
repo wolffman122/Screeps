@@ -1,6 +1,4 @@
 import {LifetimeProcess} from '../../os/process'
-
-import {DeliverProcess} from '../creepActions/deliver'
 import {HarvestProcess} from '../creepActions/harvest'
 import {UpgradeProcess} from '../creepActions/upgrade'
 
@@ -28,12 +26,15 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
 
       if(link.energy < link.energyCapacity)
       {
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-          target: link.id,
-          creep: creep.name,
-          resource: RESOURCE_ENERGY
-        })
+        if(!creep.pos.inRangeTo(link, 1))
+        {
+          if(!creep.fixMyRoad())
+          {
+            creep.travelTo(link);
+          }
+        }
 
+        creep.transfer(link, RESOURCE_ENERGY);
         return;
       }
     }
@@ -42,12 +43,15 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
     if(this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source]){
       let container = this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source]
       if(_.sum(container.store) < container.storeCapacity){
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-          target: container.id,
-          creep: creep.name,
-          resource: RESOURCE_ENERGY
-        })
+        if(!creep.pos.inRangeTo(container, 1))
+        {
+          if(!creep.fixMyRoad())
+          {
+            creep.travelTo(container);
+          }
+        }
 
+        creep.transfer(container, RESOURCE_ENERGY);
         return
       }
     }

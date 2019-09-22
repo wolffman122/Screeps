@@ -1,7 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
 
-import {CollectProcess} from '../creepActions/collect'
-
 export class DistroLifetimeOptProcess extends LifetimeProcess{
   type = 'dlfOpt';
   metaData: DistroLifetimeOptProcessMetaData

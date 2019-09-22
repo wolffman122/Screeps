@@ -1,6 +1,5 @@
 import { LifetimeProcess } from "os/process";
 import { TransferProcess } from "../transfer";
-import { DeliverProcess } from "../../creepActions/deliver";
 
 
 export class HoldDistroLifetimeProcess extends LifetimeProcess
@@ -54,11 +53,17 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         let storage = Game.rooms[spawnName].storage;
         if(storage)
         {
-          this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority -1,{
-            creep: creep.name,
-            target: storage,
-            resource: RESOURCE_ENERGY
-          })
+          if(!creep.pos.inRangeTo(storage, 1))
+          {
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(storage);
+              return;
+            }
+          }
+
+          creep.transfer(storage, RESOURCE_ENERGY);
+          return;
         }
       }
       else
