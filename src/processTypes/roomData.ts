@@ -244,7 +244,7 @@ export class RoomDataProcess extends Process{
     let sourceLinkMaps = <{[id: string]: StructureLink}>{};
 
     let sourceLinks = _.filter(links, (l) => {
-      var sources: Array<Source> = l.pos.findInRange(FIND_SOURCES, 3);
+      var sources: Array<Source> = l.pos.findInRange(FIND_SOURCES, 2);
 
       if(sources[0])
       {

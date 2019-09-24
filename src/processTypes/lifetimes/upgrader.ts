@@ -1,8 +1,6 @@
 import {LifetimeProcess} from '../../os/process'
 import {Utils} from '../../lib/utils'
-import {UpgradeProcess} from '../creepActions/upgrade'
 import { LABDISTROCAPACITY } from '../management/lab';
-import { LabDistroLifetimeProcess } from './labDistro';
 
 export class UpgraderLifetimeProcess extends LifetimeProcess{
   type = 'ulf'
@@ -113,91 +111,74 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    if(_.sum(creep.carry) === 0){
-      /*let targets = <DeliveryTarget[]>[].concat(
-        <never[]>this.kernel.data.roomData[creep.room.name].generalContainers
-      )
+    if(_.sum(creep.carry) === 0)
+    {
+      let controllerLink = this.kernel.data.roomData[creep.pos.roomName].controllerLink;
 
-      let capacity = creep.carryCapacity
-
-      targets = _.filter(targets, function(target){
-          return (target.store.energy > capacity)
-      })
-
-      if(targets.length > 0){*/
-        //let target = creep.pos.findClosestByPath(targets)
-        if(this.kernel.data.roomData[creep.pos.roomName].controllerLink)
+      if(controllerLink)
+      {
+        if(creep.name === 'em-u-E55S47-20887403')
+          console.log(this.name, 'Controller link', 1)
+        if(controllerLink && controllerLink.energy > 500)
         {
-          let controllerLink = this.kernel.data.roomData[creep.pos.roomName].controllerLink
+          if(creep.name === 'em-u-E55S47-20887403')
+          console.log(this.name, 'Controller link', 2)
+          if(!creep.pos.isNearTo(controllerLink))
+            creep.travelTo(controllerLink);
+          else
+            creep.withdraw(controllerLink, RESOURCE_ENERGY);
 
-          if(controllerLink && controllerLink.energy > 500)
+            if(creep.name === 'em-u-E55S47-20887403')
+            console.log(this.name, 'Controller link', 3)
+          return;
+        }
+      }
+
+      if(this.kernel.data.roomData[creep.room.name].controllerContainer)
+      {
+        let controller = creep.room.controller;
+        if(controller)
+        {
+          let sign = controller.sign;
+          if(sign && sign.username !== "wolffman122")
           {
-            if(!creep.pos.isNearTo(controllerLink))
-              creep.travelTo(controllerLink);
-            else
-              creep.withdraw(controllerLink, RESOURCE_ENERGY);
+            if(creep.pos.isNearTo(controller))
+            {
+              creep.signController(controller, "[YP] Territory");
+              return;
+            }
 
+            creep.travelTo(controller);
             return;
+          }
+
+        }
+        let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
+        if(target)
+        {
+          if(creep.pos.isNearTo(target))
+          {
+            creep.withdraw(target, RESOURCE_ENERGY);
           }
           else
           {
-            let target = Utils.withdrawTarget(creep, this);
-
-            if(!creep.pos.isNearTo(target))
-              creep.travelTo(target);
-            else
-              creep.withdraw(target, RESOURCE_ENERGY);
-
+            creep.travelTo(target);
             return;
           }
         }
+      }
+      else
+      {
+        let target = Utils.withdrawTarget(creep, this);
 
-        if(this.kernel.data.roomData[creep.room.name].controllerContainer)
-        {
-          let controller = creep.room.controller;
-          if(controller)
-          {
-            let sign = controller.sign;
-            if(sign && sign.username !== "wolffman122")
-            {
-              if(creep.pos.isNearTo(controller))
-              {
-                creep.signController(controller, "[YP] Territory");
-                return;
-              }
+        if(!creep.pos.isNearTo(target))
+            creep.travelTo(target);
+          else
+            creep.withdraw(target, RESOURCE_ENERGY);
 
-              creep.travelTo(controller);
-              return;
-            }
-
-          }
-          let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
-
-          if(target)
-          {
-            if(creep.pos.isNearTo(target))
-            {
-              creep.withdraw(target, RESOURCE_ENERGY);
-            }
-            else
-            {
-              creep.travelTo(target);
-              return;
-            }
-          }
-        }
-        else
-        {
-          let target = Utils.withdrawTarget(creep, this);
-
-          if(!creep.pos.isNearTo(target))
-              creep.travelTo(target);
-            else
-              creep.withdraw(target, RESOURCE_ENERGY);
-
-          return
-        }
-     // }
+        return
+      }
     }
 
     // If the creep has been refilled
@@ -208,7 +189,12 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
       if(_.sum(creep.carry) <= creep.getActiveBodyparts(WORK))
       {
-        let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+        let target;
+
+        if(this.roomData().controllerLink && this.roomData().controllerLink.energy >= creep.carryCapacity)
+          target = this.roomData().controllerLink;
+        else if (this.roomData().controllerContainer)
+          target = this.roomData().controllerContainer;
 
         if(target)
         {

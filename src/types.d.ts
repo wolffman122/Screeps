@@ -214,6 +214,7 @@ interface Flag {
       pickup: boolean;
       fleePath?: RoomPosition[];
       full: boolean;
+      sleep?: number;
   }
 
   interface FlagMemory
