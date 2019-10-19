@@ -42,7 +42,7 @@ export class LabManagementProcess extends Process
   if(Game.cpu.bucket < 8000)
       return;
     this.logOn = false;
-    this.logName = "labm-E45S53";
+    this.logName = "labm-E32S44";
 
     this.room = Game.rooms[this.metaData.roomName];
 
@@ -109,7 +109,6 @@ export class LabManagementProcess extends Process
 
       if(this.name === this.logName && this.logOn)
       console.log(this.name, 'Running', 5)
-      let temp = Game.creeps[this.metaData.labDistros[0]];
 
       this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
 
@@ -204,6 +203,10 @@ export class LabManagementProcess extends Process
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'MissionActions', 1)
       let command = this.accessCommand();
+      if(command)
+      {
+        this.metaData.fillTowers = false;
+      }
 
       if(this.name === this.logName && this.logOn)
           console.log(this.name, 'MissionActions', 2)
@@ -227,20 +230,45 @@ export class LabManagementProcess extends Process
         }
 
         let resources = this.creep.room.find(FIND_DROPPED_RESOURCES);
-        resources = _.filter(resources, (r)=>{
-          if(this.creep.pos.inRangeTo(r, 5))
-            return r;
-        });
-
-        let target = this.creep.pos.findClosestByPath(resources);
-        if(target)
+        if(resources.length)
         {
-          if(this.creep.pos.isNearTo(target))
+          resources = _.filter(resources, (r)=>{
+            if(this.creep.pos.inRangeTo(r, 5))
+              return r;
+          });
+
+          let target = this.creep.pos.findClosestByPath(resources);
+          if(target)
           {
-            this.creep.pickup(target);
+            if(this.creep.pos.isNearTo(target))
+            {
+              this.creep.pickup(target);
+            }
+            this.creep.travelTo(target, {range: 1});
+            return;
           }
-          this.creep.travelTo(target, {range: 1});
-          return;
+        }
+
+        let enemies = this.creep.room.find(FIND_HOSTILE_CREEPS);
+        let flag = Game.flags['Center-'+this.metaData.roomName];
+        let tombstones = this.creep.room.find(FIND_TOMBSTONES);
+        if(tombstones.length && enemies.length === 0)
+        {
+          tombstones = _.filter(tombstones, (t) => {
+            if(flag.pos.inRangeTo(t, 15))
+              return t;
+          });
+
+          let target = this.creep.pos.findClosestByPath(tombstones);
+          if(target)
+          {
+            if(this.creep.pos.isNearTo(target))
+            {
+              this.creep.withdrawEverything(target);
+            }
+            this.creep.travelTo(target);
+            return;
+          }
         }
 
         this.creep.idleOffRoad(this.reagentLabs![0], false);
@@ -337,12 +365,18 @@ export class LabManagementProcess extends Process
         console.log(this.name, 'FindCommand', 1)
       let command = this.checkPullFlags();
       if(command) return command;
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 2)
 
       command = this.checkReagentLabs();
       if(command) return command;
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 3)
 
       command = this.checkProductLabs();
       if(command) return command;
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 4)
 
       // load nukers
       let nuker = this.roomData().nuker;
@@ -359,6 +393,8 @@ export class LabManagementProcess extends Process
           return command;
         }
       }
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 5)
       return;
     }
     catch(error)
@@ -372,7 +408,13 @@ export class LabManagementProcess extends Process
     try
     {
       if(this.name === this.logName && this.logOn)
+      {
         console.log(this.name, 'AccessCommand', 1)
+        if(this.metaData.command && this.metaData.command.origin === undefined)
+          this.metaData.command.origin = '5d96be2db5fc2a000165d044';
+
+      }
+
       if(!this.metaData.command && this.creep.ticksToLive! < 40)
       {
         this.creep.suicide();
@@ -384,8 +426,8 @@ export class LabManagementProcess extends Process
         this.metaData.lastCommandTick = Game.time - 10;
       }
 
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'AccessCommand', this.metaData.command, this.metaData.lastCommandTick+10)
+      //if(this.name === this.logName && this.logOn)
+       // console.log(this.name, 'AccessCommand', this.metaData.command.origin, this.metaData.lastCommandTick+10)
 
       if(!this.metaData.command && Game.time > this.metaData.lastCommandTick + 10)
       {

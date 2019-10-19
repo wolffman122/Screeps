@@ -13,8 +13,6 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
     {
       return;
     }
-    if(creep.name === 'em-E35S41-20892253')
-        console.log(this.name, 0);
 
     let source = <Source>Game.getObjectById(this.metaData.source);
 
@@ -33,7 +31,7 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
 
       if(creep.name === 'em-E35S41-20892253')
         console.log(this.name, 1);
-      if(_.sum(creep.carry) == creep.carryCapacity)
+      if(_.sum(creep.carry) == creep.carryCapacity && link.energy < link.energyCapacity)
       {
         if(creep.name === 'em-E35S41-20892253')
         console.log(this.name, 2);

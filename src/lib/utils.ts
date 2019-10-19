@@ -68,10 +68,6 @@ export const Utils = {
     let outcome = false
 
     _.forEach(spawns, function(spawn){
-      if(creepType === "rangeAttack")
-        {
-          console.log('Spawn result', spawn.canCreateCreep(body));
-        }
       if(!_.includes(kernel.data.usedSpawns, spawn.id) &&!spawn.spawning && spawn.canCreateCreep(body) === OK){
 
         let ret = spawn.createCreep(body, name, memory)
@@ -350,5 +346,5 @@ export const Utils = {
   }*/
 }
 
-export const RAMPARTTARGET = 10600000;
+export const RAMPARTTARGET = 10800000;
 export const WALLTARGET = 3350000;

@@ -8,6 +8,7 @@ import { MineralManagementProcess } from 'processTypes/management/mineral';
 import { ObservationProcess } from './buildingProcesses/observation';
 import { skRoomManagementProcess } from './management/skroom';
 import { TowerHealProcess } from './buildingProcesses/towerHeal';
+import { PowerManagementProcess } from './management/power';
 
 interface RoomDataMeta{
   roomName: string
@@ -35,31 +36,28 @@ export class RoomDataProcess extends Process{
 
   run(){
     let room = Game.rooms[this.metaData.roomName]
-    if(room.name === 'E50S49')
-      console.log('Observer',1)
     if(room === undefined)
     {
-      Memory.rooms[this.metaData.roomName].cache = {};
+      if(Memory.rooms[this.metaData.roomName])
+        Memory.rooms[this.metaData.roomName].cache = {};
       this.completed;
       return;
     }
     else
     {
-      if(room.name === 'E50S49')
-        console.log('Observer',2)
       room.memory.lastVision = Game.time;
     }
 
-    if(room.name === 'E50S49')
-      console.log('Observer',3)
     this.importFromMemory(room)
-    if(room.name === 'E50S49')
-      console.log('Observer',4)
 
-    /*if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0)
-    {
-      console.log(this.metaData.roomName, "construciton sites")
-    }*/
+    let hostiles = room.find(FIND_HOSTILE_CREEPS);
+      if(hostiles.length > 2)
+        room.memory.seigeDetected = true;
+      else
+        room.memory.seigeDetected = false;
+
+    if(room.name === 'E32S44')
+      console.log(this.name, 'Siege Status ', room.memory.seigeDetected);
 
     if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
       if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
@@ -121,7 +119,59 @@ export class RoomDataProcess extends Process{
     {
       this.enemyDetection(room);
       this.healDetection(room);
-      this.repairDetection(room);
+      this.repairDetection(room)
+
+      if(this.roomData().observer && this.roomData().powerSpawn)
+      {
+        this.kernel.addProcessIfNotExist(PowerManagementProcess, 'powm-' + room.name, 25, {
+          roomName: room.name
+        });
+      }
+
+      if(room.memory.rampartCostMatrix === undefined)
+      {
+        let rampartCost = new PathFinder.CostMatrix;
+
+        for(let x = 0; x < 50; x++)
+          for(let y = 0; y < 50; y++)
+            rampartCost.set(x, y, 0xff);
+
+        const centerFlag = Game.flags['Center-'+room.name];
+        room.find(FIND_STRUCTURES, {filter: t => t.pos.inRangeTo(centerFlag, 6) }).forEach(function(s) {
+          if(s.structureType === STRUCTURE_RAMPART)
+          {
+            let look = s.pos.look()
+            look = _.filter(look, (l) => l.type === LOOK_STRUCTURES);
+
+            if(look.length === 1)
+              rampartCost.set(s.pos.x, s.pos.y, 2);
+            else
+            {
+              _.forEach(look, (l) => {
+                let st = l.structure;
+                if(st.structureType === STRUCTURE_ROAD)
+                  rampartCost.set(st.pos.x, st.pos.y, 1);
+
+              })
+            }
+          }
+          else if(s.structureType === STRUCTURE_ROAD)
+          {
+            rampartCost.set(s.pos.x, s.pos.y, 1);
+          }
+          else
+          {
+            rampartCost.set(s.pos.x, s.pos.y, 0xff);
+          }
+        });
+
+        room.memory.rampartCostMatrix = rampartCost.serialize();
+      }
+      else
+      {
+        //room.memory.rampartCostMatrix = undefined;
+      }
+
     }
 
     this.completed = true
@@ -331,6 +381,9 @@ export class RoomDataProcess extends Process{
       powerBank: <StructurePowerBank>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_POWER_BANK);
       })[0],
+      powerSpawn: <StructurePowerSpawn>_.filter(structures, function(structure){
+        return (structure.structureType === STRUCTURE_POWER_SPAWN);
+      })[0],
       generalContainers: generalContainers,
       mineral: <Mineral>room.find(FIND_MINERALS)[0],
       labs: labs,
@@ -437,6 +490,7 @@ export class RoomDataProcess extends Process{
       extractor: undefined,
       nuker: undefined,
       observer: undefined,
+      powerSpawn: undefined,
       powerBank: undefined,
       generalContainers: [],
       mineral: undefined,
@@ -657,10 +711,10 @@ export class RoomDataProcess extends Process{
 
   healDetection(room: Room)
   {
-    let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
     let controller = room.controller;
     if(controller && controller.level >= 3)
     {
+      let damagedCreeps = <Creep[]>room.find(FIND_MY_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
       if(damagedCreeps.length > 0)
       {
         this.kernel.addProcessIfNotExist(TowerHealProcess, 'th-' + this.metaData.roomName, 90, {

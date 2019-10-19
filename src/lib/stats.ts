@@ -73,11 +73,15 @@ export const Stats = {
 
     let remoteIndex = 0;
 
-    let boostAmounts: {
+    let boostTerminalAmounts: {
       [mineralType: string]: number
     } = {};
 
     let basicTerminalMineralAmounts: {
+      [mineralType: string]: number
+    } = {};
+
+    let boostStorageAmounts: {
       [mineralType: string]: number
     } = {};
 
@@ -172,12 +176,22 @@ export const Stats = {
               let type = PRODUCT_LIST[mineral];
               if(terminal.store.hasOwnProperty(type))
               {
-                if(!boostAmounts[type])
+                if(!boostTerminalAmounts[type])
                 {
-                  boostAmounts[type] = 0;
+                  boostTerminalAmounts[type] = 0;
                 }
 
-                boostAmounts[type] += terminal.store[type]!;
+                boostTerminalAmounts[type] += terminal.store[type]!;
+              }
+
+              if(storage.store.hasOwnProperty(type))
+              {
+                if(!boostStorageAmounts[type])
+                {
+                  boostStorageAmounts[type] = 0;
+                }
+
+                boostStorageAmounts[type] += storage.store[type];
               }
             }
 
@@ -306,8 +320,8 @@ export const Stats = {
     });
 
     //console.log('Stats stats', boostAmounts, Object.keys(boostAmounts).length)
-    _.forEach(Object.keys(boostAmounts), (ba) => {
-      Memory.stats['terminals.' + ba + '.amount'] = boostAmounts[ba];
+    _.forEach(Object.keys(boostTerminalAmounts), (ba) => {
+      Memory.stats['terminals.' + ba + '.amount'] = boostTerminalAmounts[ba];
     })
 
 
@@ -315,14 +329,23 @@ export const Stats = {
       Memory.stats['terminals.basic.' + bm + '.amount'] = basicTerminalMineralAmounts[bm];
     })
 
+    _.forEach(Object.keys(boostStorageAmounts), (ba)=>{
+      Memory.stats['storage.' + ba + '.amount'] = boostStorageAmounts[ba];
+    })
+
     _.forEach(Object.keys(basicStorageMineralAmounts), (bm) => {
       Memory.stats['storages.basic.' + bm + '.amount'] = basicStorageMineralAmounts[bm];
     })
 
+    kernel.data.labProcesses[RESOURCE_CATALYZED_KEANIUM_ACID] = undefined;
+    //kernel.data.labProcesses[RESOURCE_GHODIUM] = undefined;
+    Memory.stats["lab.processCount." + RESOURCE_GHODIUM] = undefined;
     for(let resourceType of PRODUCT_LIST)
     {
       Memory.stats["lab.processCount." + resourceType] = kernel.data.labProcesses[resourceType] || undefined;
     }
+
+
 
     Memory.stats['lab.activeLabCount'] = kernel.data.activeLabCount;
 

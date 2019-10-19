@@ -2,6 +2,7 @@ import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { HoldBuilderLifetimeProcess } from "../empireActions/lifetimes/holderBuilder";
 import { MoveProcess } from "../creepActions/move";
+import { WorldMap } from "lib/WorldMap";
 
 export class skRoomManagementProcess extends Process
 {
@@ -117,6 +118,35 @@ export class skRoomManagementProcess extends Process
           Memory.flags[this.metaData.flagName] = undefined;
           Memory.rooms[this.metaData.roomName].skSourceRoom = undefined;
           return;
+      }
+
+      let spawnRoom = this.skFlag.room;
+      if(this.roomData().observer)
+      {
+        //console.log(this.name, 'Have observer');
+        let observer = this.roomData().observer;
+        let roomNames = this.findSkRooms(this.metaData.roomName);
+
+        let index = this.metaData.scanIndex++;
+        //console.log(this.name, 'Room observe', roomNames[index]);
+        observer.observeRoom(roomNames[index]);
+
+        if(index === roomNames.length - 1)
+        {
+          this.metaData.scanIndex = 0;
+        }
+
+        let scanRoom = Game.rooms[roomNames[index > 0 ? index - 1 : roomNames.length -1]];
+        //console.log(this.name, 'Look Room', scanRoom.name);
+        let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
+        if(invaderCores.length)
+        {
+          console.log(this.name, 'Found Core', scanRoom.name);
+        }
+        else
+        {
+          console.log(this.name, 'Didnt find core', scanRoom.name);
+        }
       }
 
       if(this.skFlag.room.memory.skSourceRoom === undefined)
@@ -897,9 +927,13 @@ export class skRoomManagementProcess extends Process
             let enemies = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
             if(enemies.length === 0)
             {
+              if(builder.name === 'sk-build-E46S46-21111334')
+                console.log(this.name, 1)
               //////////// Fill up the builder ///////////////////////
               if(_.sum(builder.carry) != builder.carryCapacity && builder.memory.filling)
               {
+                if(builder.name === 'sk-build-E46S46-21111334')
+                console.log(this.name, 2)
                 if(this.roomInfo(this.skRoomName).containers.length > 0)
                 {
                   let tombStone = builder.pos.findInRange(FIND_TOMBSTONES, 4)[0]
@@ -985,12 +1019,16 @@ export class skRoomManagementProcess extends Process
                 }
                 else
                 {
+                  if(builder.name === 'sk-build-E46S46-21111334')
+                console.log(this.name, 3)
                   if(this.roomInfo(this.skRoomName).sources)
                   {
                       let source = builder.pos.findClosestByRange( this.kernel.data.roomData[builder.pos.roomName].sources);
 
                       if(source)
                       {
+                        if(builder.name === 'sk-build-E46S46-21111334')
+                console.log(this.name, 4)
                         if(this.roomInfo(this.skRoomName).containers.length > 0 && this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
                         {
                           if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair.ticksToSpawn < 7)
@@ -1014,6 +1052,8 @@ export class skRoomManagementProcess extends Process
                           }
                         }
 
+                        if(builder.name === 'sk-build-E46S46-21111334')
+                console.log(this.name, 5)
                         if(!builder.pos.inRangeTo(source, 1))
                         {
                           let stones =  source.pos.findInRange(FIND_TOMBSTONES, 4);
@@ -1341,7 +1381,7 @@ export class skRoomManagementProcess extends Process
           if(hauler.pos.roomName !== this.skRoomName && _.sum(hauler.carry) === 0 &&
             hauler.ticksToLive > this.metaData.distroDistance[source.id] * 2)
           {
-            let ret = hauler.travelTo(new RoomPosition(25, 25, this.skRoomName));
+            let ret = hauler.travelTo(source);
             return;
           }
           else
@@ -1786,6 +1826,33 @@ export class skRoomManagementProcess extends Process
       {
         console.log(this.name, 'Miner Hauler Actions', error);
       }
+    }
+
+    findSkRooms(roomName: string)
+    {
+      let roomNames = [];
+      let roomCoord = WorldMap.getRoomCoordinates(roomName);
+      let skX: number;
+
+      let xDigit = Math.floor(roomCoord.x / 10) * 10 + 4;
+      let yDigit = Math.floor(roomCoord.x / 10) * 10 + 4;
+
+      for(let i = xDigit; i <= xDigit + 2; i++)
+      {
+        for(let j = yDigit; j <= yDigit + 2; j++)
+        {
+          let x = i;
+          let xDir = roomCoord.xDir;
+          let y = j;
+          let yDir = roomCoord.yDir;
+
+          let name = xDir + x + yDir + y;
+
+          roomNames.push(name);
+        }
+      }
+
+      return roomNames;
     }
 }
 ///////////////////////////////////////////////////////////

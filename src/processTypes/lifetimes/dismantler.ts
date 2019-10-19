@@ -23,6 +23,13 @@ export class DismantleLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    let boost = this.metaData.flag.split('-')[2];
+    if(boost === 'boost' && !creep.memory.boost)
+    {
+      creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ACID], false);
+      return;
+    }
+
     if(creep.pos.roomName == flag.pos.roomName)
     {
       this.fork(DismantleProcess, 'dismantle-' + creep.name, this.priority - 1, {

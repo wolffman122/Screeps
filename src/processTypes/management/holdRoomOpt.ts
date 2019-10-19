@@ -6,6 +6,7 @@ import { HoldBuilderLifetimeProcess } from 'processTypes/empireActions/lifetimes
 import { HoldHarvesterLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderHarvester';
 import { HoldDistroLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDistro';
 import { HoldHarvesterOptLifetimeProcess } from '../empireActions/lifetimes/holderHarvesterOpt';
+import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
 
 
 
@@ -45,6 +46,11 @@ export class HoldRoomOptManagementProcess extends Process
     {
       this.metaData.holdCreeps = [];
     }
+
+    if(!this.metaData.defenderCreeps)
+    {
+      this.metaData.defenderCreeps = [];
+    }
   }
 
   run()
@@ -57,7 +63,22 @@ export class HoldRoomOptManagementProcess extends Process
     let spawnRoomName = this.metaData.flagName.split('-')[0];
     let centerFlag = Game.flags['Center-'+spawnRoomName];
 
-    let room = Game.rooms[spawnRoomName];
+    let enemiesPresent = false;
+    if(flag && flag.memory.enemies)
+      enemiesPresent = flag.memory.enemies;
+
+    let enemies: Creep[]
+    if(Game.time % 10 === 7)
+    {
+      enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+      enemiesPresent = enemies.length ? true : false;
+
+      flag.memory.enemies = enemiesPresent;
+      if(enemiesPresent)
+      {
+        console.log("Hold room enemies present" + flag.pos.roomName);
+      }
+    }
 
     if(!flag)
     {
@@ -65,24 +86,77 @@ export class HoldRoomOptManagementProcess extends Process
       return;
     }
 
-    if(flag.memory.enemies === undefined)
+    let defenderCount = 0;
+    try
     {
-      flag.memory.enemies = false;
-      flag.memory.timeEnemies = 0;
-    }
-
-    if(flag.memory.enemies)
-    {
-      //this.log('Remote room enemy present ticks left ' + (flag.memory.timeEnemies! + 1500 - Game.time));
-      if(flag.memory.timeEnemies! + 1500 <= Game.time)
+      if(enemiesPresent && flag.room)
       {
-        flag.memory.enemies = false;
-        flag.memory.timeEnemies = 0;
+        enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+        defenderCount = enemies.length;
+        let bodyMakeup: BodyPartConstant[] = [];
+        _.forEach(enemies, (e)=>{
+          bodyMakeup = e.getBodyParts();
+        });
+
+        let moveCount = 0;
+        for(var i = bodyMakeup.length - 1; i >= 0; i--)
+        {
+          switch(bodyMakeup[i])
+          {
+            case MOVE:
+              moveCount++;
+              break;
+            case WORK:
+            case RANGED_ATTACK:
+              bodyMakeup[i] = ATTACK;
+              break;
+          }
+        }
+
+        if(moveCount <= bodyMakeup.length / 2)
+        {
+          let add = bodyMakeup.length / 2 - moveCount;
+          add = Math.floor(add);
+          if(add > 0)
+          {
+            for(var j = 0; j < add; j++)
+              bodyMakeup.push(MOVE);
+          }
+        }
+
+        this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
+        if(this.metaData.defenderCreeps.length < defenderCount)
+        {
+          let creepName = 'hrm-defender-' + flag.pos.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            this.kernel,
+            spawnRoomName,
+            'custom',
+            creepName,
+            {body: bodyMakeup.reverse()}
+          );
+
+          if(spawned)
+          {
+
+            this.metaData.defenderCreeps.push(creepName);
+            this.kernel.addProcessIfNotExist(HolderDefenderLifetimeProcess, 'holderDefenderlf-' + creepName, 20, {
+              creep: creepName,
+              flagName: this.metaData.flagName,
+              spawnRoomName: spawnRoomName
+            })
+          }
+        }
       }
     }
-    else
+    catch(err)
     {
-      if(centerFlag && !centerFlag.memory.timeEnemies)
+      console.log(this.name, err)
+    }
+
+
+    {
+      if(centerFlag)
       {
         let room = flag.room;
 
@@ -91,7 +165,7 @@ export class HoldRoomOptManagementProcess extends Process
         if(!room)
         {
           // No vision in room.
-          if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
+          if(this.metaData.holdCreeps.length < 1)
           {
             let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
             let spawned = Utils.spawn(
@@ -120,7 +194,7 @@ export class HoldRoomOptManagementProcess extends Process
           if(room.controller && sRoom.controller!.level >= 8 &&
             (room.controller.reservation === undefined || (room.controller.reservation && room.controller.reservation.ticksToEnd < 1000)))
           {
-            if(this.metaData.holdCreeps.length < 1)
+            if(this.metaData.holdCreeps.length < 1 && !enemiesPresent)
             {
               let max = 16;
               if(sRoom.energyAvailable < sRoom.energyCapacityAvailable * 0.50)
@@ -151,7 +225,7 @@ export class HoldRoomOptManagementProcess extends Process
           }
           else if(sRoom.controller!.level < 8)
           {
-            if(this.metaData.holdCreeps.length < 1 && !flag.memory.enemies)
+            if(this.metaData.holdCreeps.length < 1)
             {
               let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
               let spawned = Utils.spawn(
@@ -248,9 +322,28 @@ export class HoldRoomOptManagementProcess extends Process
                 this.metaData.harvestCreeps[s.id] = creepNames;
                 let creeps = Utils.inflateCreeps(creepNames);
 
+                let sc = this.roomInfo(s.room.name).sourceContainerMaps[s.id];
+                let distance = 10;
+                if(sc)
+                {
+                  if(!this.metaData.distroDistance[sc.id])
+                  {
+                    let ret = PathFinder.search(centerFlag.pos, sc.pos, {
+                      plainCost: 2,
+                      swampCost: 10,
+                    });
+
+                    this.metaData.distroDistance[sc.id] = ret.path.length;
+                  }
+                  else
+                  {
+                    distance += this.metaData.distroDistance[sc.id];
+                  }
+                }
+
                 let count = 0;
                 _.forEach(creeps, (c) => {
-                  let ticksNeeded = c.body.length * 3 + 10;
+                  let ticksNeeded = c.body.length * 3 + distance;
                   if(!c.ticksToLive || c.ticksToLive > ticksNeeded)
                   {
                     count++;

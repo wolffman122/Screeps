@@ -16,9 +16,6 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       this.metaData.boosts = undefined;
     }
 
-    if(creep.name === 'em-u-E39S35-13761633')
-      console.log(this.name, 'problem')
-
     if(this.metaData.boosts)
     {
       let boosted = true;
@@ -51,6 +48,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
           }
 
           // check if already boosted
+          let amount = 0;
           let boostedPart = _.find(creep.body, {boost: boost});
           if(boostedPart)
           {
@@ -117,19 +115,13 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
       if(controllerLink)
       {
-        if(creep.name === 'em-u-E55S47-20887403')
-          console.log(this.name, 'Controller link', 1)
         if(controllerLink && controllerLink.energy > 500)
         {
-          if(creep.name === 'em-u-E55S47-20887403')
-          console.log(this.name, 'Controller link', 2)
           if(!creep.pos.isNearTo(controllerLink))
             creep.travelTo(controllerLink);
           else
             creep.withdraw(controllerLink, RESOURCE_ENERGY);
 
-            if(creep.name === 'em-u-E55S47-20887403')
-            console.log(this.name, 'Controller link', 3)
           return;
         }
       }
@@ -157,18 +149,49 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
         if(target)
         {
-          if(creep.pos.isNearTo(target))
+          if(this.metaData.openSpaces === undefined)
           {
-            creep.withdraw(target, RESOURCE_ENERGY);
+            const openSpaces = target.pos.openAdjacentSpots(false);
+            let flag = Game.flags['Center-' + this.metaData.roomName];
+            let maxDistance = 0;
+            let position = flag.pos;
+            _.forEach(openSpaces, (os) =>{
+              let range = flag.pos.getRangeTo(os);
+              if(range > maxDistance)
+              {
+                maxDistance = range;
+                position = os;
+              }
+            })
+
+            this.metaData.openSpaces = position;
           }
           else
           {
-            creep.travelTo(target);
-            return;
+            if(this.metaData.roomName === 'E41S32')
+              console.log(this.name, 'Location', this.metaData.openSpaces.x, this.metaData.openSpaces.y);
+
+
+            let pos = new RoomPosition(this.metaData.openSpaces.x, this.metaData.openSpaces.y, this.metaData.roomName);
+            if(creep.pos.isEqualTo(pos))
+            {
+              creep.withdraw(target, RESOURCE_ENERGY);
+            }
+            else
+            {
+              const look = pos.look();
+              _.forEach(look, (l) => {
+              if(l.type === LOOK_CREEPS)
+                this.metaData.openSpaces = undefined;
+              })
+
+              creep.travelTo(pos);
+              return;
+            }
           }
         }
       }
-      else
+      else // No controller contianer
       {
         let target = Utils.withdrawTarget(creep, this);
 

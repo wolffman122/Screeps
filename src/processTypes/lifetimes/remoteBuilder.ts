@@ -42,8 +42,11 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       return;
     }*/
 
-    if(_.sum(creep.carry) === 0)
+    console.log(this.name, creep.memory.filling)
+    if(_.sum(creep.carry) === 0 || creep.memory.filling)
     {
+      creep.memory.filling = true;
+
       if(creep.pos.roomName == site.pos.roomName)
       {
         let structures = site.room!.find(FIND_HOSTILE_STRUCTURES);
@@ -64,7 +67,10 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
               else
                 creep.withdraw(target, RESOURCE_ENERGY);
 
-                return;
+              if(_.sum(creep.carry) === creep.carryCapacity)
+                creep.memory.filling = false;
+
+              return;
             }
           }
           else
@@ -84,6 +90,9 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
                 else
                   creep.withdraw(target, RESOURCE_ENERGY);
 
+                if(_.sum(creep.carry) === creep.carryCapacity)
+                  creep.memory.filling = false;
+
                 return;
               }
             }
@@ -91,10 +100,13 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
             {
               let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
 
-              this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-                creep: creep.name,
-                source: source.id
-              })
+              if(!creep.pos.isNearTo(source))
+                creep.travelTo(source);
+              else
+                creep.harvest(source);
+
+                if(_.sum(creep.carry) === creep.carryCapacity)
+                  creep.memory.filling = false;
 
               return
             }

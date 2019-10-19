@@ -302,7 +302,19 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
               let openSpaces = missingConatiners[0].pos.openAdjacentSpots(true);
               if(openSpaces.length)
               {
+                let clearConstruction = false;
                 let openSpace = openSpaces[0];
+                const look = openSpace.look();
+                _.forEach(look, (l) => {
+                  if(LOOK_CONSTRUCTION_SITES === l.type)
+                    clearConstruction = true;
+                })
+                if(clearConstruction)
+                {
+                  creep.travelTo(openSpace);
+                  return;
+                }
+                
                 missingConatiners[0].room.createConstructionSite(openSpace.x, openSpace.y, STRUCTURE_CONTAINER);
               }
 

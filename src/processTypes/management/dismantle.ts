@@ -25,6 +25,13 @@ export class DismantleManagementProcess extends Process
       this.completed = true;
       return;
     }
+    let look = flag.pos.look();
+    if(look.length === 1)
+    {
+        flag.remove();
+        this.completed = true;
+        return;
+    }
 
     this.metaData.dismantleCreeps = Utils.clearDeadCreeps(this.metaData.dismantleCreeps);
 

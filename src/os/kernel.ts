@@ -75,6 +75,10 @@ import { ReportProcess } from 'processTypes/system/reports';
 import { skRoomManagementProcess } from 'processTypes/management/skroom';
 import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
 import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
+import { PowerManagementProcess } from 'processTypes/management/power';
+import { DefenderLifetimeProcess } from 'processTypes/lifetimes/defender';
+import { DefendProcess } from 'processTypes/creepActions/defend';
+import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
 
 
 
@@ -110,6 +114,7 @@ const processTypes = <{[type: string]: any}>{
   'holdBuilderlf': HoldBuilderLifetimeProcess,
   'holdHarvesterlf': HoldHarvesterLifetimeProcess,
   'holdDistrolf': HoldDistroLifetimeProcess,
+  'holderDefenderlf': HolderDefenderLifetimeProcess,
   'transfer': TransferProcess,
   'lm': LinkManagementProcess,
   'slf': SpinnerLifetimeProcess,
@@ -148,6 +153,9 @@ const processTypes = <{[type: string]: any}>{
   'skrmp': skRoomManagementProcess,
   'lh': TowerHealProcess,
   'atmp': AllTerminalManagementProcess,
+  'powm': PowerManagementProcess,
+  'deflf': DefenderLifetimeProcess,
+  'defend': DefendProcess
 }
 
 interface KernelData{
@@ -180,7 +188,7 @@ export class Kernel{
     roomData: {},
     usedSpawns: [],
     activeLabCount: 0,
-    labProcesses: {}
+    labProcesses: {},
   }
 
   execOrder: ExecOrder[] = []

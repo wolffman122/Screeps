@@ -5,20 +5,34 @@ import { Traveler } from "lib/Traveler";
 
 export class PowerManagementProcess extends Process
 {
+    type = 'powm';
     room: Room;
     clydes: Creep[];
     bonnies: Creep[];
     carts: Creep[];
-    memory: PowerManagementProcessMetaData
+    metaData: PowerManagementProcessMetaData
 
     run()
     {
-        this.room = Game.rooms[this.memory.roomName];
+        return;
+        /*
+        this.room = Game.rooms[this.metaData.roomName];
         if(this.room)
         {
-            let observer = this.room.findStructures(STRUCTURE_OBSERVER)[0] as StructureObserver;
+            let observer = this.roomData().observer;
             if(!observer)
                 return;
+            //console.log(this.name, observer.observation.purpose, observer.observation.room, observer.observation.roomName);
+            if(Memory.powerObservers === undefined)
+            {
+                Memory.powerObservers = {};
+            }
+
+            if(Memory.playerConfig === undefined)
+            {
+                Memory.playerConfig = {powerMinimum: 9000};
+
+            }
 
             if(!Memory.powerObservers[this.room.name])
             {
@@ -26,28 +40,29 @@ export class PowerManagementProcess extends Process
                 return;
             }
 
-            if(this.memory.currentBank)
+            if(this.metaData.currentBank)
             {
-                this.monitorBank(this.memory.currentBank);
+                console.log(this.name, 'monitoring');
+                this.monitorBank(this.metaData.currentBank);
             }
             else
             {
                 this.scanForBanks(observer);
             }
 
-            this.roleCall()
-            this.missitonActions();
-        }
+            //this.roleCall()
+           //this.missitonActions();
+        }*/
     }
 
     roleCall()
     {
-        let max = 0;
+        /*let max = 0;
         let distance;
-        if(this.memory.currentBank && !this.memory.currentBank.finishing && !this.memory.currentBank.assisting)
+        if(this.metaData.currentBank && !this.metaData.currentBank.finishing && !this.metaData.currentBank.assisting)
         {
             max = 1;
-            distance = this.memory.currentBank.distance;
+            distance = this.metaData.currentBank.distance;
         }
 
         this.bonnies = this.headCount("bonnie", () => this.configBody({ move: 25, heal; 25}), () => max, {
@@ -59,55 +74,66 @@ export class PowerManagementProcess extends Process
 
         let unitsPerCart = 1;
         let maxCarts = 0;
-        if(this.memory.currentBank && this.memory.currentBank.finishing && !this.memory.currentBank.assisting)
+        if(this.metaData.currentBank && this.metaData.currentBank.finishing && !this.metaData.currentBank.assisting)
         {
-            let unitsNeeded = Math.ceil(this.memory.currentBank.power / 100);
+            let unitsNeeded = Math.ceil(this.metaData.currentBank.power / 100);
             maxCarts = Math.ceil(unitsNeeded / 16);
             unitsPerCart = Math.ceil(unitsNeeded / maxCarts);
         }
 
-        this.carts = this.headCount("powerCart", () => this.workerBody(0, unitsPerCart * 2, unitsPerCart), () => maxCarts);
+        this.carts = this.headCount("powerCart", () => this.workerBody(0, unitsPerCart * 2, unitsPerCart), () => maxCarts);*/
     }
 
     private generateScanData(): {[roomName: string]: number}
     {
-        if(Game.cpu.bucket < 10000)
-            return;
-
-        let scanData: {[roomName: string]: number} = {};
-        let spawn: StructureSpawn;
-        let possibleRoomNames = this.findAlleysInRange(5);
-        for(let roomName of possibleRoomNames)
+        try
         {
-            let position = helper.pathablePosition(roomName);
-            let ret = Traveler.findTravelPath(spawn, {pos: position});
-            if(ret.incomplete)
-            {
-                console.log(this.name, "POWER: incomplete path generating scadata");
-                continue;
-            }
+            if(Game.cpu.bucket < 9900)
+                return;
 
-            let currentObserver = _.find(Memory.powerObservers, (value) => value[roomName]);
-            let distance = ret.path.length;
-            if(distance > 250) continue;
+            let scanData: {[roomName: string]: number} = {};
+            const spawns = this.roomData().spawns;
+            let spawn: StructureSpawn;
+            _.forEach(spawns, (s) => {
+                if(!_.includes(this.kernel.data.usedSpawns, s.id) && !s.spawning)
+                    spawn = s;
+            })
 
-            if(currentObserver)
+            let possibleRoomNames = this.findAlleysInRange(5);
+            for(let roomName of possibleRoomNames)
             {
-                if(currentObserver[roomName] > distance)
+                let position = helper.pathablePosition(roomName);
+                let ret = Traveler.findTravelPath(spawn, {pos: position});
+                if(ret.incomplete)
                 {
-                    console.log('POWER: found better distance for power bank');
-                    delete currentObserver[roomName];
-                }
-                else
-                {
+                    console.log(this.name, "POWER: incomplete path generating scadata");
                     continue;
                 }
+
+                let currentObserver = _.find(Memory.powerObservers, (value) => value[roomName]);
+                let distance = ret.path.length;
+                if(distance > 250) continue;
+
+                if(currentObserver)
+                {
+                    if(currentObserver[roomName] > distance)
+                    {
+                        console.log('POWER: found better distance for power bank');
+                        delete currentObserver[roomName];
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                scanData[roomName] = distance;
             }
-
-            scanData[roomName] = distance;
+            return scanData;
         }
-
-        return scanData;
+        catch(error)
+        {
+            console.log(this.name, error);
+        }
     }
 
     private monitorBank(currentBank: BankData)
@@ -148,10 +174,11 @@ export class PowerManagementProcess extends Process
         if(observer.observation && observer.observation.purpose === this.name)
         {
             let room = observer.observation.room;
-            let bank = observer.observation.room.findStructures<StructurePowerBank>(STRUCTURE_POWER_BANK)[0];
+            let bank = room.findStructures<StructurePowerBank>(STRUCTURE_POWER_BANK)[0];
             if(bank && bank.ticksToDecay > 4500 && room.findStructures(STRUCTURE_WALL).length === 0
                 && bank.power >= Memory.playerConfig.powerMinimum)
             {
+                Game.notify('Found power at ' + bank.room.name + ' Game time ' + Game.time);
                 console.log("\\o/ \\o/ \\o/", bank.power, "power found at", room, "\\o/ \\o/ \\o/");
                 this.metaData.currentBank = {
                     pos: bank.pos,
@@ -169,7 +196,7 @@ export class PowerManagementProcess extends Process
             this.metaData.scanIndex = 0;
 
         let roomName = Object.keys(scanData)[this.metaData.scanIndex++];
-        observer.observeRoom(roomName, this.name);
+        let ret = observer.observeRoom(roomName, this.name);
     }
 
     findAlleysInRange(range: number)

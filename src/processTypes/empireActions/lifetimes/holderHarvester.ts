@@ -34,11 +34,6 @@ export class HoldHarvesterLifetimeProcess extends LifetimeProcess
 
         if(enemies.length > 0)
         {
-          flag.memory.enemies = true;
-          if(flag.memory.timeEnemies === undefined || flag.memory.timeEnemies === 0)
-          {
-            flag.memory.timeEnemies = Game.time;
-          }
         }
       }
     }

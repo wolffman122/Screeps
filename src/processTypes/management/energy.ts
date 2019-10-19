@@ -37,6 +37,20 @@ export class EnergyManagementProcess extends Process{
   runRoomVisuals(room: Room)
   {
     room.visual.text('RCL ' + (room.controller.progress / room.controller.progressTotal) * 100, 5,3, {color: 'white', align: 'left'});
+
+    /*if(room.name === 'E41S49')
+    {
+      console.log(this.name, 'Problem', 1)
+      let costs = PathFinder.CostMatrix.deserialize(room.memory.rampartCostMatrix);
+      for(let x = 1; x < 49; x++)
+      {
+        for(let y = 1; y < 49; y++)
+        {
+
+          room.visual.text(costs.get(x, y).toString(), x, y, { color: 'yellow', font: 0.6 });
+        }
+      }
+    }*/
   }
 
   run(){
@@ -47,7 +61,9 @@ export class EnergyManagementProcess extends Process{
       return
     }
 
+
     let room = Game.rooms[this.metaData.roomName];
+    const seige = room.memory.seigeDetected;
 
     if(room.controller && room.controller.my)
     {
@@ -131,7 +147,7 @@ export class EnergyManagementProcess extends Process{
           }
 
 
-          if(count < numberOfHarvesters) //300
+          if(count < numberOfHarvesters && !seige) //300
           {
             let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
             let spawned = false;
@@ -224,7 +240,7 @@ export class EnergyManagementProcess extends Process{
 
             if(spawned){
               proc.metaData.distroCreeps[container.id] = creepName
-              proc.kernel.addProcess(DistroLifetimeOptProcess, 'dlf-' + creepName, 48, {
+              proc.kernel.addProcess(DistroLifetimeOptProcess, 'dlfOpt-' + creepName, 48, {
                 sourceContainer: container.id,
                 creep: creepName
               })
@@ -244,7 +260,7 @@ export class EnergyManagementProcess extends Process{
         let upgraders = 0;
         switch(this.metaData.roomName)
         {
-          case 'E27S38':
+          case 'E32S44':
             upgraders = 2;
             break;
           default:
@@ -259,7 +275,7 @@ export class EnergyManagementProcess extends Process{
           upgraders = 1;
         }
 
-        if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0)
+        if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0 && !seige)
         {
           let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
           let spawned = false;
@@ -392,7 +408,7 @@ export class EnergyManagementProcess extends Process{
 
           switch(this.metaData.roomName)
           {
-            case 'E27S38':
+            case 'E35S51':
               upgradeDistroAmount = 1;
               break;
             default:
@@ -405,7 +421,7 @@ export class EnergyManagementProcess extends Process{
             upgradeDistroAmount = 1;
           }
 
-          if(count < upgradeDistroAmount)
+          if(count < upgradeDistroAmount && !seige)
           {
             let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
             let spawned = false;

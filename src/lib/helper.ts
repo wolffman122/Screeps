@@ -8,8 +8,8 @@ export var helper = {
                     }
                     let x = 25 + xDelta;
                     let y = 25 + yDelta;
-                    let terrain = Game.map.getTerrainAt(x, y, roomName);
-                    if (terrain !== "wall") {
+                    const terrain = Game.map.getRoomTerrain(roomName);
+                    if (terrain.get(x,y) !== TERRAIN_MASK_WALL) {
                         return new RoomPosition(x, y, roomName);
                     }
                 }

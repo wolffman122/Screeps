@@ -181,18 +181,18 @@ Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
 Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean): any
 {
 
-  if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 1)
+  if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 1);
   let totalBoosts = boosts.length;
   let boosted = true;
   for(let boost of boosts)
   {
-    if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 2)
+    if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 2);
     if(this.memory[boost])
     {
-      if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 3)
+      if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 3);
       totalBoosts--;
       continue;
     }
@@ -201,21 +201,21 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
     if(room)
     {
-      if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 4)
+      if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 4);
       let requests = room.memory.boostRequests;
       if(!requests)
       {
-        if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 5)
+        if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 5);
         this.memory[boost] = true;
         continue;
       }
 
       if(!requests[boost])
       {
-        if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 6)
+        if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 6);
         requests[boost] = { flagName: undefined, requesterIds: [] };
       }
 
@@ -223,8 +223,8 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
       let boostedPart = _.find(this.body, {boost: boost});
       if(boostedPart)
       {
-        if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 7)
+        if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 7);
         this.memory[boost] = true;
         requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, this.id);
         continue;
@@ -233,8 +233,8 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
       boosted = false;
       if(!_.include(requests[boost].requesterIds, this.id))
       {
-        if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 8)
+        if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 8);
         requests[boost].requesterIds.push(this.id);
       }
 
@@ -244,8 +244,8 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
       let flag = Game.flags[requests[boost].flagName!];
       if(!flag)
       {
-        if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 9)
+        if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 9);
         continue;
       }
 
@@ -253,16 +253,20 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
       if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
       {
-        if(this.name === 'E44S55-devil-19274309')
-          console.log('Devil Problems boost', 10)
+        if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 10);
         if(this.pos.isNearTo(lab))
         {
+          if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 101);
           lab.boostCreep(this);
           return OK;
         }
         else
         {
-          this.travelTo(lab);
+          let ret = this.travelTo(lab);
+          if(this.name === 'dm-E41S49-21097598')
+        console.log('Defense', 102, ret, lab.pos, lab.id);
           return ERR_BUSY;
         }
       }
@@ -290,11 +294,28 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 }
 
 
-Creep.prototype.getBodyParts = function(type: BodyPartConstant): boolean
+Creep.prototype.getBodyPart = function(type: BodyPartConstant): boolean
 {
   return(_.include(this.body, (b: BodyPartDefinition) => {
+    if(this.room.name === 'E32S45')
+          console.log('bp', 2, b.type, type);
     return b.type === type;
   }));
+}
+
+Creep.prototype.getBodyParts = function(): BodyPartConstant[]
+{
+  let retValue: BodyPartConstant[] = [];
+  _.forEach(BODYPARTS_ALL, (bp) => {
+    let amount = this.getActiveBodyparts(bp);
+    let part: BodyPartConstant[] = [];
+    for(let i = 0; i < amount; i++)
+      part.push(bp);
+
+    retValue = retValue.concat(part);
+  });
+
+  return retValue;
 }
 
 Creep.prototype.partCount = function(partType: string): number
