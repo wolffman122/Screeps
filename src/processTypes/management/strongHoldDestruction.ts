@@ -186,11 +186,10 @@ export class StrongHoldDestructionProcess extends Process
           if(creep.pos.inRangeTo(this.core, 2) && !creep.pos.inRangeTo(this.core, 1))
             creep.memory.stuck++;
 
-
           if(creep.memory.stuck < 2)
           {
             //Move to core
-            if(!creep.pos.inRangeTo(this.core, 1))
+            if(!creep.pos.inRangeTo(this.core, 1) && healer.fatigue === 0)
               creep.travelTo(this.core);
             else
             {
