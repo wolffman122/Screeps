@@ -48,43 +48,46 @@ export class StrongHoldDestructionProcess extends Process
     this.core = Game.getObjectById(this.flag.memory.coreId) as StructureInvaderCore;
     if(this.core)
     {
-      let numberOfAttackers = 0;
-      let numberofHealers = 0;
-
-      // MOve to spawning function later
-      if(this.core.level <= 2)
+      if(this.core.ticksToDeploy === undefined || this.core.ticksToDeploy < 200)
       {
+        let numberOfAttackers = 0;
+        let numberofHealers = 0;
 
-        numberOfAttackers = 1;
-        numberofHealers = 1;
-      }
-
-      this.metaData.attackers = Utils.clearDeadCreeps(this.metaData.attackers);
-      this.metaData.healers = Utils.clearDeadCreeps(this.metaData.healers);
-
-      if(this.metaData.attackers.length < numberOfAttackers)
-      {
-        let creepName = 'atk-' + this.metaData.roomName + '-' + Game.time;
-        let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'testattacker', creepName,
+        // MOve to spawning function later
+        if(this.core.level <= 2)
         {
-        });
 
-        if(spawned)
-        {
-          this.metaData.attackers.push(creepName);
+          numberOfAttackers = 1;
+          numberofHealers = 1;
         }
-      }
 
-      if(this.metaData.healers.length < numberofHealers)
-      {
-        let creepName = 'heal-' + this.metaData.roomName + '-' + Game.time;
-        let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'testhealer', creepName,
-        {
-        })
+        this.metaData.attackers = Utils.clearDeadCreeps(this.metaData.attackers);
+        this.metaData.healers = Utils.clearDeadCreeps(this.metaData.healers);
 
-        if(spawned)
+        if(this.metaData.attackers.length < numberOfAttackers)
         {
-          this.metaData.healers.push(creepName);
+          let creepName = 'atk-' + this.metaData.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'testattacker', creepName,
+          {
+          });
+
+          if(spawned)
+          {
+            this.metaData.attackers.push(creepName);
+          }
+        }
+
+        if(this.metaData.healers.length < numberofHealers)
+        {
+          let creepName = 'heal-' + this.metaData.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'testhealer', creepName,
+          {
+          })
+
+          if(spawned)
+          {
+            this.metaData.healers.push(creepName);
+          }
         }
       }
     }
