@@ -1,6 +1,5 @@
 import { LifetimeProcess } from "os/process";
 import { TransferProcess } from "../transfer";
-import { DeliverProcess } from "../../creepActions/deliver";
 
 
 export class HoldDistroLifetimeProcess extends LifetimeProcess
@@ -25,6 +24,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
+
     // Setup for road complete
     if(flag.memory.roadComplete === undefined)
       flag.memory.roadComplete = 0;
@@ -36,15 +37,6 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       enemies = _.filter(enemies, (e: Creep)=> {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
       });
-
-      if(enemies.length > 0)
-      {
-        flag.memory.enemies = true;
-        if(!flag.memory.timeEnemies)
-        {
-          flag.memory.timeEnemies = Game.time;
-        }
-      }
     }
 
     if(flag.memory.enemies)
@@ -54,16 +46,22 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         let storage = Game.rooms[spawnName].storage;
         if(storage)
         {
-          this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority -1,{
-            creep: creep.name,
-            target: storage,
-            resource: RESOURCE_ENERGY
-          })
+          if(!creep.pos.inRangeTo(storage, 1))
+          {
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(storage);
+              return;
+            }
+          }
+
+          creep.transfer(storage, RESOURCE_ENERGY);
+          return;
         }
       }
       else
       {
-        let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
+
         if(fleeFlag)
         {
           if(!creep.pos.inRangeTo(fleeFlag, 5))
@@ -72,23 +70,23 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
           }
           else
           {
-            creep.suicide();
+            if(creep.ticksToLive < 50)
+              creep.suicide();
           }
           return;
         }
         else
         {
-          creep.suicide();
+          console.log(this.name, 'Need remote flee flag')
           return;
         }
       }
     }
 
-    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100 && !flag.memory.enemies)
+    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
+    if(sourceContainer)
     {
-      let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
-
-      if(sourceContainer)
+      if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
       {
         const sources = this.kernel.data.roomData[flag.pos.roomName].sources;
         if(!creep.pos.inRangeTo(sourceContainer, 1) && _.sum(sourceContainer.store) > creep.carryCapacity * .5)
@@ -107,6 +105,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         }
         else
         {
+          //console.log(this.name, 'Sitting');
           if(flag.memory.roadComplete < sources.length)
             flag.memory.roadComplete++;
         }
@@ -157,7 +156,23 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         }
         else
         {
+          if(creep.room.name === this.metaData.spawnRoom)
+          {
+            if(fleeFlag && !creep.pos.inRangeTo(fleeFlag, 4))
+            {
+              creep.travelTo(fleeFlag);
+              return;
+            }
+          }
           this.suspend = 20;
+          return;
+        }
+      }
+      else if(_.sum(creep.carry) === 0 && creep.room.name !== this.metaData.spawnRoom)
+      {
+        if(creep.pos.isNearTo(sourceContainer))
+        {
+          creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           return;
         }
       }
@@ -165,52 +180,95 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
     if(this.kernel.data.roomData[this.metaData.spawnRoom])
     {
-    if(this.kernel.data.roomData[this.metaData.spawnRoom].links.length > 0)
-    {
-      let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
-
-      links = creep.pos.findInRange(links, 8);
-      links = _.filter(links, (l) => {
-        return (l.energy == 0 || l.cooldown == 0);
-      });
-
-      if(links.length > 0)
+      if(this.kernel.data.roomData[this.metaData.spawnRoom].links.length > 0)
       {
-        let link = creep.pos.findClosestByPath(links);
+        let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
 
-        if(link.energy < link.energyCapacity)
+        links = creep.pos.findInRange(links, 8);
+        links = _.filter(links, (l) => {
+          return (l.energy == 0 || l.cooldown == 0);
+        });
+
+        if(links.length > 0)
         {
-          if(!creep.pos.inRangeTo(link, 1))
+          let link = creep.pos.findClosestByPath(links);
+
+          if(link.energy < link.energyCapacity)
           {
-            if(!creep.fixMyRoad())
+            if(!creep.pos.inRangeTo(link, 1))
             {
-              creep.travelTo(link);
+              if(!creep.fixMyRoad())
+              {
+                creep.travelTo(link);
+              }
+            }
+
+            if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
+            {
+              this.suspend = 2;
+              return;
             }
           }
-
-          if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
+          else
           {
-            this.suspend = 2;
-            return;
+            let storage = creep.room.storage;
+            if(storage)
+            {
+              if(!creep.pos.inRangeTo(storage,1))
+              {
+                if(!creep.fixMyRoad())
+                {
+                  creep.travelTo(storage);
+                  return;
+                }
+              }
+
+              if(creep.transfer(storage, RESOURCE_ENERGY) === ERR_FULL)
+              {
+                return;
+              }
+            }
+            else
+            {
+              let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
+              if(target)
+              {
+                if(creep.pos.isNearTo(target))
+                {
+                  creep.transfer(target, RESOURCE_ENERGY);
+                  return;
+                }
+
+                creep.travelTo(target, {range: 1});
+                return;
+              }
+              else
+              {
+                this.suspend = 2;
+              }
+            }
           }
         }
         else
         {
-          let storage = creep.room.storage;
-          if(storage)
+          if(Game.rooms[this.metaData.spawnRoom].storage)
           {
-            if(!creep.pos.inRangeTo(storage,1))
+            let target = Game.rooms[this.metaData.spawnRoom].storage;
+
+            if(target)
             {
-              if(!creep.fixMyRoad())
+              if(!creep.pos.inRangeTo(target, 1))
               {
-                creep.travelTo(storage);
+                if(!creep.fixMyRoad())
+                {
+                  creep.travelTo(target);
+                }
+              }
+
+              if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
+              {
                 return;
               }
-            }
-
-            if(creep.transfer(storage, RESOURCE_ENERGY) === ERR_FULL)
-            {
-              return;
             }
           }
           else
@@ -236,6 +294,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       }
       else
       {
+        // creep is filled
         if(Game.rooms[this.metaData.spawnRoom].storage)
         {
           let target = Game.rooms[this.metaData.spawnRoom].storage;
@@ -256,71 +315,40 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
             }
           }
         }
-        else
+        else if (this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers.length)
         {
           let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
+
           if(target)
           {
-            if(creep.pos.isNearTo(target))
+            if(!creep.pos.inRangeTo(target, 1))
             {
-              creep.transfer(target, RESOURCE_ENERGY);
+              if(!creep.fixMyRoad())
+              {
+                creep.travelTo(target);
+              }
+            }
+
+            if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
+            {
               return;
             }
+          }
+        }
+      }
 
-            creep.travelTo(target, {range: 1});
-            return;
-          }
-          else
-          {
-            this.suspend = 2;
-          }
+      if(_.sum(creep.carry) === 0 && creep.ticksToLive <= 100)
+      {
+        let container = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
+        if(container)
+        {
+          if(creep.pos.inRangeTo(container, 0))
+            creep.suicide();
+
+          creep.travelTo(container);
+          return;
         }
       }
     }
-    else
-    {
-      // creep is filled
-      if(Game.rooms[this.metaData.spawnRoom].storage)
-      {
-        let target = Game.rooms[this.metaData.spawnRoom].storage;
-
-        if(target)
-        {
-          if(!creep.pos.inRangeTo(target, 1))
-          {
-            if(!creep.fixMyRoad())
-            {
-              creep.travelTo(target);
-            }
-          }
-
-          if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-          {
-            return;
-          }
-        }
-      }
-      else if (this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers.length)
-      {
-        let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
-
-        if(target)
-        {
-          if(!creep.pos.inRangeTo(target, 1))
-          {
-            if(!creep.fixMyRoad())
-            {
-              creep.travelTo(target);
-            }
-          }
-
-          if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-          {
-            return;
-          }
-        }
-      }
-    }
-  }
   }
 }

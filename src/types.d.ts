@@ -11,7 +11,8 @@ interface Creep extends RoomObject {
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
     boostRequest(boosts: string[], allowUnboosted: boolean): any
-    getBodyParts(type: BodyPartConstant): boolean;
+    getBodyPart(type: BodyPartConstant): boolean;
+    getBodyParts(): BodyPartConstant[];
   }
 
 interface RoomPosition {
@@ -25,7 +26,8 @@ interface RoomPosition {
 
 interface Game {
   cache: {
-    labProcesses: { [resourceType: string]: number }
+    structures: { [roomName: string]: {[structureType: string]: Structure[]} },
+    labProcesses: { [resourceType: string]: number },
     activeLabCount: number;
   }
 }
@@ -66,6 +68,7 @@ interface Flag {
     nuker?: StructureNuker
     observer?: StructureObserver
     powerBank?: StructurePowerBank
+    powerSpawn?: StructurePowerSpawn
     generalContainers: StructureContainer[]
     mineral: Mineral | undefined
     labs: StructureLab[]
@@ -119,11 +122,6 @@ interface Flag {
     hitsMax: number
   }
 
-  interface StructureObserver
-  {
-    observation: Observation;
-  }
-
   interface Observation
   {
     purpose: string,
@@ -166,6 +164,7 @@ interface Flag {
     {
       flagName?: string;
       requesterIds: string[];
+      amount?: number[];
     };
   }
 
@@ -173,16 +172,17 @@ interface Flag {
   {
     observeRoom: {[name: string]: ObserveMemory}
     playerConfig: {
-      terminalNetworkRange: number;
+      /*terminalNetworkRange: number;
       enableStats: boolean;
       muteSpawn: boolean;
-      creditReserveAmount: number;
+      creditReserveAmount: number;*/
       powerMinimum: number;
     };
     gclAmount: number;
     wolffOS: any;
     stats: any;
     powerObservers: {[scanningRoomName: string]: {[roomName: string]: number}};
+    structures: { [roomName: string]: {[structureType: string]: Structure[]} };
   }
 
   interface ObserveMemory
@@ -214,11 +214,19 @@ interface Flag {
       pickup: boolean;
       fleePath?: RoomPosition[];
       full: boolean;
+      sleep?: number;
+      stuck?: number;
   }
 
   interface FlagMemory
   {
       enemies: boolean;
+      cores?: boolean;
+      invaderCoresPresent: boolean;
+      coreLevel?: number;
+      coreDistance?: number;
+      coreId?: string;
+      coreSkFoundRoom: string;
       timeEnemies?: number;
       source: string;
       droppedResource: boolean;
@@ -233,6 +241,7 @@ interface Flag {
 
   interface RoomMemory
   {
+    seigeDetected?: boolean;
     avoid: number;
     cache: {[key: string]: any};
     numSites: number;
@@ -248,6 +257,11 @@ interface Flag {
     invadersPresent?: boolean;
     skSourceRoom?: boolean;
     lastVision: number;
+    enemyId?: string;
+    currentPatternCount?: number;
+    currentPatternTimer?: number;
+    rampartCostMatrix?: number[];
+    miningStopTime?: number;
   }
 
   interface SpawnMemory {}
@@ -255,14 +269,6 @@ interface Flag {
 
 
   /// Meta Data's
-
-  interface DeliverProcessMetaData
-  {
-    creep: string;
-    target: string;
-    resource: ResourceConstant;
-  }
-
   interface MineralDistroLifetimeProcessMetaData
   {
       creep: string;
@@ -270,6 +276,12 @@ interface Flag {
       mineralType: ResourceConstant;
   }
 
+  interface TowerDefenseProcessMetaData
+  {
+    roomName: string,
+    offOn: boolean,
+    counter: number,
+  }
   interface EnergyManagementMetaData
   {
     roomName: string
@@ -354,6 +366,8 @@ interface Flag {
 
     builderCreeps: string[]
     workerCreeps: string[]
+    defenderCreeps: string[]
+    coreBuster: string[]
     flagName: string
     increasing: boolean
   }
@@ -365,24 +379,19 @@ interface Flag {
     harvesting: boolean
   }
 
+  interface BusterLifetimeProcessMetaData
+  {
+    cree: string,
+    flagName: string,
+    spawnRoom: string,
+    coreId: string,
+    boosts: string[]
+  }
+
   interface MarketManagementProcessMetaData
   {
     orderCreated?: boolean
     orderId?: string
-  }
-
-  interface BuildProcessMetaData
-  {
-    creep: string;
-    site: string;
-  }
-
-  interface CollectProcessMetaData
-  {
-    creep: string
-    target: string,
-    resource: ResourceConstant,
-    collectAmount: number
   }
 
   interface DismantleManagementProcessMetaData
@@ -390,6 +399,16 @@ interface Flag {
       roomName: string
       flagName: string
       dismantleCreeps: string[]
+  }
+
+  interface StrongHoldDestructionProcessMetaData
+  {
+    roomName: string
+    flagName: string
+    attackers: string[]
+    healers: string[],
+    dismantlers: string[],
+    haulers: string[],
   }
 
   interface DismantleMetaData
@@ -447,10 +466,19 @@ interface Flag {
     flagName: string
   }
 
+  interface HolderDefenderLifetimeProcessMetaData
+  {
+    creep: string,
+    targetRoom: string
+    flagName: string
+    spawnRoomName: string
+  }
+
   interface DefenderLifetimeProcessMetaData
   {
     roomName: string
     flagName: string
+    boosts?: string[],
   }
 
   interface AttackControllerManagementMetaData
@@ -497,6 +525,7 @@ interface Flag {
     labProcess?: LabProcess;
     processFlag?: string;
     testMessage?: string;
+    fillTowers?: boolean;
   }
 
   interface LabMemory
@@ -633,6 +662,7 @@ interface Flag {
     roomName: string,
     boosts?: string[],
     allowUnboosted: boolean,
+    openSpaces?: RoomPosition
   }
 
   interface PowerManagementProcessMetaData
@@ -641,6 +671,11 @@ interface Flag {
     currentBank: BankData;
     scanIndex: number;
     scanData: {[roomName: string]: number}
+  }
+
+  interface TowerRepairProcessMetaData
+  {
+    roomName: string;
   }
 
   interface RepairerLifetimeProcessMetaData
@@ -654,6 +689,7 @@ interface Flag {
 
   interface SKRoomManagementProcessMetaData
   {
+    moveFlag: boolean,
     mineralMining: boolean,
     centerSKMining: boolean,
     miningFlag: string,
@@ -665,6 +701,11 @@ interface Flag {
     centerRoomName: string,
     scoutName?: string,
     vision: boolean,
+    scanIndex: number,
+    invaderCorePresent: boolean,
+    coreFlagName?: string,
+    coreId?: string,
+    coreLevel?: number,
     locations: {
       [types: string]: any[]
     },
@@ -728,6 +769,13 @@ interface ExecOrder {
   cpu: number,
   type: string,
   faulted: boolean
+}
+
+interface ProcessLog {
+  [type:string]: {
+    cpuUsed:number;
+    count:number;
+  }
 }
 
 interface OpenPositionsOptions

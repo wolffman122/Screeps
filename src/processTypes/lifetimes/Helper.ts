@@ -1,6 +1,5 @@
 import { LifetimeProcess } from "os/process";
 import { HarvestProcess } from "../creepActions/harvest";
-import { BuildProcess } from "../creepActions/build";
 import { UpgradeProcess } from "../creepActions/upgrade";
 import { LABDISTROCAPACITY } from "../management/lab";
 import { LabDistroLifetimeProcess } from "./labDistro";

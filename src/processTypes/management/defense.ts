@@ -1,7 +1,6 @@
 import {Process} from '../../os/process'
 import {Utils} from '../../lib/utils'
-
-import {DefenderLifetimeProcess} from '../lifetimes/defender'
+import { DefenderLifetimeProcess } from 'processTypes/lifetimes/defender';
 
 export class DefenseManagementProcess extends Process
 {
@@ -17,7 +16,7 @@ export class DefenseManagementProcess extends Process
   }
   run()
   {
-    this.ensureMetaData();
+   this.ensureMetaData();
 
     if(!this.kernel.data.roomData[this.metaData.roomName]){
       this.completed = true
@@ -30,7 +29,18 @@ export class DefenseManagementProcess extends Process
     let flagName = 'Center-' + this.metaData.roomName;
     let flag = Game.flags[flagName];
 
-    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
+    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
+    if(enemies.length === 0)
+      return;
+
+    let invaders = _.filter(enemies, (e) => {
+      return (e.owner.username === 'invader' || e.owner.username === 'Invader');
+    });
+
+    if(invaders.length > 0)
+    {
+      return;
+    }
 
     if(room.controller && room.controller.my)
     {
@@ -39,7 +49,13 @@ export class DefenseManagementProcess extends Process
           flag.pos.inRangeTo(e, 15);
       });
 
-      if(this.metaData.defenderCreeps.length < dangerEnemies.length)
+      let numberDefenders = 1;
+      if(dangerEnemies.length >= 4)
+      {
+        numberDefenders = 2;
+      }
+
+      if(this.metaData.defenderCreeps.length < numberDefenders)
       {
         let creepName = 'dm-' + this.metaData.roomName + '-' + Game.time;
         let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'defender', creepName, {});
@@ -48,10 +64,14 @@ export class DefenseManagementProcess extends Process
         if(spawned)
         {
           this.metaData.defenderCreeps.push(creepName);
+          let boosts = [];
+          boosts.push(RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+            RESOURCE_CATALYZED_UTRIUM_ACID);
           this.kernel.addProcess(DefenderLifetimeProcess, 'deflf-' + creepName, 60, {
             creep: creepName,
             roomName: this.metaData.roomName,
-            flagName: flagName
+            flagName: flagName,
+            boosts: boosts
           });
         }
       }

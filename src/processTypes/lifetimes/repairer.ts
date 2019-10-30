@@ -1,9 +1,6 @@
 import {LifetimeProcess} from '../../os/process'
 import {Utils, RAMPARTTARGET} from '../../lib/utils'
-
-import {CollectProcess} from '../creepActions/collect'
 import {RepairProcess} from '../creepActions/repair'
-import { BuildProcess } from '../creepActions/build';
 import { HarvestProcess } from '../creepActions/harvest';
 import { LABDISTROCAPACITY } from '../management/lab';
 
@@ -67,11 +64,11 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
             continue;
           }
 
-
-
           let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
           let terminal = flag.room!.terminal;
 
+          if(creep.name === 'sm-E32S44-21511323')
+            console.log(this.name, 'Problem', 1)
           if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
           {
             console.log("BOOST: Time to boost");
@@ -116,21 +113,24 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
         if(creep.transferEverything(storage) == OK)
         {
-          creep.suicide();
+          if(_.sum(creep.carry) === 0)
+            creep.suicide();
+
           return;
         }
       }
     }
 
-    if(_.sum(creep.carry) === 0){
+    if(_.sum(creep.carry) === 0)
+    {
       let target = Utils.withdrawTarget(creep, this)
 
-      if(target){
-        this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          target: target.id,
-          resource: RESOURCE_ENERGY
-        })
+      if (target)
+      {
+      if(!creep.pos.isNearTo(target))
+        creep.travelTo(target);
+      else
+        creep.withdraw(target, RESOURCE_ENERGY);
 
         return
       }
@@ -188,7 +188,6 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         // If the creep has been refilled
         let repairableObjects = <RepairTarget[]>[].concat(
           <never[]>this.kernel.data.roomData[this.metaData.roomName].containers,
-          <never[]>this.kernel.data.roomData[this.metaData.roomName].ramparts,
           <never[]>this.kernel.data.roomData[this.metaData.roomName].walls
         )
 
@@ -204,8 +203,6 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
           switch (object.structureType)
           {
-            case STRUCTURE_RAMPART:
-              return (object.hits < Utils.rampartHealth(proc.kernel, proc.metaData.roomName));
             case STRUCTURE_WALL:
               return (object.hits < Utils.wallHealth(proc.kernel, proc.metaData.roomName));
             default:
@@ -214,24 +211,40 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
         });
 
-
-        /*if(repairTargets.length === 0)
+        if(repairTargets.length === 0)
         {
-          let repairableObjects = <StructureRoad[]>[].concat(
-            <never[]>this.kernel.data.roomData[this.metaData.roomName].roads
-          );
-
-          let shortestDecay = 100;
-
-          repairTargets = _.filter(repairableObjects, function(object){
-            if(object.ticksToDecay < shortestDecay)
+          let health = Utils.rampartHealth(proc.kernel, proc.metaData.roomName)
+          let ramparts = proc.kernel.data.roomData[proc.metaData.roomName].ramparts;
+          ramparts = _.filter(ramparts, (rt) => { return (rt.hits < health)})
+          if(ramparts.length)
+          {
+            let target = _.min(ramparts, 'hits')
+            if(target)
             {
-              shortestDecay = object.ticksToDecay;
-            }
+              //let enemies = target.room.find(FIND_HOSTILE_CREEPS);
+              //let inRangeEnemies = []; //target.pos.findInRange(enemies, 4);
 
-            return (object.hits <  object.hitsMax);
-          });
-        }*/
+              //if(inRangeEnemies.length === 0)
+              {
+                this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
+                  creep: creep.name,
+                  target: target.id
+                });
+              }
+              /*else
+              {
+                if(creep.idleOffRoad(creep.room!.storage!, false) === OK)
+                {
+                  if(creep.name === 'sm-E41S49-11295193')
+                    console.log(this.name, 'First suspend')
+                  else
+                    this.suspend = 10;
+                }
+                return;
+              }*/
+            }
+          }
+        }
 
 
         if(repairTargets.length > 0)
@@ -269,10 +282,12 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
           if(target)
           {
-            this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-              creep: creep.name,
-              site: target.id
-            })
+            if(!creep.pos.inRangeTo(target, 3))
+              creep.travelTo(target, {range: 3});
+            else
+              creep.build(target);
+
+            return;
           }
           else
           {

@@ -14,14 +14,23 @@ import { HelpManagementProcess } from './management/help';
 import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
 import { RangeAttackManagementProcess } from './management/rangeAttack';
 import { SquadManagementProcess } from './management/squad';
+import { StrongHoldDestructionProcess } from './management/strongHoldDestruction';
 
 export class FlagWatcherProcess extends Process
 {
   type='flagWatcher';
 
+  //  Purple & Purpel
+
   remoteDismantleFlag(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(DismantleManagementProcess, 'dmp' + flag.name, 40, {flagName: flag.name});
+  }
+
+  //  Purple &  Yellow
+  strongHoldDestruction(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + flag.name, 35, {flagName: flag.name});
   }
 
   AttackController(flag: Flag)
@@ -30,6 +39,7 @@ export class FlagWatcherProcess extends Process
   }
 
 
+  // blue blue
   claimFlag(flag: Flag)
   {
     console.log('Blue 2', flag.pos.roomName, flag.name);
@@ -77,6 +87,7 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcess(RangeAttackManagementProcess, 'ra-' + flag.name, 35, {flagName: flag.name});
   }
 
+  // blue & red
   helpRoom(flag: Flag)
   {
     let spawnRoom = flag.name.split('-')[0];
@@ -128,8 +139,17 @@ export class FlagWatcherProcess extends Process
           }
           break;
         case COLOR_PURPLE:
-          proc.remoteDismantleFlag(flag);
+          switch(flag.secondaryColor)
+          {
+            case COLOR_PURPLE:
+              proc.remoteDismantleFlag(flag);
+              break;
+            case COLOR_YELLOW:
+              proc.strongHoldDestruction(flag);
+              break;
+          }
           break;
+
         /*case COLOR_BROWN:
           proc.holdFlag(flag)
           break;*/

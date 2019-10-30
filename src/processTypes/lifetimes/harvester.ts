@@ -1,7 +1,4 @@
 import {LifetimeProcess} from '../../os/process'
-
-import {DeliverProcess} from '../creepActions/deliver'
-import {HarvestProcess} from '../creepActions/harvest'
 import {UpgradeProcess} from '../creepActions/upgrade'
 
 export class HarvesterLifetimeProcess extends LifetimeProcess{
@@ -12,42 +9,98 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
-    if(_.sum(creep.carry) === 0){
-      this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-        source: this.metaData.source,
-        creep: creep.name
-      })
+    if(creep.name === 'em-E32S44-21171336')
+      console.log(this.name, 'exists')
 
+    if(_.sum(creep.carry) === 0 || creep.memory.filling)
+    {
+      creep.memory.filling = true;
+      let source = <Source>Game.getObjectById(this.metaData.source)
+      if(source)
+      {
+        let targetPos = source.pos
+        let targetRange = 1
+
+        if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id])
+        {
+          if(creep.getActiveBodyparts(WORK) >= 6)
+          {
+            targetPos = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id].pos
+            targetRange = 0
+          }
+        }
+
+
+        if(!creep.pos.inRangeTo(targetPos, targetRange)){
+          creep.travelTo(targetPos);
+        }
+        else
+        {
+          let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
+          if(container)
+          {
+            if(_.sum(container.store) == container.storeCapacity)
+            {
+              this.suspend = 5;
+            }
+          }
+
+          if(creep.harvest(source) === ERR_NOT_ENOUGH_RESOURCES)
+            this.suspend = source.ticksToRegeneration
+          else if(_.sum(creep.carry) === creep.carryCapacity)
+            creep.memory.filling = false;
+        }
+      }
       return
     }
 
+    if(creep.room.name === 'E32S44')
+      console.log(this.name, 1)
     // Creep has been harvesting and has energy put it in source links
     if(this.kernel.data.roomData[creep.room.name].sourceLinkMaps[this.metaData.source])
     {
+      if(creep.room.name === 'E32S44')
+        console.log(this.name, 2)
       let link = this.kernel.data.roomData[creep.room.name].sourceLinkMaps[this.metaData.source];
 
       if(link.energy < link.energyCapacity)
       {
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-          target: link.id,
-          creep: creep.name,
-          resource: RESOURCE_ENERGY
-        })
+        if(creep.name === 'em-E32S44-21171336')
+        console.log(this.name, 2);
 
+        if(!creep.pos.inRangeTo(link, 1))
+        {
+          if(!creep.fixMyRoad())
+          {
+            creep.travelTo(link);
+          }
+        }
+
+        if(creep.name === 'em-E32S44-21171336')
+        console.log(this.name, 3);
+
+        creep.transfer(link, RESOURCE_ENERGY);
         return;
       }
     }
 
+    if(creep.room.name === 'E32S44')
+      console.log(this.name, 3)
     // Creep has been harvesting and has energy in it
     if(this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source]){
+      if(creep.room.name === 'E32S44')
+      console.log(this.name, 4)
       let container = this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source]
       if(_.sum(container.store) < container.storeCapacity){
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-          target: container.id,
-          creep: creep.name,
-          resource: RESOURCE_ENERGY
-        })
+        if(!creep.pos.inRangeTo(container, 1))
+        {
+          if(!creep.fixMyRoad())
+          {
+            creep.travelTo(container);
+          }
+        }
 
+        creep.transfer(container, RESOURCE_ENERGY);
         return
       }
     }

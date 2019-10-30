@@ -34,11 +34,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
 
         if(enemies.length > 0)
         {
-          flag.memory.enemies = true;
-          if(flag.memory.timeEnemies === undefined || flag.memory.timeEnemies === 0)
-          {
-            flag.memory.timeEnemies = Game.time;
-          }
+          
         }
       }
     }
@@ -68,14 +64,17 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
         else
         {
           let container = this.kernel.data.roomData[creep.room.name].generalContainers[0];
-          if(creep.pos.inRangeTo(container.pos, 0))
+          if(container)
           {
-            creep.suicide();
+            if(creep.pos.inRangeTo(container.pos, 0))
+            {
+              creep.suicide();
+              return;
+            }
+
+            creep.travelTo(container);
             return;
           }
-
-          creep.travelTo(container);
-          return;
         }
       }
       return;

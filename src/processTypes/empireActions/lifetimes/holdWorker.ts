@@ -1,7 +1,5 @@
 import { LifetimeProcess } from "os/process";
 import { MoveProcess } from "processTypes/creepActions/move";
-import { CollectProcess } from "processTypes/creepActions/collect";
-import { BuildProcess } from "processTypes/creepActions/build";
 import { RepairProcess } from "processTypes/creepActions/repair";
 
 export class HoldWorkerLifetimeProcess extends LifetimeProcess
@@ -70,11 +68,10 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
       let target = creep.pos.findClosestByPath(containers);
       if(target)
       {
-        this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          target: target.id,
-          resource: RESOURCE_ENERGY
-        });
+        if(!creep.pos.isNearTo(target))
+          creep.travelTo(target);
+        else
+          creep.withdraw(target, RESOURCE_ENERGY);
 
         return;
       }
@@ -85,14 +82,14 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
     let sites = this.kernel.data.roomData[creep.pos.roomName].constructionSites;
     if(sites.length > 0)
     {
-      let site = creep.pos.findClosestByPath(sites);
+      let target = creep.pos.findClosestByPath(sites);
 
-      if(site)
+      if(target)
       {
-        this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          site: site.id
-        });
+        if(!creep.pos.inRangeTo(target, 3))
+          creep.travelTo(target, {range: 3});
+        else
+          creep.build(target);
 
         return;
       }

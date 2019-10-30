@@ -1,6 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { CollectProcess } from "processTypes/creepActions/collect";
-import { DeliverProcess } from "processTypes/creepActions/deliver";
 
 export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 {
@@ -10,11 +8,25 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
   {
     try
     {
+      this.logName = 'em-ud-E45S53-20766714';
+      this.logging = true;
       let creep = this.getCreep();
 
       if(!creep)
       {
         return
+      }
+
+      if(creep.ticksToLive < 50 && _.sum(creep.carry) > 0)
+      {
+        let storage = creep.room.storage;
+        if(storage)
+        {
+          if(creep.pos.inRangeTo(storage, 1))
+            creep.transferEverything(storage);
+          else
+            creep.travelTo(storage);
+        }
       }
 
       if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
@@ -25,11 +37,10 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 
           if(storage.store.energy > 0)
           {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: storage.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            })
+            if(!creep.pos.isNearTo(storage))
+              creep.travelTo(storage);
+            else
+              creep.withdraw(storage, RESOURCE_ENERGY);
 
             return;
           }
@@ -40,11 +51,10 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 
           if(terminal.store.energy > 0)
           {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: terminal.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            })
+            if(!creep.pos.isNearTo(terminal))
+              creep.travelTo(terminal);
+            else
+              creep.withdraw(terminal, RESOURCE_ENERGY);
           }
         }
         else if(this.kernel.data.roomData[creep.pos.roomName].generalContainers.length > 0)
@@ -57,11 +67,10 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
           {
             let container = creep.pos.findClosestByPath(containers);
 
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: container.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            });
+            if(!creep.pos.isNearTo(container))
+              creep.travelTo(container);
+            else
+              creep.withdraw(container, RESOURCE_ENERGY);
 
             return;
           }
@@ -75,11 +84,15 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 
         if(target && _.sum(target.store) < target.storeCapacity)
         {
-          this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
-            creep: creep.name,
-            target: target.id,
-            resource: RESOURCE_ENERGY
-          });
+          if(!creep.pos.inRangeTo(target, 1))
+        {
+          if(!creep.fixMyRoad())
+          {
+            creep.travelTo(target);
+          }
+        }
+
+        creep.transfer(target, RESOURCE_ENERGY);
         }
         else
         {

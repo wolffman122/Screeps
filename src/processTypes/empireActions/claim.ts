@@ -7,14 +7,21 @@ export class ClaimProcess extends Process{
   type = 'claim'
 
   run(){
-    let creep = Game.creeps[this.metaData.creep]
+
 
     console.log(this.name, 'Claiming', Utils.nearestRoom(this.metaData.targetRoom, 600));
-    
+
     let flag = Game.flags[this.metaData.flagName]
     let baseFlagName;
     let numberOfFlags;
+    let spawnRoom;
 
+    if(this.metaData.flagName.split('-').length === 3)
+    {
+      baseFlagName = this.metaData.flagName.split('-')[0];
+      numberOfFlags = +this.metaData.flagName.split('-')[1];
+      spawnRoom = this.metaData.flagName.split('-')[2];
+    }
     if(this.metaData.flagName.split('-').length > 1)
     {
       baseFlagName = this.metaData.flagName.split('-')[0];
@@ -28,14 +35,22 @@ export class ClaimProcess extends Process{
       return
     }
 
+
+    let creep = Game.creeps[this.metaData.creep]
+
+
     if(!creep)
     {
       let creepName = 'claim-' + this.metaData.targetRoom + '-' + Game.time
       let spawned = false;
+      if(spawnRoom === undefined)
+      {
+        spawnRoom = Utils.nearestRoom(this.metaData.targetRoom, 600);
+      }
 
       spawned = Utils.spawn(
         this.kernel,
-        Utils.nearestRoom(this.metaData.targetRoom, 600),
+        spawnRoom,
         'claimer',
         creepName,
         {}
@@ -51,7 +66,7 @@ export class ClaimProcess extends Process{
     }
 
 
-    let room = Game.rooms[this.metaData.targetRoom]
+    let room = flag.room;
 
     if(!room)
     {
@@ -71,7 +86,7 @@ export class ClaimProcess extends Process{
             this.log('Here now 2 ' + tFlag.name);
             if(creep.pos.isNearTo(tFlag))
             {
-              tFlag.remove();
+              //tFlag.remove();
               creep.memory.flagIndex++;
             }
 
@@ -79,16 +94,11 @@ export class ClaimProcess extends Process{
             return;
           }
         }
-      }
-      else
-      {
-        this.kernel.addProcess(MoveProcess, 'move-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          pos: flag.pos,
-          range: 1
-        })
-
-        this.suspend = 'move-' + creep.name
+        else
+        {
+          creep.travelTo(flag);
+          return;
+        }
       }
     }
     else

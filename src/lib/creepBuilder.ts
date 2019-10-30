@@ -37,6 +37,26 @@ export const CreepBuilder = {
               MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY,
               MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY];
     }
+    else if(creepType === 'testattacker')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
+    }
+    else if(creepType === 'testhealer')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL];
+    }
+    else if(creepType === 'custom')
+    {
+      return memory.body;
+    }
 
     let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
@@ -152,7 +172,11 @@ export const CreepBuilder = {
     'worker': [WORK, CARRY, MOVE, MOVE],
     'bigWorker': [WORK, WORK, CARRY, MOVE, MOVE],
     'upgrader': [WORK,WORK, CARRY,CARRY, MOVE],
-    'defender': [MOVE,ATTACK,ATTACK],
+    'defender': [ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+                 ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+                 ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+                 ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+                 ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
     'spinner': [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
     'holdmover': [CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,WORK],
     'mineralHarvester': [MOVE,WORK,WORK,CARRY,CARRY,CARRY],
@@ -171,6 +195,7 @@ export const CreepBuilder = {
       RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL],
     'vision': [MOVE],
     'bounce': [TOUGH, MOVE],
+    'buster': [ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE]
   },
 
   typeExtends: <PartList>{
@@ -185,7 +210,7 @@ export const CreepBuilder = {
     'worker': [CARRY, WORK, MOVE, MOVE],
     'bigWorker': [WORK, WORK, CARRY, MOVE, MOVE],
     'upgrader': [WORK, WORK, MOVE],
-    'defender': [TOUGH,MOVE,ATTACK],
+    'defender': [],
     'spinner': [CARRY],
     'holdmover': [CARRY,CARRY,MOVE],
     'mineralHarvester': [WORK,WORK,MOVE],
@@ -202,6 +227,7 @@ export const CreepBuilder = {
     'rangeAttack': [],
     'vision': [],
     'bounce': [TOUGH, MOVE],
+    'buster': [],
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -230,5 +256,6 @@ export const CreepBuilder = {
     'rangeAttack': 50,
     'vision': 1,
     'bounce': 50,
+    'buster': 10,
   }
 }

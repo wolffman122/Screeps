@@ -6,6 +6,8 @@ export class TowerHealProcess extends Process
 
     run()
     {
+        if(this.name === 'th-E41S32')
+            console.log(this.name, 1);
         let room = Game.rooms[this.metaData.roomName];
 
         if(room.controller && !room.controller.my)
@@ -14,7 +16,7 @@ export class TowerHealProcess extends Process
             return;
         }
 
-        let damagedCreeps = <Creep[]>room.find(FIND_CREEPS, {filter: cp => cp.my && cp.hits < cp.hitsMax});
+        let damagedCreeps = <Creep[]>room.find(FIND_MY_CREEPS, {filter: cp => cp.my && cp.hits < cp.hitsMax});
 
         if(damagedCreeps.length > 0)
         {
@@ -24,8 +26,15 @@ export class TowerHealProcess extends Process
                 if(rangeDamage.length > 0)
                 {
                     let target = tower.pos.findClosestByPath(rangeDamage);
-
-                    if(target && target.hits < (target.hits * .5))
+                    const enemiesPresent = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
+                    if(enemiesPresent.length > 0)
+                    {
+                        if(target && target.hits < (target.hits * .5))
+                        {
+                            tower.heal(target);
+                        }
+                    }
+                    else
                     {
                         tower.heal(target);
                     }

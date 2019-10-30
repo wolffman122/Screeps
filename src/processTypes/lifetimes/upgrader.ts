@@ -1,10 +1,6 @@
 import {LifetimeProcess} from '../../os/process'
 import {Utils} from '../../lib/utils'
-
-import {CollectProcess} from '../creepActions/collect'
-import {UpgradeProcess} from '../creepActions/upgrade'
 import { LABDISTROCAPACITY } from '../management/lab';
-import { LabDistroLifetimeProcess } from './labDistro';
 
 export class UpgraderLifetimeProcess extends LifetimeProcess{
   type = 'ulf'
@@ -19,9 +15,6 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
     {
       this.metaData.boosts = undefined;
     }
-
-    if(creep.name === 'em-u-E39S35-13761633')
-      console.log(this.name, 'problem')
 
     if(this.metaData.boosts)
     {
@@ -55,6 +48,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
           }
 
           // check if already boosted
+          let amount = 0;
           let boostedPart = _.find(creep.body, {boost: boost});
           if(boostedPart)
           {
@@ -115,94 +109,99 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    if(_.sum(creep.carry) === 0){
-      /*let targets = <DeliveryTarget[]>[].concat(
-        <never[]>this.kernel.data.roomData[creep.room.name].generalContainers
-      )
+    if(_.sum(creep.carry) === 0)
+    {
+      let controllerLink = this.kernel.data.roomData[creep.pos.roomName].controllerLink;
 
-      let capacity = creep.carryCapacity
-
-      targets = _.filter(targets, function(target){
-          return (target.store.energy > capacity)
-      })
-
-      if(targets.length > 0){*/
-        //let target = creep.pos.findClosestByPath(targets)
-        if(this.kernel.data.roomData[creep.pos.roomName].controllerLink)
+      if(controllerLink)
+      {
+        if(controllerLink && controllerLink.energy > 500)
         {
-          let controllerLink = this.kernel.data.roomData[creep.pos.roomName].controllerLink
-
-          if(controllerLink && controllerLink.energy > 500)
-          {
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: controllerLink.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            });
-
-            return;
-          }
+          if(!creep.pos.isNearTo(controllerLink))
+            creep.travelTo(controllerLink);
           else
-          {
-            let target = Utils.withdrawTarget(creep, this);
+            creep.withdraw(controllerLink, RESOURCE_ENERGY);
 
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-              target: target.id,
-              creep: creep.name,
-              resource: RESOURCE_ENERGY
-            });
-
-            return;
-          }
+          return;
         }
+      }
 
-        if(this.kernel.data.roomData[creep.room.name].controllerContainer)
+      if(this.kernel.data.roomData[creep.room.name].controllerContainer)
+      {
+        let controller = creep.room.controller;
+        if(controller)
         {
-          let controller = creep.room.controller;
-          if(controller)
+          let sign = controller.sign;
+          if(sign && sign.username !== "wolffman122")
           {
-            let sign = controller.sign;
-            if(sign && sign.username !== "wolffman122")
+            if(creep.pos.isNearTo(controller))
             {
-              if(creep.pos.isNearTo(controller))
-              {
-                creep.signController(controller, "[YP] Territory");
-                return;
-              }
-
-              creep.travelTo(controller);
+              creep.signController(controller, "[YP] Territory");
               return;
             }
 
+            creep.travelTo(controller);
+            return;
           }
-          let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
 
-          if(target)
+        }
+        let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
+        if(target)
+        {
+          if(this.metaData.openSpaces === undefined)
           {
-            if(creep.pos.isNearTo(target))
+            const openSpaces = target.pos.openAdjacentSpots(false);
+            let flag = Game.flags['Center-' + this.metaData.roomName];
+            let maxDistance = 0;
+            let position = flag.pos;
+            _.forEach(openSpaces, (os) =>{
+              let range = flag.pos.getRangeTo(os);
+              if(range > maxDistance)
+              {
+                maxDistance = range;
+                position = os;
+              }
+            })
+
+            this.metaData.openSpaces = position;
+          }
+          else
+          {
+            if(this.metaData.roomName === 'E41S32')
+              console.log(this.name, 'Location', this.metaData.openSpaces.x, this.metaData.openSpaces.y);
+
+
+            let pos = new RoomPosition(this.metaData.openSpaces.x, this.metaData.openSpaces.y, this.metaData.roomName);
+            if(creep.pos.isEqualTo(pos))
             {
               creep.withdraw(target, RESOURCE_ENERGY);
             }
             else
             {
-              creep.travelTo(target);
+              const look = pos.look();
+              _.forEach(look, (l) => {
+              if(l.type === LOOK_CREEPS)
+                this.metaData.openSpaces = undefined;
+              })
+
+              creep.travelTo(pos);
               return;
             }
           }
         }
-        else
-        {
-          let target = Utils.withdrawTarget(creep, this);
+      }
+      else // No controller contianer
+      {
+        let target = Utils.withdrawTarget(creep, this);
 
-          this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
-            target: target.id,
-            creep: creep.name,
-            resource: RESOURCE_ENERGY
-          })
+        if(!creep.pos.isNearTo(target))
+            creep.travelTo(target);
+          else
+            creep.withdraw(target, RESOURCE_ENERGY);
 
-          return
-        }
-     // }
+        return
+      }
     }
 
     // If the creep has been refilled
@@ -213,7 +212,12 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
       if(_.sum(creep.carry) <= creep.getActiveBodyparts(WORK))
       {
-        let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+        let target;
+
+        if(this.roomData().controllerLink && this.roomData().controllerLink.energy >= creep.carryCapacity)
+          target = this.roomData().controllerLink;
+        else if (this.roomData().controllerContainer)
+          target = this.roomData().controllerContainer;
 
         if(target)
         {

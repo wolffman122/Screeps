@@ -1,6 +1,4 @@
 import {LifetimeProcess} from '../../os/process'
-//import {MoveProcess} from '../creepActions/move'
-import {DefendProcess} from '../creepActions/defend'
 
 export class RemoteDefenderLifetimeProcess extends LifetimeProcess
 {
@@ -32,10 +30,10 @@ export class RemoteDefenderLifetimeProcess extends LifetimeProcess
         {
           let enemy = creep.pos.findClosestByRange(enemies);
 
-          this.fork(DefendProcess, 'defend-' + creep.name, this.priority -1,{
+          /*this.fork(DefendProcess, 'defend-' + creep.name, this.priority -1,{
             creep: creep.name,
             target: enemy.id
-          });
+          });*/
 
           return;
         }
@@ -48,10 +46,10 @@ export class RemoteDefenderLifetimeProcess extends LifetimeProcess
         {
           let enemy = creep.pos.findClosestByRange(roomEnemies);
 
-          this.fork(DefendProcess, 'defend-' + creep.name, this.priority -1,{
+          /*this.fork(DefendProcess, 'defend-' + creep.name, this.priority -1,{
             creep: creep.name,
             target: enemy.id
-          });
+          });*/
 
           return;
         }

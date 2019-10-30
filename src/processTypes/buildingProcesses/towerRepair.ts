@@ -3,6 +3,7 @@ import {Process} from '../../os/process'
 export class TowerRepairProcess extends Process
 {
   type = 'tr';
+  metaData: TowerRepairProcessMetaData;
 
   run()
   {

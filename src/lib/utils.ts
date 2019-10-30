@@ -68,10 +68,6 @@ export const Utils = {
     let outcome = false
 
     _.forEach(spawns, function(spawn){
-      if(creepType === "rangeAttack")
-        {
-          console.log('Spawn result', spawn.canCreateCreep(body));
-        }
       if(!_.includes(kernel.data.usedSpawns, spawn.id) &&!spawn.spawning && spawn.canCreateCreep(body) === OK){
 
         let ret = spawn.createCreep(body, name, memory)
@@ -237,7 +233,7 @@ export const Utils = {
     }
     else
     {
-      let max = room.controller!.level * 375000;
+      let max = WALLTARGET;
 
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].walls, 'hits') / kernel.data.roomData[roomName].walls.length);
 
@@ -350,4 +346,5 @@ export const Utils = {
   }*/
 }
 
-export const RAMPARTTARGET = 9500000;
+export const RAMPARTTARGET = 11000000;
+export const WALLTARGET = 3350000;

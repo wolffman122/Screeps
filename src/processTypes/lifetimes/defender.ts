@@ -9,23 +9,32 @@ export class DefenderLifetimeProcess extends LifetimeProcess
 
   run()
   {
+    console.log(this.name, -1)
     let creep = this.getCreep();
 
     if(!creep)
     {
       return;
     }
+    console.log(this.name, 0)
+    if(creep.name === 'dm-E41S49-21090530')
+        console.log(this.name, 'Problems', this.metaData.boosts, creep.memory.boost);
+    if(this.metaData.boosts && !creep.memory.boost)
+    {
+        creep.boostRequest(this.metaData.boosts, false);
+        return;
+    }
 
-    //let room = Game.rooms[creep.room.name];
-    let centerFlag = Game.flags["Center-"+creep.room.name];
+    let room = Game.rooms[this.metaData.roomName];
+    let centerFlag = Game.flags["Center-" + room.name];
     let flag = Game.flags[this.metaData.flagName];
 
-
+    console.log(this.name, 1)
     if(centerFlag)
     {
       let enemies  = <Creep[]>centerFlag.pos.findInRange(FIND_HOSTILE_CREEPS, 14);
 
-      if(enemies.length === 0)
+      if(enemies.length === 0 && creep.ticksToLive < 1000)
       {
         let container = this.kernel.data.roomData[creep.pos.roomName].generalContainers[0];
         if(creep.pos.inRangeTo(container.pos, 0))
@@ -38,31 +47,56 @@ export class DefenderLifetimeProcess extends LifetimeProcess
         return;
       }
 
+      console.log(this.name, 2)
       if(enemies.length > 0)
       {
         let targets = _.filter(enemies, (e)=> {
           return (e.getActiveBodyparts(HEAL) > 0);
         });
 
-        let target;
+        let target: Creep;
         if(targets.length > 0)
         {
-          target = centerFlag.pos.findClosestByRange(targets);
+          target = centerFlag.pos.findClosestByPath(targets);
         }
         else
         {
-          target = centerFlag.pos.findClosestByRange(enemies);
+          target = centerFlag.pos.findClosestByPath(enemies);
         }
-
+        console.log(this.name, 'targeting', 1);
+        console.log(this.name, 'targeting', target);
+        console.log(this.name, 'targeting', 2);
         if(creep.pos.inRangeTo(target,1))
         {
           creep.attack(target);
+          return;
         }
 
-        creep.travelTo(target, {range: 1});
+        console.log(this.name, 'targeting', target);
+        let ret = PathFinder.search(creep.pos, {pos:target.pos, range:1}, {roomCallback: roomName => this.GetCostMatrix(room.name)});
+        if(ret && ret.path)
+        {
+            let retv = creep.moveByPath(ret.path);
+            console.log(this.name, retv, ret.path);
+            return;
+        }
+        else
+          console.log(this.name, 'Problem with moving defense');
+
       }
       else
       {
+        let farEnemies = centerFlag.room.find(FIND_HOSTILE_CREEPS);
+        if(farEnemies.length > 0)
+        {
+            let target = creep.pos.findClosestByPath(farEnemies);
+            if(creep.pos.isNearTo(target))
+            {
+                creep.attack(target);
+            }
+            creep.moveTo(target);
+            return;
+        }
         if(flag)
         {
           if(!creep.pos.inRangeTo(flag.pos, 2))
@@ -131,5 +165,11 @@ export class DefenderLifetimeProcess extends LifetimeProcess
         }
       }
     }
+  }
+
+  GetCostMatrix(roomName: string): boolean | CostMatrix
+  {
+      const room = Game.rooms[roomName];
+      return PathFinder.CostMatrix.deserialize(room.memory.rampartCostMatrix);
   }
 }

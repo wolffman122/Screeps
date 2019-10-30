@@ -12,47 +12,31 @@ export class LinkManagementProcess extends Process
       this.completed = true;
       return;
     }
-    
-    if(this.roomData().controllerLink)
-    {
-      let controllerLink = this.roomData().controllerLink;
-
-      let storageLink = this.roomData().storageLink;
-
-      if(storageLink)
-      {
-        if(controllerLink)
-        {
-          if(storageLink.cooldown == 0 && storageLink.energy > 700 && controllerLink.energy < 450)
-          {
-            let ret = storageLink.transferEnergy(controllerLink);
-            if(ret == ERR_FULL)
-            {
-              this.suspend = 15;
-            }
-          }
-          else
-          {
-            this.suspend = 10;
-          }
-        }
-      }
-    }
 
     if(this.roomData().sourceLinks.length > 0)
     {
-      let storageLink = this.roomData().storageLink
+      let controllerLink = this.roomData().controllerLink;
+      let storageLink = this.roomData().storageLink;
 
-      if(storageLink)
-      {
-        _.forEach(this.roomData().sourceLinks, (sl) => {
+      _.forEach(this.roomData().sourceLinks, (sl) => {
+        if(controllerLink)
+        {
+          if(sl.cooldown == 0 && sl.energy > 700 && controllerLink.energy < 200)
+          {
+            sl.transferEnergy(controllerLink);
+            return;
+          }
+        }
+
+        if(storageLink)
+        {
           if(sl.cooldown == 0 && sl.energy > 700 && storageLink!.energy < 100)
           {
             sl.transferEnergy(storageLink!);
             return;
           }
-        });
-      }
+        }
+      });
     }
 
     if(this.roomData().links.length > 0)

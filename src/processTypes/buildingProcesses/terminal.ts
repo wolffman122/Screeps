@@ -16,8 +16,8 @@ export class TerminalManagementProcess extends Process
       let lowRooms = _.filter(Game.rooms, (r) => {
         if(r.terminal && r.storage)
         {
-          return ((r.storage.store.energy < 310000 || r.storage.store === undefined) && r.controller && r.controller.my &&
-            r.terminal.my);
+          return ((r.storage.store.energy < 190000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+            r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
         }
         else
         {

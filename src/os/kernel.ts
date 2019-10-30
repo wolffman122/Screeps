@@ -3,15 +3,12 @@ import {Process} from './process'
 import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
-import {CollectProcess} from '../processTypes/creepActions/collect'
-import {DeliverProcess} from '../processTypes/creepActions/deliver'
 import {DistroLifetimeProcess} from '../processTypes/lifetimes/distro'
 import {EnergyManagementProcess} from '../processTypes/management/energy'
 import {MoveProcess} from '../processTypes/creepActions/move'
 import {RoomDataProcess} from '../processTypes/roomData'
 import {UpgradeProcess} from '../processTypes/creepActions/upgrade'
 import {UpgraderLifetimeProcess} from '../processTypes/lifetimes/upgrader'
-import {BuildProcess} from '../processTypes/creepActions/build'
 import {BuilderLifetimeProcess} from '../processTypes/lifetimes/builder'
 import {RepairProcess} from '../processTypes/creepActions/repair'
 import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
@@ -21,9 +18,6 @@ import {TowerRepairProcess} from '../processTypes/buildingProcesses/towerRepair'
 import {SuspensionProcess} from '../processTypes/system/suspension'
 
 import {DefenseManagementProcess} from '../processTypes/management/defense'
-import {DefenderLifetimeProcess} from '../processTypes/lifetimes/defender'
-import {DefendProcess} from '../processTypes/creepActions/defend'
-
 import {RemoteDefenseManagementProcess} from '../processTypes/management/remoteDefense'
 import {RemoteDefenderLifetimeProcess} from '../processTypes/lifetimes/remoteDefender'
 
@@ -81,6 +75,12 @@ import { ReportProcess } from 'processTypes/system/reports';
 import { skRoomManagementProcess } from 'processTypes/management/skroom';
 import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
 import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
+import { PowerManagementProcess } from 'processTypes/management/power';
+import { DefenderLifetimeProcess } from 'processTypes/lifetimes/defender';
+import { DefendProcess } from 'processTypes/creepActions/defend';
+import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
+import { BusterLifetimeProcess } from 'processTypes/empireActions/lifetimes/buster';
+import { StrongHoldDestructionProcess } from 'processTypes/management/strongHoldDestruction';
 
 
 
@@ -89,15 +89,12 @@ const processTypes = <{[type: string]: any}>{
   'harvest': HarvestProcess,
   'hlf': HarvesterLifetimeProcess,
   'lhlf': LinkHarvesterLifetimeProcess,
-  'collect': CollectProcess,
-  'deliver': DeliverProcess,
   'dlf': DistroLifetimeProcess,
   'em': EnergyManagementProcess,
   'move': MoveProcess,
   'roomData': RoomDataProcess,
   'upgrade': UpgradeProcess,
   'ulf': UpgraderLifetimeProcess,
-  'build': BuildProcess,
   'blf': BuilderLifetimeProcess,
   'repair': RepairProcess,
   'rlf': RepairerLifetimeProcess,
@@ -106,8 +103,6 @@ const processTypes = <{[type: string]: any}>{
   'td': TowerDefenseProcess,
   'tr': TowerRepairProcess,
   'dm': DefenseManagementProcess,
-  'deflf': DefenderLifetimeProcess,
-  'defend': DefendProcess,
   'rdmp': RemoteDefenseManagementProcess,
   'rdlf': RemoteDefenderLifetimeProcess,
   'dmp': DismantleManagementProcess,
@@ -121,6 +116,7 @@ const processTypes = <{[type: string]: any}>{
   'holdBuilderlf': HoldBuilderLifetimeProcess,
   'holdHarvesterlf': HoldHarvesterLifetimeProcess,
   'holdDistrolf': HoldDistroLifetimeProcess,
+  'holderDefenderlf': HolderDefenderLifetimeProcess,
   'transfer': TransferProcess,
   'lm': LinkManagementProcess,
   'slf': SpinnerLifetimeProcess,
@@ -159,6 +155,11 @@ const processTypes = <{[type: string]: any}>{
   'skrmp': skRoomManagementProcess,
   'lh': TowerHealProcess,
   'atmp': AllTerminalManagementProcess,
+  'powm': PowerManagementProcess,
+  'deflf': DefenderLifetimeProcess,
+  'defend': DefendProcess,
+  'busterlf': BusterLifetimeProcess,
+  'shdp': StrongHoldDestructionProcess, // 35
 }
 
 interface KernelData{
@@ -191,10 +192,11 @@ export class Kernel{
     roomData: {},
     usedSpawns: [],
     activeLabCount: 0,
-    labProcesses: {}
+    labProcesses: {},
   }
 
   execOrder: ExecOrder[] = []
+  processLogs: ProcessLog = {};
   suspendCount = 0
   schedulerUsage = 0;
 
@@ -332,12 +334,22 @@ export class Kernel{
       faulted = true
     }
 
+    let processCpu = Game.cpu.getUsed() - cpuUsed;
     this.execOrder.push({
       name: process.name,
-      cpu: Game.cpu.getUsed() - cpuUsed,
+      cpu: processCpu,
       type: process.type,
       faulted: faulted
     })
+
+    if(this.processLogs[process.type] === undefined)
+      this.processLogs[process.type] = {cpuUsed: processCpu, count: 1};
+    else
+    {
+      this.processLogs[process.type].cpuUsed += processCpu;
+      this.processLogs[process.type].count++;
+    }
+
 
     process.ticked = true
   }

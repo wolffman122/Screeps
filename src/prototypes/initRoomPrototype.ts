@@ -1,4 +1,5 @@
 import { WorldMap } from "lib/WorldMap";
+import { Kernel } from "os/kernel";
 
 export function initRoomPrototype() {
 
@@ -33,24 +34,61 @@ export function initRoomPrototype() {
        }
        else
        {
+           //console.log('observe', 1)
            if(!this.room.memory.obsQueue)
            {
+            //console.log('observe', 2)
                this.room.memory.obsQueue = [];
            }
            let queue = this.room.memory.obsQueue as Observation[];
            if(!_.find(queue, (item) => item.purpose === purpose))
            {
+            //console.log('observe', 3)
                queue.push({purpose: purpose, roomName: roomName});
            }
            if(!this.alreadyObserved)
            {
-               return makeObservation(queue.shift());
+               const item = queue.shift();
+            //console.log('observe', 4, item.purpose, item.room, item.roomName)
+               return makeObservation(item);
            }
            else
            {
+            //console.log('observe', 5)
                return OK;
            }
        }
+    };
+
+    Object.defineProperty(StructureObserver.prototype, "observation", {
+        get: function() {
+            if (!this._observation) {
+                let observation = this.room.memory.observation as Observation;
+                if (observation) {
+                    let room = Game.rooms[observation.roomName];
+                    if (room) {
+                        observation.room = room;
+                        this._observation = observation;
+                    }
+                    else {
+                        // console.log("bad observation:", JSON.stringify(observation));
+                    }
+                }
+            }
+            return this._observation;
+        }
+    });
+
+    Room.prototype.findStructures = function(structureType: string): Structure[]
+    {
+        if(Memory.structures === undefined)
+            Memory.structures = {};
+
+        if(!Memory.structures[this.name])
+        {
+            Memory.structures[this.name] = _.groupBy(this.find(FIND_STRUCTURES), (s: Structure) => s.structureType);
+        }
+        return Memory.structures[this.name][structureType] || [];
     };
 }
 

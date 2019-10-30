@@ -21,12 +21,13 @@ export class  MineralManagementProcess extends Process
 
     let proc = this;
 
+    let extractor = this.kernel.data.roomData[this.metaData.roomName].extractor;
     let terminal = Game.rooms[this.metaData.roomName].terminal;
     let mineral = this.kernel.data.roomData[this.metaData.roomName].mineral;
     let container = this.kernel.data.roomData[this.metaData.roomName].mineralContainer;
     let storage = Game.rooms[this.metaData.roomName].storage;
 
-    if(!mineral || !container)
+    if(!mineral || !container || !extractor)
     {
       this.completed = true;
       return;
@@ -95,6 +96,7 @@ export class  MineralManagementProcess extends Process
           case 'E55S48':
           case 'E36S38':
           case 'E41S38':
+          case 'E32S44':
             harvesters = 2;
             break;
           case 'E43S53':
