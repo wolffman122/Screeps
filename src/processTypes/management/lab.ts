@@ -42,7 +42,7 @@ export class LabManagementProcess extends Process
   if(Game.cpu.bucket < 8000)
       return;
     this.logOn = false;
-    this.logName = "labm-E32S44";
+    this.logName = "labm-E35S51";
 
     this.room = Game.rooms[this.metaData.roomName];
 
@@ -255,7 +255,7 @@ export class LabManagementProcess extends Process
         if(tombstones.length && enemies.length === 0)
         {
           tombstones = _.filter(tombstones, (t) => {
-            if(flag.pos.inRangeTo(t, 15))
+            if(flag.pos.inRangeTo(t, 15) && _.sum(t.store) > 0)
               return t;
           });
 
@@ -269,6 +269,19 @@ export class LabManagementProcess extends Process
             this.creep.travelTo(target);
             return;
           }
+        }
+
+        const generalContainer = this.roomData().generalContainers[0];
+        if(generalContainer && _.sum(generalContainer.store) > 0)
+        {
+          if(this.creep.name === 'lab-d-E38S54-21536636')
+            console.log(this.name, this.creep.pos.isNearTo(generalContainer), _.sum(this.creep.carry) < this.creep.carryCapacity)
+          if(this.creep.pos.isNearTo(generalContainer) && _.sum(this.creep.carry) < this.creep.carryCapacity)
+            this.creep.withdrawEverything(generalContainer);
+          else
+            this.creep.travelTo(generalContainer);
+
+          return;
         }
 
         this.creep.idleOffRoad(this.reagentLabs![0], false);
@@ -289,6 +302,7 @@ export class LabManagementProcess extends Process
         {
           command = undefined;
         }
+
         let origin = Game.getObjectById<Structure>(command.origin);
         //console.log(this.name, 1, this.creep.name, 2, origin);
         if(this.creep.pos.isNearTo(origin!))
@@ -363,13 +377,19 @@ export class LabManagementProcess extends Process
 
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'FindCommand', 1)
+
       let command = this.checkPullFlags();
-      if(command) return command;
+
+      if(command)
+        return command;
+
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'FindCommand', 2)
 
       command = this.checkReagentLabs();
-      if(command) return command;
+      if(command)
+        return command;
+
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'FindCommand', 3)
 
@@ -410,22 +430,26 @@ export class LabManagementProcess extends Process
       if(this.name === this.logName && this.logOn)
       {
         console.log(this.name, 'AccessCommand', 1)
-        if(this.metaData.command && this.metaData.command.origin === undefined)
-          this.metaData.command.origin = '5d96be2db5fc2a000165d044';
+        //if(this.metaData.command && this.metaData.command.origin === undefined)
+          //this.metaData.command.origin = '5d96be2db5fc2a000165d044';
 
       }
 
+      // Suicide
       if(!this.metaData.command && this.creep.ticksToLive! < 40)
       {
         this.creep.suicide();
         return;
       }
 
+      // Delay
       if(!this.metaData.lastCommandTick)
       {
         this.metaData.lastCommandTick = Game.time - 10;
       }
 
+      if(this.metaData.command && this.creep.name === 'lab-d-E35S51-21551034')
+        this.metaData.command.origin = '5da324554acf5d00012b52f2'
       //if(this.name === this.logName && this.logOn)
        // console.log(this.name, 'AccessCommand', this.metaData.command.origin, this.metaData.lastCommandTick+10)
 
@@ -493,6 +517,14 @@ export class LabManagementProcess extends Process
         {
 
           let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], LABDISTROCAPACITY);
+
+          if(this.storage.room.name === 'E35S51'
+            && amountNeeded > 0 && this.storage!.store[mineralType]! >= amountNeeded
+            && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
+            {
+              let command: Command = {origin: this.storage!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
+                return command;
+            }
 
           if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
             && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
@@ -758,7 +790,8 @@ export class LabManagementProcess extends Process
         }
 
         if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findlabprocess', 3)
+          console.log(this.name, 'findlabprocess', 3)
+
         let progress = this.checkProgress(process);
         if(!progress)
         {
@@ -864,7 +897,8 @@ export class LabManagementProcess extends Process
 
       if(this.logName === this.name && this.logOn)
         console.log(this.name, 'findnewprocess', 3)
-      return this.generateProcess({mineralType: compound, amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (this.terminal!.store[compound] || 0) });
+      return this.generateProcess({mineralType: compound,
+        amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (this.terminal!.store[compound] || 0) });
     }
 
   /*  if(store[RESOURCE_CATALYZED_GHODIUM_ACID] < PRODUCTION_AMOUNT + 5000)

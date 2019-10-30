@@ -3,6 +3,7 @@ import { Utils } from "lib/utils";
 import { HoldBuilderLifetimeProcess } from "../empireActions/lifetimes/holderBuilder";
 import { MoveProcess } from "../creepActions/move";
 import { WorldMap } from "lib/WorldMap";
+import { Traveler } from "lib/Traveler";
 
 export class skRoomManagementProcess extends Process
 {
@@ -120,33 +121,17 @@ export class skRoomManagementProcess extends Process
           return;
       }
 
-      let spawnRoom = this.skFlag.room;
-      if(this.roomData().observer)
+      //if(Game.time === 21587480)
+        //this.metaData.invaderCorePresent = false;
+
+      this.coreSearching(centerFlag);
+
+      let coreInSk = false;
+      if(this.metaData.invaderCorePresent)
       {
-        //console.log(this.name, 'Have observer');
-        let observer = this.roomData().observer;
-        let roomNames = this.findSkRooms(this.metaData.roomName);
-
-        let index = this.metaData.scanIndex++;
-        //console.log(this.name, 'Room observe', roomNames[index]);
-        observer.observeRoom(roomNames[index]);
-
-        if(index === roomNames.length - 1)
-        {
-          this.metaData.scanIndex = 0;
-        }
-
-        let scanRoom = Game.rooms[roomNames[index > 0 ? index - 1 : roomNames.length -1]];
-        //console.log(this.name, 'Look Room', scanRoom.name);
-        let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
-        if(invaderCores.length)
-        {
-          console.log(this.name, 'Found Core', scanRoom.name);
-        }
-        else
-        {
-          console.log(this.name, 'Didnt find core', scanRoom.name);
-        }
+        let testRoomName = this.metaData.coreFlagName.split('-')[0];
+        if(this.metaData.skRoomName === testRoomName)
+          coreInSk = true;
       }
 
       if(this.skFlag.room.memory.skSourceRoom === undefined)
@@ -156,7 +141,7 @@ export class skRoomManagementProcess extends Process
 
       this.ensureMetaData();
 
-      if(!this.metaData.vision)
+      if(!this.metaData.vision && !coreInSk)
       {
         if(!this.metaData.locations || Object.keys(this.metaData.locations).length === 0)
         {
@@ -657,7 +642,7 @@ export class skRoomManagementProcess extends Process
           console.log('Devil Problems', 1)
         if(!devil.memory.boost)
         {
-          if(devil.name === 'E44S55-devil-19274309')
+          if(devil.name === 'E55S46-devil-21587178')
           console.log('Devil Problems', 2)
           devil.boostRequest([RESOURCE_LEMERGIUM_OXIDE, RESOURCE_KEANIUM_OXIDE], false);
           return;
@@ -1828,6 +1813,129 @@ export class skRoomManagementProcess extends Process
       }
     }
 
+    coreSearching(centerFlag: Flag)
+    {
+      try
+      {
+        if(this.roomData().observer)
+        {
+          let observer = this.roomData().observer;
+          let roomNames = this.findSkRooms(this.metaData.roomName);
+
+          let index = this.metaData.scanIndex++;
+          const flag = Game.flags[this.metaData.coreFlagName];
+
+          if(Game.time === 21587255)
+            this.metaData.invaderCorePresent = false;
+
+          //console.log(this.name, this.metaData.coreFlagName, this.metaData.invaderCorePresent);
+
+          if(flag)
+          {
+            // Setup
+            let createTime = +flag.name.split('-')[2];
+            let coreRoomName = flag.name.split('-')[0];
+            if(createTime + 1 === Game.time)
+            {
+              flag.memory.invaderCoresPresent = true;
+              flag.memory.coreLevel = this.metaData.coreLevel;
+              flag.memory.coreId = this.metaData.coreId;
+              flag.memory.coreSkFoundRoom = centerFlag.room.name;
+              const retPath =  Traveler.findTravelPath(this.skFlag, flag);
+              if(!retPath.incomplete)
+                flag.memory.coreDistance = retPath.path.length;
+
+              const ret = observer.observeRoom(coreRoomName);
+              return;
+            }
+            else if(createTime + 2 === Game.time)
+            {
+              const room = Game.rooms[coreRoomName];
+              const core = room.find(FIND_HOSTILE_STRUCTURES, {filter: s=> s.structureType === STRUCTURE_INVADER_CORE})[0] as StructureInvaderCore;
+              if(core)
+              {
+                core.room
+                let ret = flag.setPosition(core);
+              }
+              else
+              {
+                console.log(this.name, 'Core was bad');
+              }
+              //console.log(this.name, 'Time to do stuff !!!!!!!!!!11', this.metaData.coreId);
+
+
+              return;
+            }
+
+            // Destructions
+            if(!flag.memory.invaderCoresPresent)
+            {
+              flag.remove();
+              this.metaData.invaderCorePresent = false;
+              this.metaData.coreFlagName = undefined;
+              this.metaData.coreId = undefined;
+              this.metaData.coreLevel = undefined;
+              this.metaData.invaderCorePresent = undefined;
+            }
+          }
+          /*else
+          {
+            console.log(this.name, 'No flag');
+            this.metaData.invaderCorePresent = false;
+
+            //if(!flag.memory.invaderCoresPresent)
+            {
+              this.metaData.coreFlagName = undefined;
+              this.metaData.coreId = undefined;
+              this.metaData.coreLevel = undefined;
+              this.metaData.invaderCorePresent = false;
+            }
+          }*/
+
+          if(!this.metaData.invaderCorePresent)
+          {
+            observer.observeRoom(roomNames[index]);
+
+            if(index >= roomNames.length - 1)
+            {
+              this.metaData.scanIndex = 0;
+            }
+
+            let scanRoom = Game.rooms[roomNames[index > 0 ? index - 1 : roomNames.length -1]];
+            if(scanRoom)
+            {
+              let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
+              if(invaderCores.length)
+              {
+                const invaderCore = invaderCores[0];
+                if(invaderCore instanceof StructureInvaderCore)
+                {
+                  let lFlag = invaderCore.pos.lookFor("flag");
+                  if(lFlag.length)
+                  {
+                    this.metaData.invaderCorePresent = true;
+                    return;
+                  }
+                  this.metaData.invaderCorePresent = true;
+                  this.metaData.coreId = invaderCore.id;
+                  this.metaData.coreLevel = invaderCore.level;
+                  this.metaData.scanIndex = 0;
+                  this.metaData.coreFlagName = scanRoom.name + '-Core-' + Game.time;
+                  const ret = centerFlag.pos.createFlag(this.metaData.coreFlagName, COLOR_PURPLE, COLOR_YELLOW);
+                  console.log(this.name, 'Found Core', this.metaData.coreFlagName, ret);
+
+                }
+              }
+            }
+          }
+        }
+      }
+      catch(error)
+      {
+        console.log(this.name, error);
+      }
+    }
+
     findSkRooms(roomName: string)
     {
       let roomNames = [];
@@ -1835,7 +1943,7 @@ export class skRoomManagementProcess extends Process
       let skX: number;
 
       let xDigit = Math.floor(roomCoord.x / 10) * 10 + 4;
-      let yDigit = Math.floor(roomCoord.x / 10) * 10 + 4;
+      let yDigit = Math.floor(roomCoord.y / 10) * 10 + 4;
 
       for(let i = xDigit; i <= xDigit + 2; i++)
       {

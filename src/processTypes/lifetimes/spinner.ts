@@ -8,7 +8,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
   run()
   {
     let creep = this.getCreep()
-    this.logName = 'em-s-E45S53-18640980';
+    this.logName = 'em-s-E35S51-21553193';
     this.logging = false;
 
     if(!creep)
@@ -121,6 +121,8 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       }
       else
       {
+        if(this.logging && creep.name === this.logName)
+        console.log(this.name, 3.5)
         target = _.find(Object.keys(terminal.store), (r) => {
           if(r === RESOURCE_ENERGY && terminal.store[r] > 75000)
             return r;
@@ -137,6 +139,14 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             {
               max = terminal.store[r];
               retValue = r;
+            }
+          }
+          else if(!_.include(MINERALS_RAW, r) && r !== RESOURCE_ENERGY)
+          {
+            if(terminal.room.name === 'E35S51')
+            {
+              console.log(this.name, 'Transfer issue', r)
+              //return r;
             }
           }
 
@@ -170,8 +180,16 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
           }
           else
           {
-            let amount = terminal.store[target] - KEEP_AMOUNT < creep.carryCapacity ? terminal.store[target] - KEEP_AMOUNT : creep.carryCapacity;
-            creep.withdraw(terminal, <ResourceConstant>target, amount);
+            //if(terminal.room.name === 'E35S51')
+            {
+            //  creep.withdraw(terminal, <ResourceConstant>target);
+            }
+            //else
+            {
+              let amount = terminal.store[target] - KEEP_AMOUNT < creep.carryCapacity ? terminal.store[target] - KEEP_AMOUNT : creep.carryCapacity;
+              creep.withdraw(terminal, <ResourceConstant>target, amount);
+            }
+
             creep.memory.target = terminal.id;
             return;
           }

@@ -5,6 +5,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
   type = 'rblf'
 
   run(){
+    console.log(this.name, 'Life time remote')
     let creep = this.getCreep()
     let site = <ConstructionSite>Game.getObjectById(this.metaData.site)
 
@@ -14,21 +15,48 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       return
     }
 
-    let flag = Game.flags['Claim-1'];
-    if(flag)
+    let flag = Game.flags['Claim-10-E39S35'];
+    let baseFlagName;
+    let numberOfFlags;
+    let spawnRoom;
+
+    if(flag.name.split('-').length === 3)
     {
-      if(creep.memory.atPlace === undefined)
+      baseFlagName = flag.name.split('-')[0];
+      numberOfFlags = +flag.name.split('-')[1];
+      spawnRoom = flag.name.split('-')[2];
+    }
+
+    if(numberOfFlags !== undefined)
       {
-        if(creep.pos.isNearTo(flag))
+        this.log('Here now');
+        if(creep.memory.flagIndex === undefined)
         {
-          creep.memory.atPlace = true;
-          return;
+          creep.memory.flagIndex = 1;
         }
 
-        creep.travelTo(flag);
-        return;
+        if(creep.memory.flagIndex <= numberOfFlags)
+        {
+          let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
+          if(tFlag)
+          {
+            this.log('Here now 2 ' + tFlag.name);
+            if(creep.pos.isNearTo(tFlag))
+            {
+              //tFlag.remove();
+              creep.memory.flagIndex++;
+            }
+
+            creep.travelTo(tFlag);
+            return;
+          }
+        }
+        else
+        {
+          creep.travelTo(flag);
+          return;
+        }
       }
-    }
 
     /*if(_.sum(creep.carry) === 0 && creep.room.storage && creep.room.storage.my && creep.room.storage.store.energy >= creep.carryCapacity)
     {

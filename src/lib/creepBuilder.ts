@@ -37,6 +37,22 @@ export const CreepBuilder = {
               MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY,
               MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY];
     }
+    else if(creepType === 'testattacker')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
+    }
+    else if(creepType === 'testhealer')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL];
+    }
     else if(creepType === 'custom')
     {
       return memory.body;
@@ -179,6 +195,7 @@ export const CreepBuilder = {
       RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL],
     'vision': [MOVE],
     'bounce': [TOUGH, MOVE],
+    'buster': [ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE]
   },
 
   typeExtends: <PartList>{
@@ -210,6 +227,7 @@ export const CreepBuilder = {
     'rangeAttack': [],
     'vision': [],
     'bounce': [TOUGH, MOVE],
+    'buster': [],
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -238,5 +256,6 @@ export const CreepBuilder = {
     'rangeAttack': 50,
     'vision': 1,
     'bounce': 50,
+    'buster': 10,
   }
 }

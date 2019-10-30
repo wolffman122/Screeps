@@ -7,12 +7,27 @@ export class SpawnRemoteBuilderProcess extends Process{
 
   run(){
     let site = this.metaData.site
+    console.log(this.name, 'Remote life time');
+    let flag;
+    let spawnRoom;
+    let controller = Game.rooms[this.metaData.roomName].controller;
+    if(controller)
+    {
+      let looks = controller.pos.lookFor(LOOK_FLAGS);
+      if(looks.length)
+      {
+        flag = looks[0];
+        spawnRoom = flag.name.split('-')[2];
+      }
+    }
 
+    if(spawnRoom === undefined)
+      spawnRoom = Utils.nearestRoom(this.metaData.roomName, 500);
 
     if(!this.kernel.hasProcess('rblf-rb-' + site)){
       let spawned = Utils.spawn(
         this.kernel,
-        Utils.nearestRoom(this.metaData.roomName, 500),
+        spawnRoom,
         'remoteWorker',
         'rb-' + Game.time,
         {}

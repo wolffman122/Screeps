@@ -164,8 +164,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
               return;
             }
           }
-            this.suspend = 20;
-            return;
+          this.suspend = 20;
+          return;
         }
       }
       else if(_.sum(creep.carry) === 0 && creep.room.name !== this.metaData.spawnRoom)

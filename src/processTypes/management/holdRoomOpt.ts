@@ -7,6 +7,7 @@ import { HoldHarvesterLifetimeProcess } from 'processTypes/empireActions/lifetim
 import { HoldDistroLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDistro';
 import { HoldHarvesterOptLifetimeProcess } from '../empireActions/lifetimes/holderHarvesterOpt';
 import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
+import { BusterLifetimeProcess } from 'processTypes/empireActions/lifetimes/buster';
 
 
 
@@ -51,6 +52,11 @@ export class HoldRoomOptManagementProcess extends Process
     {
       this.metaData.defenderCreeps = [];
     }
+
+    if(!this.metaData.coreBuster)
+    {
+      this.metaData.coreBuster = [];
+    }
   }
 
   run()
@@ -76,7 +82,20 @@ export class HoldRoomOptManagementProcess extends Process
       flag.memory.enemies = enemiesPresent;
       if(enemiesPresent)
       {
-        console.log("Hold room enemies present" + flag.pos.roomName);
+        //console.log("Hold room enemies present" + flag.pos.roomName);
+      }
+    }
+
+    let coreId: string;
+    if(Game.time % 10 === 8)
+    {
+      let structures = flag.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE });
+      flag.memory.cores = structures.length ? true : false;
+
+      if(flag.memory.cores)
+      {
+        //console.log("Hold room cores present" + flag.pos.roomName);
+        coreId = structures[0].id;
       }
     }
 
@@ -148,6 +167,36 @@ export class HoldRoomOptManagementProcess extends Process
           }
         }
       }
+
+      if(flag.memory.cores && flag.room)
+      {
+        this.metaData.coreBuster = Utils.clearDeadCreeps(this.metaData.coreBuster);
+        if(this.metaData.coreBuster.length < 1)
+        {
+          let creepName = 'hrm-buster-' + flag.pos.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            this.kernel,
+            spawnRoomName,
+            'buster',
+            creepName,
+            {}
+          );
+
+          if(spawned)
+          {
+            let boost = [];
+            boost.push(RESOURCE_CATALYZED_UTRIUM_ACID);
+            this.metaData.coreBuster.push(creepName);
+            this.kernel.addProcessIfNotExist(BusterLifetimeProcess, 'busterlf-' + creepName, 30, {
+              creep: creepName,
+              flagName: this.metaData.flagName,
+              spawnRoom: spawnRoomName,
+              coreId: coreId,
+              boosts: boost
+            })
+          }
+        }
+      }
     }
     catch(err)
     {
@@ -192,7 +241,8 @@ export class HoldRoomOptManagementProcess extends Process
 
           //Spawn big holder
           if(room.controller && sRoom.controller!.level >= 8 &&
-            (room.controller.reservation === undefined || (room.controller.reservation && room.controller.reservation.ticksToEnd < 1000)))
+            (room.controller.reservation === undefined ||
+            (room.controller.reservation && (room.controller.reservation.ticksToEnd < 1000 || room.controller.reservation.username !== 'wolffman122'))))
           {
             if(this.metaData.holdCreeps.length < 1 && !enemiesPresent)
             {

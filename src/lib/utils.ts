@@ -346,5 +346,5 @@ export const Utils = {
   }*/
 }
 
-export const RAMPARTTARGET = 10800000;
+export const RAMPARTTARGET = 11000000;
 export const WALLTARGET = 3350000;

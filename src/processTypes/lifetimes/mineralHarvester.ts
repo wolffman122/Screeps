@@ -28,8 +28,12 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
 
     let roomInContainer = container.storeCapacity - _.sum(container.store);
 
+    if(mineral.mineralAmount !== 0)
+      creep.room.memory.miningStopTime = undefined;
+
     if(mineral.mineralAmount === 0 && _.sum(creep.carry) === 0)
     {
+      creep.room.memory.miningStopTime = Game.time;
       creep.suicide();
       return;
     }

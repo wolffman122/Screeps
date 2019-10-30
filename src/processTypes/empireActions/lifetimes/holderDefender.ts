@@ -23,7 +23,7 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
             return;
         }
 
-        console.log(this.name, 'Defender running');
+        //console.log(this.name, 'Defender running');
 
         if(creep.name === 'hrm-defender-E32S45-21148870')
             console.log(this.name, 1)
@@ -163,7 +163,7 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
         else
         {
             flag.memory.enemies = false;
-            console.log(this.name, this.metaData.spawnRoomName);
+            //console.log(this.name, this.metaData.spawnRoomName);
             let container = this.kernel.data.roomData[this.metaData.spawnRoomName].generalContainers[0];
             if(creep.pos.inRangeTo(container, 0))
                 creep.suicide();

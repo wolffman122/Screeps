@@ -248,6 +248,13 @@ export const Stats = {
               mineralCountdown[mineral[0].mineralType] = mineral[0].ticksToRegeneration;
           }
 
+          Memory.stats['rooms.' + roomName + 'miningStopTime'] = 0;
+          if(room.memory.miningStopTime !== undefined)
+          {
+            let total = Game.time - room.memory.miningStopTime;
+            Memory.stats['rooms.' + roomName + 'miningStopTime'] = total;
+          }
+
 
 
 

@@ -67,7 +67,14 @@ export class HoldProcess extends Process
     }
     else
     {
-      creep.reserveController(creep.room.controller!);
+      let controller = creep.room.controller;
+      if(controller)
+      {
+        if(controller.reservation && controller.reservation.ticksToEnd > 0 && controller.reservation.username !== 'wolffman122')
+          creep.attackController(controller);
+        else
+          creep.reserveController(controller);
+      }
     }
   }
 }

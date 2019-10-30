@@ -215,11 +215,18 @@ interface Flag {
       fleePath?: RoomPosition[];
       full: boolean;
       sleep?: number;
+      stuck?: number;
   }
 
   interface FlagMemory
   {
       enemies: boolean;
+      cores?: boolean;
+      invaderCoresPresent: boolean;
+      coreLevel?: number;
+      coreDistance?: number;
+      coreId?: string;
+      coreSkFoundRoom: string;
       timeEnemies?: number;
       source: string;
       droppedResource: boolean;
@@ -254,6 +261,7 @@ interface Flag {
     currentPatternCount?: number;
     currentPatternTimer?: number;
     rampartCostMatrix?: number[];
+    miningStopTime?: number;
   }
 
   interface SpawnMemory {}
@@ -359,6 +367,7 @@ interface Flag {
     builderCreeps: string[]
     workerCreeps: string[]
     defenderCreeps: string[]
+    coreBuster: string[]
     flagName: string
     increasing: boolean
   }
@@ -368,6 +377,15 @@ interface Flag {
     flagName: string
     source: string
     harvesting: boolean
+  }
+
+  interface BusterLifetimeProcessMetaData
+  {
+    cree: string,
+    flagName: string,
+    spawnRoom: string,
+    coreId: string,
+    boosts: string[]
   }
 
   interface MarketManagementProcessMetaData
@@ -381,6 +399,16 @@ interface Flag {
       roomName: string
       flagName: string
       dismantleCreeps: string[]
+  }
+
+  interface StrongHoldDestructionProcessMetaData
+  {
+    roomName: string
+    flagName: string
+    attackers: string[]
+    healers: string[],
+    dismantlers: string[],
+    haulers: string[],
   }
 
   interface DismantleMetaData
@@ -661,6 +689,7 @@ interface Flag {
 
   interface SKRoomManagementProcessMetaData
   {
+    moveFlag: boolean,
     mineralMining: boolean,
     centerSKMining: boolean,
     miningFlag: string,
@@ -674,6 +703,9 @@ interface Flag {
     vision: boolean,
     scanIndex: number,
     invaderCorePresent: boolean,
+    coreFlagName?: string,
+    coreId?: string,
+    coreLevel?: number,
     locations: {
       [types: string]: any[]
     },

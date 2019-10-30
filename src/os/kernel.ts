@@ -79,6 +79,8 @@ import { PowerManagementProcess } from 'processTypes/management/power';
 import { DefenderLifetimeProcess } from 'processTypes/lifetimes/defender';
 import { DefendProcess } from 'processTypes/creepActions/defend';
 import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
+import { BusterLifetimeProcess } from 'processTypes/empireActions/lifetimes/buster';
+import { StrongHoldDestructionProcess } from 'processTypes/management/strongHoldDestruction';
 
 
 
@@ -155,7 +157,9 @@ const processTypes = <{[type: string]: any}>{
   'atmp': AllTerminalManagementProcess,
   'powm': PowerManagementProcess,
   'deflf': DefenderLifetimeProcess,
-  'defend': DefendProcess
+  'defend': DefendProcess,
+  'busterlf': BusterLifetimeProcess,
+  'shdp': StrongHoldDestructionProcess, // 35
 }
 
 interface KernelData{
