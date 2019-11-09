@@ -20,7 +20,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
     let numberOfFlags;
     let spawnRoom;
 
-    if(flag.name.split('-').length === 3)
+    if(flag && flag.name.split('-').length === 3)
     {
       baseFlagName = flag.name.split('-')[0];
       numberOfFlags = +flag.name.split('-')[1];
