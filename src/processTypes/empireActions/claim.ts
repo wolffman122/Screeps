@@ -67,9 +67,10 @@ export class ClaimProcess extends Process{
 
 
     let room = flag.room;
-
+    console.log(this.name, 1)
     if(!room)
     {
+      console.log(this.name, 2)
       if(numberOfFlags !== undefined && baseFlagName !== undefined)
       {
         this.log('Here now');
@@ -100,9 +101,15 @@ export class ClaimProcess extends Process{
           return;
         }
       }
+      else
+      {
+        creep.travelTo(flag);
+        return;
+      }
     }
     else
     {
+      console.log(this.name, 3)
       if(!creep.pos.inRangeTo(room.controller!, 1))
       {
         creep.travelTo(room.controller!);
