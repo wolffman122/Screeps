@@ -59,6 +59,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
     let resources = _.union(MINERALS_RAW, regList);
     let terminal = creep.room.terminal;
     let storage = creep.room.storage;
+    let factory = data.factory
 
     if(!storage)
     {
@@ -73,8 +74,16 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         console.log(this.name, storage, storage.id);
 
       // Full storage
-      if(_.sum(storage.store) >= storage.storeCapacity * .99)
+      if(storage.store.getUsedCapacity() >= storage.store.getUsedCapacity() * .99)
       {
+        if(creep.room.name === 'E45S53' && terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 100000
+        && factory?.store.getFreeCapacity() > 600)
+        {
+          creep.withdraw(terminal, RESOURCE_ENERGY)
+          creep.memory.target = factory.id;
+          return;
+        }
+
         let target = (storage.store[RESOURCE_ENERGY] < storage.store[mineral.mineralType]) ? mineral.mineralType : RESOURCE_ENERGY;
         if(target)
         {
@@ -261,6 +270,15 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         else
           creep.transfer(storage, RESOURCE_ENERGY);
       }
+      else if(creep.room.name === 'E45S53' && target instanceof StructureFactory)
+      {
+        creep.transferEverything(target);
+      }
+    }
+
+    if(factory?.store.getUsedCapacity(RESOURCE_ENERGY) > 600 && factory.cooldown === 0)
+    {
+      factory.produce(RESOURCE_BATTERY);
     }
   }
 }
