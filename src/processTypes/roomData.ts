@@ -31,7 +31,7 @@ export class RoomDataProcess extends Process{
 
   singleFields = [
     'lastVision', 'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
-    'nuker', 'observer', 'powerBank'
+    'nuker', 'observer', 'powerBank', 'factory'
   ]
 
   run(){
@@ -381,6 +381,9 @@ export class RoomDataProcess extends Process{
       powerBank: <StructurePowerBank>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_POWER_BANK);
       })[0],
+      factory: <StructureFactory>_.filter(myStructures, function(structure) {
+        return (structure.structureType === STRUCTURE_FACTORY);
+      })[0],
       powerSpawn: <StructurePowerSpawn>_.filter(structures, function(structure){
         return (structure.structureType === STRUCTURE_POWER_SPAWN);
       })[0],
@@ -492,6 +495,7 @@ export class RoomDataProcess extends Process{
       observer: undefined,
       powerSpawn: undefined,
       powerBank: undefined,
+      factory: undefined,
       generalContainers: [],
       mineral: undefined,
       labs: [],

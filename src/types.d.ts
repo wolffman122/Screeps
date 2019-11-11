@@ -5,7 +5,7 @@ declare const require: (module: string) => any;
 // add your custom typings here
 interface Creep extends RoomObject {
     fixMyRoad(): boolean;
-    transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
+    transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|StructureFactory): number;
     withdrawEverything(target: any): number;
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
@@ -68,6 +68,7 @@ interface Flag {
     nuker?: StructureNuker
     observer?: StructureObserver
     powerBank?: StructurePowerBank
+    factory?: StructureFactory
     powerSpawn?: StructurePowerSpawn
     generalContainers: StructureContainer[]
     mineral: Mineral | undefined
