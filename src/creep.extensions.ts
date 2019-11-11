@@ -3,7 +3,7 @@ import { WHITE_LIST } from "processTypes/buildingProcesses/mineralTerminal";
 import { Utils } from "lib/utils";
 import { LABDISTROCAPACITY } from "processTypes/management/lab";
 
-Creep.prototype.transferEverything = function(target: Creep|StructureContainer|StructureStorage|StructureTerminal)
+Creep.prototype.transferEverything = function(target: Creep|StructureContainer|StructureStorage|StructureTerminal|StructureFactory)
 {
   for(let t in this.carry)
   {
