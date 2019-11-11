@@ -142,8 +142,11 @@ export const Utils = {
 
   /** Returns the room closest to the source room with the required spawn energy */
   nearestRoom(sourceRoom: string, minSpawnEnergy = 0){
+    if(sourceRoom === 'E46S54')
+      console.log('Utils', 1);
     let bestRoom = ''
     let bestDistance = 999
+
 
     _.forEach(Game.rooms, function(room){
       if(room.controller && room.controller.my){

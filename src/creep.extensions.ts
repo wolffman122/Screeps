@@ -17,7 +17,7 @@ Creep.prototype.transferEverything = function(target: Creep|StructureContainer|S
   return ERR_NOT_ENOUGH_RESOURCES;
 }
 
-Creep.prototype.withdrawEverything = function(target: StructureContainer|StructureStorage|StructureTerminal|Tombstone|StructureLab)
+Creep.prototype.withdrawEverything = function(target: any)
 {
   if(!(target instanceof StructureLab))
   {

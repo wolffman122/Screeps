@@ -6,7 +6,7 @@ declare const require: (module: string) => any;
 interface Creep extends RoomObject {
     fixMyRoad(): boolean;
     transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
-    withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|Tombstone|StructureLab): number;
+    withdrawEverything(target: any): number;
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
@@ -216,6 +216,7 @@ interface Flag {
       full: boolean;
       sleep?: number;
       stuck?: number;
+      swap?: RoomPosition;
   }
 
   interface FlagMemory
@@ -261,6 +262,7 @@ interface Flag {
     currentPatternCount?: number;
     currentPatternTimer?: number;
     rampartCostMatrix?: number[];
+    skCostMatrix?: number[];
     miningStopTime?: number;
   }
 

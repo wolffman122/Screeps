@@ -121,17 +121,17 @@ export class skRoomManagementProcess extends Process
           return;
       }
 
-      //if(Game.time === 21587480)
-        //this.metaData.invaderCorePresent = false;
-
       this.coreSearching(centerFlag);
 
       let coreInSk = false;
       if(this.metaData.invaderCorePresent)
       {
-        let testRoomName = this.metaData.coreFlagName.split('-')[0];
-        if(this.metaData.skRoomName === testRoomName)
-          coreInSk = true;
+        if(this.messages.coreFlagName)
+        {
+          let testRoomName = this.metaData.coreFlagName.split('-')[0];
+          if(this.metaData.skRoomName === testRoomName)
+            coreInSk = true;
+        }
       }
 
       if(this.skFlag.room.memory.skSourceRoom === undefined)
@@ -141,6 +141,7 @@ export class skRoomManagementProcess extends Process
 
       this.ensureMetaData();
 
+      console.log(this.name, coreInSk);
       if(!this.metaData.vision && !coreInSk)
       {
         if(!this.metaData.locations || Object.keys(this.metaData.locations).length === 0)
@@ -269,7 +270,7 @@ export class skRoomManagementProcess extends Process
           }
 
 
-
+          console.log(this.name, 1);
           ////////////////////////////////////////////////////////////
           ///
           ///          Devil Spawn Code
@@ -310,7 +311,7 @@ export class skRoomManagementProcess extends Process
 
           if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
           {
-
+            console.log(this.name, 2, this.skRoomName, this.roomInfo(this.skRoomName));
             /////////////////////////////////////////////////////////////
             ///
             ///          Builder Spawn Code
@@ -322,8 +323,10 @@ export class skRoomManagementProcess extends Process
             {
               if(this.roomInfo(this.skRoomName).sourceContainers.length < this.roomInfo(this.skRoomName).sources.length)
               {
+                console.log(this.name, 3);
                 if(this.metaData.builderCreeps.length < 2)
                 {
+                  console.log(this.name, 4);
                   let creepName = 'sk-build-' + this.skRoomName + '-' + Game.time;
                   let spawned = Utils.spawn(
                     this.kernel,
@@ -734,10 +737,12 @@ export class skRoomManagementProcess extends Process
           }
           else
           {
+            if(this.name === 'skrmp-E45S54')
+              console.log(this.name, 'mineralMining', this.metaData.mineralMining);
             if(!devil.memory.target)    // Find a target name
             {
               let sourceKeepers: StructureKeeperLair[] = [];
-              if(this.mineralMining)
+              if(this.metaData.mineralMining)
               {
                 sourceKeepers = _.filter(this.lairs, (l) => {
                   return (l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
@@ -761,10 +766,26 @@ export class skRoomManagementProcess extends Process
               else
               {
                 // No Souce Keepers move to Lair with shortest spawn time.
-                let lair = _.min(this.lairs, "ticksToSpawn");
-                if(lair.ticksToSpawn)
+                if(!this.mineralMining)
                 {
-                  targetName = lair.id;
+                  // Filter out the mineral lair
+                  let lairs = _.filter(this.lairs, (l) => {
+                    return (l.pos.findInRange(FIND_SOURCES, 6).length);
+                  });
+
+                  let lair = _.min(lairs, "ticksToSpawn");
+                  if(lair.ticksToSpawn)
+                  {
+                    targetName = lair.id;
+                  }
+                }
+                else
+                {
+                  let lair = _.min(this.lairs, "ticksToSpawn");
+                  if(lair.ticksToSpawn)
+                  {
+                    targetName = lair.id;
+                  }
                 }
               }
             }
@@ -1828,7 +1849,7 @@ export class skRoomManagementProcess extends Process
           if(Game.time === 21587255)
             this.metaData.invaderCorePresent = false;
 
-          //console.log(this.name, this.metaData.coreFlagName, this.metaData.invaderCorePresent);
+          console.log(this.name, this.metaData.coreFlagName, this.metaData.invaderCorePresent);
 
           if(flag)
           {
@@ -1866,6 +1887,11 @@ export class skRoomManagementProcess extends Process
 
               return;
             }
+            else if(flag.room.name !== coreRoomName)
+            {
+              flag.setPosition(new RoomPosition(25,25, coreRoomName));
+              return;
+            }
 
             // Destructions
             if(!flag.memory.invaderCoresPresent)
@@ -1877,6 +1903,8 @@ export class skRoomManagementProcess extends Process
               this.metaData.coreLevel = undefined;
               this.metaData.invaderCorePresent = undefined;
             }
+
+            return;
           }
           /*else
           {

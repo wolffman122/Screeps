@@ -44,6 +44,10 @@ RoomPosition.prototype.getPositionAtDirection = function(direction: number, rang
         x -= range;
         y -= range;
     }
+
+    if(x < 0 || x > 49 || y < 0 || y > 49)
+        return null;
+        
     return new RoomPosition(x, y, room);
 };
 

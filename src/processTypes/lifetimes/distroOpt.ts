@@ -237,7 +237,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       targets = [].concat(
         <never[]>this.kernel.data.roomData[creep.room.name].spawns,
         <never[]>this.kernel.data.roomData[creep.room.name].extensions,
-        <never[]>this.kernel.data.roomData[creep.room.name].towers
+        <never[]>this.kernel.data.roomData[creep.room.name].towers,
+        <never[]>this.kernel.data.roomData[creep.room.name].labs
       )
     }
 

@@ -17,11 +17,13 @@ export class LinkManagementProcess extends Process
     {
       let controllerLink = this.roomData().controllerLink;
       let storageLink = this.roomData().storageLink;
+      let storage = storageLink.room.storage;
 
       _.forEach(this.roomData().sourceLinks, (sl) => {
         if(controllerLink)
         {
-          if(sl.cooldown == 0 && sl.energy > 700 && controllerLink.energy < 200)
+          if(sl.cooldown == 0 && sl.energy > 700 && controllerLink.energy < 200 &&
+            storage.store.getUsedCapacity(RESOURCE_ENERGY) > 30000)
           {
             sl.transferEnergy(controllerLink);
             return;

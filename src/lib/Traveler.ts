@@ -116,7 +116,9 @@ export class Traveler {
           // uncomment to visualize destination
           // this.circle(destination.pos, "orange");
           // check if creep is stuck
-          if (this.isStuck(creep, state)) {
+          if (this.isStuck(creep, state))
+          {
+              
               state.stuckCount++;
               Traveler.circle(creep.pos, "magenta", state.stuckCount * .2);
           } else {

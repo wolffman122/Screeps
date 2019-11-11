@@ -42,7 +42,7 @@ export class LabManagementProcess extends Process
   if(Game.cpu.bucket < 8000)
       return;
     this.logOn = false;
-    this.logName = "labm-E35S51";
+    this.logName = "labm-E55S48";
 
     this.room = Game.rooms[this.metaData.roomName];
 
@@ -76,12 +76,14 @@ export class LabManagementProcess extends Process
         console.log(this.name, 'Running', 2)
       if(!this.productLabs || !this.reagentLabs)
       {
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'Running', 2.1)
         this.reagentLabs = this.findReagentLabs();
         this.productLabs = this.findProductLabs();
       }
 
       if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 2)
+        console.log(this.name, 'Running', 2.2)
       this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
@@ -124,6 +126,7 @@ export class LabManagementProcess extends Process
 
       try
       {
+
         if(this.name === this.logName && this.logOn)
           console.log(this.name, 17, this.metaData.labDistros.length, this.labProcess, Object.keys(this.room.memory.boostRequests).length);
         if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
@@ -150,7 +153,7 @@ export class LabManagementProcess extends Process
       }
       catch (error)
       {
-        console.log(this.name, 'Catch', error);
+        console.log(this.name, 'Run', error);
       }
 
       if(this.labProcess)
@@ -214,7 +217,7 @@ export class LabManagementProcess extends Process
       if(!command)
       {
         if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'MissionActions', 2.2)
+          console.log(this.name, 'MissionActions', 3)
         if(_.sum(this.creep.carry) > 0)
         {
           //console.log(this.name, "is holding resources without a command, putting them in terminal");
@@ -271,7 +274,11 @@ export class LabManagementProcess extends Process
           }
         }
 
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'MissionActions', 4, this.roomData(), this.roomData().generalContainers)
         const generalContainer = this.roomData().generalContainers[0];
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'MissionActions', 5)
         if(generalContainer && _.sum(generalContainer.store) > 0)
         {
           if(this.creep.name === 'lab-d-E38S54-21536636')
@@ -284,7 +291,11 @@ export class LabManagementProcess extends Process
           return;
         }
 
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'MissionActions', 6)
         this.creep.idleOffRoad(this.reagentLabs![0], false);
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'MissionActions', 7);
         return;
       }
 
@@ -356,7 +367,7 @@ export class LabManagementProcess extends Process
     }
     catch (error)
     {
-      console.log(this.name, error)
+      console.log(this.name, 'MisstionActions', error)
     }
   }
 
@@ -585,6 +596,9 @@ export class LabManagementProcess extends Process
   {
     try
     {
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'findReagentLabs', 1, this.metaData.reagentLabIds);
+
       if(this.metaData.reagentLabIds)
       {
         let labs = _.map(this.metaData.reagentLabIds, (id: string) => {
@@ -614,6 +628,9 @@ export class LabManagementProcess extends Process
       {
         return; // early
       }
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'findReagentLabs', 2)
 
       let structures = this.room.find(FIND_STRUCTURES);
       let labs = _.filter(structures, (s) => {
@@ -669,6 +686,9 @@ export class LabManagementProcess extends Process
   {
     try
     {
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'findProductLabs', 1, this.metaData.productLabIds);
+
       if(this.metaData.productLabIds)
       {
         let labs = _.map(this.metaData.productLabIds, (id: string) => {
@@ -694,6 +714,9 @@ export class LabManagementProcess extends Process
           return this.metaData.productLabIds = undefined;
         }
       }
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'findProductLabs', 2)
 
       let structures = this.room.find(FIND_STRUCTURES);
       let labs = _.filter(structures, (s) => {

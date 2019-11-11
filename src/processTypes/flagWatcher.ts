@@ -30,7 +30,7 @@ export class FlagWatcherProcess extends Process
   //  Purple &  Yellow
   strongHoldDestruction(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + flag.name, 35, {flagName: flag.name});
+    //this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + flag.name, 35, {flagName: flag.name});
   }
 
   AttackController(flag: Flag)
