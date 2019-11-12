@@ -74,7 +74,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         console.log(this.name, storage, storage.id);
 
       // Full storage
-      if(storage.store.getUsedCapacity() >= storage.store.getUsedCapacity() * .99)
+      if(storage.store.getUsedCapacity() >= storage.store.getCapacity() * .99)
       {
         if(creep.room.name === 'E45S53' && terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 100000
         && factory?.store.getFreeCapacity() > 600)
