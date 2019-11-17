@@ -11,7 +11,7 @@ export class MinetalTerminalManagementProcess extends Process
     return;
       }
 }
-export const ENERGY_KEEP_AMOUNT = 400000;
+export const ENERGY_KEEP_AMOUNT = 600000;
 export const KEEP_AMOUNT = 10000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
@@ -19,6 +19,7 @@ export const PRODUCT_LIST = [RESOURCE_ZYNTHIUM_HYDRIDE, RESOURCE_LEMERGIUM_OXIDE
                              RESOURCE_GHODIUM_ACID,
                              RESOURCE_GHODIUM,
                              RESOURCE_LEMERGIUM_HYDRIDE,
+                             RESOURCE_LEMERGIUM_ACID,
                              RESOURCE_CATALYZED_GHODIUM_ALKALIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
                              RESOURCE_CATALYZED_UTRIUM_ACID,
                              RESOURCE_CATALYZED_ZYNTHIUM_ACID,
@@ -67,7 +68,7 @@ export const WHITE_LIST = ['admon',
   'Baj', 'cazantyl', 'DoctorPC', 'Geir1983', 'InvisioBlack', 'Issacar', 'Komir',
   'Lolzor', 'ncsupheo', 'NobodysNightmare', 'omnomwombat', 'Parthon',
   'Plemenit', 'poppahorse', 'Rengare', 'Subodai', 'Tantalas', 'Tijnoz', 'Totalschaden',
-  'Vlahn', 'W4rl0ck', 'weaves', 'Xaq', 'Yilmas', 'Zeekner', 'Zyzyzyryxy',
+  'Vlahn', 'W4rl0ck', 'weaves', 'Xaq', 'Yilmas', 'Zeekner', 'Zyzyzyryxy', 'likeafox',
   // Temporary ones
   'smitt33'];
 

@@ -200,18 +200,19 @@ export const Utils = {
     }
   },
 
-  rampartHealth(kernel: Kernel, roomName: string)
+  rampartHealth(kernel: Kernel, roomName: string, target?: number)
   {
     let room = Game.rooms[roomName];
-
+    let max = RAMPARTTARGET;
+    if(target && (target > RAMPARTTARGET))
+      max = target
+    
     if(room.controller!.level < 3)
     {
       return 0;
     }
     else
     {
-      let max = RAMPARTTARGET;
-
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 
       let target = average + 10000;

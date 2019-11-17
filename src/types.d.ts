@@ -256,6 +256,8 @@ interface Flag {
     };
     assisted: boolean;
     rampartHealth?: number;
+    rampartsUpgrading?: boolean;
+    rampartsDoneUpgrading?: boolean;
     invadersPresent?: boolean;
     skSourceRoom?: boolean;
     lastVision: number;
@@ -265,6 +267,7 @@ interface Flag {
     rampartCostMatrix?: number[];
     skCostMatrix?: number[];
     miningStopTime?: number;
+    pauseUpgrading?: boolean;
   }
 
   interface SpawnMemory {}

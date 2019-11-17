@@ -154,7 +154,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
           {
             if(terminal.room.name === 'E35S51')
             {
-              console.log(this.name, 'Transfer issue', r)
+              //console.log(this.name, 'Transfer issue', r)
               //return r;
             }
           }
@@ -189,16 +189,15 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
           }
           else
           {
-            //if(terminal.room.name === 'E35S51')
+            if(factory?.store.getUsedCapacity(RESOURCE_BATTERY) >= creep.store.getCapacity())
             {
-            //  creep.withdraw(terminal, <ResourceConstant>target);
-            }
-            //else
-            {
-              let amount = terminal.store[target] - KEEP_AMOUNT < creep.carryCapacity ? terminal.store[target] - KEEP_AMOUNT : creep.carryCapacity;
-              creep.withdraw(terminal, <ResourceConstant>target, amount);
+              creep.withdraw(factory, RESOURCE_BATTERY);
+              creep.memory.target = storage.id;
+              return;
             }
 
+            let amount = terminal.store[target] - KEEP_AMOUNT < creep.carryCapacity ? terminal.store[target] - KEEP_AMOUNT : creep.carryCapacity;
+            creep.withdraw(terminal, <ResourceConstant>target, amount);
             creep.memory.target = terminal.id;
             return;
           }
