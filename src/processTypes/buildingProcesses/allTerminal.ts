@@ -23,8 +23,8 @@ export class AllTerminalManagementProcess extends Process
 
             let resources = _.union(MINERALS_RAW, regList);
             _.forEach(Game.rooms, (r) => {
-                let terminal = <StructureTerminal>r.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_TERMINAL})[0];
-                if(terminal)
+                let terminal = r.terminal;
+                if(terminal?.my)
                 {
                     _.forEach(resources, (s) => {
                         //console.log(this.name, s);
@@ -50,7 +50,7 @@ export class AllTerminalManagementProcess extends Process
                         }
                         else
                         {
-                            console.log(this.name, 'Push', s, r.name, terminal.store[s]);
+                            //console.log(this.name, 'Push', s, r.name, terminal.store[s]);
                             let info = {roomName: r.name, amount: terminal.store[s], terminal: terminal.id};
                             this.metaData.resources[s].push(info);
                         }
@@ -61,7 +61,7 @@ export class AllTerminalManagementProcess extends Process
 
 
 
-            console.log(this.name, Object.keys(this.metaData.resources).length)
+            //console.log(this.name, Object.keys(this.metaData.resources).length)
             //_.forEach(Object.keys(this.metaData.resources), (s) => {
             //    console.log(this.name, s);
             //})
@@ -74,27 +74,45 @@ export class AllTerminalManagementProcess extends Process
         let min: roomAmounts
         if(Game.time % 20 === 15)
         {
+            console.log(this.name, 'Sending portinon');
             _.forEach(Object.keys(this.metaData.resources), (r:ResourceConstant) => {
                 let max = _.max(this.metaData.resources[r], 'amount')
                 let min = _.min(this.metaData.resources[r], 'amount')
-                console.log(this.name, r, max.roomName, max.amount);
-                console.log(this.name, r, min.roomName, min.amount);
+                //console.log(this.name, r, max.roomName, max.amount);
+                //console.log(this.name, r, min.roomName, min.amount);
 
                 let maxTerminal = <StructureTerminal>Game.getObjectById(max.terminal);
                 let minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
+
+                // Hopefully remove any terminals that don't have room.
+                if(minTerminal.store.getFreeCapacity() < 5000)
+                {
+                    do
+                    {
+                        const index = this.metaData.resources[r].indexOf(min, 0);
+                        if(index > -1)
+                        {
+                            this.metaData.resources[r].splice(index, 1);
+                            min = _.min(this.metaData.resources[r], 'amount');
+                            minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
+                        }
+                    } while (minTerminal.store.getFreeCapacity() < 5000)
+                }
+
                 if(r === RESOURCE_ENERGY)
                 {
 
                 }
-                else if(max.amount >= 6000 && min.amount < 5000 && _.sum(minTerminal.store) < minTerminal.storeCapacity)
+                else if(max.amount >= 6000 && min.amount < 5000 && minTerminal.store.getFreeCapacity() > 0)
                 {
-                    if(_.sum(minTerminal.store) <= minTerminal.storeCapacity - 10000)
+                    if(minTerminal.store.getFreeCapacity() > 5000)
                     {
 
                         if(maxTerminal && maxTerminal.cooldown === 0)
                         {
-                            console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name);
-                            maxTerminal.send(r, 5000 - min.amount, min.roomName);
+
+                            let ret = maxTerminal.send(r, 5000 - min.amount, min.roomName);
+                            console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
                         }
                     }
                 }

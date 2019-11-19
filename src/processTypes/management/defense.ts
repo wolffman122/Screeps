@@ -1,6 +1,7 @@
 import {Process} from '../../os/process'
 import {Utils} from '../../lib/utils'
 import { DefenderLifetimeProcess } from 'processTypes/lifetimes/defender';
+import { WHITE_LIST } from 'processTypes/buildingProcesses/mineralTerminal';
 
 export class DefenseManagementProcess extends Process
 {
@@ -37,6 +38,18 @@ export class DefenseManagementProcess extends Process
       return (e.owner.username === 'invader' || e.owner.username === 'Invader');
     });
 
+    if(this.name === 'dm-E58S44')
+      console.log(this.name, enemies.length, '?????????????????????????')
+    enemies = _.filter(enemies, (e)=> {
+      return !_.includes(WHITE_LIST, e.owner.username);
+    });
+
+    if(this.name === 'dm-E58S44')
+      console.log(this.name, enemies.length, '...........................')
+
+    if(enemies.length === 0)
+      return;
+
     if(invaders.length > 0)
     {
       return;
@@ -44,10 +57,13 @@ export class DefenseManagementProcess extends Process
 
     if(room.controller && room.controller.my)
     {
+      if(this.name === 'dm-E58S44')
+      console.log(this.name, enemies.length, '...........................')
       let dangerEnemies = _.filter(enemies, (e) => {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0) &&
           flag.pos.inRangeTo(e, 15);
       });
+
 
       let numberDefenders = 1;
       if(dangerEnemies.length >= 4)

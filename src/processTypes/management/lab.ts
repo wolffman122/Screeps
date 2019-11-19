@@ -293,7 +293,7 @@ export class LabManagementProcess extends Process
 
         if(this.name === this.logName && this.logOn)
           console.log(this.name, 'MissionActions', 6)
-        this.creep.idleOffRoad(this.reagentLabs![0], false);
+        this.creep.idleOffRoad(this.reagentLabs![0], true);
         if(this.name === this.logName && this.logOn)
           console.log(this.name, 'MissionActions', 7);
         return;

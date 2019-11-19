@@ -52,6 +52,7 @@ interface TravelState {
 
 interface Creep {
   travelTo(destination: HasPos|RoomPosition, ops?: TravelToOptions): number;
+  pushyTravelTo(destination: HasPos|RoomPosition, ops?: TravelToOptions);
   partCount(partType: string): number;
 }
 

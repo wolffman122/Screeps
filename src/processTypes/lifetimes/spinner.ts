@@ -73,6 +73,35 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       if(this.logging && creep.name === this.logName)
         console.log(this.name, storage, storage.id);
 
+      // Special mining to make bars
+      if(creep.room.memory.specialMining)
+      {
+        if(creep.name === 'em-s-E45S48-22313907')
+              console.log(this.name, '!!!!!!!!!!!!!!!!!!');
+        if(mineral.mineralType === RESOURCE_CATALYST && storage.store.getUsedCapacity(RESOURCE_CATALYST) > 100000
+          && factory?.store.getFreeCapacity() >= 600)
+          {
+            if(creep.name === 'em-s-E45S48-22313907')
+              console.log(this.name, '??????????????');
+            let numberOfBars = factory.store.getUsedCapacity(RESOURCE_CATALYST) / 500;
+            if(factory.store.getUsedCapacity(RESOURCE_ENERGY) < (numberOfBars * 200))
+            {
+              if(creep.name === 'em-s-E45S48-22313907')
+                console.log(this.name, 'Getting energy for bars');
+              creep.withdraw(storage, RESOURCE_ENERGY)
+              creep.memory.target = factory.id;
+              return;
+            }
+
+            let amount = (storage.store.getUsedCapacity(RESOURCE_CATALYST) - 100000 > creep.store.getCapacity()) ? creep.store.getCapacity() : (storage.store.getUsedCapacity(RESOURCE_CATALYST) - 100000);
+            if(creep.name === 'em-s-E45S48-22313907')
+              console.log(this.name, 'Moving X for bars !!!!!!!!!!!!!!', amount);
+            creep.withdraw(storage, RESOURCE_CATALYST, amount)
+            creep.memory.target = factory.id;
+            return;
+          }
+      }
+
       // Full storage
       if(storage.store.getUsedCapacity() >= storage.store.getCapacity() * .99)
       {
@@ -106,6 +135,14 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         }
         creep.memory.target = link.id;
         creep.withdraw(link, RESOURCE_ENERGY);
+        return;
+      }
+
+      if(factory?.store.getUsedCapacity(RESOURCE_PURIFIER) > 0
+        && factory?.store.getUsedCapacity(RESOURCE_PURIFIER) < terminal.store.getFreeCapacity())
+      {
+        creep.withdraw(factory, RESOURCE_PURIFIER);
+        creep.memory.target = storage.id;
         return;
       }
 
@@ -269,7 +306,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         else
           creep.transfer(storage, RESOURCE_ENERGY);
       }
-      else if(creep.room.name === 'E45S53' && target instanceof StructureFactory)
+      else if(target instanceof StructureFactory)
       {
         creep.transferEverything(target);
       }
@@ -278,6 +315,13 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
     if(factory?.store.getUsedCapacity(RESOURCE_ENERGY) > 600 && factory.cooldown === 0)
     {
       factory.produce(RESOURCE_BATTERY);
+    }
+
+    if(factory?.store.getUsedCapacity(RESOURCE_CATALYST) >= 500
+    && factory?.store.getUsedCapacity(RESOURCE_ENERGY) >= 200
+    && factory.cooldown === 0)
+    {
+      factory.produce(RESOURCE_PURIFIER);
     }
   }
 }

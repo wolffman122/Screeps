@@ -11,40 +11,40 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
   {
     let creep = this.getCreep();
 
-    let flag = Game.flags[this.metaData.flagName];
-    let spawnName = flag.name.split('-')[0];
-    if(!flag)
-    {
-      this.completed = true;
-      return;
-    }
+    const room = Game.rooms[this.metaData.remoteName];
+    const  spawnName = this.metaData.spawnRoom;
 
     if(!creep)
     {
       return;
     }
 
-    let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
+    let fleeFlag = Game.flags['RemoteFlee-'+ this.metaData.spawnRoom];
 
     // Setup for road complete
-    if(flag.memory.roadComplete === undefined)
-      flag.memory.roadComplete = 0;
+    if(room.memory.roadComplete === undefined)
+      room.memory.roadComplete = 0;
 
     if(Game.time % 10 === 5 && creep.room.name  !== spawnName)
     {
       let enemies = creep.room!.find(FIND_HOSTILE_CREEPS);
 
-      enemies = _.filter(enemies, (e: Creep)=> {
-        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
-      });
+        enemies = _.filter(enemies, (e: Creep)=> {
+          return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+        });
+
+      if(enemies.length)
+        room.memory.enemies = true;
+      else
+        room.memory.enemies = false;
     }
 
-    if(flag.memory.enemies)
+    if(room.memory.enemies)
     {
       if(_.sum(creep.carry) > 0)
       {
         let storage = Game.rooms[spawnName].storage;
-        if(storage)
+        if(storage?.my)
         {
           if(!creep.pos.inRangeTo(storage, 1))
           {
@@ -88,13 +88,12 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     {
       if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
       {
-        const sources = this.kernel.data.roomData[flag.pos.roomName].sources;
+        const sources = this.kernel.data.roomData[room.name].sources;
         if(!creep.pos.inRangeTo(sourceContainer, 1) && _.sum(sourceContainer.store) > creep.carryCapacity * .5)
         {
-          if(creep.room.name === flag.room!.name)
+          if(creep.room.name === room?.name)
           {
-
-            if(flag.memory.roadComplete < sources.length)
+            if(room.memory.roadComplete < sources.length)
             {
               creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
             }
@@ -106,8 +105,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         else
         {
           //console.log(this.name, 'Sitting');
-          if(flag.memory.roadComplete < sources.length)
-            flag.memory.roadComplete++;
+          if(room.memory.roadComplete < sources.length)
+            room.memory.roadComplete++;
         }
 
         let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
@@ -122,27 +121,15 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
           creep.pickup(resource[0]);
           return;
-          /*creep.pickup(resource[0]);
-
-          let remainingRoom = creep.carryCapacity - resource[0].amount
-
-          if(sourceContainer.store.energy > remainingRoom)
-          {
-            creep.withdraw(sourceContainer, RESOURCE_ENERGY)
-          }
-          else
-          {
-            this.suspend = 10;
-          }*/
         }
         else if(sourceContainer.store.energy > creep.carryCapacity)
         {
           creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           return;
         }
-        else if(flag.room.storage && _.sum(flag.room.storage.store) > 0)
+        else if(room.storage?.store.getUsedCapacity() > 0)
         {
-          let storage = flag.room.storage;
+          let storage = room.storage;
           if(creep.pos.isNearTo(storage))
           {
             creep.withdrawEverything(storage);
@@ -295,7 +282,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       else
       {
         // creep is filled
-        if(Game.rooms[this.metaData.spawnRoom].storage)
+        if(Game.rooms[this.metaData.spawnRoom].storage.my)
         {
           let target = Game.rooms[this.metaData.spawnRoom].storage;
 

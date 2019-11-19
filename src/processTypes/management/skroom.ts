@@ -124,14 +124,12 @@ export class skRoomManagementProcess extends Process
       this.coreSearching(centerFlag);
 
       let coreInSk = false;
-      if(this.metaData.invaderCorePresent)
+      if(this.metaData.coreInfo?.invaderCorePresent)
       {
-        if(this.messages.coreFlagName)
-        {
-          let testRoomName = this.metaData.coreFlagName.split('-')[0];
-          if(this.metaData.skRoomName === testRoomName)
-            coreInSk = true;
-        }
+
+        let testRoomName = this.metaData.coreInfo.coreFlagName.split('-')[0];
+        if(this.metaData.skRoomName === testRoomName)
+          coreInSk = true;
       }
 
       if(this.skFlag.room.memory.skSourceRoom === undefined)
@@ -1844,84 +1842,62 @@ export class skRoomManagementProcess extends Process
           let roomNames = this.findSkRooms(this.metaData.roomName);
 
           let index = this.metaData.scanIndex++;
-          const flag = Game.flags[this.metaData.coreFlagName];
 
-          if(Game.time === 21587255)
-            this.metaData.invaderCorePresent = false;
-
-          console.log(this.name, this.metaData.coreFlagName, this.metaData.invaderCorePresent);
-
-          if(flag)
+          console.log(this.name, 'Core Info present', this.metaData.coreInfo)
+          if(this.metaData.coreInfo)
           {
-            // Setup
-            let createTime = +flag.name.split('-')[2];
-            let coreRoomName = flag.name.split('-')[0];
-            if(createTime + 1 === Game.time)
-            {
-              flag.memory.invaderCoresPresent = true;
-              flag.memory.coreLevel = this.metaData.coreLevel;
-              flag.memory.coreId = this.metaData.coreId;
-              flag.memory.coreSkFoundRoom = centerFlag.room.name;
-              const retPath =  Traveler.findTravelPath(this.skFlag, flag);
-              if(!retPath.incomplete)
-                flag.memory.coreDistance = retPath.path.length;
+            const flag = Game.flags[this.metaData.coreInfo?.coreFlagName];
 
-              const ret = observer.observeRoom(coreRoomName);
-              return;
-            }
-            else if(createTime + 2 === Game.time)
+            if(Game.time === 21587255)
+              this.metaData.coreInfo.invaderCorePresent = false;
+
+            console.log(this.name, this.metaData.coreInfo?.coreFlagName, this.metaData.coreInfo.invaderCorePresent);
+
+
+            // Setup flag with data.
+            if(flag)
             {
-              const room = Game.rooms[coreRoomName];
-              const core = room.find(FIND_HOSTILE_STRUCTURES, {filter: s=> s.structureType === STRUCTURE_INVADER_CORE})[0] as StructureInvaderCore;
-              if(core)
+              let createTime = +flag.name.split('-')[2];
+              let coreRoomName = flag.name.split('-')[0];
+              if(this.name === 'skrmp-E36S44')
+                  console.log(this.name, 1, flag.name)
+
+              if(createTime + 1 === Game.time)
               {
-                core.room
-                let ret = flag.setPosition(core);
+                if(this.name === 'skrmp-E36S44')
+                  console.log(this.name, 2)
+
+                flag.memory.coreInfo = this.metaData.coreInfo;
+                const ret = observer.observeRoom(coreRoomName);
+                return;
               }
-              else
+
+              // Destructions
+              if(!flag.memory.coreInfo.invaderCorePresent)
               {
-                console.log(this.name, 'Core was bad');
+                this.metaData.coreInfo = undefined;
+                flag.memory.coreInfo = undefined;
+                flag.remove();
               }
-              //console.log(this.name, 'Time to do stuff !!!!!!!!!!11', this.metaData.coreId);
 
+              let core = Game.getObjectById(flag.memory.coreInfo.coreId);
+              if(core === undefined)
+              {
+                flag.memory.coreInfo.invaderCorePresent = false;
+                return;
+              }
+
+              if(this.name === 'skrmp-E36S44')
+                console.log(this.name, 5)
 
               return;
             }
-            else if(flag.room.name !== coreRoomName)
-            {
-              flag.setPosition(new RoomPosition(25,25, coreRoomName));
-              return;
-            }
-
-            // Destructions
-            if(!flag.memory.invaderCoresPresent)
-            {
-              flag.remove();
-              this.metaData.invaderCorePresent = false;
-              this.metaData.coreFlagName = undefined;
-              this.metaData.coreId = undefined;
-              this.metaData.coreLevel = undefined;
-              this.metaData.invaderCorePresent = undefined;
-            }
-
-            return;
           }
-          /*else
-          {
-            console.log(this.name, 'No flag');
-            this.metaData.invaderCorePresent = false;
 
-            //if(!flag.memory.invaderCoresPresent)
-            {
-              this.metaData.coreFlagName = undefined;
-              this.metaData.coreId = undefined;
-              this.metaData.coreLevel = undefined;
-              this.metaData.invaderCorePresent = false;
-            }
-          }*/
-
-          if(!this.metaData.invaderCorePresent)
+          // Look for cores.
+          if(this.metaData.coreInfo === undefined)
           {
+            console.log(this.name, 'Looking for cores');
             observer.observeRoom(roomNames[index]);
 
             if(index >= roomNames.length - 1)
@@ -1935,23 +1911,24 @@ export class skRoomManagementProcess extends Process
               let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
               if(invaderCores.length)
               {
+                console.log(this.name, 'Found some cores');
                 const invaderCore = invaderCores[0];
                 if(invaderCore instanceof StructureInvaderCore)
                 {
-                  let lFlag = invaderCore.pos.lookFor("flag");
-                  if(lFlag.length)
-                  {
-                    this.metaData.invaderCorePresent = true;
-                    return;
-                  }
-                  this.metaData.invaderCorePresent = true;
-                  this.metaData.coreId = invaderCore.id;
-                  this.metaData.coreLevel = invaderCore.level;
-                  this.metaData.scanIndex = 0;
-                  this.metaData.coreFlagName = scanRoom.name + '-Core-' + Game.time;
-                  const ret = centerFlag.pos.createFlag(this.metaData.coreFlagName, COLOR_PURPLE, COLOR_YELLOW);
-                  console.log(this.name, 'Found Core', this.metaData.coreFlagName, ret);
+                  console.log(this.name, 'Setting up some core info');
+                  let info: CoreInfo = {
+                    invaderCorePresent: true,
+                    coreFlagName: scanRoom.name + '-Core-' + Game.time,
+                    coreId: invaderCore.id,
+                    coreLevel: invaderCore.level,
+                    coreLocation: invaderCore.pos,
+                  };
 
+                  if(info.coreFlagName === new RoomPosition(25,25, this.metaData.roomName).createFlag(info.coreFlagName, COLOR_PURPLE, COLOR_YELLOW))
+                  {
+                    console.log(this.name, 'Found Core', info.coreFlagName);
+                    this.metaData.coreInfo = info;
+                  }
                 }
               }
             }
@@ -1960,7 +1937,7 @@ export class skRoomManagementProcess extends Process
       }
       catch(error)
       {
-        console.log(this.name, error);
+        console.log(this.name, "Core Searching: ", error);
       }
     }
 

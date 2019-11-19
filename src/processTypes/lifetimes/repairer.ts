@@ -3,6 +3,7 @@ import {Utils, RAMPARTTARGET} from '../../lib/utils'
 import {RepairProcess} from '../creepActions/repair'
 import { HarvestProcess } from '../creepActions/harvest';
 import { LABDISTROCAPACITY } from '../management/lab';
+import { StructureManagementProcess } from 'processTypes/management/structure';
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
   type = 'rlf'
@@ -13,6 +14,8 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     let creep = this.getCreep()
 
     if(!creep){ return }
+
+    let room = Game.rooms[this.metaData.roomName];
 
     if(this.metaData.boosts)
     {
@@ -100,6 +103,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
     }
 
+    //Dump carry before dieing
     if(creep.ticksToLive! < 50 && _.sum(creep.carry) > 0)
     {
       let storage = creep.room.storage;
@@ -121,14 +125,16 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
     }
 
+    // Fill up
     if(_.sum(creep.carry) === 0)
     {
+      creep.memory.target = undefined;
       let target = Utils.withdrawTarget(creep, this)
 
       if (target)
       {
       if(!creep.pos.isNearTo(target))
-        creep.travelTo(target);
+        creep.pushyTravelTo(target);
       else
         creep.withdraw(target, RESOURCE_ENERGY);
 
@@ -163,8 +169,10 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
     }
 
+    // Repair
     if(this.kernel.data.roomData[this.metaData.roomName])
     {
+      // Build walls or ramparts
       let rampartSites = _.filter(this.kernel.data.roomData[this.metaData.roomName].constructionSites, (cs) => {
         return (cs.structureType === STRUCTURE_RAMPART || cs.structureType === STRUCTURE_WALL);
       });
@@ -211,41 +219,49 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
         });
 
+        if(creep.name === 'sm-E45S53-22146643')
+          console.log(this.name, 1, repairTargets.length)
         if(repairTargets.length === 0)
         {
-          let health = Utils.rampartHealth(proc.kernel, proc.metaData.roomName)
-          let ramparts = proc.kernel.data.roomData[proc.metaData.roomName].ramparts;
-          ramparts = _.filter(ramparts, (rt) => { return (rt.hits < health)})
-          if(ramparts.length)
+          if(creep.memory.target)
           {
-            let target = _.min(ramparts, 'hits')
-            if(target)
+            let target = Game.getObjectById(creep.memory.target) as StructureRampart;
+            if(!creep.pos.inRangeTo(target, 3))
             {
-              //let enemies = target.room.find(FIND_HOSTILE_CREEPS);
-              //let inRangeEnemies = []; //target.pos.findInRange(enemies, 4);
-
-              //if(inRangeEnemies.length === 0)
+              creep.travelTo(target, {range: 3});
+            }
+            else
+            {
+              let outcome = creep.repair(target);
+              if(outcome === OK)
+                creep.yieldRoad(target, true);
+            }
+          }
+          else
+          {
+            let health = room.memory.rampartHealth;
+            let ramparts = proc.kernel.data.roomData[proc.metaData.roomName].ramparts;
+            ramparts = _.filter(ramparts, (rt) => { return (rt.hits < health)})
+            if(creep.room.name === 'E45S53')
+              console.log(this.name, 'Health', health, 'Ramparts length', ramparts.length, '!!!!!!!!!!!!!!!!!!!!')
+            if(ramparts.length)
+            {
+              let target = _.min(ramparts, 'hits')
+              if(target)
               {
-                this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
-                  creep: creep.name,
-                  target: target.id
-                });
+                creep.memory.target = target.id;
               }
-              /*else
+            }
+            else
+            {
+              if(room.memory.rampartsUpgrading)
               {
-                if(creep.idleOffRoad(creep.room!.storage!, false) === OK)
-                {
-                  if(creep.name === 'sm-E41S49-11295193')
-                    console.log(this.name, 'First suspend')
-                  else
-                    this.suspend = 10;
-                }
-                return;
-              }*/
+                room.memory.rampartsUpgrading = false;
+                room.memory.rampartsDoneUpgrading = true;
+              }
             }
           }
         }
-
 
         if(repairTargets.length > 0)
         {

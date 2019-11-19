@@ -75,7 +75,9 @@ export class HoldRoomOptManagementProcess extends Process
     if(flag && flag.memory.enemies)
       enemiesPresent = flag.memory.enemies;
 
-    if(!spawnRoom?.memory.pauseUpgrading)
+    let room = Game.rooms[spawnRoomName];
+
+    if(room?.controller?.level < 8)
     {
       let enemies: Creep[]
       if(Game.time % 10 === 7)
@@ -90,7 +92,7 @@ export class HoldRoomOptManagementProcess extends Process
         }
       }
 
-      let coreId: string;
+      /*let coreId: string;
       if(Game.time % 10 === 8)
       {
         let structures = flag.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE });
@@ -101,7 +103,7 @@ export class HoldRoomOptManagementProcess extends Process
           //console.log("Hold room cores present" + flag.pos.roomName);
           coreId = structures[0].id;
         }
-      }
+      }*/
 
       if(!flag)
       {
@@ -115,6 +117,10 @@ export class HoldRoomOptManagementProcess extends Process
         if(enemiesPresent && flag.room)
         {
           enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+          enemies = _.filter(enemies, (e: Creep)=> {
+            return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+          });
+
           defenderCount = enemies.length;
           let bodyMakeup: BodyPartConstant[] = [];
           _.forEach(enemies, (e)=>{
@@ -172,7 +178,7 @@ export class HoldRoomOptManagementProcess extends Process
           }
         }
 
-        if(flag.memory.cores && flag.room)
+        /*if(flag.memory.cores && flag.room)
         {
           this.metaData.coreBuster = Utils.clearDeadCreeps(this.metaData.coreBuster);
           if(this.metaData.coreBuster.length < 1)
@@ -200,7 +206,7 @@ export class HoldRoomOptManagementProcess extends Process
               })
             }
           }
-        }
+        }*/
       }
       catch(err)
       {

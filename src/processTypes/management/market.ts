@@ -12,55 +12,72 @@ export class MarketManagementProcess extends Process
 
   run()
   {
-    _.forEach(Game.rooms, (r) => {
-      if(r.name === 'E48S56' && r.terminal && r.terminal.my)
-      {
-        let terminal = r.terminal;
-        let mineral = r.find(FIND_MINERALS)[0];
+    _.forEach(Game.rooms, (room) => {
 
-        if(mineral && !this.metaData.orderCreated && terminal.store[mineral.mineralType] >= MINERAL_KEEP_AMOUNT)
-        {
-          let orders = Game.market.getAllOrders({type: ORDER_SELL, resourceType: mineral.mineralType});
-          if(orders)
-          {
-            orders = _.filter(orders, (o) => {
-              return (o.amount >= 10000);
-            })
-            _.sortBy(orders, 'price');
-            let price = orders[0].price;
-            if(!this.metaData.orderCreated)
-            {
-              console.log('Mineral problem !!!!!!!!!!!!!1111')
-              Game.market.createOrder(ORDER_SELL, mineral.mineralType, price * 0.95, 10000, r.name) == OK
-              this.metaData.orderCreated = true;
-            }
-          }
-        }
+    })
+  }
+
+  private TakeInventory(room: Room)
+  {
+    let storage = room.storage;
+    let terminal = room.terminal;
+
+    // Full storage and full terminal start checking if we need to dump energy
+    if(storage?.store.getFreeCapacity() < 5000
+      && terminal.store.getFreeCapacity() === 0)
+      {
+        // Increment how long we have been full
+        if(room.memory.fullEnergyCount)
+          room.memory.fullEnergyCount++;
         else
+          room.memory.fullEnergyCount = 1;
+
+        if(room.memory.fullEnergyCount > 5)
         {
-          if(this.metaData.orderId === undefined)
-          {
-            let orders = Game.market.getAllOrders({roomName: r.name});
-            if(orders.length)
-            {
-              console.log('Order created', orders[0].id);
-              this.metaData.orderId = orders[0].id;
-            }
-          }
-          else
-          {
-            console.log('Checking orders');
-            let order = Game.market.getOrderById(this.metaData.orderId)
-            if(order.active === false)
-            {
-              console.log('Order finished');
-              this.metaData.orderId = undefined;
-              this.metaData.orderCreated = false;
-            }
-          }
+          // Time to analyze and dump some energy
         }
       }
+      else
+      {
+        room.memory.fullEnergyCount === undefined;
+      }
+  }
+
+  private AnalyzeMarket(resource: ResourceConstant, roomName: string)
+  {
+    const history = Game.market.getHistory(resource);
+    let fourteenDayPriceAverage = 0;
+    let fourteenDayQuantityAverage = 0;
+    let sevenDayPriceAverage = 0;
+    let sevenDayQuantityAverage = 0;
+    let threeDayPriceAverage = 0;
+    let threeDayQuantityAverage = 0;
+
+    _.forEach(history, (h) => {
+      fourteenDayPriceAverage += h.avgPrice;
+      fourteenDayQuantityAverage += h.volume;
+
+      if(history.indexOf(h) > 6)
+      {
+        sevenDayPriceAverage += h.avgPrice;
+        sevenDayQuantityAverage += h.volume;
+      }
+
+      if(history.indexOf(h) > 10)
+      {
+        threeDayPriceAverage += h.avgPrice;
+        sevenDayQuantityAverage += h.volume;
+      }
+
     });
+
+    fourteenDayPriceAverage /= 14;
+    fourteenDayQuantityAverage /= 14;
+    sevenDayPriceAverage /= 7;
+    sevenDayQuantityAverage /= 7;
+    threeDayPriceAverage /= 3;
+    threeDayQuantityAverage /= 3;
+
   }
 }
 

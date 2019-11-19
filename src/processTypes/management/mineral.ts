@@ -12,7 +12,7 @@ export class  MineralManagementProcess extends Process
 
   run()
   {
-    if(this.name === 'minerals-E45S48')
+    if(this.name === 'minerals-E48S56')
       console.log(this.name, '!!!!!!!!!!!!!!!!!!!!!')
     if(Game.cpu.bucket < 8000)
       return;
@@ -32,14 +32,14 @@ export class  MineralManagementProcess extends Process
     let storage = room.storage;
     let factory = this.roomData().factory;
 
-    if(this.name === 'minerals-E45S48')
+    if(this.name === 'minerals-E48S56')
       console.log(this.name, 1)
     if(!mineral || !container || !extractor)
     {
       this.completed = true;
       return;
     }
-    if(this.name === 'minerals-E45S48')
+    if(this.name === 'minerals-E48S56')
       console.log(this.name, 2)
 
     let ipcMsg: IPCMessage|undefined = this.kernel.getIpc(this.name);
@@ -69,8 +69,8 @@ export class  MineralManagementProcess extends Process
       this.metaData.mining = false;
     }
 
-    if(this.metaData.roomName === 'E36S43')
-      console.log('Mining ', storage.store[mineral.mineralType])
+    if(this.metaData.roomName === 'E48S56')
+      console.log('Mining ', storage.store[mineral.mineralType], room.memory.specialMining)
 
     //if(this.metaData.mining && mineral.mineralAmount > 0)
 
@@ -125,18 +125,31 @@ export class  MineralManagementProcess extends Process
             break;
         }
 
+        if(this.name === 'minerals-E48S56')
+          console.log(this.name,'test', (mineral.mineralType === RESOURCE_CATALYST && mineral.mineralAmount > 0
+            && factory.store.getFreeCapacity() > 0
+            && terminal.store.getUsedCapacity(RESOURCE_PURIFIER) < KEEP_AMOUNT
+            && storage.store.getUsedCapacity(RESOURCE_CATALYST) >= 90000),
+            (storage?.store.getUsedCapacity(mineral.mineralType) < 100000 && !room.memory.specialMining))
     if(storage?.store.getUsedCapacity(mineral.mineralType) < 100000 && !room.memory.specialMining)
     {
+      if(this.name === 'minerals-E48S56')
+      console.log(this.name, 'why')
       if(this.metaData.mining || (mineral.mineralAmount > 0 && (terminal?.store.getUsedCapacity(mineral.mineralType) < KEEP_AMOUNT)))
       {
         this.spawnCreeps(container, mineral)
         return;
       }
     }
-    else if(mineral.mineralType === RESOURCE_CATALYST && mineral.mineralAmount > 0
-      && factory?.store.getUsedCapacity(RESOURCE_PURIFIER) === 0
-      && terminal.store.getUsedCapacity(RESOURCE_PURIFIER) === 0)
+    else if((mineral.mineralType === RESOURCE_CATALYST && mineral.mineralAmount > 0
+      && factory?.store.getFreeCapacity() > 0
+      && terminal.store.getUsedCapacity(RESOURCE_PURIFIER) < KEEP_AMOUNT
+      && storage.store.getUsedCapacity(RESOURCE_CATALYST) > 90000)
+      ||
+      (room.memory.specialMining && mineral.mineralAmount > 0))
     {
+      if(this.name === 'minerals-E48S56')
+        console.log(this.name, 3)
       room.memory.specialMining = true;
       // Making Purifier, also might need to make sure there is room in terminal before doing this.
       this.spawnCreeps(container, mineral);
@@ -146,8 +159,8 @@ export class  MineralManagementProcess extends Process
     else
     {
       room.memory.specialMining = false;
-      if(this.name === 'minerals-E45S48')
-      console.log(this.name, 'Suspend')
+      if(this.name === 'minerals-E48S56')
+        console.log(this.name, 'Suspend')
       this.suspend = 5;
     }
   }

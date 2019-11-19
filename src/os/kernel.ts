@@ -70,7 +70,6 @@ import { BounceAttackerLifetimeProcess } from 'processTypes/lifetimes/bounceAtta
 import { SquadManagementProcess } from 'processTypes/management/squad';
 import { HealerLifetimeProcess } from 'processTypes/lifetimes/healer';
 import { SquadAttackerLifetimeProcess } from 'processTypes/lifetimes/squadAttacker';
-import { ObservationProcess } from 'processTypes/buildingProcesses/observation';
 import { ReportProcess } from 'processTypes/system/reports';
 import { skRoomManagementProcess } from 'processTypes/management/skroom';
 import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
@@ -81,6 +80,10 @@ import { DefendProcess } from 'processTypes/creepActions/defend';
 import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
 import { BusterLifetimeProcess } from 'processTypes/empireActions/lifetimes/buster';
 import { StrongHoldDestructionProcess } from 'processTypes/management/strongHoldDestruction';
+import { ObservationManagementProcess } from 'processTypes/management/observation'
+import { AutomaticHoldManagementProcess } from 'processTypes/management/automaticHold'
+import { StripManagementProcess } from 'processTypes/management/strip'
+import { StripperLifetimeProcess } from 'processTypes/lifetimes/stripper'
 
 
 
@@ -150,7 +153,6 @@ const processTypes = <{[type: string]: any}>{
   'sqm': SquadManagementProcess,
   'heallf': HealerLifetimeProcess,
   'salf': SquadAttackerLifetimeProcess,
-  'op': ObservationProcess,
   'report': ReportProcess,
   'skrmp': skRoomManagementProcess,
   'lh': TowerHealProcess,
@@ -160,6 +162,10 @@ const processTypes = <{[type: string]: any}>{
   'defend': DefendProcess,
   'busterlf': BusterLifetimeProcess,
   'shdp': StrongHoldDestructionProcess, // 35
+  'omp': ObservationManagementProcess,
+  'ahmp': AutomaticHoldManagementProcess,
+  'strip': StripManagementProcess,
+  'stripper': StripperLifetimeProcess
 }
 
 interface KernelData{

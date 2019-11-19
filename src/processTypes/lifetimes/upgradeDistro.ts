@@ -31,7 +31,7 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 
       if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
       {
-        if(creep.room.storage)
+        if(creep.room.storage?.my)
         {
           let storage = creep.room.storage;
 
@@ -45,7 +45,7 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
             return;
           }
         }
-        else if (creep.room.terminal)
+        else if (creep.room.terminal?.my)
         {
           let terminal = creep.room.terminal;
 

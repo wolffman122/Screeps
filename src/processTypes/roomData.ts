@@ -5,10 +5,10 @@ import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
 import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 import {TowerRepairProcess} from './buildingProcesses/towerRepair'
 import { MineralManagementProcess } from 'processTypes/management/mineral';
-import { ObservationProcess } from './buildingProcesses/observation';
 import { skRoomManagementProcess } from './management/skroom';
 import { TowerHealProcess } from './buildingProcesses/towerHeal';
 import { PowerManagementProcess } from './management/power';
+import { ObservationManagementProcess } from './management/observation';
 
 interface RoomDataMeta{
   roomName: string
@@ -76,7 +76,8 @@ export class RoomDataProcess extends Process{
           room.name == 'E52S46' || room.name == 'E42S48' || room.name == 'E38S46' || room.name == 'E36S43' ||
           room.name == 'E35S41' || room.name == 'E48S56' || room.name == 'E41S41' || room.name == 'E55S48' ||
           room.name == 'E58S52')*/
-      if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
+      if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0
+        && this.roomData().extractor)
       {
         this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 40, {
           roomName: room.name
@@ -85,11 +86,11 @@ export class RoomDataProcess extends Process{
 
 
       let observer = this.kernel.data.roomData[room.name].observer
-      if(observer)
+      if(observer && this.metaData.roomName === 'E52S46')
       {
-        this.kernel.addProcessIfNotExist(ObservationProcess, 'op-' + this.metaData.roomName, 18, {
-          roomName: room.name
-        })
+        this.kernel.addProcessIfNotExist(ObservationManagementProcess, 'omp-' + this.metaData.roomName, 33, {
+          roomName: this.metaData.roomName
+        });
       }
     }
 

@@ -15,6 +15,7 @@ import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
 import { RangeAttackManagementProcess } from './management/rangeAttack';
 import { SquadManagementProcess } from './management/squad';
 import { StrongHoldDestructionProcess } from './management/strongHoldDestruction';
+import { StripManagementProcess } from './management/strip';
 
 export class FlagWatcherProcess extends Process
 {
@@ -30,7 +31,10 @@ export class FlagWatcherProcess extends Process
   //  Purple &  Yellow
   strongHoldDestruction(flag: Flag)
   {
-    //this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + flag.name, 35, {flagName: flag.name});
+    console.log('This Flag stuff', flag.name.split('-')[0]);
+
+    if(flag.name.split('-')[0] === 'E45S46')
+      this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + flag.name, 35, {flagName: flag.name});
   }
 
   AttackController(flag: Flag)
@@ -57,9 +61,10 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
   }
 
+  // Red green flag
   remoteHoldOptFlag(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(HoldRoomOptManagementProcess, 'hrmOpt-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
+    //this.kernel.addProcessIfNotExist(HoldRoomOptManagementProcess, 'hrmOpt-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
   }
 
   transferFlag(flag: Flag)
@@ -99,9 +104,11 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(SquadManagementProcess, 'sqm-' + flag.name, 31, {flagName: flag.name});
   }
 
+  // Red & Blue
+  // SpawnRoom-Text-NumberOfStrippers-Boost
   stripRoom(flag: Flag)
   {
-    //this.kernel.addProcessIfNotExist(StripManagementProcess, 'strip-' + flag.name, 30, {flagName: flag.name});
+    this.kernel.addProcessIfNotExist(StripManagementProcess, 'strip-' + flag.name, 30, {flagName: flag.name});
   }
 
   run()

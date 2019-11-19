@@ -14,14 +14,41 @@ export class StripperLifetimeProcess extends LifetimeProcess
 
         if(flag)
         {
-            if(_.sum(creep.carry) === 0 && creep.pos.roomName === flag.pos.roomName)
+            if(creep.pos.roomName !== flag.pos.roomName && creep.store.getUsedCapacity() === 0)
             {
-                creep.travelTo(flag, {range: 10});
+                creep.travelTo(flag);
+                return;
             }
 
-            if(_.sum(creep.carry) === 0)
+            if(creep.store.getFreeCapacity() !== 0)
             {
-                // Find sources to withdraw form.
+                let storage = flag.pos.lookFor(LOOK_STRUCTURES)[0] as StructureStorage;
+                if(storage?.store.getUsedCapacity() > 0)
+                {
+                    if(!creep.pos.isNearTo(storage))
+                        creep.travelTo(storage);
+                    else
+                        creep.withdrawEverything(storage)
+
+                    return;
+                }
+                else
+                {
+                    flag.remove();
+                    return;
+                }
+            }
+
+            if(creep.store.getFreeCapacity() === 0 || creep.pos.roomName === this.metaData.roomName)
+            {
+                let room = Game.rooms[this.metaData.roomName];
+                const storage = room.storage;
+                if(!creep.pos.isNearTo(storage))
+                    creep.travelTo(storage);
+                else
+                    creep.transferEverything(storage);
+
+                return;
             }
         }
     }

@@ -7,14 +7,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
   run()
   {
     let creep = this.getCreep();
-    let flag = Game.flags[this.metaData.flagName];
-    let spawnRoom = this.metaData.flagName.split('-')[0];
-
-    if(!flag)
-    {
-      this.completed = true;
-      return;
-    }
+    const room = Game.rooms[this.metaData.remoteName];
 
     if(!creep)
     {
@@ -24,9 +17,9 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
     if(Game.time % 10 === 0)
     {
 
-      if(flag.room)
+      if(room)
       {
-        let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
+        let enemies = room!.find(FIND_HOSTILE_CREEPS);
 
         enemies = _.filter(enemies, (e: Creep)=> {
           return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
@@ -34,19 +27,19 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
 
         if(enemies.length > 0)
         {
-          
+
         }
       }
     }
 
-    if(flag.memory.enemies)
+    if(room.memory.enemies)
     {
-      let fleeFlag = Game.flags['RemoteFlee-'+spawnRoom];
+      let fleeFlag = Game.flags['RemoteFlee-'+ this.metaData.spawnRoomName];
       if(fleeFlag)
       {
         if(_.sum(creep.carry) > 0)
         {
-          let storage = Game.rooms[spawnRoom].storage;
+          let storage = Game.rooms[this.metaData.spawnRoomName].storage;
           if(storage)
           {
             if(!creep.pos.inRangeTo(storage, 1))
@@ -80,7 +73,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(flag.memory.enemies === false)
+    if(!room.memory.enemies)
     {
       let source = <Source>Game.getObjectById(this.metaData.source);
 
@@ -91,7 +84,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
 
           let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
 
-          if(!creep.pos.inRangeTo(container, 0) && !flag.memory.enemies)
+          if(!creep.pos.inRangeTo(container, 0) && !room.memory.enemies)
           {
             creep.travelTo(container);
           }

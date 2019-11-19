@@ -62,7 +62,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
                 return;
             }
 
-            creep.travelTo(storage, {range: 1});
+            creep.pushyTravelTo(storage, {range: 1});
             return;
         }
 
@@ -95,7 +95,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
             if(!creep.pos.inRangeTo(target, 5))
             {
-              creep.travelTo(target);
+              creep.pushyTravelTo(target);
               return;
             }
             creep.pickup(target);
@@ -140,7 +140,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
               return;
             }
 
-            creep.travelTo(creep.room.terminal, {range: 1});
+            creep.pushyTravelTo(creep.room.terminal, {range: 1});
             return;
           }
         }
@@ -155,7 +155,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
               return;
             }
 
-            creep.travelTo(creep.room.terminal, {range: 1});
+            creep.pushyTravelTo(creep.room.terminal, {range: 1});
             return;
           }
         }
@@ -186,7 +186,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
               return;
             }
 
-            creep.travelTo(creep.room.terminal, {range: 1});
+            creep.pushyTravelTo(creep.room.terminal, {range: 1});
             return;
           }
         }
@@ -218,7 +218,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
                   return;
               }
 
-              creep.travelTo(storage, {range: 1});
+              creep.pushyTravelTo(storage, {range: 1});
               return;
             }
           }
@@ -262,7 +262,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
       else
       {
-        creep.travelTo(creep.room.terminal);
+        creep.pushyTravelTo(creep.room.terminal);
       }
       return;
     }
@@ -276,7 +276,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         return;
       }
 
-      creep.travelTo(storage);
+      creep.pushyTravelTo(storage);
       return;
 
     }
@@ -334,7 +334,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     if(target){
       if(!creep.pos.inRangeTo(target, 1))
       {
-        creep.travelTo(target);
+        creep.pushyTravelTo(target);
         return;
       }
 
@@ -366,7 +366,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
         if(!creep.pos.inRangeTo(target, 1))
         {
-            creep.travelTo(target);
+            creep.pushyTravelTo(target);
             return;
         }
 

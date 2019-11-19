@@ -8,6 +8,7 @@ import { SpinnerLifetimeProcess } from 'processTypes/lifetimes/spinner';
 import { LinkHarvesterLifetimeProcess } from 'processTypes/lifetimes/linkHarvester';
 import { UpgradeDistroLifetimeProcess } from 'processTypes/lifetimes/upgradeDistro';
 import { DistroLifetimeOptProcess } from '../lifetimes/distroOpt';
+import { AutomaticHoldManagementProcess } from './automaticHold'
 
 export class EnergyManagementProcess extends Process{
   metaData: EnergyManagementMetaData
@@ -254,11 +255,13 @@ export class EnergyManagementProcess extends Process{
         {
           if(room.controller.ticksToDowngrade === 200000)
             room.memory.pauseUpgrading = true;
-          else if(room.controller.ticksToDowngrade < 20000)
+          else if(room.controller.ticksToDowngrade < 154000)
             room.memory.pauseUpgrading = false;
         }
 
-        if(!room.memory.pauseUpgrading)
+        room.memory.pauseUpgrading = true;
+
+        if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
           let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
 
@@ -271,8 +274,8 @@ export class EnergyManagementProcess extends Process{
           let upgraders = 0;
           switch(this.metaData.roomName)
           {
-            case 'E32S44':
-              upgraders = 2;
+            case 'E44S42':
+              upgraders = 1;
               break;
             default:
               upgraders = 1;
@@ -283,6 +286,8 @@ export class EnergyManagementProcess extends Process{
           {
             upgraders = 1;
           }
+          if(this.name === 'em-E44S42')
+            console.log(this.name, count, seige, 'WTF WTF WTF WTF')
 
           if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0 && !seige)
           {
@@ -373,7 +378,7 @@ export class EnergyManagementProcess extends Process{
         }
 
         if(this.metaData.roomName === 'E55S47')
-          console.log(this.name, (this.metaData.upgradeCreeps.length > 0 || this.metaData.pauseUpgrading), '!!!!!!!!!!!!!!!!!')
+          console.log(this.name, (this.metaData.upgradeCreeps.length > 0 || room.memory.pauseUpgrading), '!!!!!!!!!!!!!!!!!')
 
         if(this.kernel.data.roomData[this.metaData.roomName].storageLink
             &&
@@ -474,6 +479,53 @@ export class EnergyManagementProcess extends Process{
           }
         }
       }
+
+      let storage = room.storage;
+      if(storage?.store.getUsedCapacity() > 750000)
+        room.memory.remoteHarvesting = false;
+
+      if(room.memory.surroundingRooms !== undefined
+        && (storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 500000 || room.memory.remoteHarvesting))
+      {
+        if(room.memory.remoteHarvesting === false)
+        {
+          let surroundingRooms = room.memory.surroundingRooms;
+
+          const roomName = _.find(Object.keys(surroundingRooms), (sr) => {
+            if(!surroundingRooms[sr].harvesting && surroundingRooms[sr].sourceNumbers == 2)
+            {
+              if(Game.map.findExit(room.name, sr) !== ERR_NO_PATH)
+              {
+                return true;
+              }
+            }
+          });
+
+          if(roomName !== undefined)
+          {
+            console.log(this.name, 'Found a room', roomName);
+            surroundingRooms[roomName].harvesting = true;
+            room.memory.surroundingRooms = surroundingRooms;
+            room.memory.remoteHarvesting = true;
+          }
+        }
+
+        if(room.memory.remoteHarvesting)
+        {
+          /*let count = 0;
+          _.forEach(Object.keys(room.memory.surroundingRooms), (sr) => {
+            if(room.memory.surroundingRooms[sr].harvesting)
+              this.kernel.addProcessIfNotExist(AutomaticHoldManagementProcess, 'ahmp-' + sr, 30, {
+                roomName: room.name,
+                remoteName: sr,
+                controllerPos: room.memory.surroundingRooms[sr].controllerPos});
+          });*/
+        }
+
+
+        console.log(this.name, 'Flag should be coming');
+      }
+
     }
     else
     {

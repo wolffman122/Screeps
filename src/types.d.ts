@@ -222,23 +222,18 @@ interface Flag {
 
   interface FlagMemory
   {
-      enemies: boolean;
-      cores?: boolean;
-      invaderCoresPresent: boolean;
-      coreLevel?: number;
-      coreDistance?: number;
-      coreId?: string;
-      coreSkFoundRoom: string;
-      timeEnemies?: number;
-      source: string;
-      droppedResource: boolean;
-      rollCall: number;
-      follower: string;
-      skMineral?: string;
-      centerSKMineral?: string;
-      roadComplete?: number;
-      healer?: string;
-      attacker?: string;
+    enemies: boolean;
+    timeEnemies?: number;
+    source: string;
+    droppedResource: boolean;
+    rollCall: number;
+    follower: string;
+    skMineral?: string;
+    centerSKMineral?: string;
+    roadComplete?: number;
+    healer?: string;
+    attacker?: string;
+    coreInfo?: CoreInfo;
   }
 
   interface RoomMemory
@@ -268,6 +263,18 @@ interface Flag {
     skCostMatrix?: number[];
     miningStopTime?: number;
     pauseUpgrading?: boolean;
+    fullEnergyCount?: number;
+    specialMining?: boolean;
+    surroundingRooms: {
+      [roomName: string]: {
+        sourceNumbers: number
+        controllerPos: RoomPosition
+        harvesting: boolean
+      }
+    };
+    remoteHarvesting?: boolean;
+    enemies?: boolean;
+    roadComplete?: number;
   }
 
   interface SpawnMemory {}
@@ -378,6 +385,30 @@ interface Flag {
     increasing: boolean
   }
 
+  interface AutomaticHoldManagementProcessMetaData
+  {
+    roomName: string
+    holdCreeps: string[]
+    harvestCreeps: {
+      [source: string]: string[]
+    }
+    distroCreeps: {
+      [container: string]: string[]
+    }
+    distroDistance: {
+      [container: string]: number
+    }
+
+    builderCreeps: string[]
+    workerCreeps: string[]
+    defenderCreeps: string[]
+    coreBuster: string[]
+    flagName: string
+    increasing: boolean
+    remoteName: string
+    controllerPos: RoomPosition
+  }
+
   interface HoldHarvesterOptLifetimeProcessMetaData
   {
     flagName: string
@@ -461,7 +492,7 @@ interface Flag {
   interface HoldBuilderLifetimeProcessMetaData
   {
     creep: string
-    flagName: string,
+    remoteName: string,
     site: string
   }
 
@@ -475,8 +506,7 @@ interface Flag {
   interface HolderDefenderLifetimeProcessMetaData
   {
     creep: string,
-    targetRoom: string
-    flagName: string
+    remoteName: string
     spawnRoomName: string
   }
 
@@ -600,7 +630,7 @@ interface Flag {
 
   interface HoldDistroLifetimeProcessMetaData
   {
-    flagName: string,
+    remoteName: string,
     sourceContainer: string
     spawnRoom: string
     roomData: string
@@ -693,6 +723,15 @@ interface Flag {
 
   }
 
+  interface CoreInfo
+  {
+    invaderCorePresent: boolean,
+    coreFlagName?: string,
+    coreId?: string,
+    coreLevel?: number,
+    coreLocation?: RoomPosition,
+  }
+
   interface SKRoomManagementProcessMetaData
   {
     moveFlag: boolean,
@@ -708,10 +747,7 @@ interface Flag {
     scoutName?: string,
     vision: boolean,
     scanIndex: number,
-    invaderCorePresent: boolean,
-    coreFlagName?: string,
-    coreId?: string,
-    coreLevel?: number,
+    coreInfo?: CoreInfo,
     locations: {
       [types: string]: any[]
     },
@@ -737,14 +773,30 @@ interface Flag {
     minerHauler: string[]
   }
 
-  interface ObservationProcessMetaData
+  interface ObservationManagementProcessMetaData
   {
-    roomName: string;
-    scanRooms?: string[];
-    initializeData: boolean;
-    currentBank: BankData;
-    scanIndex: number;
+    roomName: string
+    observingRooms?: string[]
+    scanIndex: number
+    scoredRooms: {
+      [roomName: string]: {
+        sourceNumbers: number
+        controllerPos: RoomPosition
+      }
+    }
   }
+
+interface StripManagementProcessMetaData {
+  roomName: string
+  stripperCreeps: string[]
+  flagName: string
+}
+
+interface StripperLifetimeProcessMetaData {
+  creep: string
+  roomName: string
+  flagName: string
+}
 //// Minerals
 
 

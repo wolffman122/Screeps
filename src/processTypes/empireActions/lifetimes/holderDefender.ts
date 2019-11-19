@@ -7,31 +7,31 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
 
     run()
     {
-        let flag = Game.flags[this.metaData.flagName];
+        const room = Game.rooms[this.metaData.remoteName];
         let creep = this.getCreep();
         let enemies: Creep[];
-        if(flag.room)
-            enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+        if(room)
+        {
+            enemies = room.find(FIND_HOSTILE_CREEPS);
+            enemies = _.filter(enemies, (e: Creep)=> {
+                return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+              });
 
-        if(creep.name === 'hrm-defender-E32S45-21148870')
-            console.log(this.name, 0)
+            if(enemies.length)
+              flag.memory.enemies = true;
+            else
+              flag.memory.enemies = false;
+        }
 
 
-        if(!creep || !flag)
+        if(!creep)
         {
             this.completed = true;
             return;
         }
 
-        //console.log(this.name, 'Defender running');
-
-        if(creep.name === 'hrm-defender-E32S45-21148870')
-            console.log(this.name, 1)
-
-        if(flag.pos.roomName != creep.pos.roomName && !creep.memory.atPlace)
+        if(room.name != creep.pos.roomName && !creep.memory.atPlace)
         {
-            if(creep.name === 'hrm-defender-E32S45-21148870')
-                console.log(this.name, 2, enemies)
             if(enemies && enemies.length)
             {
                 let target = enemies[0];

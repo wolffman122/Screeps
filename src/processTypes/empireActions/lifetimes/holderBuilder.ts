@@ -10,21 +10,20 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
   run()
   {
-    let flag = Game.flags[this.metaData.flagName];
+    let room = Game.rooms[this.metaData.remoteName];
     let creep = this.getCreep();
-    let room = flag.room;
 
-    if(!creep || !flag)
+    if(!creep)
     {
       this.completed = true;
       return;
     }
 
-    if(flag.pos.roomName != creep.pos.roomName)
+    if(room.name != creep.pos.roomName)
     {
       this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
         creep: creep.name,
-        pos: flag.pos,
+        pos: room.controller.pos,
         range: 3
       });
 
@@ -314,7 +313,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
                   creep.travelTo(openSpace);
                   return;
                 }
-                
+
                 missingConatiners[0].room.createConstructionSite(openSpace.x, openSpace.y, STRUCTURE_CONTAINER);
               }
 
