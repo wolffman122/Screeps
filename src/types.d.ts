@@ -730,6 +730,8 @@ interface Flag {
     coreId?: string,
     coreLevel?: number,
     coreLocation?: RoomPosition,
+    skLairPresent: boolean,
+    cleaning: boolean
   }
 
   interface SKRoomManagementProcessMetaData

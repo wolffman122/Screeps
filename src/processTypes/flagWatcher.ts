@@ -32,9 +32,9 @@ export class FlagWatcherProcess extends Process
   strongHoldDestruction(flag: Flag)
   {
     console.log('This Flag stuff', flag.name.split('-')[0]);
-
+    const roomName = flag.name.split('-')[0];
     if(flag.name.split('-')[0] === 'E45S46')
-      this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + flag.name, 35, {flagName: flag.name});
+      this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});
   }
 
   AttackController(flag: Flag)
