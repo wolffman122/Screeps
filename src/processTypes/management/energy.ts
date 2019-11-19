@@ -412,7 +412,7 @@ export class EnergyManagementProcess extends Process{
           }
         }
 
-        if(!room.memory.pauseUpgrading)
+        if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
           if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
           {
