@@ -10,20 +10,21 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
   run()
   {
-    let room = Game.rooms[this.metaData.remoteName];
+    let flag = Game.flags[this.metaData.flagName];
     let creep = this.getCreep();
+    let room = flag.room;
 
-    if(!creep)
+    if(!creep || !flag)
     {
       this.completed = true;
       return;
     }
 
-    if(room.name != creep.pos.roomName)
+    if(flag.pos.roomName != creep.pos.roomName)
     {
       this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
         creep: creep.name,
-        pos: room.controller.pos,
+        pos: flag.pos,
         range: 3
       });
 

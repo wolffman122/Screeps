@@ -7,7 +7,14 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
   run()
   {
     let creep = this.getCreep();
-    const room = Game.rooms[this.metaData.remoteName];
+    let flag = Game.flags[this.metaData.flagName];
+    let spawnRoom = this.metaData.flagName.split('-')[0];
+
+    if(!flag)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(!creep)
     {
@@ -17,9 +24,9 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
     if(Game.time % 10 === 0)
     {
 
-      if(room)
+      if(flag.room)
       {
-        let enemies = room!.find(FIND_HOSTILE_CREEPS);
+        let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
 
         enemies = _.filter(enemies, (e: Creep)=> {
           return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
@@ -32,14 +39,14 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
       }
     }
 
-    if(room.memory.enemies)
+    if(flag.memory.enemies)
     {
-      let fleeFlag = Game.flags['RemoteFlee-'+ this.metaData.spawnRoomName];
+      let fleeFlag = Game.flags['RemoteFlee-'+spawnRoom];
       if(fleeFlag)
       {
         if(_.sum(creep.carry) > 0)
         {
-          let storage = Game.rooms[this.metaData.spawnRoomName].storage;
+          let storage = Game.rooms[spawnRoom].storage;
           if(storage)
           {
             if(!creep.pos.inRangeTo(storage, 1))
@@ -73,7 +80,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(!room.memory.enemies)
+    if(flag.memory.enemies === false)
     {
       let source = <Source>Game.getObjectById(this.metaData.source);
 
@@ -84,7 +91,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
 
           let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
 
-          if(!creep.pos.inRangeTo(container, 0) && !room.memory.enemies)
+          if(!creep.pos.inRangeTo(container, 0) && !flag.memory.enemies)
           {
             creep.travelTo(container);
           }

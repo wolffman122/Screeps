@@ -8,7 +8,7 @@ import { HoldDistroLifetimeProcess } from "processTypes/empireActions/lifetimes/
 
 export class AutomaticHoldManagementProcess extends Process
 {
-  type: 'ahmp';
+  type = 'ahmp';
   metaData: AutomaticHoldManagementProcessMetaData;
 
   ensureMetaData()
@@ -56,8 +56,13 @@ export class AutomaticHoldManagementProcess extends Process
 
   run()
   {
+    console.log(this.name, this.type, '***************************************');
     try
     {
+
+      console.log(this.name, this.type,2, '***************************************');
+
+
       let defenderCount = 0;
       if(Game.cpu.bucket < 2000)
         return;
@@ -65,27 +70,39 @@ export class AutomaticHoldManagementProcess extends Process
       this.ensureMetaData();
       let spawnRoomName = this.metaData.roomName;
       let centerFlag = Game.flags['Center-'+spawnRoomName];
+      let remoteRoom = Game.rooms[this.metaData.remoteName];
 
+      console.log(this.name, spawnRoomName, centerFlag);
+
+      this.completed = true;
+      return;
+      /*
       let enemiesPresent = false;
-      if(flag?.memory.enemies)
-        enemiesPresent = flag.memory.enemies;
+      if(remoteRoom?.memory?.enemies)
+        enemiesPresent = remoteRoom.memory.enemies;
 
+      console.log(this.name, 1)
       let enemies: Creep[]
-      if(Game.time % 10 === 7)
+      if(Game.time % 10 === 7 && remoteRoom)
       {
-        enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+        enemies = remoteRoom.find(FIND_HOSTILE_CREEPS);
+        enemies = _.filter(enemies, (e: Creep)=> {
+          return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+        });
         enemiesPresent = enemies.length ? true : false;
 
-        flag.memory.enemies = enemiesPresent;
+        remoteRoom.memory.enemies = enemiesPresent;
         if(enemiesPresent)
         {
-          //console.log("Hold room enemies present" + flag.pos.roomName);
+          //console.log("Hold room enemies present" + this.metaData.remoteName);
         }
       }
 
-      if(enemiesPresent && flag.room)
+      console.log(this.name, 2)
+
+      if(enemiesPresent && remoteRoom)
       {
-        enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+        enemies = remoteRoom.find(FIND_HOSTILE_CREEPS);
         enemies = _.filter(enemies, (e: Creep)=> {
           return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
         });
@@ -125,7 +142,7 @@ export class AutomaticHoldManagementProcess extends Process
         this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
         if(this.metaData.defenderCreeps.length < defenderCount)
         {
-          let creepName = 'hrm-defender-' + flag.pos.roomName + '-' + Game.time;
+          let creepName = 'hrm-defender-' + this.metaData.remoteName + '-' + Game.time;
           let spawned = Utils.spawn(
             this.kernel,
             spawnRoomName,
@@ -147,6 +164,9 @@ export class AutomaticHoldManagementProcess extends Process
         }
       }
 
+      console.log(this.name, 3)
+
+
       if(centerFlag)
       {
         let room = Game.rooms[this.metaData.remoteName];
@@ -158,7 +178,7 @@ export class AutomaticHoldManagementProcess extends Process
           // No vision in room.
           if(this.metaData.holdCreeps.length < 1)
           {
-            let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+            let creepName = 'hrm-hold-' + this.metaData.remoteName + '-' + Game.time;
             let spawned = Utils.spawn(
               this.kernel,
               spawnRoomName,
@@ -185,7 +205,7 @@ export class AutomaticHoldManagementProcess extends Process
           if(sRoom.controller?.level >= 8
             &&
             (room.controller?.reservation?.ticksToEnd < 1000
-              || room.controller.reservation.username !== 'wolffman122'))
+              || room.controller.reservation?.username !== 'wolffman122'))
           {
             if(this.metaData.holdCreeps.length < 1 && !enemiesPresent)
             {
@@ -195,7 +215,7 @@ export class AutomaticHoldManagementProcess extends Process
                 max = 4;
               }
 
-              let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+              let creepName = 'hrm-hold-' + this.metaData.remoteName + '-' + Game.time;
               let spawned = Utils.spawn(
                 this.kernel,
                 spawnRoomName,
@@ -211,7 +231,7 @@ export class AutomaticHoldManagementProcess extends Process
                 this.metaData.holdCreeps.push(creepName);
                 this.kernel.addProcess(HolderLifetimeProcess, 'holdlf-' + creepName, 20, {
                   creep: creepName,
-                  flagName: this.metaData.flagName
+                  remoteName: this.metaData.remoteName
                 })
               }
             }
@@ -220,7 +240,7 @@ export class AutomaticHoldManagementProcess extends Process
           {
             if(this.metaData.holdCreeps.length < 1)
             {
-              let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
+              let creepName = 'hrm-hold-' + this.metaData.remoteName + '-' + Game.time;
               let spawned = Utils.spawn(
                 this.kernel,
                 spawnRoomName,
@@ -242,17 +262,17 @@ export class AutomaticHoldManagementProcess extends Process
 
           this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
 
-          if(this.roomData())
+          if(this.roomInfo(this.metaData.remoteName))
           {
             // Construction Code
-            if(this.roomData().sourceContainers?.length < this.roomData().sources.length)
+            if(this.roomInfo(this.metaData.remoteName).sourceContainers?.length < this.roomInfo(this.metaData.remoteName).sources.length)
             {
               if(Game.time % 10000 === 100)
                 Game.notify("Problem in room " + this.metaData.roomName + " lost some contianers");
 
-              if(this.metaData.builderCreeps.length < this.roomData().sources.length)
+              if(this.metaData.builderCreeps.length < this.roomInfo(this.metaData.remoteName).sources.length)
               {
-                let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
+                let creepName = 'hrm-build-' + this.metaData.remoteName + '-' + Game.time;
                 let spawned = Utils.spawn(
                   this.kernel,
                   spawnRoomName,
@@ -272,11 +292,11 @@ export class AutomaticHoldManagementProcess extends Process
                 }
               }
             }
-            else if(this.roomData().constructionSites.length > 0)
+            else if(this.roomInfo(this.metaData.remoteName).constructionSites.length > 0)
             {
-              if(this.metaData.builderCreeps.length < this.roomData().sources.length)
+              if(this.metaData.builderCreeps.length < this.roomInfo(this.metaData.remoteName).sources.length)
               {
-                let creepName = 'hrm-build-' + flag.pos.roomName + '-' + Game.time;
+                let creepName = 'hrm-build-' + this.metaData.remoteName + '-' + Game.time;
                 let spawned = Utils.spawn(
                   this.kernel,
                   spawnRoomName,
@@ -297,11 +317,11 @@ export class AutomaticHoldManagementProcess extends Process
               }
             }
 
-            if(this.roomData().sourceContainers.length > 0)
+            if(this.roomInfo(this.metaData.remoteName).sourceContainers.length > 0)
             {
               // Havester code
-              let containers = this.roomData().sourceContainers;
-              let sources = this.roomData().sources;
+              let containers = this.roomInfo(this.metaData.remoteName).sourceContainers;
+              let sources = this.roomInfo(this.metaData.remoteName).sources;
 
               _.forEach(sources, (s) => {
                 if(!this.metaData.harvestCreeps[s.id])
@@ -344,7 +364,7 @@ export class AutomaticHoldManagementProcess extends Process
                 if(count < 1)
                 {
                   //console.log("Need to make some harvesting creeps " + s.id);
-                  let creepName = 'hrm-harvest-' + flag.pos.roomName + '-' + Game.time;
+                  let creepName = 'hrm-harvest-' + this.metaData.remoteName + '-' + Game.time;
                   let spawned = Utils.spawn(
                     this.kernel,
                     spawnRoomName,
@@ -370,7 +390,7 @@ export class AutomaticHoldManagementProcess extends Process
               });
 
               // Hauling code
-              _.forEach(this.roomData().sourceContainers, (sc) => {
+              _.forEach(this.roomInfo(this.metaData.remoteName).sourceContainers, (sc) => {
                 if(!this.metaData.distroCreeps[sc.id])
                     this.metaData.distroCreeps[sc.id] = [];
 
@@ -403,7 +423,7 @@ export class AutomaticHoldManagementProcess extends Process
 
                 if(count < numberDistro)
                 {
-                  let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
+                  let creepName = 'hrm-m-' + this.metaData.remoteName + '-' + Game.time;
                   let spawned = Utils.spawn(
                       this.kernel,
                       spawnRoomName,
@@ -430,7 +450,7 @@ export class AutomaticHoldManagementProcess extends Process
             }
           }
         }
-      }
+      }*/
     }
     catch(error)
     {

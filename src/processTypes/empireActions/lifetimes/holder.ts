@@ -5,8 +5,8 @@ import { HoldProcess } from 'processTypes/empireActions/creepActions/hold';
 interface HolderLifetimeProcessMetaData
 {
   creep: string
-  remoteName: string
-  spawnRoomName: string
+  targetRoom: string
+  flagName: string
 }
 
 export class HolderLifetimeProcess extends LifetimeProcess
@@ -17,27 +17,53 @@ export class HolderLifetimeProcess extends LifetimeProcess
   run()
   {
     let creep = this.getCreep();
-    let room = Game.rooms[this.metaData.remoteName];
+
     if(!creep)
     {
       return;
     }
 
-    if(creep.pos.roomName != room?.name)
+    let flag = Game.flags[this.metaData.flagName];
+
+    if(!flag)
     {
-        const pos = new RoomPosition(25,25, room.name);
+      return;
+    }
+
+    if(creep.pos.roomName != flag.pos.roomName)
+    {
         this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
           creep: creep.name,
-          pos: pos,
+          pos: flag.pos,
           range: 1
         });
 
       return;
     }
 
+    if(creep.pos.roomName == flag.pos.roomName)
+    {
+      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
+      enemies = _.filter(enemies, (e: Creep)=> {
+        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+      });
+      if(enemies.length > 1)
+      {
+        flag.memory.enemies = true;
+        if(flag.memory.timeEnemies === undefined)
+        {
+          flag.memory.timeEnemies = Game.time;
+        }
+      }
+      else if (enemies.length == 0)
+      {
+        flag.memory.enemies = false;
+      }*/
+    }
+
     this.fork(HoldProcess, 'hold-' + creep.name, this.priority - 1, {
       creep: creep.name,
-      remoteName: room.name
+      flagName: flag.name
     });
   }
 }

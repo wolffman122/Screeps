@@ -3,7 +3,7 @@ import { Process } from "os/process";
 interface HoldProcessMetaData
 {
   creep: string
-  remoteName: string
+  flagName: string
 }
 
 export class HoldProcess extends Process
@@ -14,26 +14,65 @@ export class HoldProcess extends Process
   run()
   {
     let creep = Game.creeps[this.metaData.creep];
-    const room = Game.rooms[this.metaData.remoteName]
-    if(!creep)
+    let flag = Game.flags[this.metaData.flagName];
+
+    if(!creep || !flag)
     {
       this.completed = true;
       this.resumeParent();
       return;
     }
 
-    if(!creep.pos.inRangeTo(room.controller, 1))
+    if(Game.time % 10 == 0)
     {
-      creep.travelTo(room.controller)
+      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS)
+      enemies = _.filter(enemies, (e: Creep)=> {
+        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+      });
+      if(enemies.length > 1)
+      {
+        flag.memory.enemies = true;
+        if(flag.memory.timeEnemies === undefined)
+        {
+          flag.memory.timeEnemies = Game.time;
+        }
+      }
+      else if (enemies.length == 0)
+      {
+        flag.memory.enemies = false;
+      }*/
+
+      let dropped = flag.room!.find(FIND_DROPPED_RESOURCES);
+
+      let droppedEnergy = <Resource[]>_.filter(dropped, (d: Resource) => {
+        return (d.resourceType == RESOURCE_ENERGY && d.amount > 500);
+      })
+
+      let totalEnergy = _.sum(droppedEnergy, (de)=> {
+        return de.amount;
+      });
+
+      if(totalEnergy > 1000)
+      {
+        flag.memory.droppedResource = true;
+      }
+
+    }
+
+    if(!creep.pos.inRangeTo(creep.room.controller!, 1))
+    {
+      creep.travelTo(creep.room.controller!)
     }
     else
     {
-      let controller = room.controller;
-
-      if(controller?.reservation?.ticksToEnd > 0 && controller.reservation.username !== 'wolffman122')
-        creep.attackController(controller);
-      else
-        creep.reserveController(controller);
+      let controller = creep.room.controller;
+      if(controller)
+      {
+        if(controller.reservation && controller.reservation.ticksToEnd > 0 && controller.reservation.username !== 'wolffman122')
+          creep.attackController(controller);
+        else
+          creep.reserveController(controller);
+      }
     }
   }
 }

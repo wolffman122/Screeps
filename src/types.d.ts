@@ -492,7 +492,7 @@ interface Flag {
   interface HoldBuilderLifetimeProcessMetaData
   {
     creep: string
-    remoteName: string,
+    flagName: string,
     site: string
   }
 
@@ -507,6 +507,7 @@ interface Flag {
   {
     creep: string,
     remoteName: string
+    flagName: string
     spawnRoomName: string
   }
 
@@ -632,6 +633,7 @@ interface Flag {
   {
     remoteName: string,
     sourceContainer: string
+    flagName: string
     spawnRoom: string
     roomData: string
   }

@@ -86,11 +86,11 @@ export class RoomDataProcess extends Process{
 
 
       let observer = this.kernel.data.roomData[room.name].observer
-      if(observer && this.metaData.roomName === 'E52S46')
+      if(observer && (this.metaData.roomName === 'E52S46' || this.metaData.roomName === 'E42S48'))
       {
-        this.kernel.addProcessIfNotExist(ObservationManagementProcess, 'omp-' + this.metaData.roomName, 33, {
+        /*this.kernel.addProcessIfNotExist(ObservationManagementProcess, 'omp-' + this.metaData.roomName, 33, {
           roomName: this.metaData.roomName
-        });
+        });*/
       }
     }
 

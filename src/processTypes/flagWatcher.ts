@@ -64,7 +64,7 @@ export class FlagWatcherProcess extends Process
   // Red green flag
   remoteHoldOptFlag(flag: Flag)
   {
-    //this.kernel.addProcessIfNotExist(HoldRoomOptManagementProcess, 'hrmOpt-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
+    this.kernel.addProcessIfNotExist(HoldRoomOptManagementProcess, 'hrmOpt-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
   }
 
   transferFlag(flag: Flag)
