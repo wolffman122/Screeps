@@ -78,14 +78,15 @@ export class AllTerminalManagementProcess extends Process
             _.forEach(Object.keys(this.metaData.resources), (r:ResourceConstant) => {
                 let max = _.max(this.metaData.resources[r], 'amount')
                 let min = _.min(this.metaData.resources[r], 'amount')
-                //console.log(this.name, r, max.roomName, max.amount);
-                //console.log(this.name, r, min.roomName, min.amount);
+
 
                 let maxTerminal = <StructureTerminal>Game.getObjectById(max.terminal);
                 let minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
 
+                if(RESOURCE_KEANIUM === r)
+                    console.log(this.name, min.terminal);
                 // Hopefully remove any terminals that don't have room.
-                if(minTerminal.store.getFreeCapacity() < 5000)
+                if(minTerminal?.store.getFreeCapacity() < 5000)
                 {
                     do
                     {
@@ -96,24 +97,22 @@ export class AllTerminalManagementProcess extends Process
                             min = _.min(this.metaData.resources[r], 'amount');
                             minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
                         }
-                    } while (minTerminal.store.getFreeCapacity() < 5000)
+                    } while (minTerminal?.store.getFreeCapacity() < 5000)
                 }
+
+                console.log(this.name, r, max.roomName, max.amount);
+                console.log(this.name, r, min.roomName, min.amount);
 
                 if(r === RESOURCE_ENERGY)
                 {
 
                 }
-                else if(max.amount >= 6000 && min.amount < 5000 && minTerminal.store.getFreeCapacity() > 0)
+                else if(max.amount >= 6000 && min.amount < 5000 && minTerminal?.store.getFreeCapacity() > 0)
                 {
-                    if(minTerminal.store.getFreeCapacity() > 5000)
+                    if(maxTerminal && maxTerminal.cooldown === 0)
                     {
-
-                        if(maxTerminal && maxTerminal.cooldown === 0)
-                        {
-
-                            let ret = maxTerminal.send(r, 5000 - min.amount, min.roomName);
-                            console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
-                        }
+                        let ret = maxTerminal.send(r, 5000 - min.amount, min.roomName);
+                        console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
                     }
                 }
             })

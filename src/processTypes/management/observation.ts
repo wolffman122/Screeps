@@ -24,9 +24,10 @@ export class ObservationManagementProcess extends Process
 
 
       let observingRooms = this.metaData.observingRooms;
-
+      console.log(this.name, observingRooms.length, Object.keys(this.metaData.scoredRooms).length)
       if((this.metaData.scoredRooms === undefined) || (observingRooms.length !== Object.keys(this.metaData.scoredRooms).length))
       {
+        console.log(this.name, 1)
         let index = this.metaData.scanIndex++;
         console.log(this.name, 'Observing a room');
         this.observer.observeRoom(observingRooms[index]);
@@ -38,12 +39,13 @@ export class ObservationManagementProcess extends Process
         let scanRoom = Game.rooms[observingRooms[index > 0 ? index - 1 : observingRooms.length -1]];
         if(scanRoom)
         {
+          console.log(this.name, 2)
           if(this.metaData.scoredRooms === undefined)
           {
             this.metaData.scoredRooms = {};
           }
 
-          console.log(this.name, 1);
+          console.log(this.name, 3);
           if(!this.metaData.scoredRooms[scanRoom.name])
           {
 
@@ -120,8 +122,10 @@ export class ObservationManagementProcess extends Process
   {
     try
     {
+      const controller = room.controller;
       let hostiles = room.find(FIND_HOSTILE_CREEPS);
-      if(hostiles.length === 0)
+      console.log(this.name, !controller?.reservation, controller.reservation?.username === 'wolffman122',  controller.level == 0)
+      if(hostiles.length === 0 && ((!controller?.reservation || controller.reservation?.username === 'wolffman122') || controller.level == 0))
       {
         let numberOfSources = this.roomInfo(room.name).sources.length;
         return numberOfSources;

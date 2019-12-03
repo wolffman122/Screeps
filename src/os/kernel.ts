@@ -163,9 +163,9 @@ const processTypes = <{[type: string]: any}>{
   'busterlf': BusterLifetimeProcess,
   'shdp': StrongHoldDestructionProcess, // 35
   'omp': ObservationManagementProcess,
-  'ahmp': AutomaticHoldManagementProcess,
   'strip': StripManagementProcess,
-  'stripper': StripperLifetimeProcess
+  'stripper': StripperLifetimeProcess,
+  'ahmp': AutomaticHoldManagementProcess
 }
 
 interface KernelData{

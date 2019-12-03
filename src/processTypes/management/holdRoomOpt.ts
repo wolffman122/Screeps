@@ -64,8 +64,18 @@ export class HoldRoomOptManagementProcess extends Process
     if(Game.cpu.bucket < 2000)
       return;
 
+
+
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
+
+    console.log(this.name, this.metaData.flagName, flag);
+    if(!flag)
+    {
+      this.completed = true;
+      return;
+    }
+
     let spawnRoomName = this.metaData.flagName.split('-')[0];
     let centerFlag = Game.flags['Center-'+spawnRoomName];
 
@@ -75,148 +85,103 @@ export class HoldRoomOptManagementProcess extends Process
     if(flag && flag.memory.enemies)
       enemiesPresent = flag.memory.enemies;
 
+      console.log(this.name, 1, flag.memory.enemies, enemiesPresent)
     let room = Game.rooms[spawnRoomName];
 
-    if(room?.controller?.level < 8)
+    let enemies: Creep[]
+    if(Game.time % 10 === 7)
     {
-      let enemies: Creep[]
-      if(Game.time % 10 === 7)
+      enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+      enemiesPresent = enemies.length ? true : false;
+
+      flag.memory.enemies = enemiesPresent;
+      if(enemiesPresent)
+      {
+        //console.log("Hold room enemies present" + flag.pos.roomName);
+      }
+    }
+
+
+
+    let defenderCount = 0;
+    try
+    {
+      if(enemiesPresent && flag.room)
       {
         enemies = flag.room.find(FIND_HOSTILE_CREEPS);
-        enemiesPresent = enemies.length ? true : false;
+        enemies = _.filter(enemies, (e: Creep)=> {
+          return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+        });
 
-        flag.memory.enemies = enemiesPresent;
-        if(enemiesPresent)
+        defenderCount = enemies.length;
+        let bodyMakeup: BodyPartConstant[] = [];
+        _.forEach(enemies, (e)=>{
+          bodyMakeup = e.getBodyParts();
+        });
+
+        let moveCount = 0;
+        for(var i = bodyMakeup.length - 1; i >= 0; i--)
         {
-          //console.log("Hold room enemies present" + flag.pos.roomName);
-        }
-      }
-
-      /*let coreId: string;
-      if(Game.time % 10 === 8)
-      {
-        let structures = flag.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE });
-        flag.memory.cores = structures.length ? true : false;
-
-        if(flag.memory.cores)
-        {
-          //console.log("Hold room cores present" + flag.pos.roomName);
-          coreId = structures[0].id;
-        }
-      }*/
-
-      if(!flag)
-      {
-        this.completed = true;
-        return;
-      }
-
-      let defenderCount = 0;
-      try
-      {
-        if(enemiesPresent && flag.room)
-        {
-          enemies = flag.room.find(FIND_HOSTILE_CREEPS);
-          enemies = _.filter(enemies, (e: Creep)=> {
-            return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
-          });
-
-          defenderCount = enemies.length;
-          let bodyMakeup: BodyPartConstant[] = [];
-          _.forEach(enemies, (e)=>{
-            bodyMakeup = e.getBodyParts();
-          });
-
-          let moveCount = 0;
-          for(var i = bodyMakeup.length - 1; i >= 0; i--)
+          switch(bodyMakeup[i])
           {
-            switch(bodyMakeup[i])
-            {
-              case MOVE:
-                moveCount++;
-                break;
-              case WORK:
-              case RANGED_ATTACK:
-                bodyMakeup[i] = ATTACK;
-                break;
-            }
-          }
-
-          if(moveCount <= bodyMakeup.length / 2)
-          {
-            let add = bodyMakeup.length / 2 - moveCount;
-            add = Math.floor(add);
-            if(add > 0)
-            {
-              for(var j = 0; j < add; j++)
-                bodyMakeup.push(MOVE);
-            }
-          }
-
-          this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
-          if(this.metaData.defenderCreeps.length < defenderCount)
-          {
-            let creepName = 'hrm-defender-' + flag.pos.roomName + '-' + Game.time;
-            let spawned = Utils.spawn(
-              this.kernel,
-              spawnRoomName,
-              'custom',
-              creepName,
-              {body: bodyMakeup.reverse()}
-            );
-
-            if(spawned)
-            {
-
-              this.metaData.defenderCreeps.push(creepName);
-              this.kernel.addProcessIfNotExist(HolderDefenderLifetimeProcess, 'holderDefenderlf-' + creepName, 20, {
-                creep: creepName,
-                flagName: this.metaData.flagName,
-                spawnRoomName: spawnRoomName
-              })
-            }
+            case MOVE:
+              moveCount++;
+              break;
+            case WORK:
+            case RANGED_ATTACK:
+              bodyMakeup[i] = ATTACK;
+              break;
           }
         }
 
-        /*if(flag.memory.cores && flag.room)
+        if(moveCount <= bodyMakeup.length / 2)
         {
-          this.metaData.coreBuster = Utils.clearDeadCreeps(this.metaData.coreBuster);
-          if(this.metaData.coreBuster.length < 1)
+          let add = bodyMakeup.length / 2 - moveCount;
+          add = Math.floor(add);
+          if(add > 0)
           {
-            let creepName = 'hrm-buster-' + flag.pos.roomName + '-' + Game.time;
-            let spawned = Utils.spawn(
-              this.kernel,
-              spawnRoomName,
-              'buster',
-              creepName,
-              {}
-            );
-
-            if(spawned)
-            {
-              let boost = [];
-              boost.push(RESOURCE_CATALYZED_UTRIUM_ACID);
-              this.metaData.coreBuster.push(creepName);
-              this.kernel.addProcessIfNotExist(BusterLifetimeProcess, 'busterlf-' + creepName, 30, {
-                creep: creepName,
-                flagName: this.metaData.flagName,
-                spawnRoom: spawnRoomName,
-                coreId: coreId,
-                boosts: boost
-              })
-            }
+            for(var j = 0; j < add; j++)
+              bodyMakeup.push(MOVE);
           }
-        }*/
+        }
+
+        this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
+        if(this.metaData.defenderCreeps.length < defenderCount)
+        {
+          let creepName = 'hrm-defender-' + flag.pos.roomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            this.kernel,
+            spawnRoomName,
+            'custom',
+            creepName,
+            {body: bodyMakeup.reverse()}
+          );
+
+          if(spawned)
+          {
+
+            this.metaData.defenderCreeps.push(creepName);
+            this.kernel.addProcessIfNotExist(HolderDefenderLifetimeProcess, 'holderDefenderlf-' + creepName, 20, {
+              creep: creepName,
+              flagName: this.metaData.flagName,
+              spawnRoomName: spawnRoomName
+            })
+          }
+        }
       }
-      catch(err)
-      {
-        console.log(this.name, err)
-      }
+
+
+    }
+    catch(err)
+    {
+      console.log(this.name, err)
+    }
 
 
       {
         if(centerFlag)
         {
+          console.log(this.name, 2)
           let room = flag.room;
 
           this.metaData.holdCreeps = Utils.clearDeadCreeps(this.metaData.holdCreeps);
@@ -438,6 +403,8 @@ export class HoldRoomOptManagementProcess extends Process
                 });
 
 
+                if(this.name === 'hrmOpt-E45S42')
+                  console.log(this.name, 1)
                 // Hauling code
                 _.forEach(this.roomData().sourceContainers, (sc) => {
                     if(!this.metaData.distroCreeps[sc.id])
@@ -470,8 +437,13 @@ export class HoldRoomOptManagementProcess extends Process
                       numberDistro = 1;
                     }
 
+                    if(this.name === 'hrmOpt-E45S42')
+                      console.log(this.name, 2, count, numberDistro)
+
                     if(count < numberDistro)
                     {
+                      if(this.name === 'hrmOpt-E45S42')
+                      console.log(this.name, 3)
                       let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
                       let spawned = Utils.spawn(
                           this.kernel,
@@ -481,6 +453,8 @@ export class HoldRoomOptManagementProcess extends Process
                           {}
                       );
 
+                      if(this.name === 'hrmOpt-E45S42')
+                        console.log(this.name, 4, spawned)
                       if(spawned)
                       {
                           this.metaData.distroCreeps[sc.id].push(creepName);
@@ -506,7 +480,7 @@ export class HoldRoomOptManagementProcess extends Process
           this.log('Need to place a center flag in ' + spawnRoomName);
         }
       }
-    }
+
   }
 }
 

@@ -29,20 +29,21 @@ export class TerminalManagementProcess extends Process
         if(r.controller && r.controller.my && r.storage && r.terminal && r.terminal.my)
         {
           let storage = r.storage;
-          if(_.sum(storage.store) < minimum)
+          if(storage.store.getUsedCapacity() < minimum)
           {
             minimum = _.sum(storage.store);
+            console.log(this.name, 1, r.name)
             minimumRoom = r.name;
           }
         }
       })
-
+      console.log(this.name, 1.5)
       //console.log('Final min', minimum, minimumRoom)
 
       let fullRooms = _.filter(Game.rooms, (r) => {
         if(r.controller && r.controller.my && r.terminal && r.storage)
         {
-          return (r.controller.level === 8 && r.storage.store.energy > ENERGY_KEEP_AMOUNT &&
+          return (r.controller.level >= 7 && r.storage.store.energy > ENERGY_KEEP_AMOUNT &&
             r.terminal.cooldown == 0 && r.terminal.store.energy >= 50000);
         }
         else
@@ -57,13 +58,14 @@ export class TerminalManagementProcess extends Process
         _.forEach(fullRooms, (f) =>{
           if(f.storage)
           {
+            console.log(this.name, 2)
             fRooms.push({name: f.name, amount: f.storage.store.energy});
           }
         });
       }
       fRooms = _.sortBy(fRooms, 'amount').reverse();
 
-      console.log(this.name, "Fullest room", fRooms[0].name, fRooms[0].amount);
+      console.log(this.name, "Fullest room", fRooms.length);
 
       let maxFull = _.filter(Game.rooms, (r) => {
         if(r.controller && r.controller.my && r.terminal && r.storage)

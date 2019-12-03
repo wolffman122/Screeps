@@ -259,7 +259,7 @@ export class EnergyManagementProcess extends Process{
             room.memory.pauseUpgrading = false;
         }
 
-        room.memory.pauseUpgrading = true;
+        room.memory.pauseUpgrading = false;
 
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
@@ -274,6 +274,9 @@ export class EnergyManagementProcess extends Process{
           let upgraders = 0;
           switch(this.metaData.roomName)
           {
+            case 'E38S35':
+              upgraders = 2;
+              break;
             case 'E44S42':
               upgraders = 1;
               break;
@@ -428,7 +431,7 @@ export class EnergyManagementProcess extends Process{
 
             switch(this.metaData.roomName)
             {
-              case 'E35S51':
+              case 'E44S42':
                 upgradeDistroAmount = 1;
                 break;
               default:
@@ -480,57 +483,88 @@ export class EnergyManagementProcess extends Process{
         }
       }
 
-      let storage = room.storage;
-      if(storage?.store.getUsedCapacity() > 750000)
-        room.memory.remoteHarvesting = false;
-
-      if(room.memory.surroundingRooms !== undefined
-        && (storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 500000 || room.memory.remoteHarvesting))
-      {
-        if(room.memory.remoteHarvesting === false)
-        {
-          let surroundingRooms = room.memory.surroundingRooms;
-
-          const roomName = _.find(Object.keys(surroundingRooms), (sr) => {
-            if(!surroundingRooms[sr].harvesting && surroundingRooms[sr].sourceNumbers == 2)
-            {
-              if(Game.map.findExit(room.name, sr) !== ERR_NO_PATH)
-              {
-                return true;
-              }
-            }
-          });
-
-          if(roomName !== undefined)
-          {
-            console.log(this.name, 'Found a room', roomName);
-            surroundingRooms[roomName].harvesting = true;
-            room.memory.surroundingRooms = surroundingRooms;
-            room.memory.remoteHarvesting = true;
-          }
-        }
-
-        if(room.memory.remoteHarvesting)
-        {
-          /*let count = 0;
-          _.forEach(Object.keys(room.memory.surroundingRooms), (sr) => {
-            if(room.memory.surroundingRooms[sr].harvesting)
-              this.kernel.addProcessIfNotExist(AutomaticHoldManagementProcess, 'ahmp-' + sr, 30, {
-                roomName: room.name,
-                remoteName: sr,
-                controllerPos: room.memory.surroundingRooms[sr].controllerPos});
-          });*/
-        }
-
-
-        console.log(this.name, 'Flag should be coming');
-      }
-
+      //this.remoteChecking(room)
+      if(room.controller?.level >= 8)
+        this.processPower(room)
     }
     else
     {
       this.completed = true;
       return;
+    }
+  }
+
+  remoteChecking(room: Room)
+  {
+    try
+    {
+        let storage = room.storage;
+        if(storage?.store.getUsedCapacity() > 750000)
+          room.memory.remoteHarvesting = false;
+
+        if(room.memory.surroundingRooms !== undefined
+          && (storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 500000 || room.memory.remoteHarvesting))
+        {
+          if(room.memory.remoteHarvesting === false)
+          {
+            let surroundingRooms = room.memory.surroundingRooms;
+
+            const roomName = _.find(Object.keys(surroundingRooms), (sr) => {
+              if(!surroundingRooms[sr].harvesting && surroundingRooms[sr].sourceNumbers == 2)
+              {
+                if(Game.map.findExit(room.name, sr) !== ERR_NO_PATH)
+                {
+                  return true;
+                }
+              }
+            });
+
+            if(roomName !== undefined)
+            {
+              console.log(this.name, 'Found a room', roomName);
+              surroundingRooms[roomName].harvesting = true;
+              room.memory.surroundingRooms = surroundingRooms;
+              room.memory.remoteHarvesting = true;
+            }
+          }
+
+          if(room.memory.remoteHarvesting)
+          {
+            let count = 0;
+            _.forEach(Object.keys(room.memory.surroundingRooms), (sr) => {
+              if(room.memory.surroundingRooms[sr].harvesting)
+                this.kernel.addProcessIfNotExist(AutomaticHoldManagementProcess, 'ahmp-' + sr, 35, {
+                  roomName: room.name,
+                  remoteName: sr,
+                  controllerPos: room.memory.surroundingRooms[sr].controllerPos});
+            });
+          }
+
+
+          console.log(this.name, 'Flag should be coming');
+        }
+
+    }
+    catch (error)
+    {
+      console.log(this.name, 'remoteChecking', error);
+    }
+  }
+
+  processPower(room: Room)
+  {
+    try
+    {
+      const powerSpawn = this.kernel.data.roomData[this.metaData.roomName].powerSpawn;
+      if(powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) !== 0)
+      {
+        powerSpawn.processPower();
+        return;
+      }
+    }
+    catch (error)
+    {
+      console.log(this.name, 'processPower', error)
     }
   }
 }

@@ -40,6 +40,8 @@ export class StrongHoldDestructionProcess extends Process
       return;
     }
 
+    let cInfo = this.flag.memory.coreInfo
+
     if(this.dismantleDone && this.haulerDone)
     {
       this.flag.memory.coreInfo.invaderCorePresent = false;
@@ -56,11 +58,12 @@ export class StrongHoldDestructionProcess extends Process
 
 
     let coreRoomName = this.flag.name.split('-')[0];
-    observer.observeRoom(coreRoomName);
 
     this.core = Game.getObjectById(this.flag.memory.coreInfo.coreId) as StructureInvaderCore;
+
     if(!this.core)
     {
+      observer.observeRoom(coreRoomName);
       this.core = this.flag.room.findStructures(STRUCTURE_INVADER_CORE)[0] as StructureInvaderCore;
     }
 
@@ -72,12 +75,21 @@ export class StrongHoldDestructionProcess extends Process
         console.log(this.name, 4);
         let numberOfAttackers = 0;
         let numberofHealers = 0;
+        let typeOfAttacker = 'testattacker';
+        let typeOfHealer = 'testhealer';
 
         // MOve to spawning function later
         if(this.core.level <= 2)
         {
           numberOfAttackers = 1;
           numberofHealers = 1;
+        }
+        else if(this.core.level == 4)
+        {
+          numberOfAttackers = 2;
+          numberofHealers = 2;
+          typeOfAttacker = 'SHRange';
+          typeOfHealer = 'SH4Heal';
         }
 
         this.metaData.attackers = Utils.clearDeadCreeps(this.metaData.attackers);
@@ -87,7 +99,7 @@ export class StrongHoldDestructionProcess extends Process
         {
           console.log(this.name, 6);
           let creepName = 'atk-' + this.metaData.roomName + '-' + Game.time;
-          let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'testattacker', creepName,
+          let spawned = Utils.spawn(this.kernel, this.metaData.roomName, typeOfAttacker, creepName,
           {
           });
 
@@ -100,7 +112,7 @@ export class StrongHoldDestructionProcess extends Process
         if(this.metaData.healers.length < numberofHealers)
         {
           let creepName = 'heal-' + this.metaData.roomName + '-' + Game.time;
-          let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'testhealer', creepName,
+          let spawned = Utils.spawn(this.kernel, this.metaData.roomName, typeOfHealer, creepName,
           {
           })
 
@@ -180,69 +192,122 @@ export class StrongHoldDestructionProcess extends Process
     {
       if(!creep.memory.boost)
       {
-        creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
-          RESOURCE_CATALYZED_UTRIUM_ACID], false);
-        return;
-      }
-
-      let healer = Game.creeps[this.metaData.healers[0]];
-      // Check if healer is around
-      if(creep.pos.roomName !== healer.pos.roomName)
-      {
-        let dir = creep.pos.getDirectionTo(healer);
-        dir += 4;
-        if(dir > 8)
+        if(this.core.level <= 2)
         {
-          const temp = dir % 8;
-          dir = temp as DirectionConstant;
+          creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+            RESOURCE_CATALYZED_UTRIUM_ACID], false);
+          return;
         }
-
-        creep.move(dir);
-      }
-      else if(creep.pos.inRangeTo(healer, 1))
-      {
-        if(this.core)
+        else if(this.core.level === 4)
         {
-          const target = this.FindTarget(creep);
+          creep.boostRequest([RESOURCE_CATALYZED_GHODIUM_ALKALIDE, RESOURCE_KEANIUM_ALKALIDE,RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE],false);
+          return;
+        }
+      }
 
-          if(target)
+      if(this.core.level <=2)
+      {
+        let healer = Game.creeps[this.metaData.healers[0]];
+        // Check if healer is around
+        if(creep.pos.roomName !== healer.pos.roomName)
+        {
+          let dir = creep.pos.getDirectionTo(healer);
+          dir += 4;
+          if(dir > 8)
           {
-            creep.memory.target = target.id;
-            console.log(this.name, 'Target', target.id, target.pos)
-            if(!creep.pos.isNearTo(target))
-              creep.travelTo(target);
-            else
-              creep.attack(target);
-
-            return;
+            const temp = dir % 8;
+            dir = temp as DirectionConstant;
           }
-        }
-        else
-        {
-          let hostileStructures = creep.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8);
-          if(hostileStructures.length)
-          {
-            const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 8);
-            if(hostiles.length)
-            {
-              let target = creep.pos.findClosestByRange(hostiles);
-              if(target)
-              {
-                creep.memory.target = target.id;
-                if(creep.pos.isNearTo(target))
-                  creep.attack(target)
-                else
-                  creep.travelTo(target);
 
-                return;
+          creep.move(dir);
+        }
+        else if(creep.pos.inRangeTo(healer, 1))
+        {
+          if(this.core)
+          {
+            const target = this.FindTarget(creep);
+
+            if(target)
+            {
+              creep.memory.target = target.id;
+              console.log(this.name, 'Target', target.id, target.pos)
+              if(!creep.pos.isNearTo(target))
+                creep.travelTo(target);
+              else
+                creep.attack(target);
+
+              return;
+            }
+          }
+          else
+          {
+            let hostileStructures = creep.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8);
+            if(hostileStructures.length)
+            {
+              const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 8);
+              if(hostiles.length)
+              {
+                let target = creep.pos.findClosestByRange(hostiles);
+                if(target)
+                {
+                  creep.memory.target = target.id;
+                  if(creep.pos.isNearTo(target))
+                    creep.attack(target)
+                  else
+                    creep.travelTo(target);
+
+                  return;
+                }
               }
             }
           }
         }
+        else
+        {
+          // healer not around wait
+        }
       }
-      else
+      else if(this.core.level === 4)
       {
-        // healer not around wait
+        if(this.metaData.attackers.length != 2 || this.metaData.healers.length != 2)
+        {
+          let rFlag = Game.flags['RemoteFlee-' + creep.pos.roomName]
+          if(!creep.pos.isNearTo(rFlag))
+          {
+            creep.travelTo(rFlag);
+            return;
+          }
+        }
+
+        let healer: Creep;
+        let follower: Creep;
+        let ultimateLeader = false;
+        let hIndex = 0;
+        let cIndex = this.metaData.attackers.indexOf(creep.name, 0);
+        if(cIndex !== -1)
+        {
+          healer = Game.creeps[this.metaData.healers[cIndex]];
+          if(cIndex == 0)
+          {
+            ultimateLeader = true;
+            if(this.metaData.attackers.length === 2)
+              follower = Game.creeps[this.metaData.attackers[cIndex + 1]];
+          }
+        }
+
+        if(creep.pos.roomName !== healer.pos.roomName)
+        {
+          let dir = creep.pos.getDirectionTo(healer);
+          dir += 4;
+          if(dir > 8)
+          {
+            const temp = dir % 8;
+            dir = temp as DirectionConstant;
+          }
+
+          creep.move(dir);
+        }
+
       }
 
     }

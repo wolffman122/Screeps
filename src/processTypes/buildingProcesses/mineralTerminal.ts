@@ -20,7 +20,9 @@ export const PRODUCT_LIST = [RESOURCE_ZYNTHIUM_HYDRIDE, RESOURCE_LEMERGIUM_OXIDE
                              RESOURCE_GHODIUM,
                              RESOURCE_LEMERGIUM_HYDRIDE,
                              RESOURCE_LEMERGIUM_ACID,
-                             RESOURCE_CATALYZED_GHODIUM_ALKALIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+                             RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
+                             RESOURCE_CATALYZED_GHODIUM_ACID,
+                             RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
                              RESOURCE_CATALYZED_UTRIUM_ACID,
                              RESOURCE_CATALYZED_ZYNTHIUM_ACID,
                              RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE];

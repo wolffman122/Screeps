@@ -184,17 +184,17 @@ Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
 Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean): any
 {
 
-  if(this.name === 'heal-E47S46-21718347')
+  if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 1);
   let totalBoosts = boosts.length;
   let boosted = true;
   for(let boost of boosts)
   {
-    if(this.name === 'heal-E47S46-21718347')
+    if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 2, totalBoosts);
     if(this.memory[boost])
     {
-      if(this.name === 'heal-E47S46-21718347')
+      if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 3);
       totalBoosts--;
       continue;
@@ -204,12 +204,12 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
     if(room)
     {
-      if(this.name === 'heal-E47S46-21718347')
+      if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 4);
       let requests = room.memory.boostRequests;
       if(!requests)
       {
-        if(this.name === 'heal-E47S46-21718347')
+        if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 5);
         this.memory[boost] = true;
         continue;
@@ -217,7 +217,7 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
       if(!requests[boost])
       {
-        if(this.name === 'heal-E47S46-21718347')
+        if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 6);
         requests[boost] = { flagName: undefined, requesterIds: [] };
       }
@@ -226,7 +226,7 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
       let boostedPart = _.find(this.body, {boost: boost});
       if(boostedPart)
       {
-        if(this.name === 'heal-E47S46-21718347')
+        if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 7);
         this.memory[boost] = true;
         requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, this.id);
@@ -236,7 +236,7 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
       boosted = false;
       if(!_.include(requests[boost].requesterIds, this.id))
       {
-        if(this.name === 'heal-E47S46-21718347')
+        if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 8);
         requests[boost].requesterIds.push(this.id);
       }
@@ -247,8 +247,13 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
       let flag = Game.flags[requests[boost].flagName!];
       if(!flag)
       {
-        if(this.name === 'heal-E47S46-21718347')
-        console.log('Defense', 9, boost, requests[boost].flagName.length);
+        if(this.name === 'em-u-E38S39-22618434')
+        {
+          console.log('Defense', 9, boost, requests[boost].flagName, requests[boost].flagName.length);
+          requests[boost].requesterIds = _.pull(requests[boost].requesterIds, this.id);
+          this.memory[boost] = true;
+          return;
+        }
         continue;
       }
 
@@ -256,22 +261,22 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
       if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
       {
-        if(this.name === 'heal-E47S46-21718347')
+        if(this.name === 'em-u-E38S39-22618434')
           console.log('Defense', 10);
 
         if(this.pos.isNearTo(lab))
         {
-          if(this.name === 'heal-E47S46-21718347')
+          if(this.name === 'em-u-E38S39-22618434')
             console.log('Defense', 101);
           let ret = lab.boostCreep(this);
-          if(this.name === 'heal-E47S46-21718347')
+          if(this.name === 'em-u-E38S39-22618434')
             console.log('Defense', 101, ret);
           return OK;
         }
         else
         {
           let ret = this.travelTo(lab);
-          if(this.name === 'heal-E47S46-21718347')
+          if(this.name === 'em-u-E38S39-22618434')
             console.log('Defense', 102, ret, lab.pos, lab.id);
           return ERR_BUSY;
         }
