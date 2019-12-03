@@ -69,7 +69,6 @@ export class HoldRoomOptManagementProcess extends Process
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
 
-    console.log(this.name, this.metaData.flagName, flag);
     if(!flag)
     {
       this.completed = true;
@@ -85,7 +84,6 @@ export class HoldRoomOptManagementProcess extends Process
     if(flag && flag.memory.enemies)
       enemiesPresent = flag.memory.enemies;
 
-      console.log(this.name, 1, flag.memory.enemies, enemiesPresent)
     let room = Game.rooms[spawnRoomName];
 
     let enemies: Creep[]
@@ -181,7 +179,6 @@ export class HoldRoomOptManagementProcess extends Process
       {
         if(centerFlag)
         {
-          console.log(this.name, 2)
           let room = flag.room;
 
           this.metaData.holdCreeps = Utils.clearDeadCreeps(this.metaData.holdCreeps);
@@ -402,9 +399,6 @@ export class HoldRoomOptManagementProcess extends Process
                   });
                 });
 
-
-                if(this.name === 'hrmOpt-E45S42')
-                  console.log(this.name, 1)
                 // Hauling code
                 _.forEach(this.roomData().sourceContainers, (sc) => {
                     if(!this.metaData.distroCreeps[sc.id])
@@ -437,13 +431,9 @@ export class HoldRoomOptManagementProcess extends Process
                       numberDistro = 1;
                     }
 
-                    if(this.name === 'hrmOpt-E45S42')
-                      console.log(this.name, 2, count, numberDistro)
 
                     if(count < numberDistro)
                     {
-                      if(this.name === 'hrmOpt-E45S42')
-                      console.log(this.name, 3)
                       let creepName = 'hrm-m-' + flag.pos.roomName + '-' + Game.time;
                       let spawned = Utils.spawn(
                           this.kernel,
@@ -453,8 +443,6 @@ export class HoldRoomOptManagementProcess extends Process
                           {}
                       );
 
-                      if(this.name === 'hrmOpt-E45S42')
-                        console.log(this.name, 4, spawned)
                       if(spawned)
                       {
                           this.metaData.distroCreeps[sc.id].push(creepName);
