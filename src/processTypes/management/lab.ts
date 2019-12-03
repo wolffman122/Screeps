@@ -42,7 +42,7 @@ export class LabManagementProcess extends Process
   if(Game.cpu.bucket < 8000)
       return;
     this.logOn = false;
-    this.logName = "labm-E55S48";
+    this.logName = "labm-E55S47";
 
     this.room = Game.rooms[this.metaData.roomName];
 
@@ -281,8 +281,8 @@ export class LabManagementProcess extends Process
           console.log(this.name, 'MissionActions', 5)
         if(generalContainer && _.sum(generalContainer.store) > 0)
         {
-          if(this.creep.name === 'lab-d-E38S54-21536636')
-            console.log(this.name, this.creep.pos.isNearTo(generalContainer), _.sum(this.creep.carry) < this.creep.carryCapacity)
+          if(this.name === this.logName && this.logOn)
+            console.log(this.name, 'MissionActions', 5.5, this.creep.pos.isNearTo(generalContainer), _.sum(this.creep.carry) < this.creep.carryCapacity)
           if(this.creep.pos.isNearTo(generalContainer) && _.sum(this.creep.carry) < this.creep.carryCapacity)
             this.creep.withdrawEverything(generalContainer);
           else
@@ -405,6 +405,9 @@ export class LabManagementProcess extends Process
         console.log(this.name, 'FindCommand', 3)
 
       command = this.checkProductLabs();
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 3, command.origin)
+
       if(command) return command;
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'FindCommand', 4)
@@ -459,13 +462,20 @@ export class LabManagementProcess extends Process
         this.metaData.lastCommandTick = Game.time - 10;
       }
 
-      if(this.metaData.command && this.creep.name === 'lab-d-E35S51-21551034')
-        this.metaData.command.origin = '5da324554acf5d00012b52f2'
+      if(this.metaData.command && this.creep.name === 'lab-d-E55S47-22668482')
+
       //if(this.name === this.logName && this.logOn)
        // console.log(this.name, 'AccessCommand', this.metaData.command.origin, this.metaData.lastCommandTick+10)
 
+      if(this.name === this.logName && this.logOn)
+      {
+          console.log(this.name, 'AccessCommand', 1.1, Game.time, this.metaData.lastCommandTick + 10)
+
+      }
+
       if(!this.metaData.command && Game.time > this.metaData.lastCommandTick + 10)
       {
+
         if(_.sum(this.creep.carry) === 0)
         {
           if(this.name === this.logName && this.logOn)
@@ -484,13 +494,24 @@ export class LabManagementProcess extends Process
       }
       else
       {
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'AccessCommand', 3)
+
         if(this.metaData.command)
         {
+          if(this.name === this.logName && this.logOn)
+            console.log(this.name, 'AccessCommand', 4, this.metaData.command.destination)
           let lab = Game.getObjectById(this.metaData.command.destination) as StructureLab;
           if(lab && !lab.isActive())
             this.metaData.command = undefined;
         }
+
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'AccessCommand', 5)
       }
+
+      if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'AccessCommand', 6, this.metaData.command)
 
       return this.metaData.command;
     }
@@ -1053,6 +1074,9 @@ export class LabManagementProcess extends Process
           }
         }
 
+        if(this.name === this.logName && this.logOn)
+            console.log(this.name, 'BoostRequests', 5)
+
         let flag = Game.flags[request.flagName!];
 
         if(request.requesterIds.length === 0 && flag)
@@ -1072,6 +1096,9 @@ export class LabManagementProcess extends Process
           //console.log(this.name, 'Placing pull flag');
           request.flagName = this.placePullFlag(resourceType);
         }
+
+        if(this.name === this.logName && this.logOn)
+            console.log(this.name, 'BoostRequests', 6)
       }
     }
   }
@@ -1083,6 +1110,8 @@ export class LabManagementProcess extends Process
       return existingFlag;
 
     let labs = _.filter(this.productLabs!, (l: StructureLab) => l.pos.lookFor(LOOK_FLAGS).length === 0);
+    if(this.room.controller?.level < 8)
+      labs = _.filter(this.productLabs, (l: StructureLab) => l.isActive());
     if(labs.length === 0)
       return;
 
@@ -1123,7 +1152,7 @@ export class LabManagementProcess extends Process
         continue;
 
         if(this.name === this.logName && this.logOn)
-      console.log(this.name, 'CheckPullFlags', 3)
+          console.log(this.name, 'CheckPullFlags', 3)
 
       let mineralType = flag.name.substring(flag.name.indexOf("_") + 1);
       if(!_.include(PRODUCT_LIST, mineralType))
@@ -1138,11 +1167,17 @@ export class LabManagementProcess extends Process
           }
       if(lab.mineralType && lab.mineralType !== mineralType)
       {
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'CheckPullFlags', 4, mineralType)
+
         // empty wrong mineral type
         return {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType };
       }
       else if(lab.mineralCapacity - lab.mineralAmount >= CARRY_CAPACITY && this.terminal!.store[mineralType] >= CARRY_CAPACITY)
       {
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'CheckPullFlags', 5, mineralType)
+
         // bring mineral to lab when amount is below carry capacity
         return { origin: this.terminal!.id, destination: lab.id, resourceType: mineralType};
       }
