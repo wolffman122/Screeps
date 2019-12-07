@@ -1836,6 +1836,7 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
+
         if(this.roomData().observer)
         {
           let observer = this.roomData().observer;
@@ -1858,7 +1859,7 @@ export class skRoomManagementProcess extends Process
             {
               let createTime = +flag.name.split('-')[2];
               let coreRoomName = flag.name.split('-')[0];
-              if(this.name === 'skrmp-E36S44')
+              if(this.name === 'skrmp-E55S46')
                   console.log(this.name, 1, flag.name)
 
               if(createTime + 1 === Game.time)
@@ -1871,8 +1872,14 @@ export class skRoomManagementProcess extends Process
                 return;
               }
 
+              if(this.metaData.coreInfo?.coreFlagName === 'E56S44-Core-22640573')
+              {
+                this.metaData.coreInfo = undefined; 
+                flag.memory.coreInfo = undefined;
+                return;
+              }
               // Destructions
-              if(!flag.memory.coreInfo.invaderCorePresent)
+              if(flag.memory.coreInfo.done)
               {
                 this.metaData.coreInfo = undefined;
                 flag.memory.coreInfo = undefined;
@@ -1934,7 +1941,8 @@ export class skRoomManagementProcess extends Process
                     coreLevel: invaderCore.level,
                     coreLocation: invaderCore.pos,
                     skLairPresent: (lairs.length ? true : false),
-                    cleaning: false
+                    cleaning: false,
+                    done: false
                   };
 
                   if(info.coreFlagName === new RoomPosition(25,25, this.metaData.roomName).createFlag(info.coreFlagName, COLOR_PURPLE, COLOR_YELLOW))

@@ -78,13 +78,13 @@ export class HoldRoomOptManagementProcess extends Process
     let spawnRoomName = this.metaData.flagName.split('-')[0];
     let centerFlag = Game.flags['Center-'+spawnRoomName];
 
-    let spawnRoom = Game.rooms[spawnRoomName];
+    if(this.metaData.roomName === undefined)
+      this.metaData.roomName= spawnRoomName;
 
     let enemiesPresent = false;
     if(flag && flag.memory.enemies)
       enemiesPresent = flag.memory.enemies;
 
-    let room = Game.rooms[spawnRoomName];
 
     let enemies: Creep[]
     if(Game.time % 10 === 7)
@@ -99,7 +99,18 @@ export class HoldRoomOptManagementProcess extends Process
       }
     }
 
+    let coreId: string;
+    if(Game.time % 10 === 8 && flag.room)
+    {
+      let structures = flag.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE });
+      flag.memory.cores = structures.length ? true : false;
 
+      if(flag.memory.cores)
+      {
+        //console.log("Hold room cores present" + flag.pos.roomName);
+        coreId = structures[0].id;
+      }
+    }
 
     let defenderCount = 0;
     try
@@ -168,6 +179,35 @@ export class HoldRoomOptManagementProcess extends Process
         }
       }
 
+      if(flag.memory.cores && flag.room)
+        {
+          this.metaData.coreBuster = Utils.clearDeadCreeps(this.metaData.coreBuster);
+          if(this.metaData.coreBuster.length < 1)
+          {
+            let creepName = 'hrm-buster-' + flag.pos.roomName + '-' + Game.time;
+            let spawned = Utils.spawn(
+              this.kernel,
+              spawnRoomName,
+              'buster',
+              creepName,
+              {}
+            );
+            if(spawned)
+            {
+              let boost = [];
+              boost.push(RESOURCE_CATALYZED_UTRIUM_ACID);
+              this.metaData.coreBuster.push(creepName);
+              this.kernel.addProcessIfNotExist(BusterLifetimeProcess, 'busterlf-' + creepName, 30, {
+                creep: creepName,
+                flagName: this.metaData.flagName,
+                spawnRoom: spawnRoomName,
+                coreId: coreId,
+                boosts: boost
+              })
+            }
+          }
+        }
+
 
     }
     catch(err)
@@ -175,7 +215,7 @@ export class HoldRoomOptManagementProcess extends Process
       console.log(this.name, err)
     }
 
-
+      if(this.kernel.data.roomData[spawnRoomName].containers.length >= 3)
       {
         if(centerFlag)
         {

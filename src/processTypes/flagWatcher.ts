@@ -16,12 +16,22 @@ import { RangeAttackManagementProcess } from './management/rangeAttack';
 import { SquadManagementProcess } from './management/squad';
 import { StrongHoldDestructionProcess } from './management/strongHoldDestruction';
 import { StripManagementProcess } from './management/strip';
+import { Utils } from 'lib/utils';
+import { TestProcessManagement } from './management/test';
 
 export class FlagWatcherProcess extends Process
 {
   type='flagWatcher';
-
+  metaData: FlagWatcherProcessMetaData
   //  Purple & Purpel
+
+  ensureMetaData()
+  {
+    if(this.metaData.skFlagCount === undefined)
+    {
+      this.metaData.skFlagCount = {};
+    }
+  }
 
   remoteDismantleFlag(flag: Flag)
   {
@@ -31,10 +41,13 @@ export class FlagWatcherProcess extends Process
   //  Purple &  Yellow
   strongHoldDestruction(flag: Flag)
   {
-    /*console.log('This Flag stuff', flag.name.split('-')[0]);
+    console.log('This Flag stuff', flag.name.split('-')[0]);
     const roomName = flag.name.split('-')[0];
-    if(flag.name.split('-')[0] === 'E45S46')
-      this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});*/
+    if(flag.name.split('-')[0] === 'E46S45')
+    {
+      console.log('Should be starting destruction');
+      this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});
+    }
   }
 
   AttackController(flag: Flag)
@@ -111,8 +124,16 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(StripManagementProcess, 'strip-' + flag.name, 30, {flagName: flag.name});
   }
 
+  // Green
+  TestProcess(flag: Flag)
+  {
+    //this.kernel.addProcessIfNotExist(TestProcessManagement, 'test-' + flag.name, 40, {roomName: flag.pos.roomName, flagName: flag.name});
+  }
+
   run()
   {
+    this.ensureMetaData();
+
     this.completed = true;
     let proc = this;
 
@@ -185,6 +206,9 @@ export class FlagWatcherProcess extends Process
               proc.AttackController(flag);
               break;
           }
+          break;
+        case COLOR_GREEN:
+          proc.TestProcess(flag);
           break;
       }
     })

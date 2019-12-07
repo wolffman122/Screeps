@@ -5,6 +5,7 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
   type = 'hlf'
 
   run(){
+
     let creep = this.getCreep()
 
     if(!creep){ return }

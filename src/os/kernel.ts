@@ -84,6 +84,7 @@ import { ObservationManagementProcess } from 'processTypes/management/observatio
 import { AutomaticHoldManagementProcess } from 'processTypes/management/automaticHold'
 import { StripManagementProcess } from 'processTypes/management/strip'
 import { StripperLifetimeProcess } from 'processTypes/lifetimes/stripper'
+import { TestProcessManagement } from 'processTypes/management/test'
 
 
 
@@ -165,7 +166,8 @@ const processTypes = <{[type: string]: any}>{
   'omp': ObservationManagementProcess,
   'strip': StripManagementProcess,
   'stripper': StripperLifetimeProcess,
-  'ahmp': AutomaticHoldManagementProcess
+  'ahmp': AutomaticHoldManagementProcess,
+  'test':  TestProcessManagement, // 40
 }
 
 interface KernelData{
@@ -243,6 +245,17 @@ export class Kernel{
     let kernel = this
 
     _.forEach(Memory.wolffOS.processTable, function(entry){
+      // Old process clean up code
+      //
+      //
+      // let time = +entry.name.split('-')[3];
+      // if(time < 22000000)
+      // {
+      //   console.log('Problem old processes', entry.name, entry.type);
+      //   if(entry.type  === 'lhlf' || entry.type  === 'hlf')
+      //     return;
+      // }
+
       if(processTypes[entry.type]){
         //kernel.processTable.push(new processTypes[entry.type](entry, kernel))
         kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel)

@@ -234,6 +234,7 @@ interface Flag {
     healer?: string;
     attacker?: string;
     coreInfo?: CoreInfo;
+    cores?: boolean;
   }
 
   interface RoomMemory
@@ -440,12 +441,15 @@ interface Flag {
 
   interface StrongHoldDestructionProcessMetaData
   {
-    roomName: string
-    flagName: string
+    vision: boolean,
+    roomName: string,
+    flagName: string,
     attackers: string[]
     healers: string[],
     dismantlers: string[],
     haulers: string[],
+    dismantleDone: boolean,
+    haulerDone: boolean,
   }
 
   interface DismantleMetaData
@@ -733,7 +737,8 @@ interface Flag {
     coreLevel?: number,
     coreLocation?: RoomPosition,
     skLairPresent: boolean,
-    cleaning: boolean
+    cleaning: boolean,
+    done: boolean,
   }
 
   interface SKRoomManagementProcessMetaData
@@ -799,6 +804,17 @@ interface StripManagementProcessMetaData {
 interface StripperLifetimeProcessMetaData {
   creep: string
   roomName: string
+  flagName: string
+}
+
+interface FlagWatcherProcessMetaData {
+  skFlagCount?: {[roomName: string]: number};
+}
+
+interface TestProcessManagementMetaData {
+  roomName: string
+  leaders: string[]
+  followers: string[]
   flagName: string
 }
 //// Minerals
