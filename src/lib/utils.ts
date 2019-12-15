@@ -21,7 +21,7 @@ export const Utils = {
     })
   },
 
-  creepPreSpawnCount: function(list: string[]): Number
+  creepPreSpawnCount: function(list: string[], extraTime?: number): Number
   {
     let creeps = _.transform(list, function(result, entry){
       result.push(Game.creeps[entry]);
@@ -31,7 +31,7 @@ export const Utils = {
     {
       let count = 0;
       _.forEach(creeps, (c) => {
-        let ticksNeeded = c.body.length * 3 + 60;
+        let ticksNeeded = c.body.length * 3 + extraTime;
         if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
       })
 
@@ -143,26 +143,25 @@ export const Utils = {
 
   /** Returns the room closest to the source room with the required spawn energy */
   nearestRoom(sourceRoom: string, minSpawnEnergy = 0){
-    if(sourceRoom === 'E46S54')
-      console.log('Utils', 1);
-    let bestRoom = ''
-    let bestDistance = 999
+      let bestRoom = ''
+      let bestDistance = 999
 
 
-    _.forEach(Game.rooms, function(room){
-      if(room.controller && room.controller.my){
-        if(room.energyCapacityAvailable > minSpawnEnergy){
-          let path = new RoomPathFinder(sourceRoom, room.name).results()
+      _.forEach(Game.rooms, function(room){
+        if(room.controller && room.controller.my){
+          if(room.energyCapacityAvailable > minSpawnEnergy){
+            let path = new RoomPathFinder(sourceRoom, room.name).results()
 
-          if(path.length < bestDistance){
-            bestDistance = path.length
-            bestRoom = room.name
+            if(path.length < bestDistance)
+            {
+              bestDistance = path.length;
+              bestRoom = room.name;
+            }
           }
         }
-      }
-    })
+      })
 
-    return bestRoom
+      return bestRoom
   },
 
   pathFind(startPos: RoomPosition, targetPos: RoomPosition)

@@ -275,7 +275,7 @@ export class skRoomManagementProcess extends Process
           ///
           ////////////////////////////////////////////////////////////
           this.metaData.devils = Utils.clearDeadCreeps(this.metaData.devils);
-          let count = Utils.creepPreSpawnCount(this.metaData.devils);           // TODO: Want to pass in extra prespawn time
+          let count = Utils.creepPreSpawnCount(this.metaData.devils, 70);           // TODO: Want to pass in extra prespawn time
 
           if(count < 1)
           {
@@ -306,10 +306,10 @@ export class skRoomManagementProcess extends Process
             }
           }
 
-
+          this.invaders = false;
           if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
           {
-            console.log(this.name, 2, this.skRoomName, this.roomInfo(this.skRoomName));
+            console.log(this.name, 2, this.skRoomName, this.roomInfo(this.skRoomName), this.kernel.data.roomData[this.skRoomName]);
             /////////////////////////////////////////////////////////////
             ///
             ///          Builder Spawn Code
@@ -399,7 +399,7 @@ export class skRoomManagementProcess extends Process
 
                 let count = 0;
                 _.forEach(creeps, (c) => {
-                  let  ticksNeeded = c.body.length * 3;
+                  let  ticksNeeded = c.body.length * 3 + 50;
                   if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
                 });
 
@@ -928,16 +928,12 @@ export class skRoomManagementProcess extends Process
         {
           if(!this.invaders)
           {
-            let enemies = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+            let enemies = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 4);
             if(enemies.length === 0)
             {
-              if(builder.name === 'sk-build-E46S46-21111334')
-                console.log(this.name, 1)
               //////////// Fill up the builder ///////////////////////
               if(_.sum(builder.carry) != builder.carryCapacity && builder.memory.filling)
               {
-                if(builder.name === 'sk-build-E46S46-21111334')
-                console.log(this.name, 2)
                 if(this.roomInfo(this.skRoomName).containers.length > 0)
                 {
                   let tombStone = builder.pos.findInRange(FIND_TOMBSTONES, 4)[0]
@@ -1023,16 +1019,12 @@ export class skRoomManagementProcess extends Process
                 }
                 else
                 {
-                  if(builder.name === 'sk-build-E46S46-21111334')
-                console.log(this.name, 3)
                   if(this.roomInfo(this.skRoomName).sources)
                   {
                       let source = builder.pos.findClosestByRange( this.kernel.data.roomData[builder.pos.roomName].sources);
 
                       if(source)
                       {
-                        if(builder.name === 'sk-build-E46S46-21111334')
-                console.log(this.name, 4)
                         if(this.roomInfo(this.skRoomName).containers.length > 0 && this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
                         {
                           if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair.ticksToSpawn < 7)
@@ -1056,8 +1048,6 @@ export class skRoomManagementProcess extends Process
                           }
                         }
 
-                        if(builder.name === 'sk-build-E46S46-21111334')
-                console.log(this.name, 5)
                         if(!builder.pos.inRangeTo(source, 1))
                         {
                           let stones =  source.pos.findInRange(FIND_TOMBSTONES, 4);
@@ -1286,7 +1276,30 @@ export class skRoomManagementProcess extends Process
         if(!harvester.memory.fleePath)
         {
           let sk = source.pos.findClosestByRange(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_KEEPER_LAIR });
-          let ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 7}, {flee: true});
+          let ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 7},
+            {
+              flee: true,
+              swampCost: 10,
+              plainCost: 2,
+
+              roomCallback: function(roomName) {
+
+                let room = Game.rooms[roomName];
+                // In this example `room` will always exist, but since
+                // PathFinder supports searches which span multiple rooms
+                // you should be careful!
+                if (!room) return;
+                let costs = new PathFinder.CostMatrix;
+
+                // Avoid creeps in the room
+                room.find(FIND_CREEPS).forEach(function(creep) {
+                  costs.set(creep.pos.x, creep.pos.y, 0xff);
+                });
+
+                return costs;
+              },
+            }
+          );
           if(ret.path.length)
           {
             harvester.memory.fleePath = ret.path
@@ -1302,7 +1315,30 @@ export class skRoomManagementProcess extends Process
             let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
             if(lair.ticksToSpawn < 16 || sk.length > 0)
             {
-              let ret = PathFinder.search(harvester.pos, {pos: source.pos, range: 8}, {flee: true});
+              let ret = PathFinder.search(harvester.pos, {pos: source.pos, range: 7},
+            {
+              flee: true,
+              swampCost: 10,
+              plainCost: 2,
+
+              roomCallback: function(roomName) {
+
+                let room = Game.rooms[roomName];
+                // In this example `room` will always exist, but since
+                // PathFinder supports searches which span multiple rooms
+                // you should be careful!
+                if (!room) return;
+                let costs = new PathFinder.CostMatrix;
+
+                // Avoid creeps in the room
+                room.find(FIND_CREEPS).forEach(function(creep) {
+                  costs.set(creep.pos.x, creep.pos.y, 0xff);
+                });
+
+                return costs;
+              },
+            }
+          );
               harvester.moveByPath(ret.path);
               return;
             }
@@ -1874,7 +1910,7 @@ export class skRoomManagementProcess extends Process
 
               if(this.metaData.coreInfo?.coreFlagName === 'E56S44-Core-22640573')
               {
-                this.metaData.coreInfo = undefined; 
+                this.metaData.coreInfo = undefined;
                 flag.memory.coreInfo = undefined;
                 return;
               }
