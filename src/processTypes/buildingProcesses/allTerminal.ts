@@ -23,41 +23,45 @@ export class AllTerminalManagementProcess extends Process
 
             let resources = _.union(MINERALS_RAW, regList);
             _.forEach(Game.rooms, (r) => {
-                let terminal = r.terminal;
-                if(terminal?.my)
+                if(r.controller?.my && r.controller.level >= 6)
                 {
-                    _.forEach(resources, (s) => {
-                        //console.log(this.name, s);
-                        let amount = terminal.store[s] === undefined ? 0 : terminal.store[s];
+                    let terminal = r.terminal;
+                    if(terminal?.my)
+                    {
+                        _.forEach(resources, (s) => {
+                            //console.log(this.name, s);
+                            let amount = terminal.store[s] === undefined ? 0 : terminal.store[s];
 
-                        if(this.metaData.resources[s] === undefined)
-                        {
-                            this.metaData.resources[s] = [];
-                        }
-
-
-                        let index =_.findIndex(this.metaData.resources[s], (ra) =>{
-                                        return (ra.roomName === r.name);
-                                });
-
-                        if(index !== -1)
-                        {
-                            let data = this.metaData.resources[s][index];
-                            if(data.amount !== amount)
+                            if(this.metaData.resources[s] === undefined)
                             {
-                                this.metaData.resources[s][index].amount = amount;
+                                this.metaData.resources[s] = [];
                             }
-                        }
-                        else
-                        {
-                            //console.log(this.name, 'Push', s, r.name, terminal.store[s]);
-                            let info = {roomName: r.name, amount: terminal.store[s], terminal: terminal.id};
-                            this.metaData.resources[s].push(info);
-                        }
 
-                    })
+
+                            let index =_.findIndex(this.metaData.resources[s], (ra) =>{
+                                            return (ra.roomName === r.name);
+                                    });
+
+                            if(index !== -1)
+                            {
+                                let data = this.metaData.resources[s][index];
+                                if(data.amount !== amount)
+                                {
+                                    this.metaData.resources[s][index].amount = amount;
+                                }
+                            }
+                            else
+                            {
+                                let info = {roomName: r.name, amount: terminal.store[s], terminal: terminal.id};
+                                this.metaData.resources[s].push(info);
+                            }
+
+                        })
+                    }
                 }
-            })
+            });
+
+
 
 
 
@@ -79,8 +83,6 @@ export class AllTerminalManagementProcess extends Process
                 let max = _.max(this.metaData.resources[r], 'amount')
                 let min = _.min(this.metaData.resources[r], 'amount')
 
-
-                let maxTerminal = <StructureTerminal>Game.getObjectById(max.terminal);
                 let minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
 
                 if(RESOURCE_KEANIUM === r)
@@ -100,6 +102,7 @@ export class AllTerminalManagementProcess extends Process
                     } while (minTerminal?.store.getFreeCapacity() < 5000)
                 }
 
+                let maxTerminal = <StructureTerminal>Game.getObjectById(max.terminal);
                 console.log(this.name, r, max.roomName, max.amount);
                 console.log(this.name, r, min.roomName, min.amount);
 
