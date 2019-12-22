@@ -289,8 +289,6 @@ export class EnergyManagementProcess extends Process{
           {
             upgraders = 1;
           }
-          if(this.name === 'em-E44S42')
-            console.log(this.name, count, seige, 'WTF WTF WTF WTF')
 
           if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0 && !seige)
           {
@@ -379,9 +377,6 @@ export class EnergyManagementProcess extends Process{
             }
           }
         }
-
-        if(this.metaData.roomName === 'E55S47')
-          console.log(this.name, (this.metaData.upgradeCreeps.length > 0 || room.memory.pauseUpgrading), '!!!!!!!!!!!!!!!!!')
 
         if(this.kernel.data.roomData[this.metaData.roomName].storageLink
             &&

@@ -90,6 +90,9 @@ export class HoldRoomOptManagementProcess extends Process
     if(Game.time % 10 === 7)
     {
       enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+      enemies = _.filter(enemies, (e) => {
+        return ((e.getActiveBodyparts(ATTACK) > 0) || (e.getActiveBodyparts(RANGED_ATTACK) > 0))
+      })
       enemiesPresent = enemies.length ? true : false;
 
       flag.memory.enemies = enemiesPresent;
@@ -466,11 +469,10 @@ export class HoldRoomOptManagementProcess extends Process
                     });
 
                     let numberDistro = 2;
-                    if(this.metaData.distroDistance[sc.id] < 70)
+                    if(this.metaData.distroDistance[sc.id] < 60)
                     {
                       numberDistro = 1;
                     }
-
 
                     if(count < numberDistro)
                     {

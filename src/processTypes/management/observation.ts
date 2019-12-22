@@ -12,7 +12,7 @@ export class ObservationManagementProcess extends Process
   {
     try
     {
-      console.log(this.name, 'Observation running');
+      //console.log(this.name, 'Observation running');
       this.room = Game.rooms[this.metaData.roomName];
       this.observer = this.roomData().observer;
 
@@ -24,12 +24,12 @@ export class ObservationManagementProcess extends Process
 
 
       let observingRooms = this.metaData.observingRooms;
-      console.log(this.name, observingRooms.length, Object.keys(this.metaData.scoredRooms).length)
+      //console.log(this.name, observingRooms.length, Object.keys(this.metaData.scoredRooms).length)
       if((this.metaData.scoredRooms === undefined) || (observingRooms.length !== Object.keys(this.metaData.scoredRooms).length))
       {
-        console.log(this.name, 1)
+        //console.log(this.name, 1)
         let index = this.metaData.scanIndex++;
-        console.log(this.name, 'Observing a room');
+        //console.log(this.name, 'Observing a room');
         this.observer.observeRoom(observingRooms[index]);
         if(index >= observingRooms.length - 1)
         {
@@ -39,18 +39,18 @@ export class ObservationManagementProcess extends Process
         let scanRoom = Game.rooms[observingRooms[index > 0 ? index - 1 : observingRooms.length -1]];
         if(scanRoom)
         {
-          console.log(this.name, 2)
+          //console.log(this.name, 2)
           if(this.metaData.scoredRooms === undefined)
           {
             this.metaData.scoredRooms = {};
           }
 
-          console.log(this.name, 3);
+          //console.log(this.name, 3);
           if(!this.metaData.scoredRooms[scanRoom.name])
           {
 
             let controllers = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTROLLER});
-            console.log(this.name, 2, controllers.length);
+            //console.log(this.name, 2, controllers.length);
             if(controllers.length)
             {
               this.metaData.scoredRooms[scanRoom.name] = {
@@ -58,9 +58,9 @@ export class ObservationManagementProcess extends Process
                 sourceNumbers: this.AnalyzeRoom(scanRoom)
               };
             }
-            console.log(this.name, 3);
+            //console.log(this.name, 3);
           }
-          console.log(this.name, scanRoom.name, this.metaData.scoredRooms[scanRoom.name]);
+          //console.log(this.name, scanRoom.name, this.metaData.scoredRooms[scanRoom.name]);
         }
       }
 
@@ -77,7 +77,7 @@ export class ObservationManagementProcess extends Process
         })
       }
 
-      console.log(this.name, 'Should be done', Object.keys(this.room.memory.surroundingRooms).length);
+      //console.log(this.name, 'Should be done', Object.keys(this.room.memory.surroundingRooms).length);
     }
     catch(error)
     {
@@ -105,7 +105,8 @@ export class ObservationManagementProcess extends Process
           let name = xDir + x + yDir + y;
           if(name !== this.room.name)
           {  roomNames.push(name);
-          console.log(this.name, name);}
+          //console.log(this.name, name);
+          }
         }
       }
 
@@ -124,7 +125,7 @@ export class ObservationManagementProcess extends Process
     {
       const controller = room.controller;
       let hostiles = room.find(FIND_HOSTILE_CREEPS);
-      console.log(this.name, !controller?.reservation, controller.reservation?.username === 'wolffman122',  controller.level == 0)
+      //console.log(this.name, !controller?.reservation, controller.reservation?.username === 'wolffman122',  controller.level == 0)
       if(hostiles.length === 0 && ((!controller?.reservation || controller.reservation?.username === 'wolffman122') || controller.level == 0))
       {
         let numberOfSources = this.roomInfo(room.name).sources.length;
