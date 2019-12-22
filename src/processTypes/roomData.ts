@@ -56,11 +56,13 @@ export class RoomDataProcess extends Process{
       else
         room.memory.seigeDetected = false;
 
-    if(room.name === 'E32S44')
+    if(room.name === 'E45S56')
       console.log(this.name, 'Siege Status ', room.memory.seigeDetected);
 
-    if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
-      if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
+    if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0)
+    {
+      if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN)
+      {
         this.kernel.addProcess(SpawnRemoteBuilderProcess, 'srm-' + this.metaData.roomName, 90, {
           site: this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].id,
           roomName: this.metaData.roomName
@@ -207,17 +209,23 @@ export class RoomDataProcess extends Process{
     let skSourceContainerMaps = <{[id: string]: {container: StructureContainer, lair: StructureKeeperLair}}>{}
 
     let sourceContainers = _.filter(containers, function(container){
-      var sources: Array<Source> = container.pos.findInRange(FIND_SOURCES, 1)
+      let sources: Array<Source> = container.pos.findInRange(FIND_SOURCES, 1)
 
-      if(isSK)
+      if(sources.length)
       {
-        let lair = container.pos.findClosestByRange(lairs);
-        skSourceContainerMaps[sources[0].id] = { container: container, lair: lair };
-      }
-      else
-      {
-        if(sources[0]){
-          sourceContainerMaps[sources[0].id] = container
+        if(isSK)
+        {
+          if(sources[0])
+          {
+            let lair = container.pos.findClosestByRange(lairs);
+            skSourceContainerMaps[sources[0].id] = { container: container, lair: lair };
+          }
+        }
+        else
+        {
+          if(sources[0]){
+            sourceContainerMaps[sources[0].id] = container
+          }
         }
       }
 
