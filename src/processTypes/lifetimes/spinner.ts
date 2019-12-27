@@ -50,16 +50,16 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       }
     }
 
-    let data = this.kernel.data.roomData[creep.room.name];
+    const data = this.kernel.data.roomData[creep.room.name];
 
-    let regList: string[] = []
+    const regList: string[] = []
     _.forEach(Object.keys(REAGENT_LIST), (r) => {
         regList.push(r);
     });
     let resources = _.union(MINERALS_RAW, regList);
-    let terminal = creep.room.terminal;
-    let storage = creep.room.storage;
-    let factory = data.factory
+    const terminal = creep.room.terminal;
+    const storage = creep.room.storage;
+    const factory = data.factory
 
     if(!storage)
     {
@@ -76,8 +76,6 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       // Special mining to make bars
       if(creep.room.memory.specialMining)
       {
-        if(creep.name === 'em-s-E45S48-22313907')
-              console.log(this.name, '!!!!!!!!!!!!!!!!!!');
         if(mineral.mineralType === RESOURCE_CATALYST && storage.store.getUsedCapacity(RESOURCE_CATALYST) > 100000
           && factory?.store.getFreeCapacity() >= 600)
           {
