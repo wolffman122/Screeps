@@ -1,4 +1,5 @@
 import { Process } from "os/process";
+import { Utils } from "lib/utils";
 
 
 export class MarketManagementProcess extends Process
@@ -12,9 +13,57 @@ export class MarketManagementProcess extends Process
 
   run()
   {
-    _.forEach(Game.rooms, (room) => {
+    if(!this.metaData.roomWithResource)
+    {
+      const catRooms = _.filter(Game.rooms, (r) => {
+        return (r.controller?.my
+          && this.kernel.data.roomData[r.name].mineral?.mineralType === RESOURCE_CATALYST          );
+      })
 
-    })
+      this.metaData.roomWithResource = catRooms.map(r => r.name);
+    }
+
+    console.log(this.name, 'Rooms that have purifier', this.metaData.roomWithResource.length)
+
+    if(Game.time % 5 === 0)
+    {
+      let roomDistance: RoomDistance = {};
+
+      const orders = this.getOrders(RESOURCE_PURIFIER)
+      console.log(this.name, 'Orders for Purifier', orders.length);
+
+      for(let i = 0; i < orders.length; i++)
+      {
+        const order = orders[i];
+        if(order.active)
+        {
+          let bestDistance = 999;
+          let bestRoom = '';
+          for(let j = 0; j < this.metaData.roomWithResource.length; j++)
+          {
+            const sourceRoom = Game.rooms[this.metaData.roomWithResource[j]];
+            const terminal = sourceRoom.terminal;
+            if(terminal?.cooldown === 0 && terminal.store[RESOURCE_PURIFIER] >= order.amount)
+            {
+              const cost = Game.market.calcTransactionCost(order.amount, order.roomName, sourceRoom.name)
+              if(cost < 5000)
+              {
+                const ret = Game.market.deal(order.id, order.amount, sourceRoom.name);
+                console.log(this.name, 'Order info destroom', order.roomName, 'cost', cost, 'Amount', order.amount, 'sourceRoom', sourceRoom.name, 'Ret', ret);
+                if(ret === OK)
+                  break;
+              }
+            }
+          }
+        }
+      }
+
+    }
+  }
+
+  private getOrders(resource: CommodityConstant) : Order[]
+  {
+    return Game.market.getAllOrders({type: ORDER_BUY, resourceType: resource});
   }
 
   private TakeInventory(room: Room)
@@ -43,7 +92,7 @@ export class MarketManagementProcess extends Process
       }
   }
 
-  private AnalyzeMarket(resource: ResourceConstant, roomName: string)
+  private AnalyzeMarket(resource: ResourceConstant)
   {
     const history = Game.market.getHistory(resource);
     let fourteenDayPriceAverage = 0;
