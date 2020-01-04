@@ -31,12 +31,6 @@ export class StrongHoldDestructionProcess extends Process
   {
     try
     {
-      // if(this.name === 'shdpE54S46' || this.name === 'shdpE46S44')
-      // {
-      //   this.completed = true;
-      //   return;
-      // }
-
       console.log(this.name, 'running');
       this.ensureMetaData();
       console.log(this.name, this.metaData.flagName)
@@ -52,6 +46,14 @@ export class StrongHoldDestructionProcess extends Process
       {
         this.metaData.roomName = Utils.nearestRoom(this.flag.memory.coreInfo.coreLocation.roomName);
       }
+
+      // if(!this.starting)
+      // {
+      //   this.starting = true;
+      //   const msg = this.name + ' Starting now ' + Game.time + ' Spawn room ' + this.metaData.roomName +  ' SH Room ' + this.flag.memory.coreInfo.coreLocation.roomName +
+      //     ' Lvl ' + this.flag.memory.coreInfo.coreLevel;
+      //   Game.notify(msg);
+      // }
 
       console.log(this.name, 'Spawn room', this.metaData.roomName);
 
@@ -379,7 +381,7 @@ export class StrongHoldDestructionProcess extends Process
           console.log(this.name, 'Path length', path.length);   //  Testing to see when ramparts are up what the length is to core
 
           let lRamparts = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
-          if(lRamparts.length)
+          if(lRamparts.length === 16)
           {
             lRamparts = _.filter(lRamparts, (l) => {
               return l.pos.lookForStructures(STRUCTURE_CONTAINER);
@@ -398,7 +400,7 @@ export class StrongHoldDestructionProcess extends Process
           else
           {
             console.log(this.name, 'Attack cleanup',2)
-            if(!creep.pos.inRangeTo(corePos, 0))
+            if(!creep.pos.isEqualTo(corePos))
             {
               creep.travelTo(pos);
             }
@@ -575,11 +577,13 @@ export class StrongHoldDestructionProcess extends Process
                 const rampartsLook = this.core.pos.lookForStructures(STRUCTURE_RAMPART);
                 if(rampartsLook)
                 {
+                  creep.memory.target = rampartsLook.id;
                   strSay += '🔫🛡';
                   creep.rangedAttack(rampartsLook);
                 }
                 else
                 {
+                  creep.memory.target = this.core.id;
                   strSay += '🔫⚙';
                   creep.rangedAttack(this.core);
                 }
@@ -864,8 +868,15 @@ export class StrongHoldDestructionProcess extends Process
         const friendlies = creep.pos.findInRange(FIND_MY_CREEPS, 3, {filter: c => c.fatigue === 0});
         if(!creep.pos.isEqualTo(standPos) && friendlies.length === 4)
         {
+          strSay += creep.moveDir(creep.pos.getDirectionTo(standPos));
           creep.travelTo(standPos);
         }
+      }
+      else if(this.core?.level === 3 && attacker.pos.inRangeTo(this.core, 3))
+      {
+        const standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
+        if(!creep.pos.isEqualTo(standPos))
+          creep.travelTo(standPos);
       }
       else if(this.core?.level === 2 && attacker.pos.inRangeTo(this.core, 3))
       {
@@ -1126,7 +1137,10 @@ export class StrongHoldDestructionProcess extends Process
 
       if(!creep.memory.boost)
       {
-        creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE], false);
+        if(this.flag.memory.coreInfo.coreLevel <= 2)
+          creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE], false);
+        else if(this.flag.memory.coreInfo.coreLevel === 3)
+          creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_KEANIUM_ACID], false);
         return;
       }
 
@@ -1234,7 +1248,7 @@ export class StrongHoldDestructionProcess extends Process
 
         console.log(this.name, 'haulers', 0.5)
         // Clean up the ruins first.
-        let ruin = creep.pos.findClosestByPath(FIND_RUINS, {filter: r => r.store.getUsedCapacity() > 0});
+        let ruin = creep.pos.findClosestByPath(FIND_RUINS, {filter: r => r.structure.structureType === STRUCTURE_INVADER_CORE && r.store.getUsedCapacity() > 0});
         if(ruin)
         {
           if(!creep.pos.isNearTo(ruin))
@@ -1344,6 +1358,16 @@ export class StrongHoldDestructionProcess extends Process
           }
         }
 
+        const lastRuins = creep.room.find(FIND_RUINS, {filter: f => f.store.getUsedCapacity() > 0})
+        if(lastRuins.length)
+        {
+          if(!creep.pos.isNearTo(lastRuins[0]))
+            creep.travelTo(lastRuins[0])
+          else
+            creep.withdrawEverything(lastRuins[0]);
+
+          return;
+        }
 
 
         console.log(this.name, 'hauler',4.5)
