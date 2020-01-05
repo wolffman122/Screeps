@@ -56,6 +56,7 @@ export class LabManagementProcess extends Process
       this.terminal = this.room.terminal;
       this.storage = this.room.storage;
       this.nuker = this.roomData().nuker;
+      this.powerSpawn = this.roomData().powerSpawn;
 
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'Running', 1)
@@ -203,23 +204,26 @@ export class LabManagementProcess extends Process
   {
     try
     {
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'MissionActions', 1)
       let command = this.accessCommand();
-      if(command)
-      {
-        this.metaData.fillTowers = false;
-      }
 
-      if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'MissionActions', 2)
-
+      //////////// Could not find a command do some other stuff. ///////////////////////
       if(!command)
       {
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'MissionActions', 3)
-        if(_.sum(this.creep.carry) > 0)
+        if(this.creep.store.getUsedCapacity(RESOURCE_POWER) > 0)
         {
+          this.creep.say('😴-🔴');
+          if(!this.creep.pos.isNearTo(this.powerSpawn))
+            this.creep.travelTo(this.powerSpawn);
+          else
+            this.creep.transfer(this.powerSpawn, RESOURCE_POWER);
+
+          return;
+        }
+
+        //////////// Empty creep ///////////////////////
+        if(this.creep.store.getUsedCapacity() > 0)
+        {
+          this.creep.say('😴🤖');
           //console.log(this.name, "is holding resources without a command, putting them in terminal");
           if(this.creep.pos.isNearTo(this.terminal!))
           {
@@ -274,15 +278,9 @@ export class LabManagementProcess extends Process
           }
         }
 
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'MissionActions', 4, this.roomData(), this.roomData().generalContainers)
         const generalContainer = this.roomData().generalContainers[0];
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'MissionActions', 5)
         if(generalContainer && _.sum(generalContainer.store) > 0)
         {
-          if(this.name === this.logName && this.logOn)
-            console.log(this.name, 'MissionActions', 5.5, this.creep.pos.isNearTo(generalContainer), _.sum(this.creep.carry) < this.creep.carryCapacity)
           if(this.creep.pos.isNearTo(generalContainer) && _.sum(this.creep.carry) < this.creep.carryCapacity)
             this.creep.withdrawEverything(generalContainer);
           else
@@ -291,43 +289,47 @@ export class LabManagementProcess extends Process
           return;
         }
 
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'MissionActions', 6)
+        const powerAmount = this.powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) ? this.powerSpawn.store.getUsedCapacity(RESOURCE_POWER) : 0;
+        const energyAmount = this.powerSpawn?.store.getUsedCapacity(RESOURCE_ENERGY) ? this.powerSpawn.store.getUsedCapacity(RESOURCE_ENERGY) : 0;
+        if(powerAmount < 20 && this.terminal?.store.getUsedCapacity(RESOURCE_POWER) >= 100
+          && energyAmount > 1000)
+        {
+          this.creep.say('😴🔴');
+          if(!this.creep.pos.isNearTo(this.terminal))
+            this.creep.travelTo(this.terminal);
+          else
+            this.creep.withdraw(this.terminal, RESOURCE_POWER, 100);
+
+          return;
+        }
+
+        this.creep.say('😴');
         this.creep.idleOffRoad(this.reagentLabs![0], true);
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'MissionActions', 7);
         return;
       }
 
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'MissionActions', 3)
+      ////////////// Do the command actions ///////////////////////
+      let strSay: string;
       if(_.sum(this.creep.carry) === 0)
       {
-        if(this.name === this.logName && this.logOn)
-        {
-          console.log(this.name, 'MissionActions', 3, command.origin, command.resourceType)
-          //command.origin = '5d0f5f4d0bc4825c3bb6f8f2';
-        }
-
         if(!command.origin)
         {
           command = undefined;
         }
 
         let origin = Game.getObjectById<Structure>(command.origin);
-        //console.log(this.name, 1, this.creep.name, 2, origin);
         if(this.creep.pos.isNearTo(origin!))
         {
           if(origin instanceof StructureTerminal)
           {
-            if(this.name === this.logName && this.logOn)
-              console.log(this.name, 'MissionActions', 4, command.resourceType)
+            strSay = '🤖';
             if(!origin.store[command.resourceType])
             {
-              //console.log("Creep: I can't find that resource in terminal, opName:", this.name);
               this.metaData.command = undefined;
             }
           }
+          else if(origin instanceof StructureLab)
+            strSay = '🧺';
 
           //console.log(this.name, 1, this.creep.name, command.resourceType);
           let retValue = this.creep.withdraw(origin!, command.resourceType, command.amount);
@@ -339,11 +341,13 @@ export class LabManagementProcess extends Process
           let destination = Game.getObjectById<Structure>(command.destination);
           if(!this.creep.pos.isNearTo(destination!))
           {
+            this.creep.say(strSay);
             this.creep.travelTo(destination!);
           }
         }
         else
         {
+          this.creep.say(strSay);
           this.creep.travelTo(origin!);
         }
         return; // early
@@ -352,6 +356,7 @@ export class LabManagementProcess extends Process
       let destination = Game.getObjectById<Structure>(command.destination);
       if(this.creep.pos.isNearTo(destination!))
       {
+        this.creep.say(strSay);
         let outcome = this.creep.transfer(destination!, command.resourceType!, command.amount);
         if(outcome === OK && command.reduceLoad && this.labProcess)
         {
@@ -362,6 +367,7 @@ export class LabManagementProcess extends Process
       }
       else
       {
+        this.creep.say(strSay);
         this.creep.travelTo(destination!);
       }
     }
@@ -452,6 +458,7 @@ export class LabManagementProcess extends Process
       // Suicide
       if(!this.metaData.command && this.creep.ticksToLive! < 40)
       {
+        this.creep.say('☠');
         this.creep.suicide();
         return;
       }
