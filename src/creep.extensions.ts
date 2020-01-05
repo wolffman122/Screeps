@@ -339,3 +339,37 @@ Creep.prototype.partCount = function(partType: string): number
   }
   return count;
 }
+
+Creep.prototype.moveDir = function(dir: DirectionConstant): string
+{
+  let ret = '';
+  switch(dir)
+  {
+    case TOP:
+      ret = '⬆';
+      break;
+    case TOP_RIGHT:
+      ret = '↗'
+      break;
+    case RIGHT:
+      ret = '➡'
+      break;
+    case BOTTOM_RIGHT:
+      ret = ''
+      break;
+    case BOTTOM:
+      ret = '⬇'
+      break;
+    case BOTTOM_LEFT:
+      ret = '↙'
+      break;
+    case LEFT:
+      ret = '⬅'
+      break;
+    case TOP_LEFT:
+      ret = '↖'
+      break;
+  }
+
+  return ret;
+}
