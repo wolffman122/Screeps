@@ -8,10 +8,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     let creep = this.getCreep()
 
     let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
-    if(!creep){ return }
-
-    if(creep.name === 'em-m-E42S48-22544566')
-        console.log(this.name, 0, '??????????????????????')
+    if(!creep)
+      return;
 
     /*if(creep.room.energyAvailable === creep.room.energyCapacityAvailable)
     {
@@ -26,8 +24,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable &&
       sourceContainer && _.sum(sourceContainer.store) <= creep.carryCapacity * .85)
     {
-      if(creep.name === 'em-m-E42S48-22544566')
-        console.log(this.name, 1, '??????????????????????')
+
       let minContainer = this.kernel.data.roomData[creep.room.name].mineralContainer;
       if(minContainer && _.sum(minContainer.store) > 0)
       {
@@ -43,8 +40,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
       const terminal = creep.room.terminal;
       const powerSpawn = this.kernel.data.roomData[creep.room.name].powerSpawn;
-      if(creep.name === 'em-m-E42S48-22544566')
-        console.log(this.name, 'Power spawn stuff', terminal?.store.getUsedCapacity(RESOURCE_POWER) >= 100
+
         , powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) === 0
         , powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY) === 0)
       if(terminal?.store.getUsedCapacity(RESOURCE_POWER) >= 100
@@ -58,22 +54,23 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
 
         let ret = creep.withdraw(terminal, RESOURCE_POWER, 100);
-        if(creep.name === 'em-m-E42S48-22544566')
-          console.log(this.name, 1, ret, '??????????????????????')
+
         return;
       }
     }
 
     // Empty Creep
-    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 50)
+    if(creep.store.getUsedCapacity() === 0 && creep.ticksToLive! > 50)
     {
       if(creep.memory.storageDelivery == true)
       {
+        creep.say('😴1');
         creep.memory.storageDelivery = false;
-        this.suspend = 5;
+        //this.suspend = 5;
         return;
       }
 
+      // Source Link routine
       if(this.kernel.data.roomData[creep.pos.roomName].sourceLinks.length == 2)
       {
         if(!sourceContainer)
@@ -81,8 +78,11 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
         let storage = creep.room.storage;
 
-        if(storage && storage.store.energy > 0 && sourceContainer && sourceContainer.store.energy <= sourceContainer.storeCapacity * .9)
+        // With draw form storage because source containers are not full yet
+        if(storage?.store.getUsedCapacity(RESOURCE_ENERGY) > 0
+          && sourceContainer?.store.getUsedCapacity(RESOURCE_ENERGY) <= sourceContainer?.store.getCapacity() * .9)
         {
+            creep.say('🏟');
             if(creep.pos.isNearTo(storage))
             {
                 creep.withdraw(storage, RESOURCE_ENERGY);
@@ -93,23 +93,28 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
             return;
         }
 
-        if(sourceContainer && sourceContainer.store.energy > creep.carryCapacity && !creep.room.memory.seigeDetected)
-        {
-            if(creep.pos.isNearTo(sourceContainer))
-            {
-                creep.withdraw(sourceContainer, RESOURCE_ENERGY);
-                return;
-            }
 
-            creep.travelTo(sourceContainer, {range: 1});
-            return;
+        // Withdraw from source container if not in a siege (CHECK might not need this anymore)
+        if(sourceContainer?.store.getUsedCapacity(RESOURCE_ENERGY) > creep.carryCapacity
+          && !creep.room.memory.seigeDetected)
+        {
+          creep.say('🕋');
+          if(creep.pos.isNearTo(sourceContainer))
+          {
+              creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+              return;
+          }
+
+          creep.travelTo(sourceContainer, {range: 1});
+          return;
         }
 
+        // With draw from dropped resources
         let dropped = creep.room.find(FIND_DROPPED_RESOURCES);
         if(dropped.length > 0)
         {
           dropped = _.filter(dropped, (d) =>{
-            if(d.resourceType === RESOURCE_ENERGY && d.amount >= creep!.carryCapacity)
+            if(d.amount >= creep?.carryCapacity * .50)
             {
               return d;
             }
@@ -118,6 +123,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
           if(dropped.length > 0)
           {
+            creep.say('🌎');
             let target = creep.pos.findClosestByPath(dropped);
 
             if(!creep.pos.inRangeTo(target, 5))
@@ -128,7 +134,6 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
             creep.pickup(target);
             return;
           }
-
         }
 
         // Clean out Enemy Structures
@@ -145,7 +150,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
           if(target)
           {
-            console.log(this.name, "Going to get enemy supplies")
+            creep.say('👹');
             if(creep.pos.isNearTo(target))
             {
               creep.withdraw(target, RESOURCE_ENERGY);
@@ -157,32 +162,38 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           }
         }
 
-        if(creep.room.storage && creep.room.storage.my && creep.room.terminal && !creep.room.terminal.my)
+        // Enemy terminal
+        if(creep.room.storage?.my && !creep.room.terminal?.my)
         {
-          if(_.sum(creep.room.terminal.store) > 0)
+          const terminal = creep.room.terminal;
+          if(terminal.store.getUsedCapacity() > 0)
           {
-            if(creep.pos.isNearTo(creep.room.terminal))
+            creep.say('👹🏦');
+            if(creep.pos.isNearTo(terminal))
             {
-              creep.withdrawEverything(creep.room.terminal);
+              creep.withdrawEverything(terminal);
               return;
             }
 
-            creep.pushyTravelTo(creep.room.terminal, {range: 1});
+            creep.pushyTravelTo(terminal, {range: 1});
             return;
           }
         }
 
-        if(creep.room.terminal && creep.room.terminal.my)
+        // My Terminal withdraw (CHECK might not need anymore)
+        if(creep.room.terminal?.my)
         {
-          if(_.sum(creep.room.terminal.store) > 0)
+          const terminal = creep.room.terminal;
+          if(terminal.store.getUsedCapacity() > 0)
           {
-            if(creep.pos.isNearTo(creep.room.terminal))
+            creep.say('🏦1');
+            if(creep.pos.isNearTo(terminal))
             {
-              creep.withdrawEverything(creep.room.terminal);
+              creep.withdrawEverything(terminal);
               return;
             }
 
-            creep.pushyTravelTo(creep.room.terminal, {range: 1});
+            creep.pushyTravelTo(terminal, {range: 1});
             return;
           }
         }
@@ -191,29 +202,31 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       {
         // Non source link rooms
         let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
-
-        if(sourceContainer && sourceContainer.store.energy >= creep.carryCapacity)
+        if(sourceContainer?.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.carryCapacity)
         {
-            if(creep.pos.isNearTo(sourceContainer))
-            {
-                creep.withdraw(sourceContainer, RESOURCE_ENERGY);
-                return;
-            }
-
-            creep.travelTo(sourceContainer, {range: 1});
-            return;
-        }
-        else if(creep.room.storage && creep.room.storage.my && creep.room.terminal && !creep.room.terminal.my)
-        {
-          if(_.sum(creep.room.terminal.store) > 0)
+          creep.say('🕋');
+          if(creep.pos.isNearTo(sourceContainer))
           {
-            if(creep.pos.isNearTo(creep.room.terminal))
+              creep.withdraw(sourceContainer, RESOURCE_ENERGY);
+              return;
+          }
+
+          creep.travelTo(sourceContainer, {range: 1});
+          return;
+        }
+        else if(creep.room.storage?.my && !creep.room.terminal?.my)
+        {
+          const terminal = creep.room.terminal;
+          if(terminal.store.getUsedCapacity() > 0)
+          {
+            creep.say('👹🏦');
+            if(creep.pos.isNearTo(terminal))
             {
-              creep.withdrawEverything(creep.room.terminal);
+              creep.withdrawEverything(terminal);
               return;
             }
 
-            creep.pushyTravelTo(creep.room.terminal, {range: 1});
+            creep.pushyTravelTo(terminal, {range: 1});
             return;
           }
         }
