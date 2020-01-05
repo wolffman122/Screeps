@@ -277,7 +277,7 @@ export class EnergyManagementProcess extends Process{
             case 'E38S35':
               upgraders = 1;
               break;
-            case 'E44S42':
+            case 'E36S33':
               upgraders = 1;
               break;
             default:
@@ -364,7 +364,7 @@ export class EnergyManagementProcess extends Process{
                   creep: creepName,
                   roomName: proc.metaData.roomName,
                   boosts: boosts,
-                  allowUnboosted: true
+                  allowUnboosted: false
                 })
               }
               else
