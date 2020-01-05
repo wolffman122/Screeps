@@ -31,7 +31,15 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 
       if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
       {
-        if(creep.room.storage?.my)
+        if(!creep.room.storage?.my && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
+        {
+          if(!creep.pos.isNearTo(creep.room.storage))
+            creep.travelTo(creep.room.storage);
+          else
+            creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+          return;
+        }
+        else if(creep.room.storage?.my)
         {
           let storage = creep.room.storage;
 
@@ -85,14 +93,19 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
         if(target && _.sum(target.store) < target.storeCapacity)
         {
           if(!creep.pos.inRangeTo(target, 1))
-        {
-          if(!creep.fixMyRoad())
           {
-            creep.travelTo(target);
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(target);
+            }
           }
-        }
-
-        creep.transfer(target, RESOURCE_ENERGY);
+          else
+          {
+            if(target.store.getFreeCapacity() > creep.store.getCapacity())
+              creep.transfer(target, RESOURCE_ENERGY);
+            else
+              this.suspend = 20;
+          }
         }
         else
         {
