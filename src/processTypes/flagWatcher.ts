@@ -41,11 +41,9 @@ export class FlagWatcherProcess extends Process
   //  Purple &  Yellow
   strongHoldDestruction(flag: Flag)
   {
-    console.log('This Flag stuff', flag.name.split('-')[0]);
     const roomName = flag.name.split('-')[0];
-    if(flag.name.split('-')[0] === 'E46S45')
+    if(flag.memory.coreInfo.coreLevel === 2 || flag.name.split('-')[0] === 'E44S46')
     {
-      console.log('Should be starting destruction');
       this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});
     }
   }
@@ -127,7 +125,7 @@ export class FlagWatcherProcess extends Process
   // Green
   TestProcess(flag: Flag)
   {
-    //this.kernel.addProcessIfNotExist(TestProcessManagement, 'test-' + flag.name, 40, {roomName: flag.pos.roomName, flagName: flag.name});
+    this.kernel.addProcessIfNotExist(TestProcessManagement, 'test-' + flag.name, 40, {roomName: flag.pos.roomName, flagName: flag.name});
   }
 
   run()
