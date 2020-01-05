@@ -11,8 +11,6 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
-    if(creep.name === 'em-u-E41S32-22643895')
-      console.log(this.name, 1)
     if(!creep.memory.boost && this.metaData.boosts)
     {
       if(creep.room.name === 'E41S32' || creep.room.name === 'E45S57')
@@ -23,8 +21,6 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       creep.boostRequest(this.metaData.boosts, this.metaData.allowUnboosted);
       return;
     }
-    if(creep.name === 'em-u-E41S32-22643895')
-      console.log(this.name, 3)
 
     if(_.sum(creep.carry) === 0)
     {
@@ -46,22 +42,18 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       if(this.kernel.data.roomData[creep.room.name].controllerContainer)
       {
         let controller = creep.room.controller;
-        if(controller)
+        if(controller?.sign?.username !== "wolffman122")
         {
-          let sign = controller.sign;
-          if(sign && sign.username !== "wolffman122")
+          if(creep.pos.isNearTo(controller))
           {
-            if(creep.pos.isNearTo(controller))
-            {
-              creep.signController(controller, "[YP] Territory");
-              return;
-            }
-
-            creep.travelTo(controller);
+            creep.signController(controller, "[YP] Territory");
             return;
           }
 
+          creep.travelTo(controller);
+          return;
         }
+
         let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
 
         if(target)
@@ -110,13 +102,18 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       }
       else // No controller contianer
       {
+        let strSay = '🔼';
         let target = Utils.withdrawTarget(creep, this);
 
         if(!creep.pos.isNearTo(target))
             creep.travelTo(target);
-          else
-            creep.withdraw(target, RESOURCE_ENERGY);
+        else
+        {
+          creep.withdraw(target, RESOURCE_ENERGY);
+          strSay += '🏧';
+        }
 
+        creep.say(strSay);
         return
       }
     }
@@ -124,7 +121,9 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
     // If the creep has been refilled
     if (!creep.pos.inRangeTo(creep.room.controller!, 3)){
       creep.travelTo(creep.room.controller!, {range: 3});
-    }else{
+    }else
+    {
+      let strSay = '🔼';
       creep.upgradeController(creep.room.controller!);
 
       if(_.sum(creep.carry) <= creep.getActiveBodyparts(WORK))
@@ -140,10 +139,13 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
         {
           if(creep.pos.isNearTo(target))
           {
+            strSay += '🏧';
             creep.withdraw(target, RESOURCE_ENERGY);
           }
         }
       }
+
+      creep.say(strSay);
     }
   }
 }
