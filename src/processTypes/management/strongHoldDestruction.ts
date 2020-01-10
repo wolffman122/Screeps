@@ -470,7 +470,7 @@ export class StrongHoldDestructionProcess extends Process
         if(this.flag.memory.coreInfo.invaderCorePresent)
         {
           console.log(this.name, 'LAA', 3)
-          if(this.metaData.standPos === undefined)
+          if(creep.memory.standPos === undefined)
           {
             console.log(this.name, 'LAA', 4)
             if(this.flag.memory.coreInfo.coreLevel === 4)
@@ -478,7 +478,7 @@ export class StrongHoldDestructionProcess extends Process
               console.log(this.name, 'LAA', 5)
               const tPos = this.flag.memory.coreInfo.coreLocation;
               const standPos = new RoomPosition(tPos.x + 4, tPos.y - 4, tPos.roomName);
-              this.metaData.standPos = standPos;
+              creep.memory.standPos = standPos;
               target = standPos;
               console.log(this.name, 'LAA', 5.1, target);
             }
@@ -486,23 +486,24 @@ export class StrongHoldDestructionProcess extends Process
             {
               const tPos = this.flag.memory.coreInfo.coreLocation;
               const standPos = new RoomPosition(tPos.x+3, tPos.y, tPos.roomName)
-              this.metaData.standPos = standPos;
+              creep.memory.standPos = standPos;
               target = standPos;
             }
             else if(this.core?.level === 2)
             {
+              console.log(this.name, 'LAA', 6, target);
               const tPos = this.flag.memory.coreInfo.coreLocation;
               const leftPos = new RoomPosition(tPos.x -3, tPos.y, tPos.roomName);
               const rightPos = new RoomPosition(tPos.x + 3, tPos.y, tPos.roomName);
               const leftPath = creep.pos.findPathTo(leftPos);
               const rightPath = creep.pos.findPathTo(rightPos);
               target = (leftPath.length < rightPath.length) ? leftPos : rightPos;
-              this.metaData.standPos = target;
+              creep.memory.standPos = target;
             }
           }
           else
           {
-            const tPos = this.metaData.standPos
+            const tPos = creep.memory.standPos
             target = new RoomPosition(tPos.x, tPos.y, tPos.roomName);
           }
 
@@ -635,7 +636,7 @@ export class StrongHoldDestructionProcess extends Process
                       creep.travelTo(rampart, {range: 3});
                     else
                     {
-                      this.metaData.standPos = creep.pos;
+                      creep.memory.standPos = creep.pos;
                       strSay += '🔫🛡';
                       creep.rangedAttack(rampart);
                     }
@@ -828,11 +829,14 @@ export class StrongHoldDestructionProcess extends Process
         creep.heal(creep);
       }
 
-      console.log(this.name, 'FAA WTF', 1)
+
+      const sPos = attacker.memory.standPos;
+      const standPos = new RoomPosition(sPos.x, sPos.y, sPos.roomName);
+      console.log(this.name, 'FAA WTF', 1, standPos)
       // Placing follower creeps around Attacker to stay out of range of meleee
       if(this.core?.level === 4 && attacker.pos.inRangeTo(this.core, 10)) // Lvl 4
       {
-        const tPos = this.metaData.standPos;
+        const tPos = attacker.memory.standPos;
         const targetPos = new RoomPosition(tPos.x, tPos.y, tPos.roomName);
         let standPos: RoomPosition;
         const trav = attacker.memory._trav as TravelData;
@@ -864,8 +868,9 @@ export class StrongHoldDestructionProcess extends Process
         if(!creep.pos.isEqualTo(standPos))
           creep.travelTo(standPos);
       }
-      else if(this.core?.level === 2 && attacker.pos.isEqualTo(this.core, 3))
+      else if(this.core?.level === 2 && attacker.pos.isEqualTo(standPos))
       {
+
         let standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
         const look = standPos.lookFor(LOOK_TERRAIN);
         if(look.length)
@@ -874,6 +879,7 @@ export class StrongHoldDestructionProcess extends Process
           if(terrain === "wall")
             standPos = new RoomPosition(attacker.pos.x, attacker.pos.y + 1, attacker.pos.roomName);
         }
+        console.log(this.name, 'FAA WTF', 1.5, standPos);
 
         if(!creep.pos.isEqualTo(standPos))
           creep.travelTo(standPos);
