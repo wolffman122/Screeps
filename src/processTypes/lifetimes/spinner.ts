@@ -18,12 +18,15 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
 
     let flag = Game.flags['DJ-' + creep.pos.roomName];
     let mineral = <Mineral>creep.room.find(FIND_MINERALS)[0];
-
+    const room = flag.room;
     let skMinerals: Mineral[] = [];
+
+    if(creep.name === 'em-s-E35S51-23283791')
+        console.log(this.name, 'Start!!!!!!!!!!!!!!!!!');
 
     if(flag)
     {
-      let room = flag.room;
+
       let flags = room.find(FIND_FLAGS);
       // Look for SK minerals
       if(flags)
@@ -73,31 +76,133 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       if(this.logging && creep.name === this.logName)
         console.log(this.name, storage, storage.id);
 
-      // Special mining to make bars
-      if(creep.room.memory.specialMining)
+      if(creep.name === 'em-s-E35S51-23291496')
       {
-        if(mineral.mineralType === RESOURCE_CATALYST && storage.store.getUsedCapacity(RESOURCE_CATALYST) > 100000
-          && factory?.store.getFreeCapacity() >= 600)
-          {
-            if(creep.name === 'em-s-E45S48-22313907')
-              console.log(this.name, '??????????????');
-            let numberOfBars = factory.store.getUsedCapacity(RESOURCE_CATALYST) / 500;
-            if(factory.store.getUsedCapacity(RESOURCE_ENERGY) < (numberOfBars * 200))
-            {
-              if(creep.name === 'em-s-E45S48-22313907')
-                console.log(this.name, 'Getting energy for bars');
-              creep.withdraw(storage, RESOURCE_ENERGY)
-              creep.memory.target = factory.id;
-              return;
-            }
+        console.log(this.name, 'Should be special mining', room.memory.specialMining)
+        room.memory.depositMining = true;
+      }
 
-            let amount = (storage.store.getUsedCapacity(RESOURCE_CATALYST) - 100000 > creep.store.getCapacity()) ? creep.store.getCapacity() : (storage.store.getUsedCapacity(RESOURCE_CATALYST) - 100000);
-            if(creep.name === 'em-s-E45S48-22313907')
-              console.log(this.name, 'Moving X for bars !!!!!!!!!!!!!!', amount);
-            creep.withdraw(storage, RESOURCE_CATALYST, amount)
+      // Special mining to make bars
+      if(mineral.mineralType === RESOURCE_CATALYST && storage.store.getUsedCapacity(RESOURCE_CATALYST) > 100000
+        && factory?.store.getFreeCapacity() >= 600)
+        {
+          if(creep.name === 'em-s-E35S51-23283791')
+            console.log(this.name, '??????????????');
+          let numberOfBars = factory.store.getUsedCapacity(RESOURCE_CATALYST) / 500;
+          if(factory.store.getUsedCapacity(RESOURCE_ENERGY) < (numberOfBars * 200))
+          {
+            if(creep.name === 'em-s-E35S51-23283791')
+              console.log(this.name, 'Getting energy for bars');
+            creep.withdraw(storage, RESOURCE_ENERGY)
             creep.memory.target = factory.id;
             return;
           }
+
+          let amount = (storage.store.getUsedCapacity(RESOURCE_CATALYST) - 100000 > creep.store.getCapacity()) ? creep.store.getCapacity() : (storage.store.getUsedCapacity(RESOURCE_CATALYST) - 100000);
+          if(creep.name === 'em-s-E35S51-23283791')
+            console.log(this.name, 'Moving X for bars !!!!!!!!!!!!!!', amount);
+          creep.withdraw(storage, RESOURCE_CATALYST, amount)
+          creep.memory.target = factory.id;
+          return;
+      }
+
+      if(room.memory.depositMining)
+      {
+        if(factory?.store[room.memory.depositType] > 100)
+        {
+          if(room.memory.instruct === undefined)
+          {
+            room.memory.instruct = {};
+          }
+
+          if(factory.level === undefined)
+          {
+            room.memory.instruct[RESOURCE_CONDENSATE] = 100;
+          }
+
+          console.log(this.name, 'Problem')
+
+          let recipe: Recipe;
+          if(room.memory.componentInstruct && Object.keys(room.memory.componentInstruct).length > 0)
+          {
+            console.log(this.name, 'Component Lookup', room.memory.resourceToProduce);
+            recipe = this.factoryRecipe(room);
+          }
+          else if(Object.keys(room.memory.instruct).length > 0)
+          {
+            console.log(this.name, 'Main Lookup')
+            recipe = this.factoryRecipe(room);
+          }
+
+          let numberOfComponents = Object.keys(recipe).length;
+
+          for(let i in recipe)
+          {
+            const resource = i as CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
+            if(factory?.store[i] < recipe[i])
+            {
+              if(terminal?.store[i] < recipe[i])
+              {
+                if(storage?.store[i] < recipe[i])
+                {
+                  console.log('Nothing in storage');
+                  // Don't have the resource need to construct it
+                  if(room.memory.componentInstruct === undefined)
+                    room.memory.componentInstruct = {};
+
+                  room.memory.resourceToProduce = resource;
+                  room.memory.amoutToProduce = recipe[i];
+                  room.memory.componentInstruct[i] = recipe[i];
+                }
+                else
+                {
+                  const ret = creep.withdraw(storage, resource, recipe[i]);
+                  console.log(this.name, 'Taking out of storage', i, ret)
+                  creep.memory.target = factory.id;
+                }
+              }
+              else
+              {
+                const ret = creep.withdraw(terminal, resource, recipe[i])
+                console.log(this.name, 'Taking out of terminal', i, ret)
+                creep.memory.target = factory.id;
+              }
+            }
+            else
+            {
+              numberOfComponents--;
+              console.log(this.name, 'Number of components', numberOfComponents);
+              if(factory.store[room.memory.resourceToProduce] >= room.memory.amoutToProduce)
+              {
+                console.log(this.name, 'Resetting up one level');
+                room.memory.resourceToProduce = undefined;
+                room.memory.amoutToProduce = undefined;
+                room.memory.componentInstruct = undefined;
+              }
+
+              if(numberOfComponents == 0)
+              {
+                if(factory.cooldown === 0)
+                {
+                  if(room.memory.componentInstruct !== undefined)
+                  {
+                    const ret = factory.produce(room.memory.resourceToProduce);
+                    console.log(this.name, 'Factory produce', ret, room.memory.resourceToProduce)
+                  }
+                  else
+                  {
+                    let resource = Object.keys(room.memory.instruct)[0] as CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
+                    factory.produce(resource)
+                  }
+                }
+              }
+            }
+          }
+        }
+        else
+        {
+          room.memory.depositMining = false;
+        }
       }
 
       // Full storage
@@ -136,8 +241,8 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         return;
       }
 
-      if(factory?.store.getUsedCapacity(RESOURCE_PURIFIER) > 0
-        && factory?.store.getUsedCapacity(RESOURCE_PURIFIER) < terminal.store.getFreeCapacity())
+      if(factory?.store.getUsedCapacity(RESOURCE_PURIFIER) >= creep.store.getCapacity()
+        && factory?.store.getUsedCapacity(RESOURCE_PURIFIER) < terminal?.store.getFreeCapacity())
       {
         creep.withdraw(factory, RESOURCE_PURIFIER);
         creep.memory.target = storage.id;
@@ -151,10 +256,13 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       let max = KEEP_AMOUNT;
       let retValue: string;
 
-      target = _.find(Object.keys(terminal.store), (r) => {
-        if(r === RESOURCE_ENERGY && terminal.store[r] < 75000)
-          return true;
-      });
+      if(terminal)
+      {
+        target = _.find(Object.keys(terminal.store), (r) => {
+          if(r === RESOURCE_ENERGY && terminal.store[r] < 75000)
+            return true;
+        });
+      }
 
       if(this.logging && creep.name === this.logName)
         console.log(this.name, 3)
@@ -165,40 +273,41 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       }
       else
       {
-        if(this.logging && creep.name === this.logName)
-        console.log(this.name, 3.5)
-        target = _.find(Object.keys(terminal.store), (r) => {
-          if(r === RESOURCE_ENERGY && terminal.store[r] > 75000)
-            return r;
+        if(terminal)
+        {
+          target = _.find(Object.keys(terminal.store), (r) => {
+            if(r === RESOURCE_ENERGY && terminal.store[r] > 75000)
+              return r;
 
-          if(r !== RESOURCE_ENERGY && terminal.store[r] > max)
-          {
-            max = terminal.store[r];
-            retValue = r;
-          }
-          else if(_.includes(PRODUCT_LIST, r))
-          {
-            let amount = storage.store[r] ? storage.store[r] : 0;
-            if(amount < 1000)
+            if(r !== RESOURCE_ENERGY && terminal.store[r] > max)
             {
               max = terminal.store[r];
               retValue = r;
             }
-          }
-          else if(!_.include(MINERALS_RAW, r) && r !== RESOURCE_ENERGY)
-          {
-            if(terminal.room.name === 'E35S51')
+            else if(_.includes(PRODUCT_LIST, r))
             {
-              //console.log(this.name, 'Transfer issue', r)
-              //return r;
+              let amount = storage.store[r] ? storage.store[r] : 0;
+              if(amount < 1000)
+              {
+                max = terminal.store[r];
+                retValue = r;
+              }
             }
-          }
+            else if(!_.include(MINERALS_RAW, r) && r !== RESOURCE_ENERGY)
+            {
+              if(terminal.room.name === 'E35S51')
+              {
+                //console.log(this.name, 'Transfer issue', r)
+                //return r;
+              }
+            }
 
-          if(max > 0 && retValue)
-          {
-            return retValue;
-          }
-        });
+            if(max > 0 && retValue)
+            {
+              return retValue;
+            }
+          });
+        }
       }
 
       if(this.logging && creep.name === this.logName)
@@ -207,7 +316,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       {
         if(target === RESOURCE_ENERGY)
         {
-          let amount = terminal.store[target] - 75000 < creep.carryCapacity ? terminal.store[target] - 75000 : creep.carryCapacity;
+          let amount = terminal?.store[target] - 75000 < creep.carryCapacity ? terminal.store[target] - 75000 : creep.carryCapacity;
           creep.withdraw(terminal, target, amount);
           creep.memory.target = terminal.id;
           return;
@@ -276,6 +385,39 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
       }
       if(this.logging && creep.name === this.logName)
         console.log(this.name, 5)
+
+      // Put deposit from terminal or storage into factory
+      if(room.memory.depositType)
+      {
+        if(storage.store[room.memory.depositType] > 0)
+        {
+          creep.say('🟪');
+          creep.withdraw(storage, room.memory.depositType);
+          creep.memory.target = factory.id;
+          return;
+        }
+
+        if(terminal.store[room.memory.depositType] > 0)
+        {
+          creep.say('🟪');
+          creep.withdraw(terminal, room.memory.depositType);
+          creep.memory.target = factory.id;
+          return;
+        }
+      }
+
+      if(storage?.store[RESOURCE_CONDENSATE] > 0)
+      {
+        creep.withdraw(storage, RESOURCE_CONDENSATE);
+        creep.memory.target = storage.id
+      }
+
+      // Need a way to move over everything but bars to Terminal.
+      if(factory?.store[RESOURCE_CONDENSATE] > 0)
+      {
+        creep.withdraw(factory, RESOURCE_CONDENSATE);
+        creep.memory.target = storage.id
+      }
     }
     else
     {
@@ -321,5 +463,45 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
     {
       factory.produce(RESOURCE_PURIFIER);
     }
+  }
+
+  private factoryRecipe(room: Room): Recipe
+  {
+    let instruct: Instruction;
+    if(room.memory.componentInstruct)
+    {
+      instruct = room.memory.componentInstruct;
+    }
+    else
+    {
+      instruct = room.memory.instruct
+    }
+
+    let recipe: Recipe = {};
+
+    // if(creep.name === 'em-s-E35S51-23260676')
+    //   console.log(this.name, 'Start recipe list', recipe);
+
+    for (let i in instruct)
+    {
+      console.log(this.name, i, instruct[i], COMMODITIES[i]);
+      if (instruct[i] && COMMODITIES[i])
+      {
+        console.log(this.name, i, 'Time to look up components');
+        for (let ed in COMMODITIES[i].components)
+        {
+          if (recipe[ed] === undefined)
+          {
+            recipe[ed] = COMMODITIES[i].components[ed];
+          }
+          else
+          {
+            recipe[ed] += COMMODITIES[i].components[ed];
+          }
+        }
+      }
+    }
+
+    return recipe;
   }
 }

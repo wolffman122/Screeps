@@ -19,129 +19,53 @@ export class TestProcessManagement extends Process
 
   run()
   {
+
     try
     {
       this.ensureMetaData;
 
-      let flag = Game.flags[this.metaData.flagName];
-      let room = Game.rooms[this.metaData.roomName];
-
+      const flag = Game.flags[this.metaData.flagName];
       if(!flag)
       {
-        this.metaData.followers = Utils.clearDeadCreeps(this.metaData.followers);
-        this.metaData.leaders = Utils.clearDeadCreeps(this.metaData.leaders);
-
-        if(this.metaData.followers.length === 0 && this.metaData.leaders.length === 0)
-          this.completed = true;
-
+        this.completed = true;
         return;
       }
 
-      this.target = flag;
-
-      this.metaData.followers = Utils.clearDeadCreeps(this.metaData.followers);
-      this.metaData.leaders = Utils.clearDeadCreeps(this.metaData.leaders);
-
-      if(this.metaData.leaders.length < 1)
+      const top = (flag.pos.y - 2 > 0) ? flag.pos.y - 2: 0;
+      const right = (flag.pos.x + 2 < 49) ? flag.pos.x + 2 : 49;
+      const bottom = (flag.pos.y + 2 < 49) ? flag.pos.y + 2 : 49;
+      const left = (flag.pos.x - 2 > 0) ? flag.pos.x - 2: 0;
+      const lCreeps = flag.room.lookAtArea(top, left, bottom, right, true) as LookAtResultWithPos[];
+      for(let i = 0; i < lCreeps.length; i++)
       {
-        const creepName = 'leader-' + this.metaData.roomName + '-' + Game.time;
-        const spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'vision', creepName, {});
+        const look = lCreeps[i];
+        if (look.structure?.structureType !== STRUCTURE_CONTAINER)
+          continue;
 
-        if(spawned)
-          this.metaData.leaders.push(creepName);
-      }
-
-      if(this.metaData.followers.length < 1)
-      {
-        const creepName = 'follower-' + this.metaData.roomName + '-' + Game.time;
-        const spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'vision', creepName, {});
-
-        if(spawned)
-          this.metaData.followers.push(creepName);
-      }
-
-      for(let i = 0; i < this.metaData.leaders.length; i++)
-      {
-        let leader = Game.creeps[this.metaData.leaders[i]];
-        if(leader)
-          this.leaderActions(leader);
-      }
-
-      for(let i = 0; i < this.metaData.followers.length; i++)
-      {
-        let follower = Game.creeps[this.metaData.followers[i]];
-        if(follower)
-          this.followerActions(follower);
-      }
-    }
-    catch(error)
-    {
-      console.log(this.name, 'Run', error);
-    }
-  }
-
-  leaderActions(creep: Creep)
-  {
-    try
-    {
-      //find leader index to match with healer index
-      let follower: Creep
-      const index = this.metaData.leaders.indexOf(creep.name);
-      if(index !== -1)
-      {
-        follower = Game.creeps[this.metaData.followers[index]];
-        if(follower)
+        if (lCreeps.some(l => l.x === look.x && l.y === look.y /*&& l.creep?.owner.username === "Invader"*/))
         {
-          // Case for exits
-          if(creep.pos.roomName !== follower.pos.roomName)
-          {
-            let dir = creep.pos.getDirectionTo(follower)
-            dir += 4;
-            if(dir > 8)
-            {
-              const temp = dir % 8;
-              dir = temp as DirectionConstant;
-            }
-
-            creep.move(dir);
-          }
-        }
-        else if(creep.pos.inRangeTo(follower, 1))  // Normal following
-        {
-          if(!creep.pos.inRangeTo(this.target, 1))
-          {
-            creep.travelTo(this.target);
-          }
+          console.log(1, look.x, look.y, flag.pos.roomName);
+          console.log(2, look.structure);
         }
       }
-    }
-    catch(error)
-    {
-      console.log(this.name, 'leaderActions', error)
-    }
-  }
 
-  followerActions(creep: Creep)
-  {
-    try
-    {
-      // Find index of matching attacker
-      let leader: Creep
-      const index = this.metaData.followers.indexOf(creep.name);
-      if(index !== -1)
+       console.log(this.name, 'Look For Results', top, left, bottom, right);
+      if(lCreeps.length)
       {
-        leader = Game.creeps[this.metaData.leaders.indexOf(creep.name)];
-
-        if(leader.pos.inRangeTo(creep, 1))
-        {
-          let dir = creep.pos.getDirectionTo(leader);
-          creep.move(dir);
-        }
-        else
-        {
-          creep.travelTo(leader);
-        }
+        console.log(this.name, 'Found creeps', lCreeps.length)
       }
+      //let xCord, yCord;
+      // console.log(this.name, 'Look For Results');
+      // _.forEach(Object.keys(results), (y) => {
+      //   console.log(this.name, y)
+      //   _.forEach(Object.keys(results[y]), (x) => {
+      //     console.log(this.name, y, x);
+      //     _.forEach(Object.keys(results[y][x]), (type) => {
+      //         console.log(this.name, y, x, type, results[y][x][type]);
+      //     });
+      //   });
+      // });
+
     }
     catch(error)
     {

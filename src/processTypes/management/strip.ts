@@ -50,9 +50,7 @@ export class StripManagementProcess extends Process
 
             if(spawned)
             {
-                console.log(this.name, 'WTF',this.metaData.stripperCreeps.length)
                 this.metaData.stripperCreeps.push(creepName);
-                console.log(this.name, 'WTF2',this.metaData.stripperCreeps.length)
                 this.kernel.addProcessIfNotExist(StripperLifetimeProcess, 'stripper-' + creepName, this.priority-1, {
                     creep: creepName,
                     roomName: spawnRoom,

@@ -41,9 +41,13 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
       if(this.kernel.data.roomData[creep.room.name].controllerContainer)
       {
+        if(creep.name === 'em-u-E39S35-23510934')
+          console.log(this.name, 1);
         let controller = creep.room.controller;
         if(controller?.sign?.username !== "wolffman122")
         {
+          if(creep.name === 'em-u-E39S35-23510934')
+          console.log(this.name, 2)
           if(creep.pos.isNearTo(controller))
           {
             creep.signController(controller, "[YP] Territory");
@@ -56,10 +60,16 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
         let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
 
+        if(creep.name === 'em-u-E39S35-23510934')
+          console.log(this.name, 3)
         if(target)
         {
+          if(creep.name === 'em-u-E39S35-23510934')
+          console.log(this.name, 4)
           if(this.metaData.openSpaces === undefined)
           {
+            if(creep.name === 'em-u-E39S35-23510934')
+          console.log(this.name, 5)
             const openSpaces = target.pos.openAdjacentSpots(false);
             let flag = Game.flags['Center-' + this.metaData.roomName];
             let maxDistance = 0;
@@ -79,7 +89,8 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
           {
             if(this.metaData.roomName === 'E41S32')
               console.log(this.name, 'Location', this.metaData.openSpaces.x, this.metaData.openSpaces.y);
-
+              if(creep.name === 'em-u-E39S35-23510934')
+              console.log(this.name, 6)
 
             let pos = new RoomPosition(this.metaData.openSpaces.x, this.metaData.openSpaces.y, this.metaData.roomName);
             if(creep.pos.isEqualTo(pos))

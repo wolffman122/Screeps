@@ -41,8 +41,6 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       const terminal = creep.room.terminal;
       const powerSpawn = this.kernel.data.roomData[creep.room.name].powerSpawn;
 
-        , powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) === 0
-        , powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY) === 0)
       if(terminal?.store.getUsedCapacity(RESOURCE_POWER) >= 100
         && powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) === 0)
       {

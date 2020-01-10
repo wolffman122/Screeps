@@ -7,12 +7,14 @@ interface Creep extends RoomObject {
     fixMyRoad(): boolean;
     transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|StructureFactory): number;
     withdrawEverything(target: any): number;
+    withdrawEverythingBut(target: any, res: ResourceConstant): number;
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
     boostRequest(boosts: string[], allowUnboosted: boolean): any
     getBodyPart(type: BodyPartConstant): boolean;
     getBodyParts(): BodyPartConstant[];
+    moveDir(dir: DirectionConstant): string;
   }
 
 interface RoomPosition {
@@ -218,6 +220,13 @@ interface Flag {
       sleep?: number;
       stuck?: number;
       swap?: RoomPosition;
+      standPos?: RoomPosition;
+  }
+
+  interface PowerCreepMemory
+  {
+    opGenerationRoom?: string;
+    renewTarget?: string;
   }
 
   interface FlagMemory
@@ -251,9 +260,7 @@ interface Flag {
       level: number
     };
     assisted: boolean;
-    rampartHealth?: number;
-    rampartsUpgrading?: boolean;
-    rampartsDoneUpgrading?: boolean;
+    rampartTarget?: number;
     invadersPresent?: boolean;
     skSourceRoom?: boolean;
     lastVision: number;
@@ -266,6 +273,7 @@ interface Flag {
     pauseUpgrading?: boolean;
     fullEnergyCount?: number;
     specialMining?: boolean;
+    depositMining?: boolean;
     surroundingRooms: {
       [roomName: string]: {
         sourceNumbers: number
@@ -276,6 +284,11 @@ interface Flag {
     remoteHarvesting?: boolean;
     enemies?: boolean;
     roadComplete?: number;
+    depositType: DepositConstant;
+    instruct?: Instruction;
+    componentInstruct?: Instruction;
+    resourceToProduce?: CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
+    amoutToProduce?: number;
   }
 
   interface SpawnMemory {}
@@ -430,6 +443,7 @@ interface Flag {
   {
     orderCreated?: boolean
     orderId?: string
+    roomWithResource: string[]
   }
 
   interface DismantleManagementProcessMetaData
@@ -450,6 +464,10 @@ interface Flag {
     haulers: string[],
     dismantleDone: boolean,
     haulerDone: boolean,
+    haulerAlmostDone: boolean,
+    standPos?: RoomPosition,
+    moving?:boolean,
+    stage?: number,
   }
 
   interface DismantleMetaData
@@ -707,7 +725,7 @@ interface Flag {
     openSpaces?: RoomPosition
   }
 
-  interface PowerManagementProcessMetaData
+  interface PowerHarvestingManagementProcessMetaData
   {
     roomName: string;
     currentBank: BankData;
@@ -817,6 +835,46 @@ interface TestProcessManagementMetaData {
   followers: string[]
   flagName: string
 }
+
+interface PowerManagementProcessMetaData
+{
+}
+
+interface PowerCreepLifetimeProcessMetaData
+{
+  powerCreep: string,
+  roomName: string
+}
+
+interface AlleyObservationManagementProcessMetaData
+{
+  roomName: string,
+  lastCanTick: number,
+  scanIndex: number,
+  scanRooms: string[],
+  checkRoom: string,
+}
+
+interface DepositMiningManagementProcessMetaData
+{
+  roomName:string,
+  targetRoomName: string,
+  vision: boolean,
+  harvester: string[];
+  haulers: string[];
+  harvesterDone: boolean,
+  harvesterCount?: number,
+  haulerDone: boolean,
+}
+
+interface Spinner2LifeTimeProcessMetaData
+{
+  roomName: string,
+  renewSpawnId?: string,
+  numberOfFlags: number,
+  skFeedRoom?: boolean,
+  skMinerals?: string[],
+}
 //// Minerals
 
 
@@ -891,4 +949,19 @@ interface BankData
    y: number;
    xDir: string;
    yDir: string;
+ }
+
+ interface Instruction
+ {
+    [type:string]: number
+ }
+
+ interface Recipe
+ {
+   [type: string]: number;
+ }
+
+ interface RoomDistance
+ {
+   [roomName: string]: string;
  }

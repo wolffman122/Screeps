@@ -13,6 +13,10 @@ export const CreepBuilder = {
     {
       console.log('Vision problems 1')
     }
+    if(creepType === 'bigWorker')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY];
+    }
     if(creepType === 'guard')
     {
       return [MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,
@@ -101,6 +105,15 @@ export const CreepBuilder = {
               RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
               RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL];
     }
+    else if(creepType === 'despositMiner')
+    {
+      return [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+              WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
+    }
+
     else if(creepType === 'custom')
     {
       return memory.body;
@@ -218,7 +231,6 @@ export const CreepBuilder = {
     'mover': [CARRY, MOVE],
     'bigMover': [CARRY, MOVE],
     'worker': [WORK, CARRY, MOVE, MOVE],
-    'bigWorker': [WORK, WORK, CARRY, MOVE, MOVE],
     'upgrader': [WORK,WORK, CARRY,CARRY, MOVE],
     'defender': [ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
                  ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
@@ -257,7 +269,6 @@ export const CreepBuilder = {
     'bigMover': [CARRY, CARRY, MOVE],
     //'worker': [WORK, CARRY, MOVE, MOVE]
     'worker': [CARRY, WORK, MOVE, MOVE],
-    'bigWorker': [WORK, WORK, CARRY, MOVE, MOVE],
     'upgrader': [WORK, WORK, MOVE],
     'defender': [],
     'spinner': [CARRY],
@@ -287,7 +298,6 @@ export const CreepBuilder = {
     'mover': 32,
     'bigMover': 42,
     'worker': 16,
-    'bigWorker': 40,
     'upgrader': 32,
     'defender': 49,
     'spinner': 14,

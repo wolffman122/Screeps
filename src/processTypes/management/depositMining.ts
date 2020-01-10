@@ -30,8 +30,15 @@ export class DepositMiningManagementProcess extends Process
 
     const room = Game.rooms[this.metaData.roomName];
     room.memory.depositMining = true;
-    const harvesterCount = 1;
-    const haulerCount = 1;
+
+    let harvesterCount = 1
+    let haulerCount = 1;
+    if(this.metaData.harvesterCount !== undefined)
+    {
+      harvesterCount = this.metaData.harvesterCount
+      haulerCount = 2;
+    }
+
 
     this.metaData.harvester = Utils.clearDeadCreeps(this.metaData.harvester);
     this.metaData.haulers = Utils.clearDeadCreeps(this.metaData.haulers);
@@ -40,7 +47,7 @@ export class DepositMiningManagementProcess extends Process
     {
       const creepName = 'deposit-h-' + this.metaData.roomName + '-' + Game.time;
       const spawned = Utils.spawn(this.kernel, this.metaData.roomName,
-        'skMiner', creepName, {});
+        'despositMiner', creepName, {});
 
       if(spawned)
         this.metaData.harvester.push(creepName);
@@ -72,8 +79,14 @@ export class DepositMiningManagementProcess extends Process
       if(deposits.length)
       {
         target = deposits[0];
-        if(target.lastCooldown < 50)
+        if(target.lastCooldown < 80)
         {
+          if(this.metaData.harvesterCount === undefined)
+          {
+            const openPos = target.pos.openAdjacentSpots(true);
+            if(openPos.length > 1)
+              this.metaData.harvesterCount = 2;
+          }
           room.memory.depositType = target.depositType;
           mining = true;
         }
@@ -103,7 +116,36 @@ export class DepositMiningManagementProcess extends Process
   {
     try
     {
-      if(target?.lastCooldown >= 50)
+      if(!creep.memory.boost)
+      {
+        creep.boostRequest([RESOURCE_UTRIUM_OXIDE], false);
+        return;
+      }
+
+      if(creep.ticksToLive < 200)
+      {
+        const spawn = this.roomData().spawns.filter(s => !s.spawning);
+        if(spawn.length)
+        {
+          creep.say('♻');
+          if(!creep.pos.isNearTo(spawn[0]))
+            creep.travelTo(spawn[0]);
+          else
+            spawn[0].recycleCreep(creep);
+        }
+        else if(creep.ticksToLive < 20)
+        {
+          const container = this.roomData().generalContainers[0];
+          if(!creep.pos.inRangeTo(container, 0))
+            creep.travelTo(container);
+          else
+            creep.suicide();
+        }
+
+        return;
+      }
+
+      if(target?.lastCooldown >= 80)
       {
         this.metaData.vision = false;
         const container = this.roomData().generalContainers[0];
@@ -129,15 +171,26 @@ export class DepositMiningManagementProcess extends Process
       if(this.metaData.haulers.length)
       {
         const full = creep.store.getFreeCapacity() <= creep.getActiveBodyparts(WORK);
-        const hauler = Game.creeps[this.metaData.haulers[0]];
-        if(hauler.pos.isNearTo(creep) && (full || creep.ticksToLive < 5
-          || hauler.ticksToLive < 210))
+
+        // Find empty hauler
+        const haulerId = _.find(this.metaData.haulers, (h) => {
+          const hauler = Game.creeps[h];
+          if(hauler.store.getFreeCapacity() >= creep.store.getCapacity())
+            return true;
+        })
+        if(haulerId)
         {
-          creep.transfer(hauler, target.depositType);
-          return;
+          const hauler = Game.creeps[haulerId];
+          if(hauler.pos.isNearTo(creep) && (full || creep.ticksToLive < 5
+            || hauler.ticksToLive < 210))
+          {
+            creep.transfer(hauler, target.depositType);
+            return;
+          }
         }
       }
 
+      console.log(this.name, 1)
       this.metaData.vision = true;
       if(!creep.pos.isNearTo(target))
         creep.travelTo(target);
@@ -177,16 +230,35 @@ export class DepositMiningManagementProcess extends Process
 
       if(creep.ticksToLive < 200)
       {
-        const container = this.roomData().generalContainers[0];
-        if(!creep.pos.inRangeTo(container, 0))
-          creep.travelTo(container);
-        else
-          creep.suicide();
+        const spawn = this.roomData().spawns.filter(s => !s.spawning);
+        if(spawn.length)
+        {
+          creep.say('♻');
+          if(!creep.pos.isNearTo(spawn[0]))
+          {
+            const ret = creep.travelTo(spawn[0]);
+            console.log(this.name, 1, ret);
+          }
+          else
+          {
+
+            const ret = spawn[0].recycleCreep(creep);
+            console.log(this.name, 2, ret);
+          }
+        }
+        else if(creep.ticksToLive < 20)
+        {
+          const container = this.roomData().generalContainers[0];
+          if(!creep.pos.inRangeTo(container, 0))
+            creep.travelTo(container);
+          else
+            creep.suicide();
+        }
 
         return;
       }
 
-      if(target?.lastCooldown >= 50)
+      if(target?.lastCooldown >= 80)
         creep.memory.full = true;
 
       if(creep.store.getFreeCapacity() === 0 || creep.memory.full)
@@ -200,7 +272,7 @@ export class DepositMiningManagementProcess extends Process
 
         if(creep.store.getUsedCapacity() === 0)
         {
-          if(target?.lastCooldown >= 50)
+          if(target?.lastCooldown >= 80)
             this.metaData.haulerDone = true;
 
           creep.memory.full = false;
@@ -228,8 +300,13 @@ export class DepositMiningManagementProcess extends Process
 
       if(this.metaData.harvester.length)
       {
+
         const harvester = Game.creeps[this.metaData.harvester[0]];
-        if(!creep.pos.isNearTo(harvester) && harvester.pos.isNearTo(target))
+        let dir = creep.pos.getDirectionTo(harvester) as number;
+        dir = +((dir + 4) % 8 === 0) ? 1 : dir+4;
+        const pos = harvester.pos.getPositionAtDirection(dir);
+
+        if(harvester.pos.isNearTo(pos))
         {
           creep.travelTo(harvester);
           return;

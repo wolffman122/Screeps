@@ -7,8 +7,10 @@ import {TowerRepairProcess} from './buildingProcesses/towerRepair'
 import { MineralManagementProcess } from 'processTypes/management/mineral';
 import { skRoomManagementProcess } from './management/skroom';
 import { TowerHealProcess } from './buildingProcesses/towerHeal';
-import { PowerManagementProcess } from './management/power';
+import { PowerHarvestingManagement } from './management/powerHarvesting';
 import { ObservationManagementProcess } from './management/observation';
+import { WorldMap } from 'lib/WorldMap';
+import { AlleyObservationManagementProcess } from './management/alleyObservation';
 
 interface RoomDataMeta{
   roomName: string
@@ -87,7 +89,33 @@ export class RoomDataProcess extends Process{
       }
 
 
+      //////////// Code to find alley rooms ///////////////////////
       let observer = this.kernel.data.roomData[room.name].observer
+      if(observer?.my)
+      {
+        let coord = WorldMap.getRoomCoordinates(this.metaData.roomName);
+        let zoneX = Math.floor(coord.x / 10) * 10;
+        let zoneY = Math.floor(coord.y / 10) * 10;
+
+        const cpTop = ((coord.y - (zoneY + 1)) * ((zoneX + 9) - (zoneX + 1)) - (coord.x - (zoneX + 1)) * ((zoneY + 1) - (zoneY + 1)));
+        const cpLeft = ((coord.y - (zoneY + 1)) * ((zoneX + 1) - (zoneX + 1)) - (coord.x - (zoneX + 1)) * ((zoneY + 9) - (zoneY + 1)));
+        const cpBot = ((coord.y - (zoneY + 9)) * ((zoneX + 9) - (zoneX + 1)) - (coord.x - (zoneX + 1)) * ((zoneY + 9) - (zoneY + 9)));
+        const cpRight = ((coord.y - (zoneY + 1)) * ((zoneX + 9) - (zoneX + 9)) - (coord.x - (zoneX + 9)) * ((zoneY + 9) - (zoneY + 1)));
+        if(!cpTop || !cpLeft || !cpBot || !cpRight)
+        {
+          if(this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E39S35' ||
+            this.metaData.roomName === 'E48S49')
+          {
+            this.kernel.addProcessIfNotExist(AlleyObservationManagementProcess, 'aomp' + this.metaData.roomName, 25, {
+              roomName: this.metaData.roomName
+            });
+          }
+        }
+      }
+      // Top
+
+
+
       if(observer && (this.metaData.roomName === 'E52S46' || this.metaData.roomName === 'E42S48'))
       {
         /*this.kernel.addProcessIfNotExist(ObservationManagementProcess, 'omp-' + this.metaData.roomName, 33, {
@@ -126,7 +154,7 @@ export class RoomDataProcess extends Process{
 
       if(this.roomData().observer && this.roomData().powerSpawn)
       {
-        this.kernel.addProcessIfNotExist(PowerManagementProcess, 'powm-' + room.name, 25, {
+        this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powm-' + room.name, 25, {
           roomName: room.name
         });
       }
@@ -727,13 +755,9 @@ export class RoomDataProcess extends Process{
     let controller = room.controller;
     if(controller && controller.level >= 3)
     {
-      let damagedCreeps = <Creep[]>room.find(FIND_MY_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
-      if(damagedCreeps.length > 0)
-      {
-        this.kernel.addProcessIfNotExist(TowerHealProcess, 'th-' + this.metaData.roomName, 90, {
-          roomName: this.metaData.roomName
-        })
-      }
+      this.kernel.addProcessIfNotExist(TowerHealProcess, 'th-' + this.metaData.roomName, 90, {
+        roomName: this.metaData.roomName
+      })
     }
   }
 

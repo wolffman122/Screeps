@@ -13,19 +13,17 @@ export class MarketManagementProcess extends Process
 
   run()
   {
-    if(!this.metaData.roomWithResource)
-    {
-      const catRooms = _.filter(Game.rooms, (r) => {
-        return (r.controller?.my
-          && this.kernel.data.roomData[r.name].mineral?.mineralType === RESOURCE_CATALYST          );
-      })
+    const catRooms = _.filter(Game.rooms, (r) => {
+      return (r.controller?.my
+        && this.kernel.data.roomData[r.name].mineral?.mineralType === RESOURCE_CATALYST &&
+        r.terminal?.store[RESOURCE_PURIFIER] > 6000);
+    })
 
-      this.metaData.roomWithResource = catRooms.map(r => r.name);
-    }
+    this.metaData.roomWithResource = catRooms.map(r => r.name);
 
     console.log(this.name, 'Rooms that have purifier', this.metaData.roomWithResource.length)
 
-    if(Game.time % 5 === 0)
+    if(Game.time % 5 === 0 && this.metaData.roomWithResource.length)
     {
       let roomDistance: RoomDistance = {};
 
@@ -34,20 +32,25 @@ export class MarketManagementProcess extends Process
 
       for(let i = 0; i < orders.length; i++)
       {
+        console.log(this.name, 1)
         const order = orders[i];
-        if(order.active)
+        if(order.remainingAmount > 0)
         {
           let bestDistance = 999;
           let bestRoom = '';
           for(let j = 0; j < this.metaData.roomWithResource.length; j++)
           {
+            console.log(this.name, 3)
             const sourceRoom = Game.rooms[this.metaData.roomWithResource[j]];
             const terminal = sourceRoom.terminal;
             if(terminal?.cooldown === 0 && terminal.store[RESOURCE_PURIFIER] >= order.amount)
             {
+              console.log(this.name, 4)
               const cost = Game.market.calcTransactionCost(order.amount, order.roomName, sourceRoom.name)
+              console.log(this.name, 'Cost', cost);
               if(cost < 5000)
               {
+                console.log(this.name, 5)
                 const ret = Game.market.deal(order.id, order.amount, sourceRoom.name);
                 console.log(this.name, 'Order info destroom', order.roomName, 'cost', cost, 'Amount', order.amount, 'sourceRoom', sourceRoom.name, 'Ret', ret);
                 if(ret === OK)

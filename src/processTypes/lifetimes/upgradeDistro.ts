@@ -29,6 +29,8 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
         }
       }
 
+      const target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
       if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
       {
         if(!creep.room.storage?.my && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
@@ -86,7 +88,7 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
       }
 
 
-      if(this.kernel.data.roomData[creep.room.name] && this.kernel.data.roomData[creep.room.name])
+      if(this.kernel.data.roomData[creep.room.name])
       {
         let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
 
@@ -101,10 +103,14 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
           }
           else
           {
-            if(target.store.getFreeCapacity() > creep.store.getCapacity())
-              creep.transfer(target, RESOURCE_ENERGY);
-            else
-              this.suspend = 20;
+            if(creep.transfer(target, RESOURCE_ENERGY) === OK)
+            {
+              if(creep.store.getUsedCapacity() === 0 && target.store[RESOURCE_ENERGY] < target.store.getUsedCapacity())
+              {
+                creep.withdrawEverythingBut(target, RESOURCE_ENERGY);
+              }
+            }
+
           }
         }
         else

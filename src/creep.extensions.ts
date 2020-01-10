@@ -44,6 +44,25 @@ Creep.prototype.withdrawEverything = function(target: any)
   return ERR_NOT_ENOUGH_RESOURCES;
 }
 
+Creep.prototype.withdrawEverythingBut = function (target: any, res: ResourceConstant)
+{
+  if(!(target instanceof StructureLab))
+  {
+    for(let t in target.store)
+    {
+      let resourceType = t as ResourceConstant;
+      if(resourceType !== res)
+      {
+        let amount = target.store[resourceType];
+        if(amount && amount > 0)
+        {
+          return this.withdraw(target, resourceType);
+        }
+      }
+    }
+  }
+}
+
 Creep.prototype.yieldRoad = function(target: {pos: RoomPosition}, allowSwamps = true): number
 {
   let isOffRoad = this.pos.lookForStructures(STRUCTURE_ROAD) === undefined;

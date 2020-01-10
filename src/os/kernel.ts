@@ -74,7 +74,7 @@ import { ReportProcess } from 'processTypes/system/reports';
 import { skRoomManagementProcess } from 'processTypes/management/skroom';
 import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
 import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
-import { PowerManagementProcess } from 'processTypes/management/power';
+import { PowerHarvestingManagement } from 'processTypes/management/powerHarvesting';
 import { DefenderLifetimeProcess } from 'processTypes/lifetimes/defender';
 import { DefendProcess } from 'processTypes/creepActions/defend';
 import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
@@ -85,6 +85,11 @@ import { AutomaticHoldManagementProcess } from 'processTypes/management/automati
 import { StripManagementProcess } from 'processTypes/management/strip'
 import { StripperLifetimeProcess } from 'processTypes/lifetimes/stripper'
 import { TestProcessManagement } from 'processTypes/management/test'
+import { PowerManagement } from 'processTypes/management/power'
+import { PowerCreepLifetimeProcess } from 'processTypes/lifetimes/powerCreep'
+import { AlleyObservationManagementProcess } from 'processTypes/management/alleyObservation'
+import { DepositMiningManagementProcess } from 'processTypes/management/depositMining'
+import { Spinner2LifeTimeProcess } from 'processTypes/lifetimes/spinner2'
 
 
 
@@ -124,6 +129,7 @@ const processTypes = <{[type: string]: any}>{
   'transfer': TransferProcess,
   'lm': LinkManagementProcess,
   'slf': SpinnerLifetimeProcess,
+  'slf2': Spinner2LifeTimeProcess,
   'holdWorkerlf': HoldWorkerLifetimeProcess,
   'udlf': UpgradeDistroLifetimeProcess,
   'minerals': MineralManagementProcess,
@@ -158,7 +164,7 @@ const processTypes = <{[type: string]: any}>{
   'skrmp': skRoomManagementProcess,
   'lh': TowerHealProcess,
   'atmp': AllTerminalManagementProcess,
-  'powm': PowerManagementProcess,
+  'powm': PowerHarvestingManagement,
   'deflf': DefenderLifetimeProcess,
   'defend': DefendProcess,
   'busterlf': BusterLifetimeProcess,
@@ -168,6 +174,10 @@ const processTypes = <{[type: string]: any}>{
   'stripper': StripperLifetimeProcess,
   'ahmp': AutomaticHoldManagementProcess,
   'test':  TestProcessManagement, // 40
+  'powerm': PowerManagement, // 50
+  'pclf': PowerCreepLifetimeProcess, // 49
+  'aomp': AlleyObservationManagementProcess, // 25
+  'dmmp': DepositMiningManagementProcess // 24
 }
 
 interface KernelData{

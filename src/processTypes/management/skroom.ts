@@ -264,11 +264,10 @@ export class skRoomManagementProcess extends Process
           }
           catch( error )
           {
-            console.log(this.name, error);
+            console.log(this.name, 'run', error);
           }
 
 
-          console.log(this.name, 1);
           ////////////////////////////////////////////////////////////
           ///
           ///          Devil Spawn Code
@@ -306,25 +305,22 @@ export class skRoomManagementProcess extends Process
             }
           }
 
-          this.invaders = false;
           if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
           {
-            console.log(this.name, 2, this.skRoomName, this.roomInfo(this.skRoomName), this.kernel.data.roomData[this.skRoomName]);
             /////////////////////////////////////////////////////////////
             ///
             ///          Builder Spawn Code
             ///
             ////////////////////////////////////////////////////////////
-
+            console.log(this.name, 'Builder spawn', this.skRoomName, this.roomInfo(this.skRoomName))
             this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
             if(this.roomInfo(this.skRoomName))
             {
               if(this.roomInfo(this.skRoomName).sourceContainers.length < this.roomInfo(this.skRoomName).sources.length)
               {
-                console.log(this.name, 3);
+                console.log(this.name, 'Builder spawn', this.metaData.builderCreeps.length)
                 if(this.metaData.builderCreeps.length < 2)
                 {
-                  console.log(this.name, 4);
                   let creepName = 'sk-build-' + this.skRoomName + '-' + Game.time;
                   let spawned = Utils.spawn(
                     this.kernel,
@@ -343,7 +339,6 @@ export class skRoomManagementProcess extends Process
               }
               else if(this.roomInfo(this.skRoomName).constructionSites.length > 0)
               {
-                console.log('Provlem 2', this.metaData.builderCreeps.length)
                 if(this.metaData.builderCreeps.length < 1)
                 {
                   let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
@@ -906,7 +901,7 @@ export class skRoomManagementProcess extends Process
       }
       catch (error)
       {
-        console.log(this.name, error)
+        console.log(this.name, 'DevilActions', error)
       }
     }
 
@@ -1260,7 +1255,7 @@ export class skRoomManagementProcess extends Process
       }
       catch (error)
       {
-        console.log(this.name, error)
+        console.log(this.name, 'BuilderActions', error)
       }
     }
 
@@ -1329,6 +1324,8 @@ export class skRoomManagementProcess extends Process
                 // you should be careful!
                 if (!room) return;
                 let costs = new PathFinder.CostMatrix;
+
+                room.find(FIND_EXIT).forEach(exit=>costs.set(exit.x, exit.y, 0xff))
 
                 // Avoid creeps in the room
                 room.find(FIND_CREEPS).forEach(function(creep) {
@@ -1403,7 +1400,7 @@ export class skRoomManagementProcess extends Process
       }
       catch (error)
       {
-        console.log(this.name, error)
+        console.log(this.name, 'HarvesterActions', error)
       }
     }
 
@@ -1576,7 +1573,7 @@ export class skRoomManagementProcess extends Process
       }
       catch (error)
       {
-        console.log(this.name, error)
+        console.log(this.name, 'HaulerActions', error)
       }
     }
 
@@ -1895,31 +1892,26 @@ export class skRoomManagementProcess extends Process
             {
               let createTime = +flag.name.split('-')[2];
               let coreRoomName = flag.name.split('-')[0];
-              if(this.name === 'skrmp-E55S46')
-                  console.log(this.name, 1, flag.name)
 
               if(createTime + 1 === Game.time)
               {
-                if(this.name === 'skrmp-E36S44')
-                  console.log(this.name, 2)
-
                 flag.memory.coreInfo = this.metaData.coreInfo;
                 //const ret = observer.observeRoom(coreRoomName);
                 return;
               }
 
-              if(this.metaData.coreInfo?.coreFlagName === 'E56S44-Core-22640573')
-              {
-                this.metaData.coreInfo = undefined;
-                flag.memory.coreInfo = undefined;
-                return;
-              }
               // Destructions
               if(flag.memory.coreInfo.done)
               {
+                let searchStr = flag.name.split('-')[0] + flag.name.split('-')[1]
                 this.metaData.coreInfo = undefined;
                 flag.memory.coreInfo = undefined;
                 flag.remove();
+                const removalFlags = _.filter(Game.flags, (f) => {
+                  return (f.name.indexOf('searchStr') !== -1);
+                })
+
+                removalFlags.forEach(f => f.remove());
               }
 
               // Checks to remove the flag once core is gone.
@@ -1938,9 +1930,6 @@ export class skRoomManagementProcess extends Process
                 }
               }
 
-              if(this.name === 'skrmp-E36S44')
-                console.log(this.name, 5)
-
               return;
             }
           }
@@ -1948,7 +1937,6 @@ export class skRoomManagementProcess extends Process
           // Look for cores.
           if(this.metaData.coreInfo === undefined)
           {
-            console.log(this.name, 'Looking for cores');
             observer.observeRoom(roomNames[index]);
 
             if(index >= roomNames.length - 1)
@@ -1962,14 +1950,12 @@ export class skRoomManagementProcess extends Process
               let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
               if(invaderCores.length)
               {
-                console.log(this.name, 'Found some cores');
                 const invaderCore = invaderCores[0];
                 if(invaderCore instanceof StructureInvaderCore)
                 {
                   // Check for SK Lair
                   let lairs = invaderCore.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, {filter: s => s.structureType === STRUCTURE_KEEPER_LAIR});
 
-                  console.log(this.name, 'Setting up some core info');
                   let info: CoreInfo = {
                     invaderCorePresent: true,
                     coreFlagName: scanRoom.name + '-Core-' + Game.time,
@@ -1983,7 +1969,6 @@ export class skRoomManagementProcess extends Process
 
                   if(info.coreFlagName === new RoomPosition(25,25, this.metaData.roomName).createFlag(info.coreFlagName, COLOR_PURPLE, COLOR_YELLOW))
                   {
-                    console.log(this.name, 'Found Core', info.coreFlagName);
                     this.metaData.coreInfo = info;
                   }
                 }
