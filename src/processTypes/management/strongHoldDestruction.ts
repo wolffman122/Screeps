@@ -366,7 +366,7 @@ export class StrongHoldDestructionProcess extends Process
       }
 
       console.log(this.name, 'LAA', 1)
-      if(!this.flag.memory.coreInfo.invaderCorePresent)
+      if(!this.flag.memory.coreInfo.invaderCorePresent) // Clean up
       {
         // Will need to put new code in for level 4 also
         if(this.flag.memory.coreInfo.coreLevel === 3)
@@ -492,27 +492,13 @@ export class StrongHoldDestructionProcess extends Process
             else if(this.core?.level === 2)
             {
               const tPos = this.flag.memory.coreInfo.coreLocation;
-              const standPos = new RoomPosition(tPos.x -3, tPos.y, tPos.roomName);
-              this.metaData.standPos = standPos;
-              target = standPos;
+              const leftPos = new RoomPosition(tPos.x -3, tPos.y, tPos.roomName);
+              const rightPos = new RoomPosition(tPos.x + 3, tPos.y, tPos.roomName);
+              const leftPath = creep.pos.findPathTo(leftPos);
+              const rightPath = creep.pos.findPathTo(rightPos);
+              target = (leftPath.length < rightPath.length) ? leftPos : rightPos;
+              this.metaData.standPos = target;
             }
-            // const top = (this.core.pos.y - 2 > 0) ? this.core.pos.y - 2 : 0;
-            // const right = (this.core.pos.x + 2 < 49) ? this.core.pos.x + 2 : 49;
-            // const bottom = (this.core.pos.y + 2 < 49) ? this.core.pos.y + 2 : 49;
-            // const left = (this.core.pos.x - 2 > 0) ? this.core.pos.x - 2 : 0;
-            // const lookResults = this.core.room.lookAtArea(top, left, bottom, right, true) as LookAtResultWithPos[];
-            // console.log(this.name, 'Leader Look Time', lookResults.length)
-            // for(let i = 0; i < lookResults.length; i++)
-            // {
-            //   const look = lookResults[i];
-            //   if (look.structure?.structureType !== STRUCTURE_CONTAINER)
-            //     continue;
-
-            //   if (!lookResults.some(l => l.x === look.x && l.y === look.y && l.creep?.owner.username === "Invader"))
-            //   {
-            //     this.metaData.target = look.structure.id;
-            //   }
-            // }
           }
           else
           {
@@ -844,7 +830,7 @@ export class StrongHoldDestructionProcess extends Process
 
       console.log(this.name, 'FAA WTF', 1)
       // Placing follower creeps around Attacker to stay out of range of meleee
-      if(this.core?.level === 4 && attacker.pos.inRangeTo(this.core, 10))
+      if(this.core?.level === 4 && attacker.pos.inRangeTo(this.core, 10)) // Lvl 4
       {
         const tPos = this.metaData.standPos;
         const targetPos = new RoomPosition(tPos.x, tPos.y, tPos.roomName);
@@ -872,15 +858,23 @@ export class StrongHoldDestructionProcess extends Process
           creep.travelTo(standPos);
         }
       }
-      else if(this.core?.level === 3 && attacker.pos.inRangeTo(this.core, 3))
+      else if(this.core?.level === 3 && attacker.pos.inRangeTo(this.core, 3)) // Lvl 3
       {
         const standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
         if(!creep.pos.isEqualTo(standPos))
           creep.travelTo(standPos);
       }
-      else if(this.core?.level === 2 && attacker.pos.inRangeTo(this.core, 3))
+      else if(this.core?.level === 2 && attacker.pos.isEqualTo(this.core, 3))
       {
-        const standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
+        let standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
+        const look = standPos.lookFor(LOOK_TERRAIN);
+        if(look.length)
+        {
+          const terrain = look[0];
+          if(terrain === "wall")
+            standPos = new RoomPosition(attacker.pos.x, attacker.pos.y + 1, attacker.pos.roomName);
+        }
+
         if(!creep.pos.isEqualTo(standPos))
           creep.travelTo(standPos);
       }
