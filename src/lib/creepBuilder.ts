@@ -225,7 +225,7 @@ export const CreepBuilder = {
 
   typeStarts: <PartList>{
     'claimer': [TOUGH, CLAIM, MOVE, MOVE, MOVE, MOVE],
-    'harvester': [WORK, WORK, CARRY, MOVE],
+    'harvester': [WORK, CARRY, MOVE, MOVE],
     'skHarvester': [WORK, WORK, WORK, CARRY, MOVE, MOVE],
     'hold': [CLAIM, MOVE],
     'mover': [CARRY, MOVE],

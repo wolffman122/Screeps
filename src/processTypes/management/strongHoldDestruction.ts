@@ -372,6 +372,17 @@ export class StrongHoldDestructionProcess extends Process
         if(this.flag.memory.coreInfo.coreLevel === 3)
         {
           console.log(this.name, 'Attack cleanup')
+          const hurtCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 5, {filter: c => c.hits < c.hitsMax});
+          if(hurtCreeps.length)
+          {
+            const target = hurtCreeps[0];
+            if(!creep.pos.inRangeTo(target,3))
+              creep.travelTo(target, {range: 3});
+            else
+              creep.rangedHeal(target);
+
+            return;
+          }
           const tPos = this.flag.memory.coreInfo.coreLocation;
           const pos = new RoomPosition(tPos.x+2, tPos.y, tPos.roomName);
           const rampartPos = new RoomPosition(tPos.x+1, tPos.y, tPos.roomName);

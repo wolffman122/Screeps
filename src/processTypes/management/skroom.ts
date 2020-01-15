@@ -926,6 +926,18 @@ export class skRoomManagementProcess extends Process
             let enemies = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 4);
             if(enemies.length === 0)
             {
+              if(this.roomInfo(builder.pos.roomName).containers.length > 3)
+              {
+                let SHContainer = this.roomInfo(builder.pos.roomName).containers.filter(c => (c.effects?.length ?? false) && c.store.getUsedCapacity() === 0);
+                if(SHContainer.length)
+                {
+                  if(!builder.pos.isNearTo(SHContainer[0]))
+                    builder.travelTo(SHContainer[0]);
+                  else
+                    builder.dismantle(SHContainer[0]);
+                  return;
+                }
+              }
               //////////// Fill up the builder ///////////////////////
               if(_.sum(builder.carry) != builder.carryCapacity && builder.memory.filling)
               {
@@ -1408,6 +1420,9 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
+        if(hauler.name === 'sk-m-E36S44-23718137')
+                console.log(this.name, 'Hauler', 0.5)
+
         if(!this.invaders)
         {
           if(this.metaData.roadsDone[source.id] === undefined)
@@ -1437,6 +1452,9 @@ export class skRoomManagementProcess extends Process
 
             if(!hauler.memory.full && hauler.ticksToLive! > this.metaData.distroDistance[source.id])
             {
+              if(hauler.name === 'sk-m-E36S44-23718137')
+                console.log(this.name, 'Hauler', 1)
+
               if(_.sum(hauler.carry) === hauler.carryCapacity)
               {
                 hauler.memory.full = true;
@@ -1458,6 +1476,9 @@ export class skRoomManagementProcess extends Process
                 let sourceContainer = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
                 if(sourceContainer)
                 {
+                  if(hauler.name === 'sk-m-E36S44-23718137')
+                console.log(this.name, 'Hauler', 2)
+
                   if(!hauler.pos.inRangeTo(sourceContainer, 1))
                   {
                       if(hauler.room.name === this.skRoomName && !this.metaData.roadsDone[source.id])
@@ -1471,9 +1492,13 @@ export class skRoomManagementProcess extends Process
                   {
                     this.metaData.roadsDone[source.id] = true;
                   }
+
                   let resource = <Resource[]>source.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
                   if(resource.length > 0)
                   {
+                    if(hauler.name === 'sk-m-E36S44-23718137')
+                console.log(this.name, 'Hauler', 3)
+
                       let withdrawAmount = hauler.carryCapacity - _.sum(hauler.carry) - resource[0].amount;
 
                       if(withdrawAmount >=0)
@@ -1486,19 +1511,42 @@ export class skRoomManagementProcess extends Process
                   }
                   else if(sourceContainer.store.energy > hauler.carryCapacity)
                   {
+                    if(hauler.name === 'sk-m-E36S44-23718137')
+                console.log(this.name, 'Hauler', 4)
+
                       hauler.withdraw(sourceContainer, RESOURCE_ENERGY);
                       return;
                   }
                   else if(source.energy === 0 && sourceContainer.store.energy > 0)
                   {
+                    if(hauler.name === 'sk-m-E36S44-23718137')
+                console.log(this.name, 'Hauler', 5)
+
                     hauler.withdraw(sourceContainer, RESOURCE_ENERGY);
                     hauler.memory.full = true;
                     return;
                   }
                   else
                   {
-                      hauler.say('waiting');
-                      return;
+                    if(hauler.name === 'sk-m-E36S44-23718137')
+                console.log(this.name, 'Hauler', 6)
+
+                    let SHContainer = this.roomInfo(hauler.pos.roomName).containers.filter(c => (c.effects?.length ?? false) && c.store.getUsedCapacity() === 0);
+                    if(SHContainer.length)
+                    {
+                      let container = hauler.pos.findClosestByPath(SHContainer);
+                      if(container)
+                      {
+                        if(!hauler.pos.isNearTo(container))
+                          hauler.travelTo(container);
+                        else
+                          hauler.withdrawEverything(container);
+                        return;
+                      }
+                    }
+
+                    hauler.say('waiting');
+                    return;
                   }
                 }
               }

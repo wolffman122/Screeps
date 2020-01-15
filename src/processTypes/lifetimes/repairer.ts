@@ -147,7 +147,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     }
     else //////////// Rampart upgrading ///////////////////////
     {
-      if(creep.name === 'sm-E35S51-23538390')
+      if(creep.name === 'sm-E47S46-23627651')
         console.log(this.name, 'Should be finding a rampart')
 
       let target: StructureRampart;
@@ -159,7 +159,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         {
 
           const minRampart = _.min(ramparts, (r) => r.hits);
-          if(creep.name === 'sm-E35S51-23538390')
+          if(creep.name === 'sm-E47S46-23627651')
           console.log(this.name, 1, minRampart)
           if(minRampart?.hits < room.memory.rampartTarget)
           {

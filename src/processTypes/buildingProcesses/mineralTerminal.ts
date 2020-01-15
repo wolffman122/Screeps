@@ -11,7 +11,7 @@ export class MinetalTerminalManagementProcess extends Process
     return;
       }
 }
-export const ENERGY_KEEP_AMOUNT = 150000;
+export const ENERGY_KEEP_AMOUNT = 115000;
 export const KEEP_AMOUNT = 10000;
 export const MINERAL_KEEP_AMOUNT = 5000;
 export const SPREAD_AMOUNT = 2000;
@@ -89,7 +89,7 @@ export const WHITE_LIST = ['admon',
   'Baj', 'cazantyl', 'DoctorPC', 'Geir1983', 'InvisioBlack', 'Issacar', 'Komir',
   'Lolzor', 'ncsupheo', 'NobodysNightmare', 'omnomwombat', 'Parthon',
   'Plemenit', 'poppahorse', 'Rengare', 'Subodai', 'Tantalas', 'Tijnoz', 'Totalschaden',
-  'Vlahn', 'W4rl0ck', 'weaves', 'Xaq', 'Yilmas', 'Zeekner', 'Zyzyzyryxy', 'likeafox',
+  'Vlahn', 'W4rl0ck', 'weaves', 'Xaq', 'Yilmas', 'Zeekner', 'Zyzyzyryxy', 'likeafox', "Solace",
   // Temporary ones
   'smitt33'];
 
