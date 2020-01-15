@@ -561,6 +561,7 @@ export class LabManagementProcess extends Process
             && amountNeeded > 0 && this.storage!.store[mineralType]! >= amountNeeded
             && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
             {
+              amountNeeded = Math.max(amountNeeded, 5);
               let command: Command = {origin: this.storage!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
                 return command;
             }
@@ -568,6 +569,7 @@ export class LabManagementProcess extends Process
           if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
             && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
           {
+            amountNeeded = Math.max(amountNeeded, 5);
             // bring minerals to lab when amount drops below amount needed
             let command: Command = {origin: this.terminal!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
             return command;
