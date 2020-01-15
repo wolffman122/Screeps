@@ -2,6 +2,7 @@ import { Process } from "os/process";
 import { WorldMap } from "lib/WorldMap";
 import { DepositMiningManagementProcess } from "./depositMining";
 import { TerminalManagementProcess } from "processTypes/buildingProcesses/terminal";
+import { KEEP_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 
 enum ReturnEnum {Deposits = 1, Power = 2}
 
@@ -16,17 +17,12 @@ export class AlleyObservationManagementProcess extends Process
   {
     try
     {
-      if(this.metaData.roomName === 'E46S51')
-      {
-        this.completed = true;
-        return;
-      }
-
       console.log(this.name, 'Running');
       const room = Game.rooms[this.metaData.roomName];
       const termnial = room.terminal;
+      const storage = room.storage;
       const checkRoom = Game.rooms[this.metaData.checkRoom];
-      if(termnial.store.getFreeCapacity() > 50000)
+      if(termnial?.store.getFreeCapacity() > 50000 && (storage?.store[RESOURCE_ENERGY] > (KEEP_AMOUNT * 1.2) ?? false))
       {
         console.log(this.name, 'Checking room', this.metaData.checkRoom, checkRoom)
         const results = this.checkTheRoom(checkRoom);

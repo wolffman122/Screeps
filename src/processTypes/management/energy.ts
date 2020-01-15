@@ -9,6 +9,7 @@ import { LinkHarvesterLifetimeProcess } from 'processTypes/lifetimes/linkHarvest
 import { UpgradeDistroLifetimeProcess } from 'processTypes/lifetimes/upgradeDistro';
 import { DistroLifetimeOptProcess } from '../lifetimes/distroOpt';
 import { AutomaticHoldManagementProcess } from './automaticHold'
+import { ENERGY_KEEP_AMOUNT } from 'processTypes/buildingProcesses/mineralTerminal'
 
 export class EnergyManagementProcess extends Process{
   metaData: EnergyManagementMetaData
@@ -479,7 +480,7 @@ export class EnergyManagementProcess extends Process{
       }
 
       //this.remoteChecking(room)
-      if(room.controller?.level >= 8)
+      if(room.controller?.level >= 8 && room.storage.store[RESOURCE_ENERGY] > (ENERGY_KEEP_AMOUNT * 1.2))
         this.processPower(room)
     }
     else
