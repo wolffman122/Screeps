@@ -290,7 +290,7 @@ export class HoldRoomOptManagementProcess extends Process
             }
             else if(sRoom.controller!.level < 8)
             {
-              if(this.metaData.holdCreeps.length < 1)
+              if(this.metaData.holdCreeps.length < 1 && (room.controller.reservation?.ticksToEnd < 1000 ?? false) || room.controller.reservation?.username !== 'wolffman122')
               {
                 let creepName = 'hrm-hold-' + flag.pos.roomName + '-' + Game.time;
                 let spawned = Utils.spawn(
