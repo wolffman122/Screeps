@@ -154,14 +154,12 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
 
       if(creep.memory.target === undefined)
       {
-         const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
+        const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
         if(ramparts.length)
         {
 
           const minRampart = _.min(ramparts, (r) => r.hits);
-          if(creep.name === 'sm-E47S46-23627651')
-          console.log(this.name, 1, minRampart)
-          if(minRampart?.hits < room.memory.rampartTarget)
+          if(minRampart)
           {
             creep.memory.target = minRampart.id;
             target = minRampart;
