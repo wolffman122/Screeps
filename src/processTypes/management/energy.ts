@@ -480,7 +480,7 @@ export class EnergyManagementProcess extends Process{
       }
 
       //this.remoteChecking(room)
-      if(room.controller?.level >= 8 && room.storage.store[RESOURCE_ENERGY] > (ENERGY_KEEP_AMOUNT * 1.2))
+      if(room.controller?.level >= 8 && room.storage.store[RESOURCE_ENERGY] > (ENERGY_KEEP_AMOUNT * 2))
         this.processPower(room)
     }
     else
