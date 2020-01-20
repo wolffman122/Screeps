@@ -14,6 +14,7 @@ export class skRoomManagementProcess extends Process
     skFlag: Flag;
     scout?: Creep;
     skRoomName: string;
+    skRoom: Room;
     locations: {
         [type: string]: string[]
     };
@@ -22,14 +23,16 @@ export class skRoomManagementProcess extends Process
     invaders: boolean;
     mineral: Mineral;
     coreInSk: boolean;
+    centerFlag: Flag;
 
 
     ensureMetaData()
     {
       this.mineralMining = this.metaData.mineralMining;
       this.invaders = this.metaData.invaders;
-        this.skRoomName = this.metaData.skRoomName
-        this.scout = this.metaData.scoutName ? Game.creeps[this.metaData.scoutName] : undefined;
+      this.skRoomName = this.metaData.skRoomName
+      this.skRoom = Game.rooms[this.skRoomName];
+      this.scout = this.metaData.scoutName ? Game.creeps[this.metaData.scoutName] : undefined;
         if(!this.scout && this.metaData.scoutName)
         {
             delete Memory.creeps[this.metaData.scoutName];
@@ -111,7 +114,7 @@ export class skRoomManagementProcess extends Process
     {
       if(Game.cpu.bucket < 8000)
         return;
-      let centerFlag = Game.flags['Center-'+this.metaData.roomName];
+      this.centerFlag = Game.flags['Center-'+this.metaData.roomName];
 
       this.skFlag = Game.flags[this.metaData.flagName];
       if(!this.skFlag)
@@ -122,7 +125,7 @@ export class skRoomManagementProcess extends Process
           return;
       }
 
-      this.coreSearching(centerFlag);
+      this.coreSearching();
 
       this.coreInSk = false;
       if(this.metaData.coreInfo?.invaderCorePresent)
@@ -243,15 +246,14 @@ export class skRoomManagementProcess extends Process
           ///          Check For Invaders
           ///
           ////////////////////////////////////////////////////////////
-          let skRoom = Game.rooms[this.metaData.skRoomName];
           try
           {
             if(Game.time % 25 === 5)
             {
 
-              if(skRoom)
+              if(this.skRoom)
               {
-                let hostiles = skRoom.find(FIND_HOSTILE_CREEPS);
+                let hostiles = this.skRoom.find(FIND_HOSTILE_CREEPS);
                 let invader = _.find(hostiles, (h) => {
                   return (h.owner.username === 'Invader')
                 })
@@ -280,7 +282,7 @@ export class skRoomManagementProcess extends Process
           ///          Devil Spawn Code
           ///
           ////////////////////////////////////////////////////////////
-          const prespawnCount = skRoom.memory.SKInfo?.devilDistance ?? 70;
+          const prespawnCount = this.skRoom.memory.SKInfo?.devilDistance ?? 70;
           this.metaData.devils = Utils.clearDeadCreeps(this.metaData.devils);
           let count = Utils.creepPreSpawnCount(this.metaData.devils, prespawnCount);           // TODO: Want to pass in extra prespawn time
 
@@ -398,16 +400,14 @@ export class skRoomManagementProcess extends Process
 
                 let creepNames = Utils.clearDeadCreeps(this.metaData.harvestCreeps[s.id])
                 this.metaData.harvestCreeps[s.id] = creepNames
-                let creeps = Utils.inflateCreeps(creepNames)
 
-                let count = 0;
-                _.forEach(creeps, (c) => {
-                  let  ticksNeeded = c.body.length * 3 + 50;
-                  if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
-                });
+                const prespawnCount = this.skRoom.memory.SKInfo?.sourceDistances[s.id] ?? 70;
+                if(this.name === 'skrmp-E36S35')
+                  console.log(this.name, 'Distances', this.skRoom.memory.SKInfo.sourceDistances[s.id], s.id);
 
+                const count = Utils.creepPreSpawnCount(this.metaData.harvestCreeps[s.id], prespawnCount + 10);           // TODO: Want to pass in extra prespawn time
 
-                if(this.metaData.harvestCreeps[s.id].length < 1)
+                if(count < 1)
                 {
                   let creepName = 'sk-harvest-'+this.skRoomName+'-'+Game.time;
                   let spawned = Utils.spawn(
@@ -453,10 +453,7 @@ export class skRoomManagementProcess extends Process
 
                     if(!this.metaData.distroDistance[source.id])
                     {
-                        let ret = PathFinder.search(centerFlag.pos, source.pos, {
-                            plainCost: 2,
-                            swampCost: 10,
-                        });
+                        let ret = PathFinder.search(this.centerFlag.pos, source.pos);
 
                         this.metaData.distroDistance[source.id] = ret.path.length;
                     }
@@ -467,14 +464,18 @@ export class skRoomManagementProcess extends Process
 
                     let count = 0;
                     _.forEach(creeps, (c) => {
-                        let ticksNeeded = c.body.length * 3 + this.metaData.distroDistance[source.id];
+                        let ticksNeeded = c.body.length * 3 + (this.skRoom.memory.SKInfo?.sourceDistances[source.id] ?? 56);
                         if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
                     });
 
-                    let numberDistro = 1;
-                    if(this.metaData.distroDistance[source.id] > 55)
+                    let numberDistro = 2;
+                    if(source.id === '5983000bb097071b4adc3ac7')
+                      console.log(this.name, 'SK source distance', this.metaData.distroDistance[source.id]);
+
+                    const distance = (this.skRoom.memory.SKInfo?.sourceDistances[source.id] ?? 56);
+                    if(distance > 100)
                     {
-                        numberDistro = 2;
+                      numberDistro = 3;
                     }
 
                     if(count < numberDistro)
@@ -557,10 +558,7 @@ export class skRoomManagementProcess extends Process
 
                   if(this.metaData.miningDistance === undefined)
                   {
-                    let ret = PathFinder.search(centerFlag.pos, this.mineral.pos, {
-                      plainCost: 2,
-                      swampCost: 10,
-                    });
+                    let ret = PathFinder.search(this.centerFlag.pos, this.mineral.pos);
 
                     this.metaData.miningDistance = ret.path.length;
                   }
@@ -656,7 +654,7 @@ export class skRoomManagementProcess extends Process
 
         const skRoom = Game.rooms[this.skRoomName];
         if(skRoom.memory.SKInfo === undefined && devil.pos.roomName === this.skRoomName)
-          skRoom.memory.SKInfo = {devilDistance: (devil.memory.distance + 10)};
+          skRoom.memory.SKInfo = {devilDistance: (devil.memory.distance + 10), sourceDistances: {}};
 
 
         if(this.coreInSk)
@@ -1329,6 +1327,7 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
+        if(harvester.name ===)
         if(this.coreInSk)
         {
           const spawn = this.roomData().spawns[0];
@@ -1344,41 +1343,18 @@ export class skRoomManagementProcess extends Process
           return;
         }
 
-        // if(!harvester.memory.fleePath)
-        // {
-        //   let sk = source.pos.findClosestByRange(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_KEEPER_LAIR });
-        //   let ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 7},
-        //     {
-        //       flee: true,
-        //       swampCost: 10,
-        //       plainCost: 2,
-
-        //       roomCallback: function(roomName) {
-
-        //         let room = Game.rooms[roomName];
-        //         // In this example `room` will always exist, but since
-        //         // PathFinder supports searches which span multiple rooms
-        //         // you should be careful!
-        //         if (!room) return;
-        //         let costs = new PathFinder.CostMatrix;
-
-        //         // Avoid creeps in the room
-        //         room.find(FIND_CREEPS).forEach(function(creep) {
-        //           costs.set(creep.pos.x, creep.pos.y, 0xff);
-        //         });
-
-        //         return costs;
-        //       },
-        //     }
-        //   );
-        //   if(ret.path.length)
-        //   {
-        //     harvester.memory.fleePath = ret.path
-        //   }
-        // }
-
         if(!this.invaders)
         {
+          if(!this.skRoom.memory.SKInfo?.sourceDistances)
+            this.skRoom.memory.SKInfo.sourceDistances = {};
+
+          if(Object.keys(this.skRoom.memory.SKInfo?.sourceDistances).indexOf(source.id) === -1)
+          {
+            const ret = PathFinder.search(source.pos, this.centerFlag.pos );
+            console.log(this.name, 'Source id', source.id, 'Distance', ret.path.length);
+            this.skRoom.memory.SKInfo.sourceDistances[source.id] = ret.path.length;
+          }
+
           //////////// SK Lair Checking ///////////////////////
           if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id])
           {
@@ -1420,35 +1396,38 @@ export class skRoomManagementProcess extends Process
             if(sks.length)
             {
               const sk = sks[0];
-              const ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 5},
+              if(sk.pos.getRangeTo(source) < 7)
               {
-                flee: true,
-                swampCost: 10,
-                plainCost: 2,
+                const ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 5},
+                {
+                  flee: true,
+                  swampCost: 10,
+                  plainCost: 2,
 
-                roomCallback: function(roomName) {
+                  roomCallback: function(roomName) {
 
-                  let room = Game.rooms[roomName];
-                  // In this example `room` will always exist, but since
-                  // PathFinder supports searches which span multiple rooms
-                  // you should be careful!
-                  if (!room) return;
-                  let costs = new PathFinder.CostMatrix;
+                    let room = Game.rooms[roomName];
+                    // In this example `room` will always exist, but since
+                    // PathFinder supports searches which span multiple rooms
+                    // you should be careful!
+                    if (!room) return;
+                    let costs = new PathFinder.CostMatrix;
 
-                  room.find(FIND_EXIT).forEach(exit=>costs.set(exit.x, exit.y, 0xff))
+                    room.find(FIND_EXIT).forEach(exit=>costs.set(exit.x, exit.y, 0xff))
 
-                  // Avoid creeps in the room
-                  room.find(FIND_CREEPS).forEach(function(creep) {
-                    costs.set(creep.pos.x, creep.pos.y, 0xff);
-                  });
+                    // Avoid creeps in the room
+                    room.find(FIND_CREEPS).forEach(function(creep) {
+                      costs.set(creep.pos.x, creep.pos.y, 0xff);
+                    });
 
-                  return costs;
-                },
-              });
+                    return costs;
+                  },
+                });
 
-              harvester.moveByPath(ret.path);
-              harvester.say('👺', true);
-              return;
+                harvester.moveByPath(ret.path);
+                harvester.say('👺', true);
+                return;
+              }
             }
           }
 
@@ -1553,36 +1532,42 @@ export class skRoomManagementProcess extends Process
             if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id] && hauler.room.name === this.skRoomName)
             {
               let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
-              let sks = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+              let sks = hauler.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
               if(sks.length)
               {
                 const sk = hauler.pos.findClosestByRange(sks);
-                let ret = PathFinder.search(hauler.pos, {pos: sk.pos, range: 6}, {flee: true});
-                hauler.moveByPath(ret.path);
-                hauler.say('👺');
-                return;
+                if(hauler.name === 'sk-m-E56S44-23769686')
+                  console.log(this.name, 'Mineral Problem', sk.pos.getRangeTo(source), source.id, sk.id)
+                if(sk.pos.getRangeTo(source) < 7)
+                {
+                  let ret = PathFinder.search(hauler.pos, {pos: sk.pos, range: 6}, {flee: true});
+                  hauler.moveByPath(ret.path);
+                  hauler.say('👺');
+                  return;
+                }
               }
 
               if(lair.ticksToSpawn < 10)
               {
-                let ret = PathFinder.search(hauler.pos, {pos: source.pos, range: 6}, {flee: true});
+                let ret = PathFinder.search(hauler.pos, {pos: lair.pos, range: 6}, {flee: true});
                 hauler.moveByPath(ret.path);
                 hauler.say('👺L');
                 return;
               }
 
-              if(hauler.pos.getRangeTo(lair) > 7)
-              {
-                const sks = hauler.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
-                if(sks.length)
-                {
-                  const sk = hauler.pos.findClosestByRange(sks);
-                  let ret = PathFinder.search(hauler.pos, {pos: sk.pos, range: 6}, {flee: true});
-                  hauler.moveByPath(ret.path);
-                  hauler.say('👺C');
-                  return;
-                }
-              }
+              // Need to find way around what is happening in E56S44 where it is getting jammed on the mineral entry
+              // if(hauler.pos.getRangeTo(lair) > 7)
+              // {
+              //   const sks = hauler.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+              //   if(sks.length)
+              //   {
+              //     const sk = hauler.pos.findClosestByRange(sks);
+              //     let ret = PathFinder.search(hauler.pos, {pos: sk.pos, range: 6}, {flee: true});
+              //     hauler.moveByPath(ret.path);
+              //     hauler.say('👺C');
+              //     return;
+              //   }
+              // }
             }
 
             if(!hauler.memory.full && hauler.ticksToLive! > this.metaData.distroDistance[source.id])
@@ -2094,7 +2079,7 @@ export class skRoomManagementProcess extends Process
       }
     }
 
-    coreSearching(centerFlag: Flag)
+    coreSearching()
     {
       try
       {
