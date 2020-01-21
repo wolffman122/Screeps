@@ -275,11 +275,8 @@ export class EnergyManagementProcess extends Process{
           let upgraders = 0;
           switch(this.metaData.roomName)
           {
-            case 'E38S35':
-              upgraders = 1;
-              break;
             case 'E36S33':
-              upgraders = 1;
+              upgraders = 2;
               break;
             default:
               upgraders = 1;
@@ -388,8 +385,9 @@ export class EnergyManagementProcess extends Process{
           let storageLink = this.kernel.data.roomData[this.metaData.roomName].storageLink
 
           this.metaData.spinCreeps = Utils.clearDeadCreeps(this.metaData.spinCreeps)
+          const count = Utils.creepPreSpawnCount(this.metaData.spinCreeps, 5);
 
-          if(this.metaData.spinCreeps.length < 1 && storageLink ) //&& (this.kernel.data.roomData[this.metaData.roomName].sourceLinks.length > 0))
+          if(count < 1 && storageLink ) //&& (this.kernel.data.roomData[this.metaData.roomName].sourceLinks.length > 0))
           {
             let creepName = 'em-s-' + proc.metaData.roomName + '-' + Game.time;
             let spawned = Utils.spawn(
