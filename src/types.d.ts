@@ -251,6 +251,7 @@ interface Flag {
 
   interface RoomMemory
   {
+    shutdown?: boolean;
     completed?: boolean;
     seigeDetected?: boolean;
     avoid: number;

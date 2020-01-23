@@ -16,6 +16,11 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
       {
         return
       }
+      if(creep.room.memory.shutdown)
+      {
+        this.completed = true;
+        return;
+      }
 
       if(creep.ticksToLive < 50 && _.sum(creep.carry) > 0)
       {

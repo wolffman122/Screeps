@@ -65,6 +65,11 @@ export class EnergyManagementProcess extends Process{
 
 
     let room = Game.rooms[this.metaData.roomName];
+    if(room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
     const seige = room.memory.seigeDetected;
 
     if(room.controller && room.controller.my)

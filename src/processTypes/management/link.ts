@@ -7,6 +7,12 @@ export class LinkManagementProcess extends Process
 
   run()
   {
+    if(Game.rooms[this.metaData.roomName]?.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+    
     if(!this.roomData())
     {
       this.completed = true;
@@ -58,7 +64,7 @@ export class LinkManagementProcess extends Process
               room.memory.linkDistances[l.id] = l.pos.findPathTo(storage).length;
           });
         }
-        
+
         _.forEach(this.roomData().links, (l) => {
           if(l.cooldown == 0 && l.energy > 200)
           {

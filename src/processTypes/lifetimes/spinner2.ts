@@ -26,6 +26,12 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       return;
     }
 
+    if(this.creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+
     const room = Game.rooms[this.creep.pos.roomName];
     this.djFlag = Game.flags['DJ-' + this.creep.pos.roomName];
     this.link = this.roomData().storageLink;

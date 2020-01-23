@@ -14,6 +14,11 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     let creep = this.getCreep()
 
     if(!creep){ return }
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
 
     let room = Game.rooms[this.metaData.roomName];
 

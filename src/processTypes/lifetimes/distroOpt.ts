@@ -7,6 +7,12 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
   run(){
     let creep = this.getCreep()
 
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+    
     if(creep.name === 'em-m-E37S46-23897868')
             console.log(this.name, 'Distro problem', 1, '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);

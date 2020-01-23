@@ -15,6 +15,11 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
     {
       return;
     }
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(this.logging && creep.name === this.logName)
         console.log(this.name, 0.1);

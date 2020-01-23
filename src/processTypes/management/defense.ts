@@ -27,6 +27,12 @@ export class DefenseManagementProcess extends Process
     this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
 
     let room = Game.rooms[this.metaData.roomName]
+    if(room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+    
     let flagName = 'Center-' + this.metaData.roomName;
     let flag = Game.flags[flagName];
 

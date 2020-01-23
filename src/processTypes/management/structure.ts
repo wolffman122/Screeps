@@ -34,6 +34,11 @@ export class StructureManagementProcess extends Process{
     }
 
     let room = Game.rooms[this.metaData.roomName];
+    if(room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(room?.controller?.my)
     {

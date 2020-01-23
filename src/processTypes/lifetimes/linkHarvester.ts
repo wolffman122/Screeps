@@ -14,6 +14,12 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+
     let source = <Source>Game.getObjectById(this.metaData.source);
 
     if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id]

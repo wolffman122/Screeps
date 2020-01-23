@@ -16,6 +16,12 @@ export class DefenderLifetimeProcess extends LifetimeProcess
     {
       return;
     }
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+    
     console.log(this.name, 0)
     if(creep.name === 'dm-E41S49-21090530')
         console.log(this.name, 'Problems', this.metaData.boosts, creep.memory.boost);

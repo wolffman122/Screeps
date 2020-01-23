@@ -62,6 +62,13 @@ export class InitProcess extends Process{
     //console.log('Observer', 0)
     _.forEach(Game.rooms, function(room){
 
+      const flags = room.find(FIND_FLAGS, {filter: f=> f.name === room.name + '-kill'});
+      if(flags.length)
+      {
+        room.memory.shutdown = true;
+        return;
+      }
+
       proc.kernel.addProcessIfNotExist(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
       })

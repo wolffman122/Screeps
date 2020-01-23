@@ -45,6 +45,11 @@ export class LabManagementProcess extends Process
     this.logName = "labm-E55S47";
 
     this.room = Game.rooms[this.metaData.roomName];
+    if(this.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(this.name === this.logName && this.logOn)
       console.log(this.name, 'Running')

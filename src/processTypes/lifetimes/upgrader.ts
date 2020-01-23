@@ -10,6 +10,11 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
     let creep = this.getCreep()
 
     if(!creep){ return }
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(!creep.memory.boost && this.metaData.boosts)
     {
