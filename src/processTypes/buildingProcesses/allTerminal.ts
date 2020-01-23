@@ -8,6 +8,30 @@ export class AllTerminalManagementProcess extends Process
     type = 'atmp'
     run()
     {
+        if(!this.metaData.receiveStr)
+            this.metaData.receiveStr = {};
+
+        if(!this.metaData.sendStrings)
+            this.metaData.sendStrings = {};
+
+        for(const str in this.metaData.receiveStr)
+        {
+            const room = Game.rooms[str];
+            if(room)
+                room.visual.text(this.metaData.receiveStr[str], 5, 4, {color: 'white', align: 'left'});
+            else
+                delete this.metaData.receiveStr[str];
+        }
+
+        for(const str in this.metaData.sendStrings)
+        {
+            const room = Game.rooms[str];
+            if(room)
+                room.visual.text(this.metaData.sendStrings[str], 5, 5, {color: 'white', align: 'left'});
+            else
+                delete this.metaData.sendStrings[str];
+        }
+
         // Gathering Process
         if(Game.time % 20 === 5)
         {
@@ -25,6 +49,9 @@ export class AllTerminalManagementProcess extends Process
             _.forEach(Game.rooms, (r) => {
                 if(r.controller?.my && r.controller.level >= 6)
                 {
+                    //if(this.metaData.shutDownTransfers[r.name] ?? false)
+                    //    return;
+
                     let terminal = r.terminal;
                     if(terminal?.my)
                     {
@@ -115,6 +142,13 @@ export class AllTerminalManagementProcess extends Process
                     if(maxTerminal && maxTerminal.cooldown === 0)
                     {
                         let ret = maxTerminal.send(r, 5000 - min.amount, min.roomName);
+                        if(ret === OK)
+                        {
+                            const maxRoom = maxTerminal.room;
+                            const minRoom = minTerminal.room;
+                            this.metaData.sendStrings[maxRoom.name] = 'Send Information: To ' + minRoom.name + ' ' + r + ' ' + (5000 - min.amount) + ' : ' + Game.time;
+                            this.metaData.receiveStr[minRoom.name] = 'Recieved Information: From ' + maxRoom.name + ' ' + r + ' ' + (5000 - min.amount) + ' : ' + Game.time;
+                        }
                         console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
                     }
                 }

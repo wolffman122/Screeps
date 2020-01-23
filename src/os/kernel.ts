@@ -3,7 +3,6 @@ import {Process} from './process'
 import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
-import {DistroLifetimeProcess} from '../processTypes/lifetimes/distro'
 import {EnergyManagementProcess} from '../processTypes/management/energy'
 import {MoveProcess} from '../processTypes/creepActions/move'
 import {RoomDataProcess} from '../processTypes/roomData'
@@ -90,6 +89,7 @@ import { PowerCreepLifetimeProcess } from 'processTypes/lifetimes/powerCreep'
 import { AlleyObservationManagementProcess } from 'processTypes/management/alleyObservation'
 import { DepositMiningManagementProcess } from 'processTypes/management/depositMining'
 import { Spinner2LifeTimeProcess } from 'processTypes/lifetimes/spinner2'
+import { TransferManagementProcess } from 'processTypes/management/transfer'
 
 
 
@@ -98,7 +98,6 @@ const processTypes = <{[type: string]: any}>{
   'harvest': HarvestProcess,
   'hlf': HarvesterLifetimeProcess,
   'lhlf': LinkHarvesterLifetimeProcess,
-  'dlf': DistroLifetimeProcess,
   'em': EnergyManagementProcess,
   'move': MoveProcess,
   'roomData': RoomDataProcess,
@@ -129,7 +128,7 @@ const processTypes = <{[type: string]: any}>{
   'transfer': TransferProcess,
   'lm': LinkManagementProcess,
   'slf': SpinnerLifetimeProcess,
-  'slf2': Spinner2LifeTimeProcess,
+  'slf2': Spinner2LifeTimeProcess,  // 45
   'holdWorkerlf': HoldWorkerLifetimeProcess,
   'udlf': UpgradeDistroLifetimeProcess,
   'minerals': MineralManagementProcess,
@@ -177,7 +176,8 @@ const processTypes = <{[type: string]: any}>{
   'powerm': PowerManagement, // 50
   'pclf': PowerCreepLifetimeProcess, // 49
   'aomp': AlleyObservationManagementProcess, // 25
-  'dmmp': DepositMiningManagementProcess // 24
+  'dmmp': DepositMiningManagementProcess, // 24
+  'tmp': TransferManagementProcess // 20
 }
 
 interface KernelData{

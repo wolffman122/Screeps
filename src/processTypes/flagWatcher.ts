@@ -42,9 +42,9 @@ export class FlagWatcherProcess extends Process
   strongHoldDestruction(flag: Flag)
   {
     const roomName = flag.name.split('-')[0];
-    if(flag.memory.coreInfo.coreLevel === 2 || flag.name.split('-')[0] === 'E56S44')
+    if(flag.memory.coreInfo?.coreLevel <= 3)
     {
-      this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});
+     // this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});
     }
   }
 
@@ -80,7 +80,7 @@ export class FlagWatcherProcess extends Process
 
   transferFlag(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(TransferProcess, 'transfer-' + flag.name, 25, {flagName: flag.name});
+    //this.kernel.addProcessIfNotExist(TransferProcess, 'transfer-' + flag.name, 25, {flagName: flag.name});
   }
 
   BounceAttack(flag: Flag)
@@ -180,7 +180,12 @@ export class FlagWatcherProcess extends Process
           proc.holdFlag(flag)
           break;*/
         case COLOR_ORANGE:
-          proc.transferFlag(flag);
+          switch(flag.secondaryColor)
+          {
+            case COLOR_ORANGE:
+              proc.transferFlag(flag);
+              break;
+          }
           break;
         case COLOR_BROWN:
           switch(flag.secondaryColor)

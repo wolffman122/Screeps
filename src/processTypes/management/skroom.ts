@@ -112,6 +112,7 @@ export class skRoomManagementProcess extends Process
 
     run()
     {
+      console.log(this.name, 'Running');
       if(Game.cpu.bucket < 8000)
         return;
       this.centerFlag = Game.flags['Center-'+this.metaData.roomName];
@@ -282,7 +283,7 @@ export class skRoomManagementProcess extends Process
           ///          Devil Spawn Code
           ///
           ////////////////////////////////////////////////////////////
-          const prespawnCount = this.skRoom.memory.SKInfo?.devilDistance ?? 70;
+          const prespawnCount = this.skRoom?.memory.SKInfo?.devilDistance ?? 70;
           this.metaData.devils = Utils.clearDeadCreeps(this.metaData.devils);
           let count = Utils.creepPreSpawnCount(this.metaData.devils, prespawnCount);           // TODO: Want to pass in extra prespawn time
 
@@ -305,16 +306,6 @@ export class skRoomManagementProcess extends Process
             }
           }
 
-          for(let i = 0; i < this.metaData.devils.length; i++)
-          {
-            let devil = Game.creeps[this.metaData.devils[i]];
-            if(devil)
-            {
-              // Time to do some stuff
-              this.DevilActions(devil);
-            }
-          }
-
           if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
           {
             /////////////////////////////////////////////////////////////
@@ -322,13 +313,11 @@ export class skRoomManagementProcess extends Process
             ///          Builder Spawn Code
             ///
             ////////////////////////////////////////////////////////////
-            console.log(this.name, 'Builder spawn', this.skRoomName, this.roomInfo(this.skRoomName))
             this.metaData.builderCreeps = Utils.clearDeadCreeps(this.metaData.builderCreeps);
             if(this.roomInfo(this.skRoomName))
             {
               if(this.roomInfo(this.skRoomName).sourceContainers.length < this.roomInfo(this.skRoomName).sources.length)
               {
-                console.log(this.name, 'Builder spawn', this.metaData.builderCreeps.length)
                 if(this.metaData.builderCreeps.length < 2)
                 {
                   let creepName = 'sk-build-' + this.skRoomName + '-' + Game.time;
@@ -366,15 +355,6 @@ export class skRoomManagementProcess extends Process
                     this.metaData.builderCreeps.push(creepName);
                   }
                 }
-              }
-            }
-
-            for(let i = 0; i < this.metaData.builderCreeps.length; i++)
-            {
-              let builder = Game.creeps[this.metaData.builderCreeps[i]];
-              if(builder)
-              {
-                this.BuilderActions(builder);
               }
             }
 
@@ -421,15 +401,6 @@ export class skRoomManagementProcess extends Process
                   if(spawned)
                   {
                     this.metaData.harvestCreeps[s.id].push(creepName);
-                  }
-                }
-
-                for(let i = 0; i < this.metaData.harvestCreeps[s.id].length; i++)
-                {
-                  let harvester = Game.creeps[this.metaData.harvestCreeps[s.id][i]];
-                  if(harvester)
-                  {
-                    this.HarvesterActions(harvester, s);
                   }
                 }
               });
@@ -627,6 +598,40 @@ export class skRoomManagementProcess extends Process
                 }
             }
           }
+
+          for(let i = 0; i < this.metaData.devils.length; i++)
+          {
+            let devil = Game.creeps[this.metaData.devils[i]];
+            if(devil)
+            {
+              // Time to do some stuff
+              this.DevilActions(devil);
+            }
+          }
+
+          for(let i = 0; i < this.metaData.builderCreeps.length; i++)
+          {
+            let builder = Game.creeps[this.metaData.builderCreeps[i]];
+            if(builder)
+            {
+              this.BuilderActions(builder);
+            }
+          }
+
+          const sources = this.roomInfo(this.metaData.skRoomName).sources;
+          sources.forEach( s => {
+            if(this.metaData.harvestCreeps[s.id])
+            {
+              for(let i = 0; i < this.metaData.harvestCreeps[s.id].length; i++)
+              {
+                let harvester = Game.creeps[this.metaData.harvestCreeps[s.id][i]];
+                if(harvester)
+                {
+                  this.HarvesterActions(harvester, s);
+                }
+              }
+            }
+          });
         }
       }
     }
@@ -653,7 +658,7 @@ export class skRoomManagementProcess extends Process
           devil.memory.distance++;
 
         const skRoom = Game.rooms[this.skRoomName];
-        if(skRoom.memory.SKInfo === undefined && devil.pos.roomName === this.skRoomName)
+        if(skRoom?.memory.SKInfo === undefined && devil.pos.roomName === this.skRoomName)
           skRoom.memory.SKInfo = {devilDistance: (devil.memory.distance + 10), sourceDistances: {}};
 
 
@@ -1043,6 +1048,18 @@ export class skRoomManagementProcess extends Process
                   }
                   else
                   {
+                    let tombstones = builder.pos.findInRange(FIND_TOMBSTONES, 4, {filter: t => t.store.getUsedCapacity(RESOURCE_ENERGY) >= builder.store.getCapacity()});
+                    if(tombstones.length)
+                    {
+                      const tombstone = builder.pos.findClosestByPath(tombstones);
+                      if(!builder.pos.isNearTo(tombstone))
+                        builder.travelTo(tombstone);
+                      else
+                        builder.withdraw(tombstone, RESOURCE_ENERGY);
+
+                      return;
+                    }
+
                     let source = builder.pos.findClosestByRange(this.kernel.data.roomData[builder.pos.roomName].sources);
 
                     if(source)
@@ -1075,6 +1092,17 @@ export class skRoomManagementProcess extends Process
                 {
                   if(this.roomInfo(this.skRoomName).sources)
                   {
+                    let tombstones = builder.pos.findInRange(FIND_TOMBSTONES, 4, {filter: t => t.store.getUsedCapacity(RESOURCE_ENERGY) >= builder.store.getCapacity()});
+                    if(tombstones.length)
+                    {
+                      const tombstone = builder.pos.findClosestByPath(tombstones);
+                      if(!builder.pos.isNearTo(tombstone))
+                        builder.travelTo(tombstone);
+                      else
+                        builder.withdraw(tombstone, RESOURCE_ENERGY);
+
+                      return;
+                    }
                       let source = builder.pos.findClosestByRange( this.kernel.data.roomData[builder.pos.roomName].sources);
 
                       if(source)
@@ -1327,7 +1355,8 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
-        if(harvester.name ===)
+        if(harvester.name === 'sk-harvest-E36S35-23911248')
+          console.log(this.name, 'hactions', 1)
         if(this.coreInSk)
         {
           const spawn = this.roomData().spawns[0];
@@ -2114,24 +2143,22 @@ export class skRoomManagementProcess extends Process
                 return;
               }
 
-              if(this.name === 'skrmp-E36S35')
-                console.log(this.name, 'Why are we not stopping, Name', flag.name, flag.memory.coreInfo.done)
               // Destructions
-              if(flag.memory.coreInfo.done)
+              if(flag?.memory.coreInfo?.done)
               {
                 let searchStr = flag.name.split('-')[0] + flag.name.split('-')[1]
                 this.metaData.coreInfo = undefined;
                 flag.memory.coreInfo = undefined;
                 flag.remove();
                 const removalFlags = _.filter(Game.flags, (f) => {
-                  return (f.name.indexOf('searchStr') !== -1);
+                  return (f.name.indexOf(searchStr) !== -1);
                 })
 
                 removalFlags.forEach(f => f.remove());
               }
 
               // Checks to remove the flag once core is gone.
-              if(!flag.memory.coreInfo.cleaning)
+              if(!flag?.memory.coreInfo?.cleaning)
               {
                 if(Game.time % 10 === 3)
                   observer.observeRoom(coreRoomName);

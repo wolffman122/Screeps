@@ -148,7 +148,7 @@ Creep.prototype.idleOffRoad = function(anchor: {pos: RoomPosition}, maintainDist
 {
   let offRoad = this.pos.lookForStructures(STRUCTURE_ROAD) === undefined;
   if(offRoad)
-    return OK;
+    return 5;
 
   let positions = _.sortBy(this.pos.openAdjacentSpots(), (p: RoomPosition) => p.getRangeTo(anchor));
   if(maintainDistance)
@@ -202,6 +202,8 @@ Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
 
 Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean): any
 {
+  if(Game.cpu.bucket < 6900)
+    this.memory.boost = true;
 
   if(this.name === 'em-u-E38S39-22618434')
         console.log('Defense', 1);
@@ -391,4 +393,9 @@ Creep.prototype.moveDir = function(dir: DirectionConstant): string
   }
 
   return ret;
+}
+
+Creep.prototype.almostFull = function(): boolean
+{
+  return (this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity() === this.store.getCapacity());
 }

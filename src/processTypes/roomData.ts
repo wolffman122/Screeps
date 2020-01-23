@@ -203,6 +203,29 @@ export class RoomDataProcess extends Process{
         //room.memory.rampartCostMatrix = undefined;
       }
 
+      if(!room.memory.completed && room.controller.level >= 8)
+      {
+        const spawns = this.roomData().spawns.length;
+        const towers = this.roomData().towers.length;
+        const extensions = this.roomData().extensions.length;
+        const labs = this.roomData().labs.length;
+        const link = this.roomData().storageLink;
+        const nuker = this.roomData().nuker;
+        const powerSpawn = this.roomData().powerSpawn;
+        const observer = this.roomData().observer;
+        const factory = this.roomData().factory;
+
+        if(spawns === 3 && extensions === 60 && link && room.storage && towers === 6
+          && observer && powerSpawn && room.terminal && labs === 10 && nuker && factory)
+          room.memory.completed = true;
+        else
+        {
+          if(!factory)
+            console.log(this.name, 'Need to build factory');
+        }
+      }
+
+
     }
 
     this.completed = true

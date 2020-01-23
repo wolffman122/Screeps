@@ -159,10 +159,21 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         {
 
           const minRampart = _.min(ramparts, (r) => r.hits);
-          if(minRampart)
+          if(this.metaData.upgrading)
           {
-            creep.memory.target = minRampart.id;
-            target = minRampart;
+            if(minRampart)
+            {
+              creep.memory.target = minRampart.id;
+              target = minRampart;
+            }
+          }
+          else
+          {
+            if(minRampart?.hits < room.memory.rampartTarget)
+            {
+              creep.memory.target = minRampart.id;
+              target = minRampart;
+            }
           }
         }
       }

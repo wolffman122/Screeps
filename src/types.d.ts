@@ -15,6 +15,7 @@ interface Creep extends RoomObject {
     getBodyPart(type: BodyPartConstant): boolean;
     getBodyParts(): BodyPartConstant[];
     moveDir(dir: DirectionConstant): string;
+    almostFull(): boolean;
   }
 
 interface RoomPosition {
@@ -23,7 +24,8 @@ interface RoomPosition {
   isPassible(ignoreCreeps?: boolean): boolean;
   isNearExit(range: number): boolean;
   openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
-  getOpenPositions(range:number, opts:{}): RoomPosition[];
+  getOpenPositions(origin_pos: RoomPosition, range: number, opts?: OpenPositionsOptions): RoomPosition[];
+  ulamSpiral(n: number);
 }
 
 interface Game {
@@ -244,10 +246,12 @@ interface Flag {
     attacker?: string;
     coreInfo?: CoreInfo;
     cores?: boolean;
+    nuker?: boolean;
   }
 
   interface RoomMemory
   {
+    completed?: boolean;
     seigeDetected?: boolean;
     avoid: number;
     cache: {[key: string]: any};
@@ -289,6 +293,17 @@ interface Flag {
     componentInstruct?: Instruction;
     resourceToProduce?: CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
     amoutToProduce?: number;
+    linkDistances: {
+      [linkId: string]: number
+    };
+    SKInfo?: {
+      devilDistance: number
+      sourceDistances: {
+        [sourceId:string]: number
+      }
+    }
+    transfering?: boolean;
+    transferFlagName?: string;
   }
 
   interface SpawnMemory {}
@@ -332,6 +347,7 @@ interface Flag {
     roomName: string,
     sourceContainer: string,
     resource: ResourceConstant,
+    openPositions:{x: number, y:number}[]
   }
 
   interface SquadManagementProcessMetaData
@@ -358,6 +374,7 @@ interface Flag {
     buildCreeps: string[]
     repairCreeps: string[]
     dismantleCreeps: string[]
+    shutDownRamparts?: boolean
   }
 
   interface HoldRoomManagementProcessMetaData
@@ -392,6 +409,7 @@ interface Flag {
     }
 
     builderCreeps: string[]
+    dismantlerCreeps: string[]
     workerCreeps: string[]
     defenderCreeps: string[]
     coreBuster: string[]
@@ -632,6 +650,28 @@ interface Flag {
 
     creeps: {
       [source: string]: string[]
+    },
+    sendStrings: {
+      [roomName: string]: string
+    },
+    receiveStr: {
+      [roomName: string]: string
+    }
+    shutDownTransfers: {
+      [roomName: string]: boolean
+    }
+  }
+
+  interface TerminalManagementProcessMetaData
+  {
+    sendStrings: {
+      [roomName: string]: string
+    },
+    receiveStr: {
+      [roomName: string]: string
+    },
+    shutDownTransfers: {
+      [roomName: string]: boolean
     }
   }
 
@@ -744,6 +784,7 @@ interface Flag {
     roomName: string,
     boosts?: string[],
     allowUnboosted: boolean,
+    upgrading: boolean
 
   }
 
@@ -875,6 +916,18 @@ interface Spinner2LifeTimeProcessMetaData
   skFeedRoom?: boolean,
   skMinerals?: string[],
 }
+
+interface TransferManagementProcessMetaData
+{
+  roomName: string,
+  transferFlagName: string
+  upgraders: string[];
+  movers: string[];
+  builders: string[];
+  clearStorage: boolean;
+  lvl4Complete?: boolean;
+  lvl5Complete?: boolean;
+}
 //// Minerals
 
 
@@ -916,14 +969,14 @@ interface ProcessLog {
 
 interface OpenPositionsOptions
 {
-  offset: number,
-  ignoreIds: string[],
-  maxPositions: number,
-  avoidEdges: number,
-  avoidStructures: string[],
-  avoidTerrain: string[],
-  avoidCreeps: boolean,
-  avoidConstructionSites: boolean,
+  offset?: number,
+  ignoreIds?: string[],
+  maxPositions?: number,
+  avoidEdges?: number,
+  avoidStructures?: string[],
+  avoidTerrain?: number[],
+  avoidCreeps?: boolean,
+  avoidConstructionSites?: boolean,
 }
 
 interface BankData

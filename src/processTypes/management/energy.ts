@@ -2,7 +2,6 @@ import {Process} from '../../os/process'
 import {Utils} from '../../lib/utils'
 
 import {HarvesterLifetimeProcess} from '../lifetimes/harvester'
-import {DistroLifetimeProcess} from '../lifetimes/distro'
 import {UpgraderLifetimeProcess} from '../lifetimes/upgrader'
 import { SpinnerLifetimeProcess } from 'processTypes/lifetimes/spinner';
 import { LinkHarvesterLifetimeProcess } from 'processTypes/lifetimes/linkHarvester';
@@ -10,6 +9,7 @@ import { UpgradeDistroLifetimeProcess } from 'processTypes/lifetimes/upgradeDist
 import { DistroLifetimeOptProcess } from '../lifetimes/distroOpt';
 import { AutomaticHoldManagementProcess } from './automaticHold'
 import { ENERGY_KEEP_AMOUNT } from 'processTypes/buildingProcesses/mineralTerminal'
+import { Spinner2LifeTimeProcess } from 'processTypes/lifetimes/spinner2'
 
 export class EnergyManagementProcess extends Process{
   metaData: EnergyManagementMetaData
@@ -276,7 +276,7 @@ export class EnergyManagementProcess extends Process{
           switch(this.metaData.roomName)
           {
             case 'E36S33':
-              upgraders = 2;
+              upgraders = 1;
               break;
             default:
               upgraders = 1;
@@ -401,10 +401,21 @@ export class EnergyManagementProcess extends Process{
             if(spawned)
             {
               this.metaData.spinCreeps.push(creepName);
-              this.kernel.addProcess(SpinnerLifetimeProcess, 'slf-' + creepName, 45, {
-                creep: creepName,
-                storageLink: storageLink.id
-              })
+              if(room.name === 'E38S46' || room.name === 'E36S43')
+              {
+                this.kernel.addProcessIfNotExist(Spinner2LifeTimeProcess, 'slf2-' + creepName, 45, {
+                  roomName: room.name,
+                  creep: creepName,
+                  storageLink: storageLink.id
+                });
+              }
+              else
+              {
+                this.kernel.addProcess(SpinnerLifetimeProcess, 'slf-' + creepName, 45, {
+                  creep: creepName,
+                  storageLink: storageLink.id
+                })
+              }
             }
           }
         }
@@ -425,8 +436,8 @@ export class EnergyManagementProcess extends Process{
 
             switch(this.metaData.roomName)
             {
-              case 'E44S42':
-                upgradeDistroAmount = 1;
+              case 'E37S46':
+                upgradeDistroAmount = 2;
                 break;
               default:
                 upgradeDistroAmount = 1;

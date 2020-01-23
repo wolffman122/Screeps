@@ -6,6 +6,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
 
   run(){
     console.log(this.name, 'Life time remote')
+    const cpu = Game.cpu.getUsed();
     let creep = this.getCreep()
     let site = <ConstructionSite>Game.getObjectById(this.metaData.site)
 
@@ -98,6 +99,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
               if(_.sum(creep.carry) === creep.carryCapacity)
                 creep.memory.filling = false;
 
+                console.log(this.name, 'CPU usage', Game.cpu.getUsed() - cpu);
               return;
             }
           }
@@ -121,6 +123,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
                 if(_.sum(creep.carry) === creep.carryCapacity)
                   creep.memory.filling = false;
 
+                  console.log(this.name, 'CPU usage', Game.cpu.getUsed() - cpu);
                 return;
               }
             }
@@ -136,6 +139,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
                 if(_.sum(creep.carry) === creep.carryCapacity)
                   creep.memory.filling = false;
 
+                  console.log(this.name, 'CPU usage', Game.cpu.getUsed() - cpu);
               return
             }
           }
@@ -159,6 +163,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       else
         creep.build(site);
 
+    console.log(this.name, 'CPU usage', Game.cpu.getUsed() - cpu);
     return;
   }
 }

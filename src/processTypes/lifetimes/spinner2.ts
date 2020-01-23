@@ -16,6 +16,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
   run()
   {
+    console.log(this.name, 'Spinner 2 Running');
     this.creep = this.getCreep();
     this.logName = '';
     this.logging = false;
@@ -51,12 +52,13 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       this.renewSpawn = Game.getObjectById(this.metaData.renewSpawnId);
 
 
-    if(this.creep.pos.isNearTo(this.djFlag))
+    if(!this.creep.pos.isEqualTo(this.djFlag))
     {
       this.creep.travelTo(this.djFlag)
+      this.creep.say('T');
       return;
     }
-    
+
     // Responsibilities
     //
     // 1. Keep Center link empty
@@ -70,19 +72,23 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
     if(this.link?.store[RESOURCE_ENERGY] > 0)
     {
-      this.creep.withdrawEverything(this.link);
+      if(this.creep.store.getFreeCapacity() === 0)
+        this.creep.transferEverything(this.storage);
+      else
+        this.creep.withdrawEverything(this.link);
+
       return;
     }
 
     if(this.terminal?.store[RESOURCE_ENERGY] < 75000)
     {
-      this.TransferToTerminal(RESOURCE_ENERGY);
+      this.TransferEnergyToTerminal();
       return;
     }
 
-    if(this.terminal?.store[RESOURCE_ENERGY] > 75000)
+    if(this.terminal?.store[RESOURCE_ENERGY] !== 75000)
     {
-      this.TransferToStorage(RESOURCE_ENERGY, 75000);
+      this.TransferEnergyToStorage();
       return;
     }
 
@@ -92,12 +98,14 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       return;
     }
 
-    if(this.terminal?.store[this.mineral.mineralType] > KEEP_AMOUNT)
+    let amount = this.terminal.store[this.mineral.mineralType] - KEEP_AMOUNT
+    if(amount > 0)
     {
       this.TransferToStorage(this.mineral.mineralType, KEEP_AMOUNT);
       return;
     }
 
+    console.log(this.name, 6, 'SK Mineral Length', this.skMinerals.length)
     // SK Mineral transfer code.
     for(let i = 0; i < this.skMinerals.length; i++)
     {
@@ -115,40 +123,50 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       }
     }
 
+    console.log(this.name, 7, 'MINERALS Lenght', MINERALS_RAW.length)
     // Minerals
     for(let i = 0; i < MINERALS_RAW.length; i++)
     {
       const mineral = MINERALS_RAW[i];
+      if(mineral === this.mineral.mineralType)
+        continue;
+
       if(this.terminal?.store[mineral] < MINERAL_KEEP_AMOUNT)
       {
-        this.TransferToTerminal(mineral);
-        return;
+        if(this.TransferToTerminal(mineral))
+          return;
+        else
+          continue;
       }
 
-      if(this.terminal?.store[mineral] > MINERAL_KEEP_AMOUNT)
+      if(this.terminal?.store[mineral] !== MINERAL_KEEP_AMOUNT)
       {
         this.TransferToStorage(mineral, MINERAL_KEEP_AMOUNT)
         return;
       }
     }
 
+    console.log(this.name, 8)
     // Production list
     for(let i = 0; i < PRODUCT_LIST.length; i++)
     {
       const prod = PRODUCT_LIST[i];
       if(this.terminal?.store[prod] < PRODUCTION_AMOUNT)
       {
-        this.TransferToTerminal(prod);
-        return;
+        if(this.TransferToTerminal(prod))
+          return;
+        else
+          continue;
       }
 
-      if(this.terminal?.store[prod] > PRODUCTION_AMOUNT)
+      if(this.terminal?.store[prod] !== PRODUCTION_AMOUNT)
       {
         this.TransferToStorage(prod, PRODUCTION_AMOUNT);
         return;
       }
     }
 
+    console.log(this.name, 9)
     if(this.creep.ticksToLive < 1500)
       this.RenewCreep();
 
@@ -200,35 +218,73 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
   private RenewCreep()
   {
-    if(!this.renewSpawn?.spawning && this.renewSpawn.store[RESOURCE_ENERGY] > 0)
+    if(!this.renewSpawn?.spawning && (this.renewSpawn?.store[RESOURCE_ENERGY] ?? 0) > 0)
       this.renewSpawn.renewCreep(this.creep);
   }
 
-  private TransferToTerminal(res: ResourceConstant)
+  private TransferEnergyToTerminal()
   {
     if(this.creep.store.getUsedCapacity() === 0)
     {
-      if(this.storage.store[res] > this.creep.store.getCapacity())
-        this.creep.withdraw(this.storage, res);
+      if(this.storage.store[RESOURCE_ENERGY] > this.creep.store.getCapacity())
+        this.creep.withdraw(this.storage, RESOURCE_ENERGY);
     }
 
     if(this.terminal.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
       this.creep.transferEverything(this.terminal);
   }
 
-  private TransferToStorage(res: ResourceConstant, keepAmount: number)
+  private TransferEnergyToStorage()
   {
     if(this.creep.store.getUsedCapacity() === 0)
     {
       let amount = 0;
-      if(res === RESOURCE_ENERGY)
-      {
-          amount = this.terminal[res] - keepAmount;
-          this.creep.withdraw(this.terminal, res, amount);
-      }
+      amount = this.terminal.store[RESOURCE_ENERGY] - 75000;
+      amount = (amount > this.creep.store.getCapacity()) ? this.creep.store.getCapacity() : amount;
+      this.creep.withdraw(this.terminal, RESOURCE_ENERGY, amount);
     }
 
     if(this.storage.store.getUsedCapacity() > this.creep.store.getUsedCapacity())
+      this.creep.transferEverything(this.storage);
+  }
+
+  private TransferToTerminal(res: ResourceConstant)
+  {
+    if(this.creep.store[res] !== this.creep.store.getUsedCapacity())
+    {
+        this.creep.transferEverything(this.storage);
+        return false;
+    }
+
+    if(this.creep.store.getUsedCapacity() === 0)
+    {
+      if(this.storage.store[res] > this.creep.store.getCapacity())
+        return (this.creep.withdraw(this.storage, res) === OK);
+    }
+
+    if(this.terminal.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
+      return (this.creep.transferEverything(this.terminal) === OK);
+
+    return false;
+  }
+
+  private TransferToStorage(res: ResourceConstant, keepAmount: number)
+  {
+
+    if(this.creep.store.getUsedCapacity() === 0 && this.terminal.store[res] > keepAmount)
+    {
+      let amount = 0;
+      //if(res === RESOURCE_ENERGY)
+      {
+          amount = this.terminal.store[res] - keepAmount;
+          if(amount > this.creep.store.getCapacity())
+            amount = this.creep.store.getCapacity();
+          const ret = this.creep.withdraw(this.terminal, res, amount);
+          return;
+      }
+    }
+
+    //if(this.storage.store.getUsedCapacity() > this.creep.store.getUsedCapacity())
       this.creep.transferEverything(this.storage);
   }
 }

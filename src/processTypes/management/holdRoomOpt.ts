@@ -419,7 +419,7 @@ export class HoldRoomOptManagementProcess extends Process
 
                   let count = 0;
                   _.forEach(creeps, (c) => {
-                    let ticksNeeded = c.body.length * 3 + distance;
+                    let ticksNeeded = c.body.length * 3 + distance + 10;
                     if(!c.ticksToLive || c.ticksToLive > ticksNeeded)
                     {
                       count++;

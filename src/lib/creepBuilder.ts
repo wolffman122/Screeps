@@ -113,7 +113,14 @@ export const CreepBuilder = {
               CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
               MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
     }
-
+    else if(creepType === 'transferUpgrader')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,
+              WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
+              WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY];
+    }
     else if(creepType === 'custom')
     {
       return memory.body;

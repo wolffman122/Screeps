@@ -39,7 +39,7 @@ export class LabManagementProcess extends Process
   run()
   {
 
-  if(Game.cpu.bucket < 8000)
+  if(Game.cpu.bucket < 7000)
       return;
     this.logOn = false;
     this.logName = "labm-E55S47";

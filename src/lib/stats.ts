@@ -13,6 +13,7 @@ export const Stats = {
     let last = (Memory.gclAmount === undefined) ? 0 : Memory.gclAmount;
     Memory.stats['gcl.gclAmount'] = Game.gcl.progress - last;
     console.log('Stats', Game.gcl.progress, last, Game.gcl.progress-last)
+    console.log('Stats CPU used', Game.cpu.getUsed(), 'Bucket', Game.cpu.bucket)
     Memory.gclAmount = Game.gcl.progress;
     Memory.stats['gcl.level'] = Game.gcl.level
     Memory.stats['cpu.getUsed'] = Game.cpu.getUsed()

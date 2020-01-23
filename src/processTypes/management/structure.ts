@@ -110,24 +110,28 @@ export class StructureManagementProcess extends Process{
       }
       else if(room.controller?.level === 8)
       {
-        const upgrading = this.CheckRamparts(room);
-        let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
-        let spawned = false;
-        if(upgrading && this.metaData.repairCreeps.length < 2)
-          spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
-        else if(this.metaData.repairCreeps.length < 1)
-          spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {});
-
-        if(spawned)
+        if(!this.metaData.shutDownRamparts)
         {
-          let boosts = upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
-          this.metaData.repairCreeps.push(creepName);
+          const upgrading = this.CheckRamparts(room);
+          let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
+          let spawned = false;
+          if(upgrading && this.metaData.repairCreeps.length < 2)
+            spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
+          else if(this.metaData.repairCreeps.length < 1)
+            spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {});
 
-          this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
-            creep: creepName,
-            roomName: this.metaData.roomName,
-            boosts: boosts,
-          });
+          if(spawned)
+          {
+            let boosts = upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
+            this.metaData.repairCreeps.push(creepName);
+
+            this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
+              creep: creepName,
+              roomName: this.metaData.roomName,
+              boosts: boosts,
+              upgrading: upgrading
+            });
+          }
         }
       }
     }
@@ -135,6 +139,7 @@ export class StructureManagementProcess extends Process{
 
   CheckRamparts(room: Room)
   {
+    let retValue = false;
     const storage = room.storage;
     const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
     let average = ramparts.reduce((total, next) => total + next.hits, 0) / ramparts.length;
@@ -145,18 +150,17 @@ export class StructureManagementProcess extends Process{
 
     const percentDiference = ((room.memory.rampartTarget - average) / room.memory.rampartTarget) * 100;
 
-    console.log(this.name, 'Percent Diference', percentDiference, 'Average', average, 'Target', room.memory.rampartTarget);
-
     if(percentDiference >= 5 && storage.store[RESOURCE_ENERGY] > ENERGY_KEEP_AMOUNT * 1.25)
-      return true;
+      retValue = true;
     else if (percentDiference <= 1 && storage.store[RESOURCE_ENERGY] > ENERGY_KEEP_AMOUNT * 1.25)
     {
       if(room.memory.rampartTarget < 11000000)
         room.memory.rampartTarget += 1000;
 
-      return true;
+      retValue = true;
     }
-    else
-      return false;
+
+    //console.log(this.name, 'Percent Diference', percentDiference, 'Average', average, 'Target', room.memory.rampartTarget, retValue);
+    return retValue;
   }
 }

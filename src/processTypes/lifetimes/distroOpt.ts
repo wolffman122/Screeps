@@ -7,6 +7,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
   run(){
     let creep = this.getCreep()
 
+    if(creep.name === 'em-m-E37S46-23897868')
+            console.log(this.name, 'Distro problem', 1, '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
     if(!creep)
       return;
@@ -20,6 +22,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
     }*/
 
+    if(creep.name === 'em-m-E37S46-23897868')
+            console.log(this.name, 'Distro problem', 2)
     // Room energy full parts
     if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable &&
       sourceContainer && _.sum(sourceContainer.store) <= creep.carryCapacity * .85)
@@ -57,16 +61,61 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
     }
 
+    if(creep.name === 'em-m-E37S46-23897868')
+            console.log(this.name, 'Distro problem', 3)
+
     // Empty Creep
     if(creep.store.getUsedCapacity() === 0 && creep.ticksToLive! > 50)
     {
+      if(creep.name === 'em-m-E37S46-23897868')
+            console.log(this.name, 'Distro problem', 4)
       if(creep.memory.storageDelivery == true)
       {
+        if(creep.room.name === 'E38S35')
+        {
+        //   if(!this.metaData.openPositions)
+        //     this.metaData.openPositions = [];
+
+        //   let openSpots: RoomPosition[] = [];
+        //   if(this.metaData.openPositions.length < 3)
+        //   {
+        //     const openPositoins = creep.pos.getOpenPositions(creep.room.storage.pos, 4, {avoidStructures: [STRUCTURE_ROAD], avoidCreeps: true});
+        //     let count = 0;
+        //     for(let op of openPositoins)
+        //     {
+        //       if(count === 3)
+        //         break;
+
+        //       openSpots.push(op);
+        //       this.metaData.openPositions.push({x: op.x, y: op.y});
+        //       count++;
+        //     }
+        //   }
+        //   else
+        //   {
+        //     for(let op of this.metaData.openPositions)
+        //     {
+        //       openSpots.push(new RoomPosition(op.x, op.y, this.metaData.roomName));
+        //     }
+        //   }
+
+
+
+        //   // console.log(this.name, 'Open positions length', openPositoins.length, '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+        //   // openPositoins.forEach(op => console.log(op.x, op.y));
+        }
+
+        //if(creep.idleOffRoad(creep.room.storage, false) === 5)
+        {
+          creep.memory.storageDelivery = false;
+          //this.suspend = 5;
+        }
         creep.say('😴1');
-        creep.memory.storageDelivery = false;
-        //this.suspend = 5;
         return;
       }
+
+      if(creep.name === 'em-m-E37S46-23897868')
+            console.log(this.name, 'Distro problem', 5)
 
       // Source Link routine
       if(this.kernel.data.roomData[creep.pos.roomName].sourceLinks.length == 2)
@@ -198,8 +247,11 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
       else
       {
+
         // Non source link rooms
         let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
+        if(creep.name === 'em-m-E37S46-23897868')
+            console.log(this.name, 'Distro problem', 6, sourceContainer, creep.room.storage?.my && !(creep.room.terminal?.my ?? true))
         if(sourceContainer?.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.carryCapacity)
         {
           creep.say('🕋');
@@ -212,7 +264,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           creep.travelTo(sourceContainer, {range: 1});
           return;
         }
-        else if(creep.room.storage?.my && !creep.room.terminal?.my)
+        else if(creep.room.storage?.my && !(creep.room.terminal?.my ?? true))
         {
           const terminal = creep.room.terminal;
           if(terminal.store.getUsedCapacity() > 0)
@@ -228,8 +280,10 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
             return;
           }
         }
-        else if(creep.room.storage && creep.room.storage.my)
+        else if(creep.room.storage?.my)
         {
+          if(creep.name === 'em-m-E37S46-23897868')
+            console.log(this.name, 'Distro problem', 1, '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
           let container = this.kernel.data.roomData[creep.pos.roomName].generalContainers[0];
           if(container && _.sum(container.store) > 0)
           {

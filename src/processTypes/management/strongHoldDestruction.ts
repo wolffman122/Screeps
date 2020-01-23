@@ -258,17 +258,10 @@ export class StrongHoldDestructionProcess extends Process
       console.log(this.name, creep.name, creep.memory.boost);
       if(!creep.memory.boost)
       {
-        if(this.flag.memory.coreInfo.coreLevel <= 2)
-        {
-          creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
-          RESOURCE_CATALYZED_UTRIUM_ACID], false);
-          return;
-        }
-        else if(this.flag.memory.coreInfo.coreLevel === 4)
-        {
-          creep.boostRequest([RESOURCE_CATALYZED_GHODIUM_ALKALIDE, RESOURCE_KEANIUM_ALKALIDE,RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE],false);
-          return;
-        }
+        creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+          RESOURCE_CATALYZED_KEANIUM_ALKALIDE, RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
+          RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE], false);
+        return;
       }
 
       if(this.flag.memory.coreInfo.invaderCorePresent || this.flag.memory.coreInfo.skLairPresent)
@@ -278,18 +271,16 @@ export class StrongHoldDestructionProcess extends Process
           // Might need to add some defense code in here for SK's
           if(!this.flag.memory.coreInfo.invaderCorePresent)
           {
-            const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
-            if(hostiles.length)
+            const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
+            if(structures.length)
             {
-              const hostile = creep.pos.findClosestByRange(hostiles);
-              if(!creep.pos.inRangeTo(hostile, 3))
-              {
-                creep.travelTo(hostile, {movingTarget: true});
-              }
+              const structure = structures[0];
+              if(!creep.pos.isNearTo(structure))
+                creep.travelTo(structure);
               else
-                creep.rangedAttack(hostile);
+                creep.rangedMassAttack();
 
-              creep.heal(creep);
+              creep.say('💣');
               return;
             }
           }
@@ -315,6 +306,21 @@ export class StrongHoldDestructionProcess extends Process
             creep.travelTo(this.core);
 
           creep.heal(creep);
+        }
+      }
+      else
+      {
+        const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
+        if(structures.length)
+        {
+          const structure = structures[0];
+          if(!creep.pos.isNearTo(structure))
+            creep.travelTo(structure);
+          else
+            creep.rangedMassAttack();
+
+          creep.say('💣');
+          return;
         }
       }
     }
@@ -840,75 +846,82 @@ export class StrongHoldDestructionProcess extends Process
         creep.heal(creep);
       }
 
-
-      const sPos = attacker.memory.standPos;
-      const standPos = new RoomPosition(sPos.x, sPos.y, sPos.roomName);
-      console.log(this.name, 'FAA WTF', 1, standPos)
-      // Placing follower creeps around Attacker to stay out of range of meleee
-      if(this.core?.level === 4 && attacker.pos.inRangeTo(this.core, 10)) // Lvl 4
+      if(attacker.memory.standPos)
       {
-        const tPos = attacker.memory.standPos;
-        const targetPos = new RoomPosition(tPos.x, tPos.y, tPos.roomName);
-        let standPos: RoomPosition;
-        const trav = attacker.memory._trav as TravelData;
-        const dir = +trav.path[0];
-        let nextPos = attacker.pos.getPositionAtDirection(dir);
-        switch(index + 1)
+        const sPos = attacker.memory.standPos;
+        const standPos = new RoomPosition(sPos.x, sPos.y, sPos.roomName);
+        console.log(this.name, 'FAA WTF', 1, standPos)
+        // Placing follower creeps around Attacker to stay out of range of meleee
+        if(this.core?.level === 4 && attacker.pos.inRangeTo(this.core, 10)) // Lvl 4
         {
-          case 1:
-            standPos = new RoomPosition(nextPos.x+1, nextPos.y, attacker.pos.roomName);
-            break;
-          case 2:
-            standPos = new RoomPosition(nextPos.x+1, nextPos.y - 1, attacker.pos.roomName);
-            break;
-          case 3:
-            standPos = new RoomPosition(nextPos.x, nextPos.y-1, attacker.pos.roomName);
-            break;
-        }
+          const tPos = attacker.memory.standPos;
+          const targetPos = new RoomPosition(tPos.x, tPos.y, tPos.roomName);
+          let standPos: RoomPosition;
+          const trav = attacker.memory._trav as TravelData;
+          const dir = +trav.path[0];
+          let nextPos = attacker.pos.getPositionAtDirection(dir);
+          switch(index + 1)
+          {
+            case 1:
+              standPos = new RoomPosition(nextPos.x+1, nextPos.y, attacker.pos.roomName);
+              break;
+            case 2:
+              standPos = new RoomPosition(nextPos.x+1, nextPos.y - 1, attacker.pos.roomName);
+              break;
+            case 3:
+              standPos = new RoomPosition(nextPos.x, nextPos.y-1, attacker.pos.roomName);
+              break;
+          }
 
-        const friendlies = creep.pos.findInRange(FIND_MY_CREEPS, 3, {filter: c => c.fatigue === 0});
-        if(!creep.pos.isEqualTo(standPos) && friendlies.length === 4)
+          const friendlies = creep.pos.findInRange(FIND_MY_CREEPS, 3, {filter: c => c.fatigue === 0});
+          if(!creep.pos.isEqualTo(standPos) && friendlies.length === 4)
+          {
+            strSay += creep.moveDir(creep.pos.getDirectionTo(standPos));
+            creep.travelTo(standPos);
+          }
+        }
+        else if(this.core?.level === 3 && attacker.pos.inRangeTo(this.core, 3)) // Lvl 3
         {
-          strSay += creep.moveDir(creep.pos.getDirectionTo(standPos));
-          creep.travelTo(standPos);
+          const standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
+          if(!creep.pos.isEqualTo(standPos))
+            creep.travelTo(standPos);
+        }
+        else if(this.core?.level === 2 && attacker.pos.isEqualTo(standPos))
+        {
+
+          let standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
+          const look = standPos.lookFor(LOOK_TERRAIN);
+          if(look.length)
+          {
+            const terrain = look[0];
+            if(terrain === "wall")
+              standPos = new RoomPosition(attacker.pos.x, attacker.pos.y + 1, attacker.pos.roomName);
+          }
+          console.log(this.name, 'FAA WTF', 1.5, standPos);
+
+          if(!creep.pos.isEqualTo(standPos))
+            creep.travelTo(standPos);
+        }
+        else // Moving through room before in range.
+        {
+          console.log(this.name, 'FAA WTF', 2)
+          if(leader.pos.inRangeTo(creep, 1))
+          {
+            console.log(this.name, 'FAA WTF', 3)
+            const dir = creep.pos.getDirectionTo(leader);
+            creep.move(dir);
+          }
+          else
+          {
+            console.log(this.name, 'FAA WTF', 4)
+            creep.travelTo(leader, {movingTarget: true});
+          }
         }
       }
-      else if(this.core?.level === 3 && attacker.pos.inRangeTo(this.core, 3)) // Lvl 3
+      else
       {
-        const standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
-        if(!creep.pos.isEqualTo(standPos))
-          creep.travelTo(standPos);
-      }
-      else if(this.core?.level === 2 && attacker.pos.isEqualTo(standPos))
-      {
-
-        let standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
-        const look = standPos.lookFor(LOOK_TERRAIN);
-        if(look.length)
-        {
-          const terrain = look[0];
-          if(terrain === "wall")
-            standPos = new RoomPosition(attacker.pos.x, attacker.pos.y + 1, attacker.pos.roomName);
-        }
-        console.log(this.name, 'FAA WTF', 1.5, standPos);
-
-        if(!creep.pos.isEqualTo(standPos))
-          creep.travelTo(standPos);
-      }
-      else // Moving through room before in range.
-      {
-        console.log(this.name, 'FAA WTF', 2)
-        if(leader.pos.inRangeTo(creep, 1))
-        {
-          console.log(this.name, 'FAA WTF', 3)
-          const dir = creep.pos.getDirectionTo(leader);
-          creep.move(dir);
-        }
-        else
-        {
-          console.log(this.name, 'FAA WTF', 4)
-          creep.travelTo(leader, {movingTarget: true});
-        }
+        creep.travelTo(attacker);
+        return;
       }
 
       console.log(this.name, 'FAA WTF', 5)
@@ -1126,6 +1139,10 @@ export class StrongHoldDestructionProcess extends Process
           console.log(this.name, 'Dismantler', 7, 'Dimantler should be done now.')
           this.metaData.dismantleDone = true;
         }
+      }
+      else
+      {
+        this.metaData.dismantleDone = true;
       }
       console.log(this.name, 'Dismantler', 8)
     }

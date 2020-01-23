@@ -14,6 +14,7 @@ import { ReportProcess } from './reports';
 import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
 import { PowerHarvestingManagement } from 'processTypes/management/powerHarvesting';
 import { PowerManagement } from 'processTypes/management/power'
+import { TransferManagementProcess } from 'processTypes/management/transfer'
 
 /*
 
@@ -67,6 +68,24 @@ export class InitProcess extends Process{
 
       if(room.controller && room.controller.my)
       {
+        if(Game.time % 3000 === 0)
+        {
+          const flags = room.find(FIND_FLAGS, {filter: f => f.color === COLOR_ORANGE && f.secondaryColor === COLOR_RED});
+          if(flags.length)
+          {
+            room.memory.transfering = true;
+            room.memory.transferFlagName = flags[0].name;
+          }
+        }
+
+        if(room.memory.transfering)
+        {
+          proc.kernel.addProcessIfNotExist(TransferManagementProcess, 'tmp-' + room.name, 20, {
+            roomName: room.name,
+            transferFlagName: room.memory.transferFlagName
+          });
+        }
+
         if(!proc.kernel.getProcessByName('em-' + room.name)){
           proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 50, {
             roomName: room.name
