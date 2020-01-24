@@ -406,7 +406,7 @@ export class EnergyManagementProcess extends Process{
             if(spawned)
             {
               this.metaData.spinCreeps.push(creepName);
-              if(room.name === 'E38S46' || room.name === 'E36S43')
+              if(room.name === 'E38S46' || room.name === 'E36S43' || room.name === 'E37S46')
               {
                 this.kernel.addProcessIfNotExist(Spinner2LifeTimeProcess, 'slf2-' + creepName, 45, {
                   roomName: room.name,
