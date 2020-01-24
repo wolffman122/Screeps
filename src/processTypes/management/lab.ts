@@ -39,6 +39,9 @@ export class LabManagementProcess extends Process
   run()
   {
 
+  if(this.metaData.shutdownLabs)
+    return;
+
   if(Game.cpu.bucket < 7000)
       return;
     this.logOn = false;

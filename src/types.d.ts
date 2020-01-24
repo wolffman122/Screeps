@@ -592,6 +592,7 @@ interface Flag {
   interface LabManagementProcessMetaData
   {
     roomName: string,
+    shutdownLabs?: boolean,
     labDistros: string[],
     idlePosition: RoomPosition;
     command?: Command;
@@ -925,6 +926,7 @@ interface TransferManagementProcessMetaData
   upgraders: string[];
   movers: string[];
   builders: string[];
+  transportHealers: string[];
   clearStorage: boolean;
   lvl4Complete?: boolean;
   lvl5Complete?: boolean;
