@@ -134,7 +134,7 @@ export class InitProcess extends Process{
              room.name === 'E56S43' || room.name === 'E47S46' || room.name === 'E38S54' || room.name === 'E45S53' ||
              room.name === 'E27S38' || room.name === 'E58S44' || room.name === 'E32S44' || room.name === 'E41S32' ||
              room.name === 'E35S51' || room.name === 'E35S51' || room.name === 'E38S35' || room.name === 'E44S42' ||
-             room.name === 'E46S51' || room.name === 'E36S33')
+             room.name === 'E46S51' || room.name === 'E36S33' || room.controller.level >= 6)
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
