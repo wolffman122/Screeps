@@ -82,7 +82,7 @@ export class skRoomManagementProcess extends Process
 
     run()
     {
-      console.log(this.name, 'Running');
+      console.log(this.name, 'Running Avg', this.metaData.loggingAverage, 'count', this.metaData.logginCount);
       if(Game.cpu.bucket < 8000)
         return;
       this.centerFlag = Game.flags['Center-'+this.metaData.roomName];
@@ -310,6 +310,13 @@ export class skRoomManagementProcess extends Process
               }
             }
           }
+
+          for(let i = 0; i < this.metaData.distroCreeps[s.id].length; i++)
+          {
+            const creep = Game.creeps[this.metaData.distroCreeps[s.id][i]];
+            if(creep)
+              this.HaulerActions(creep, s);
+          }
         });
       }
     }
@@ -320,14 +327,10 @@ export class skRoomManagementProcess extends Process
       if(this.skRoom?.memory.SKInfo)
       {
         distance = this.skRoom.memory.SKInfo.devilDistance;
-        console.log(this.name, 'devil distance', distance);
       }
 
-      console.log(this.name, distance);
       this.metaData.devils = Utils.clearDeadCreeps(this.metaData.devils);
-      console.log(this.name, distance);
       const count = Utils.creepPreSpawnCount(this.metaData.devils, distance);           // TODO: Want to pass in extra prespawn time
-      console.log(this.name, 'Devil', distance, count)
 
       if(count < 1)
       {
@@ -810,7 +813,6 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
-        console.log(this.name, 'Builder actions', 1, this.coreInSk);
         if(this.coreInSk)
         {
           const spawn = this.roomData().spawns[0];
@@ -838,11 +840,12 @@ export class skRoomManagementProcess extends Process
           {
             this.sources.forEach(s => {
               const containers = s.pos.findInRange(FIND_STRUCTURES, 1, {filter: s => s.structureType === STRUCTURE_CONTAINER});
-              if(containers.length === 0)
+              const sites = s.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 1, {filter: s => s.structureType === STRUCTURE_CONTAINER});
+              if(containers.length === 0 && sites.length === 0)
               {
-              const openspaces = s.pos.openAdjacentSpots(true);
-              if(openspaces.length)
-                openspaces[0].createConstructionSite(STRUCTURE_CONTAINER);
+                const openspaces = s.pos.openAdjacentSpots(true);
+                if(openspaces.length)
+                  openspaces[0].createConstructionSite(STRUCTURE_CONTAINER);
               }
             });
           }
@@ -893,7 +896,7 @@ export class skRoomManagementProcess extends Process
             {
               console.log(this.name, 'Builder actions', 8)
               const sk = sks[0];
-              if(sk.pos.getRangeTo(builder) < 7)
+              if(sk.pos.getRangeTo(builder) < 7 && sk.pos.getRangeTo(this.mineral) > 3)
               {
                 const ret = PathFinder.search(builder.pos, {pos: sk.pos, range: 5},
                 {
@@ -960,7 +963,7 @@ export class skRoomManagementProcess extends Process
                     builder.travelTo(resources);
                   else if(builder.pickup(resources) === OK)
                     builder.memory.filling = false;
-                  
+
                   return;
                 }
 
@@ -1130,6 +1133,7 @@ export class skRoomManagementProcess extends Process
             let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
             if(lair.ticksToSpawn < 7 && lair.pos.inRangeTo(harvester, 5))
             {
+              const cpu = Game.cpu.getUsed();
               const ret = PathFinder.search(harvester.pos, {pos: lair.pos, range: 5},
                 {
                   flee: true,
@@ -1155,6 +1159,8 @@ export class skRoomManagementProcess extends Process
 
               harvester.say('👺L');
               harvester.moveByPath(ret.path);
+              this.metaData.logginCount++;
+              this.metaData.loggingAverage = (this.metaData.loggingAverage + (Game.cpu.getUsed() - cpu)) / this.metaData.logginCount;
               return;
             }
 
@@ -1164,6 +1170,7 @@ export class skRoomManagementProcess extends Process
               const sk = sks[0];
               if(sk.pos.getRangeTo(source) < 7)
               {
+                const cpu = Game.cpu.getUsed();
                 const ret = PathFinder.search(harvester.pos, {pos: sk.pos, range: 5},
                 {
                   flee: true,
@@ -1189,6 +1196,8 @@ export class skRoomManagementProcess extends Process
 
                 harvester.moveByPath(ret.path);
                 harvester.say('👺', true);
+                this.metaData.logginCount++;
+                this.metaData.loggingAverage = (this.metaData.loggingAverage + (Game.cpu.getUsed() - cpu)) / this.metaData.logginCount;
                 return;
               }
             }
@@ -1301,7 +1310,28 @@ export class skRoomManagementProcess extends Process
                 const sk = hauler.pos.findClosestByRange(sks);
                 if(sk.pos.getRangeTo(source) < 7)
                 {
-                  let ret = PathFinder.search(hauler.pos, {pos: sk.pos, range: 6}, {flee: true});
+                  let ret = PathFinder.search(hauler.pos, {pos: sk.pos, range: 6},
+                    {
+                      flee: true,
+                      roomCallback: function(roomName) {
+
+                        let room = Game.rooms[roomName];
+                        // In this example `room` will always exist, but since
+                        // PathFinder supports searches which span multiple rooms
+                        // you should be careful!
+                        if (!room) return;
+                        let costs = new PathFinder.CostMatrix;
+
+                        room.find(FIND_EXIT).forEach(exit=>costs.set(exit.x, exit.y, 0xff))
+
+                        // Avoid creeps in the room
+                        room.find(FIND_CREEPS).forEach(function(creep) {
+                          costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+
+                        return costs;
+                      }
+                    });
                   hauler.moveByPath(ret.path);
                   hauler.say('👺');
                   return;
@@ -1310,7 +1340,28 @@ export class skRoomManagementProcess extends Process
 
               if(lair.ticksToSpawn < 10)
               {
-                let ret = PathFinder.search(hauler.pos, {pos: lair.pos, range: 6}, {flee: true});
+                let ret = PathFinder.search(hauler.pos, {pos: lair.pos, range: 6},
+                  {
+                    flee: true,
+                    roomCallback: function(roomName) {
+
+                      let room = Game.rooms[roomName];
+                      // In this example `room` will always exist, but since
+                      // PathFinder supports searches which span multiple rooms
+                      // you should be careful!
+                      if (!room) return;
+                      let costs = new PathFinder.CostMatrix;
+
+                      room.find(FIND_EXIT).forEach(exit=>costs.set(exit.x, exit.y, 0xff))
+
+                      // Avoid creeps in the room
+                      room.find(FIND_CREEPS).forEach(function(creep) {
+                        costs.set(creep.pos.x, creep.pos.y, 0xff);
+                      });
+
+                      return costs;
+                    }
+                  });
                 hauler.moveByPath(ret.path);
                 hauler.say('👺L');
                 return;

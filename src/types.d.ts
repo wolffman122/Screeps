@@ -840,7 +840,9 @@ interface Flag {
     centerMiningDistance?: number
     miner: string[]
     centerMiner: string[]
-    minerHauler: string[]
+    minerHauler: string[],
+    loggingAverage: number,
+    logginCount: number,
   }
 
   interface ObservationManagementProcessMetaData
