@@ -121,6 +121,14 @@ export const CreepBuilder = {
               WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
               WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY];
     }
+    else if(creepType === 'transportHealer')
+    {
+      return [HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
+    }
     else if(creepType === 'custom')
     {
       return memory.body;
