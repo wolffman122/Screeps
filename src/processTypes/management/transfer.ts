@@ -3,6 +3,7 @@ import { StructureManagementProcess } from "./structure";
 import { AllTerminalManagementProcess } from "processTypes/buildingProcesses/allTerminal";
 import { TerminalManagementProcess } from "processTypes/buildingProcesses/terminal";
 import { Utils } from "lib/utils";
+import { LabManagementProcess } from "./lab";
 
 export class TransferManagementProcess extends Process
 {
@@ -21,6 +22,9 @@ export class TransferManagementProcess extends Process
 
     if(!this.metaData.builders)
       this.metaData.builders = [];
+
+    if(!this.metaData.transportHealers)
+      this.metaData.transportHealers = [];
   }
 
   run()
@@ -70,6 +74,31 @@ export class TransferManagementProcess extends Process
         }
       }
     }
+    else if(this.destRoom.controller.level === 6)
+    {
+      if(this.roomInfo(this.destRoom.name).extensions.length < 40)
+      {
+        const sites = this.roomInfo(this.destRoom.name).constructionSites.filter(x => x.structureType === STRUCTURE_TERMINAL);
+        if(sites.length)
+          this.SpawnBuilder(sites[0]);
+      }
+      else if(this.roomInfo(this.destRoom.name).labs?.length < 3)
+      {
+        const sites = this.roomInfo(this.destRoom.name).constructionSites.filter(x => x.structureType === STRUCTURE_LAB);
+        if(sites.length)
+          this.SpawnBuilder(sites[0], 2);
+      }
+
+      if(this.roomInfo(this.destRoom.name).labs.length === 3)
+        this.ShutDownLabs();
+
+      if(!this.destRoom.terminal)
+        this.SpawnHealerTransports();
+      else
+        this.TerminalTransfer(false);
+
+
+    }
 
 
     this.CreepActions();
@@ -104,6 +133,13 @@ export class TransferManagementProcess extends Process
 
         terminal.metaData.shutDownTransfers[this.metaData.roomName] = true;
     }
+  }
+
+  ShutDownLabs()
+  {
+    const labProcess = this.kernel.getProcessByName('labm-' + this.metaData.roomName);
+    if(labProcess instanceof LabManagementProcess)
+      labProcess.metaData.shutdownLabs= true;
   }
 
   CheckStorage()
@@ -168,11 +204,12 @@ export class TransferManagementProcess extends Process
     }
   }
 
-  SpawnBuilder(site: ConstructionSite)
+  SpawnBuilder(site: ConstructionSite, count?: number)
   {
+    const numberOfBuilders = (count) ? count : 1;
     console.log(this.name, 'Builders', this.metaData.builders.length)
     this.metaData.builders = Utils.clearDeadCreeps(this.metaData.builders);
-    if(this.metaData.builders.length < 1)
+    if(this.metaData.builders.length < numberOfBuilders)
     {
       const creepName = this.name + '-b-' + Game.time;
       const spawned = Utils.spawn(
@@ -185,6 +222,60 @@ export class TransferManagementProcess extends Process
 
       if(spawned)
         this.metaData.builders.push(creepName);
+    }
+  }
+
+  SpawnHealerTransports()
+  {
+    console.log(this.name,'spawn healer trnasport')
+    this.metaData.transportHealers = Utils.clearDeadCreeps(this.metaData.transportHealers);
+    console.log(this.name,'spawn healer trnasport 1')
+    if(this.metaData.transportHealers.length < 1)
+    {
+      console.log(this.name,'spawn healer trnasport 2')
+      const creepName = this.name + '-t-' + Game.time;
+      const spawned = Utils.spawn(
+        this.kernel,
+        this.sourceRoom.name,
+        'transportHealer',
+        creepName,
+        {}
+      );
+
+      if(spawned)
+        this.metaData.transportHealers.push(creepName);
+    }
+  }
+
+  TerminalTransfer(everything: boolean)
+  {
+    const sourceTerminal = this.sourceRoom.terminal;
+    const sourceStorage = this.sourceRoom.storage
+    const destTerminal = this.destRoom.terminal;
+
+    if(sourceTerminal.cooldown === 0)
+    {
+      if(sourceStorage.store[RESOURCE_ENERGY] > 100000)
+      {
+        for(let res in sourceTerminal.store)
+        {
+          if(destTerminal.store[RESOURCE_ENERGY] < 75000)
+          {
+            sourceTerminal.send(RESOURCE_ENERGY, 10000, this.destRoom.name);
+            return
+          }
+          else if((res === RESOURCE_ENERGY || res === RESOURCE_CATALYZED_GHODIUM_ACID) && !everything)
+            continue;
+
+          if(sourceTerminal.store[res] > 100)
+          {
+            const cost = Game.market.calcTransactionCost(sourceTerminal.store[res], this.sourceRoom.name, this.destRoom.name);
+            if(cost < sourceTerminal.store[RESOURCE_ENERGY]
+              && destTerminal.store.getFreeCapacity() > sourceTerminal.store[res])
+              sourceTerminal.send(res as ResourceConstant, sourceTerminal.store[res], this.destRoom.name);
+          }
+        }
+      }
     }
   }
 
@@ -210,21 +301,28 @@ export class TransferManagementProcess extends Process
       if(creep)
         this.BuilderActions(creep)
     }
+
+    for(let i = 0; i < this.metaData.transportHealers.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.transportHealers[i]];
+      if(creep)
+        this.TransportHealerActions(creep);
+    }
   }
 
   UpgraderActions(creep: Creep)
   {
-    if(!creep.memory.boost)
-    {
-      console.log(this.name,'Should not be in this boost part');
-      const terminal = this.sourceRoom.terminal
-      let allowUnBoosted = true;
-      if(terminal?.store[RESOURCE_CATALYZED_GHODIUM_ACID] > 300)
-        allowUnBoosted = false;
+    // if(!creep.memory.boost)
+    // {
+    //   console.log(this.name,'Should not be in this boost part');
+    //   const terminal = this.sourceRoom.terminal
+    //   let allowUnBoosted = true;
+    //   if(terminal?.store[RESOURCE_CATALYZED_GHODIUM_ACID] > 300)
+    //     allowUnBoosted = false;
 
-      creep.boostRequest([RESOURCE_CATALYZED_GHODIUM_ACID], allowUnBoosted);
-      return;
-    }
+    //   creep.boostRequest([RESOURCE_CATALYZED_GHODIUM_ACID], allowUnBoosted);
+    //   return;
+    // }
 
     console.log(this.name, 'We Still upgrading', creep.pos);
     const controller = this.destRoom.controller;
@@ -507,6 +605,32 @@ export class TransferManagementProcess extends Process
       const container = this.roomInfo(this.destRoom.name).generalContainers[0];
       const powerSpawn = this.roomInfo(this.destRoom.name).powerSpawn;
 
+      let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 3, {filter: ts => ts.store.getUsedCapacity(RESOURCE_ENERGY) > 0});
+      console.log(this.name, 'Tombstones')
+      if(tombstones.length)
+      {
+        if(!creep.pos.isNearTo(tombstones[0]))
+          creep.travelTo(tombstones[0]);
+        else if(creep.withdraw(tombstones[0], RESOURCE_ENERGY) === OK)
+          creep.memory.full = true;
+
+        return;
+      }
+
+      if(container?.store[RESOURCE_ENERGY] > 0)
+      {
+        if(!creep.pos.isNearTo(container))
+          creep.travelTo(container);
+        else
+        {
+          if(creep.withdraw(container, RESOURCE_ENERGY) === OK)
+            creep.memory.full = true;
+        }
+
+        creep.say('🕋');
+        return;
+      }
+
       if(storage?.store[RESOURCE_ENERGY] > 0)
       {
         if(!creep.pos.isNearTo(storage))
@@ -547,20 +671,6 @@ export class TransferManagementProcess extends Process
             creep.memory.full = true;
         }
 
-        return;
-      }
-
-      if(container?.store[RESOURCE_ENERGY] > 0)
-      {
-        if(!creep.pos.isNearTo(container))
-          creep.travelTo(container);
-        else
-        {
-          if(creep.withdraw(container, RESOURCE_ENERGY) === OK)
-            creep.memory.full = true;
-        }
-
-        creep.say('🕋');
         return;
       }
 
@@ -605,5 +715,30 @@ export class TransferManagementProcess extends Process
       creep.say('b');
       return;
     }
+  }
+
+  TransportHealerActions(creep: Creep)
+  {
+    if(!creep.memory.boost)
+    {
+      creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE], false);
+      return;
+    }
+
+    const container = this.roomInfo(this.destRoom.name).generalContainers[0];
+    if(!creep.pos.isEqualTo(container))
+      creep.travelTo(container);
+    else
+    {
+      const spawns = container.pos.findInRange(FIND_STRUCTURES, 1, {filter: f => f.structureType === STRUCTURE_SPAWN});
+      if(spawns.length)
+      {
+        const spawn = spawns[0] as StructureSpawn;
+        if(!spawn.spawning)
+          spawn.recycleCreep(creep);
+      }
+    }
+
+    return;
   }
 }
