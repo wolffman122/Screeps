@@ -82,7 +82,6 @@ export class skRoomManagementProcess extends Process
 
     run()
     {
-      console.log(this.name, 'Running Avg', this.metaData.loggingAverage, 'count', this.metaData.logginCount);
       if(Game.cpu.bucket < 8000)
         return;
       this.centerFlag = Game.flags['Center-'+this.metaData.roomName];
@@ -376,26 +375,26 @@ export class skRoomManagementProcess extends Process
             }
           }
         }
-      //   else if(this.roomInfo(this.skRoomName).constructionSites.length > 0)
-      //   {
-      //     if(this.metaData.builderCreeps.length < 1)
-      //     {
-      //       let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
-      //       let spawned = Utils.spawn(
-      //         this.kernel,
-      //         this.metaData.roomName,
-      //         'worker',
-      //         creepName,
-      //         {}
-      //       );
+        else if(this.roomInfo(this.skRoomName).constructionSites.length > 0)
+        {
+          if(this.metaData.builderCreeps.length < 1)
+          {
+            let creepName = 'hrm-build-' + this.skRoomName + '-' + Game.time;
+            let spawned = Utils.spawn(
+              this.kernel,
+              this.metaData.roomName,
+              'worker',
+              creepName,
+              {}
+            );
 
-      //       if(spawned)
-      //       {
-      //         // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
-      //         this.metaData.builderCreeps.push(creepName);
-      //       }
-      //     }
-      //    }
+            if(spawned)
+            {
+              // TODO Need to improve hold builder code to make construction sites automatic as it moves to source
+              this.metaData.builderCreeps.push(creepName);
+            }
+          }
+        }
       }
     }
 
@@ -1159,8 +1158,6 @@ export class skRoomManagementProcess extends Process
 
               harvester.say('👺L');
               harvester.moveByPath(ret.path);
-              this.metaData.logginCount++;
-              this.metaData.loggingAverage = (this.metaData.loggingAverage + (Game.cpu.getUsed() - cpu)) / this.metaData.logginCount;
               return;
             }
 
@@ -1196,8 +1193,6 @@ export class skRoomManagementProcess extends Process
 
                 harvester.moveByPath(ret.path);
                 harvester.say('👺', true);
-                this.metaData.logginCount++;
-                this.metaData.loggingAverage = (this.metaData.loggingAverage + (Game.cpu.getUsed() - cpu)) / this.metaData.logginCount;
                 return;
               }
             }
