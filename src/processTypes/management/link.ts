@@ -7,6 +7,12 @@ export class LinkManagementProcess extends Process
 
   run()
   {
+    if(Game.rooms[this.metaData.roomName]?.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+    
     if(!this.roomData())
     {
       this.completed = true;
@@ -17,14 +23,16 @@ export class LinkManagementProcess extends Process
     {
       let controllerLink = this.roomData().controllerLink;
       let storageLink = this.roomData().storageLink;
+      let storage = storageLink.room.storage;
 
       _.forEach(this.roomData().sourceLinks, (sl) => {
-        if(controllerLink)
+        if(controllerLink?.store.getFreeCapacity() > (sl.store[RESOURCE_ENERGY] ?? 0))
         {
-          if(sl.cooldown == 0 && sl.energy > 700 && controllerLink.energy < 200)
+          if(sl.cooldown == 0 && sl.energy > 700 && controllerLink.energy < 200 &&
+            storage.store.getUsedCapacity(RESOURCE_ENERGY) > 30000)
           {
-            sl.transferEnergy(controllerLink);
-            return;
+            if(sl.transferEnergy(controllerLink) === OK)
+              return false;
           }
         }
 
@@ -43,13 +51,25 @@ export class LinkManagementProcess extends Process
     {
       let storageLink = this.roomData().storageLink;
 
-      if(storageLink)
+      if((storageLink?.store.getUsedCapacity() ?? 0) === 0)
       {
+        const room = Game.rooms[storageLink.room.name];
+        if(!room?.memory.linkDistances)
+          room.memory.linkDistances = {};
+
+        if(Object.keys(room.memory.linkDistances).length < this.roomData().links.length)
+        {
+          const storage = room.storage;
+          this.roomData().links.forEach( l => {
+              room.memory.linkDistances[l.id] = l.pos.findPathTo(storage).length;
+          });
+        }
+
         _.forEach(this.roomData().links, (l) => {
-          if(l.cooldown == 0 && l.energy > 200 && storageLink!.energy < 100)
+          if(l.cooldown == 0 && l.energy > 200)
           {
-            let retValue = l.transferEnergy(storageLink!);
-            return;
+            if(l.transferEnergy(storageLink) === OK)
+              return false;
           }
         })
       }

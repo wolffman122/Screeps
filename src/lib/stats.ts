@@ -13,6 +13,7 @@ export const Stats = {
     let last = (Memory.gclAmount === undefined) ? 0 : Memory.gclAmount;
     Memory.stats['gcl.gclAmount'] = Game.gcl.progress - last;
     console.log('Stats', Game.gcl.progress, last, Game.gcl.progress-last)
+    console.log('Stats CPU used', Game.cpu.getUsed(), 'Bucket', Game.cpu.bucket)
     Memory.gclAmount = Game.gcl.progress;
     Memory.stats['gcl.level'] = Game.gcl.level
     Memory.stats['cpu.getUsed'] = Game.cpu.getUsed()
@@ -21,6 +22,11 @@ export const Stats = {
     Memory.stats['cpu.kernelLimit'] = kernel.limit
     Memory.stats['memory.size'] = RawMemory.get().length
     Memory.stats['market.credits'] = Game.market.credits
+
+    Memory.stats['gpl.level'] = Game.gpl.level;
+    Memory.stats['gpl.progress'] = Game.gpl.progress;
+    Memory.stats['gpl.progressTotal'] = Game.gpl.progressTotal;
+    Memory.stats['gpl.nextLevel'] = Game.gpl.level * 2000 + 1000;
 
     Memory.stats['processes.counts.total'] = Object.keys(kernel.processTable).length
     Memory.stats['processes.counts.run'] = kernel.execOrder.length

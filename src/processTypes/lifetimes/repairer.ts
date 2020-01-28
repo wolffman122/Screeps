@@ -3,6 +3,7 @@ import {Utils, RAMPARTTARGET} from '../../lib/utils'
 import {RepairProcess} from '../creepActions/repair'
 import { HarvestProcess } from '../creepActions/harvest';
 import { LABDISTROCAPACITY } from '../management/lab';
+import { StructureManagementProcess } from 'processTypes/management/structure';
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
   type = 'rlf'
@@ -13,93 +14,21 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     let creep = this.getCreep()
 
     if(!creep){ return }
-
-    if(this.metaData.boosts)
+    if(creep.room.memory.shutdown)
     {
-      let boosted = true;
-      for(let boost of this.metaData.boosts)
-      {
-        if(creep.memory[boost])
-        {
-          continue;
-        }
-
-        let room = Game.rooms[creep.pos.roomName];
-
-        if(room)
-        {
-          let requests = room.memory.boostRequests;
-          if(!requests)
-          {
-            creep.memory[boost] = true;
-            continue;
-          }
-
-          if(!requests[boost])
-          {
-            requests[boost] = { flagName: undefined, requesterIds: [] };
-          }
-
-          // check if already boosted
-          let boostedPart = _.find(creep.body, {boost: boost});
-          if(boostedPart)
-          {
-            creep.memory[boost] = true;
-            requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
-            continue;
-          }
-
-          boosted = false;
-          if(!_.include(requests[boost].requesterIds, creep.id))
-          {
-            requests[boost].requesterIds.push(creep.id);
-          }
-
-          if(creep.spawning)
-            continue;
-
-          let flag = Game.flags[requests[boost].flagName!];
-          if(!flag)
-          {
-            continue;
-          }
-
-          let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
-          let terminal = flag.room!.terminal;
-
-          if(creep.name === 'sm-E32S44-21511323')
-            console.log(this.name, 'Problem', 1)
-          if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
-          {
-            console.log("BOOST: Time to boost");
-            if(creep.pos.isNearTo(lab))
-            {
-              lab.boostCreep(creep);
-            }
-            else
-            {
-              creep.travelTo(lab);
-              return;
-            }
-          }
-          else if(this.metaData.allowUnboosted && terminal && (terminal.store[boost] === undefined || terminal.store[boost] < LABDISTROCAPACITY))
-          {
-            console.log("BOOST: no boost for", creep.name, " so moving on (alloweUnboosted = true)");
-            requests[boost].requesterIds = _.pull(requests[boost].requesterIds, creep.id);
-            creep.memory[boost] = true;
-            return;
-          }
-          else
-          {
-            if(Game.time % 10 === 0)
-              console.log("BOOST: no boost for", creep.name);
-              creep.idleOffRoad(creep.room!.storage!, false);
-            return;
-          }
-        }
-      }
+      this.completed = true;
+      return;
     }
 
+    let room = Game.rooms[this.metaData.roomName];
+
+    if(this.metaData.boosts && !creep.memory.boost)
+    {
+      creep.boostRequest(this.metaData.boosts, false);
+      return;
+    }
+
+    //Dump carry before dieing
     if(creep.ticksToLive! < 50 && _.sum(creep.carry) > 0)
     {
       let storage = creep.room.storage;
@@ -121,14 +50,16 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
     }
 
+    // Fill up
     if(_.sum(creep.carry) === 0)
     {
+      creep.memory.target = undefined;
       let target = Utils.withdrawTarget(creep, this)
 
       if (target)
       {
       if(!creep.pos.isNearTo(target))
-        creep.travelTo(target);
+        creep.pushyTravelTo(target);
       else
         creep.withdraw(target, RESOURCE_ENERGY);
 
@@ -163,152 +94,107 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    if(this.kernel.data.roomData[this.metaData.roomName])
+
+    if(room.controller?.level < 8)
     {
-      let rampartSites = _.filter(this.kernel.data.roomData[this.metaData.roomName].constructionSites, (cs) => {
-        return (cs.structureType === STRUCTURE_RAMPART || cs.structureType === STRUCTURE_WALL);
-      });
+      const towers = this.kernel.data.roomData[this.metaData.roomName].towers;
+      // If the creep has been refilled
+      const repairableObjects = <RepairTarget[]>[].concat(
+        <never[]>this.kernel.data.roomData[this.metaData.roomName].containers,
+        <never[]>this.kernel.data.roomData[this.metaData.roomName].roads
+      )
 
-      if(rampartSites.length > 0)
+      if(towers.length === 0)
       {
-        let rampartSite = creep.pos.findClosestByPath(rampartSites);
+        const repairTarget = _.min(repairableObjects, (ro) => ro.hits);
 
-        if(rampartSite)
+        if(repairTarget)
         {
-          if(!creep.pos.inRangeTo(rampartSite, 3))
-          {
-            creep.travelTo(rampartSite);
-          }
+          let enemies = repairTarget.room.find(FIND_HOSTILE_CREEPS);
+          let inRangeEnemies = repairTarget.pos.findInRange(enemies, 4);
 
-          creep.build(rampartSite);
+          if(inRangeEnemies.length === 0)
+          {
+            if(!creep.pos.inRangeTo(repairTarget, 3))
+            {
+              creep.travelTo(repairTarget, {range: 3});
+            }
+            else
+            {
+              let outcome = creep.repair(repairTarget);
+              if(outcome === OK)
+                creep.yieldRoad(repairTarget, true);
+            }
+          }
+          else
+          {
+            if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
+                this.suspend = 10;
+
+            return;
+          }
         }
       }
       else
       {
-        // If the creep has been refilled
-        let repairableObjects = <RepairTarget[]>[].concat(
-          <never[]>this.kernel.data.roomData[this.metaData.roomName].containers,
-          <never[]>this.kernel.data.roomData[this.metaData.roomName].walls
-        )
-
-        let shortestDecay = 100
-
-        let proc = this;
-
-        let repairTargets = _.filter(repairableObjects, function(object){
-          if(object.ticksToDecay < shortestDecay)
-          {
-            shortestDecay = object.ticksToDecay
-          }
-
-          switch (object.structureType)
-          {
-            case STRUCTURE_WALL:
-              return (object.hits < Utils.wallHealth(proc.kernel, proc.metaData.roomName));
-            default:
-              return (object.hits < object.hitsMax);
-          }
-
-        });
-
-        if(repairTargets.length === 0)
+        const constructionSites = this.kernel.data.roomData[this.metaData.roomName].constructionSites;
+        if(constructionSites.length)
         {
-          let health = Utils.rampartHealth(proc.kernel, proc.metaData.roomName)
-          let ramparts = proc.kernel.data.roomData[proc.metaData.roomName].ramparts;
-          ramparts = _.filter(ramparts, (rt) => { return (rt.hits < health)})
-          if(ramparts.length)
-          {
-            let target = _.min(ramparts, 'hits')
-            if(target)
-            {
-              //let enemies = target.room.find(FIND_HOSTILE_CREEPS);
-              //let inRangeEnemies = []; //target.pos.findInRange(enemies, 4);
+          const site = creep.pos.findClosestByPath(constructionSites);
+          if(!creep.pos.inRangeTo(site, 3))
+            creep.travelTo(site, {range: 3});
+          else
+            creep.build(site);
 
-              //if(inRangeEnemies.length === 0)
-              {
-                this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
-                  creep: creep.name,
-                  target: target.id
-                });
-              }
-              /*else
-              {
-                if(creep.idleOffRoad(creep.room!.storage!, false) === OK)
-                {
-                  if(creep.name === 'sm-E41S49-11295193')
-                    console.log(this.name, 'First suspend')
-                  else
-                    this.suspend = 10;
-                }
-                return;
-              }*/
-            }
-          }
+          return;
         }
+      }
+    }
+    else //////////// Rampart upgrading ///////////////////////
+    {
+      if(creep.name === 'sm-E47S46-23627651')
+        console.log(this.name, 'Should be finding a rampart')
 
+      let target: StructureRampart;
 
-        if(repairTargets.length > 0)
+      if(creep.memory.target === undefined)
+      {
+        const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
+        if(ramparts.length)
         {
-          let target = creep.pos.findClosestByPath(repairTargets)
 
-          if(target)
+          const minRampart = _.min(ramparts, (r) => r.hits);
+          if(this.metaData.upgrading)
           {
-            let enemies = target.room.find(FIND_HOSTILE_CREEPS);
-            let inRangeEnemies = target.pos.findInRange(enemies, 4);
-
-            if(inRangeEnemies.length === 0)
+            if(minRampart)
             {
-              this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
-                creep: creep.name,
-                target: target.id
-              });
+              creep.memory.target = minRampart.id;
+              target = minRampart;
             }
-            else
-            {
-              if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
-              {
-                if(creep.name === 'sm-E41S49-11295193')
-                  console.log(this.name, 'First suspend')
-                else
-                  this.suspend = 10;
-              }
-              return;
-            }
-          }
-        }
-        else
-        {
-          let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
-
-          if(target)
-          {
-            if(!creep.pos.inRangeTo(target, 3))
-              creep.travelTo(target, {range: 3});
-            else
-              creep.build(target);
-
-            return;
           }
           else
           {
-            let storage = creep.room.storage;
-            if(storage && storage.store.energy > 200000)
+            if(minRampart?.hits < room.memory.rampartTarget)
             {
-              if(creep.room.memory.rampartHealth && creep.room.memory.rampartHealth * 8 <= RAMPARTTARGET)
-              {
-                creep.room.memory.rampartHealth += 100;
-              }
-            }
-            else
-            {
-              if(creep.idleOffRoad(creep.room!.terminal!, false) === OK)
-              {
-                this.suspend = 10;
-              }
-              return;
+              creep.memory.target = minRampart.id;
+              target = minRampart;
             }
           }
         }
+      }
+      else
+      {
+        target = Game.getObjectById(creep.memory.target);
+        if(!creep.pos.inRangeTo(target, 3))
+          creep.travelTo(target, {range: 3});
+        else
+        {
+          let outcome = creep.repair(target);
+          if(outcome === OK)
+            creep.yieldRoad(target, true);
+        }
+
+        return;
       }
     }
   }

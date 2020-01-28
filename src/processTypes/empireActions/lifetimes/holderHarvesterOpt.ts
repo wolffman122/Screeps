@@ -34,7 +34,7 @@ export class HoldHarvesterOptLifetimeProcess extends LifetimeProcess
 
         if(enemies.length > 0)
         {
-          
+
         }
       }
     }

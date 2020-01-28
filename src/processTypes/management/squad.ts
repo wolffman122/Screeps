@@ -63,7 +63,7 @@ export class SquadManagementProcess extends Process
         }
 
         this.metaData.attackers = Utils.clearDeadCreeps(this.metaData.attackers)
-        let count = Utils.creepPreSpawnCount(this.metaData.attackers);
+        let count = Utils.creepPreSpawnCount(this.metaData.attackers, 60);
 
         if(count < 1)
         {
@@ -94,7 +94,7 @@ export class SquadManagementProcess extends Process
         }
 
         this.metaData.attackers = Utils.clearDeadCreeps(this.metaData.healers)
-        count = Utils.creepPreSpawnCount(this.metaData.healers);
+        count = Utils.creepPreSpawnCount(this.metaData.healers, 60);
 
         if(count < 1)
         {

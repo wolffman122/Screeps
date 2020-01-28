@@ -7,10 +7,6 @@ export class ClaimProcess extends Process{
   type = 'claim'
 
   run(){
-
-
-    console.log(this.name, 'Claiming', Utils.nearestRoom(this.metaData.targetRoom, 600));
-
     let flag = Game.flags[this.metaData.flagName]
     let baseFlagName;
     let numberOfFlags;
@@ -67,9 +63,9 @@ export class ClaimProcess extends Process{
 
 
     let room = flag.room;
-
     if(!room)
     {
+      console.log(this.name, 2)
       if(numberOfFlags !== undefined && baseFlagName !== undefined)
       {
         this.log('Here now');
@@ -100,9 +96,15 @@ export class ClaimProcess extends Process{
           return;
         }
       }
+      else
+      {
+        creep.travelTo(flag);
+        return;
+      }
     }
     else
     {
+      console.log(this.name, 3)
       if(!creep.pos.inRangeTo(room.controller!, 1))
       {
         creep.travelTo(room.controller!);

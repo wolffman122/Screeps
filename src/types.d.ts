@@ -5,14 +5,17 @@ declare const require: (module: string) => any;
 // add your custom typings here
 interface Creep extends RoomObject {
     fixMyRoad(): boolean;
-    transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal): number;
-    withdrawEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|Tombstone|StructureLab): number;
+    transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|StructureFactory): number;
+    withdrawEverything(target: any): number;
+    withdrawEverythingBut(target: any, res: ResourceConstant): number;
     yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
     idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
     getFlags(identifier: string, max: Number): Flag[]
     boostRequest(boosts: string[], allowUnboosted: boolean): any
     getBodyPart(type: BodyPartConstant): boolean;
     getBodyParts(): BodyPartConstant[];
+    moveDir(dir: DirectionConstant): string;
+    almostFull(): boolean;
   }
 
 interface RoomPosition {
@@ -21,7 +24,8 @@ interface RoomPosition {
   isPassible(ignoreCreeps?: boolean): boolean;
   isNearExit(range: number): boolean;
   openAdjacentSpots(ignoreCreeps?: boolean): RoomPosition[];
-  getOpenPositions(range:number, opts:{}): RoomPosition[];
+  getOpenPositions(origin_pos: RoomPosition, range: number, opts?: OpenPositionsOptions): RoomPosition[];
+  ulamSpiral(n: number);
 }
 
 interface Game {
@@ -68,6 +72,7 @@ interface Flag {
     nuker?: StructureNuker
     observer?: StructureObserver
     powerBank?: StructurePowerBank
+    factory?: StructureFactory
     powerSpawn?: StructurePowerSpawn
     generalContainers: StructureContainer[]
     mineral: Mineral | undefined
@@ -216,31 +221,38 @@ interface Flag {
       full: boolean;
       sleep?: number;
       stuck?: number;
+      swap?: RoomPosition;
+      standPos?: RoomPosition;
+  }
+
+  interface PowerCreepMemory
+  {
+    opGenerationRoom?: string;
+    renewTarget?: string;
   }
 
   interface FlagMemory
   {
-      enemies: boolean;
-      cores?: boolean;
-      invaderCoresPresent: boolean;
-      coreLevel?: number;
-      coreDistance?: number;
-      coreId?: string;
-      coreSkFoundRoom: string;
-      timeEnemies?: number;
-      source: string;
-      droppedResource: boolean;
-      rollCall: number;
-      follower: string;
-      skMineral?: string;
-      centerSKMineral?: string;
-      roadComplete?: number;
-      healer?: string;
-      attacker?: string;
+    enemies: boolean;
+    timeEnemies?: number;
+    source: string;
+    droppedResource: boolean;
+    rollCall: number;
+    follower: string;
+    skMineral?: string;
+    centerSKMineral?: string;
+    roadComplete?: number;
+    healer?: string;
+    attacker?: string;
+    coreInfo?: CoreInfo;
+    cores?: boolean;
+    nuker?: boolean;
   }
 
   interface RoomMemory
   {
+    shutdown?: boolean;
+    completed?: boolean;
     seigeDetected?: boolean;
     avoid: number;
     cache: {[key: string]: any};
@@ -253,7 +265,7 @@ interface Flag {
       level: number
     };
     assisted: boolean;
-    rampartHealth?: number;
+    rampartTarget?: number;
     invadersPresent?: boolean;
     skSourceRoom?: boolean;
     lastVision: number;
@@ -261,7 +273,38 @@ interface Flag {
     currentPatternCount?: number;
     currentPatternTimer?: number;
     rampartCostMatrix?: number[];
+    skCostMatrix?: number[];
     miningStopTime?: number;
+    pauseUpgrading?: boolean;
+    fullEnergyCount?: number;
+    specialMining?: boolean;
+    depositMining?: boolean;
+    surroundingRooms: {
+      [roomName: string]: {
+        sourceNumbers: number
+        controllerPos: RoomPosition
+        harvesting: boolean
+      }
+    };
+    remoteHarvesting?: boolean;
+    enemies?: boolean;
+    roadComplete?: number;
+    depositType: DepositConstant;
+    instruct?: Instruction;
+    componentInstruct?: Instruction;
+    resourceToProduce?: CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
+    amoutToProduce?: number;
+    linkDistances: {
+      [linkId: string]: number
+    };
+    SKInfo?: {
+      devilDistance: number
+      sourceDistances: {
+        [sourceId:string]: number
+      }
+    }
+    transfering?: boolean;
+    transferFlagName?: string;
   }
 
   interface SpawnMemory {}
@@ -305,6 +348,7 @@ interface Flag {
     roomName: string,
     sourceContainer: string,
     resource: ResourceConstant,
+    openPositions:{x: number, y:number}[]
   }
 
   interface SquadManagementProcessMetaData
@@ -331,6 +375,7 @@ interface Flag {
     buildCreeps: string[]
     repairCreeps: string[]
     dismantleCreeps: string[]
+    shutDownRamparts?: boolean
   }
 
   interface HoldRoomManagementProcessMetaData
@@ -365,11 +410,36 @@ interface Flag {
     }
 
     builderCreeps: string[]
+    dismantlerCreeps: string[]
     workerCreeps: string[]
     defenderCreeps: string[]
     coreBuster: string[]
     flagName: string
     increasing: boolean
+  }
+
+  interface AutomaticHoldManagementProcessMetaData
+  {
+    roomName: string
+    holdCreeps: string[]
+    harvestCreeps: {
+      [source: string]: string[]
+    }
+    distroCreeps: {
+      [container: string]: string[]
+    }
+    distroDistance: {
+      [container: string]: number
+    }
+
+    builderCreeps: string[]
+    workerCreeps: string[]
+    defenderCreeps: string[]
+    coreBuster: string[]
+    flagName: string
+    increasing: boolean
+    remoteName: string
+    controllerPos: RoomPosition
   }
 
   interface HoldHarvesterOptLifetimeProcessMetaData
@@ -392,6 +462,7 @@ interface Flag {
   {
     orderCreated?: boolean
     orderId?: string
+    roomWithResource: string[]
   }
 
   interface DismantleManagementProcessMetaData
@@ -403,12 +474,19 @@ interface Flag {
 
   interface StrongHoldDestructionProcessMetaData
   {
-    roomName: string
-    flagName: string
+    vision: boolean,
+    roomName: string,
+    flagName: string,
     attackers: string[]
     healers: string[],
     dismantlers: string[],
     haulers: string[],
+    dismantleDone: boolean,
+    haulerDone: boolean,
+    haulerAlmostDone: boolean,
+    standPos?: RoomPosition,
+    moving?:boolean,
+    stage?: number,
   }
 
   interface DismantleMetaData
@@ -469,7 +547,7 @@ interface Flag {
   interface HolderDefenderLifetimeProcessMetaData
   {
     creep: string,
-    targetRoom: string
+    remoteName: string
     flagName: string
     spawnRoomName: string
   }
@@ -514,6 +592,7 @@ interface Flag {
   interface LabManagementProcessMetaData
   {
     roomName: string,
+    shutdownLabs?: boolean,
     labDistros: string[],
     idlePosition: RoomPosition;
     command?: Command;
@@ -573,6 +652,28 @@ interface Flag {
 
     creeps: {
       [source: string]: string[]
+    },
+    sendStrings: {
+      [roomName: string]: string
+    },
+    receiveStr: {
+      [roomName: string]: string
+    }
+    shutDownTransfers: {
+      [roomName: string]: boolean
+    }
+  }
+
+  interface TerminalManagementProcessMetaData
+  {
+    sendStrings: {
+      [roomName: string]: string
+    },
+    receiveStr: {
+      [roomName: string]: string
+    },
+    shutDownTransfers: {
+      [roomName: string]: boolean
     }
   }
 
@@ -594,8 +695,9 @@ interface Flag {
 
   interface HoldDistroLifetimeProcessMetaData
   {
-    flagName: string,
+    remoteName: string,
     sourceContainer: string
+    flagName: string
     spawnRoom: string
     roomData: string
   }
@@ -665,7 +767,7 @@ interface Flag {
     openSpaces?: RoomPosition
   }
 
-  interface PowerManagementProcessMetaData
+  interface PowerHarvestingManagementProcessMetaData
   {
     roomName: string;
     currentBank: BankData;
@@ -684,7 +786,20 @@ interface Flag {
     roomName: string,
     boosts?: string[],
     allowUnboosted: boolean,
+    upgrading: boolean
 
+  }
+
+  interface CoreInfo
+  {
+    invaderCorePresent: boolean,
+    coreFlagName?: string,
+    coreId?: string,
+    coreLevel?: number,
+    coreLocation?: RoomPosition,
+    skLairPresent: boolean,
+    cleaning: boolean,
+    done: boolean,
   }
 
   interface SKRoomManagementProcessMetaData
@@ -702,10 +817,7 @@ interface Flag {
     scoutName?: string,
     vision: boolean,
     scanIndex: number,
-    invaderCorePresent: boolean,
-    coreFlagName?: string,
-    coreId?: string,
-    coreLevel?: number,
+    coreInfo?: CoreInfo,
     locations: {
       [types: string]: any[]
     },
@@ -728,17 +840,99 @@ interface Flag {
     centerMiningDistance?: number
     miner: string[]
     centerMiner: string[]
-    minerHauler: string[]
+    minerHauler: string[],
+    loggingAverage: number,
+    logginCount: number,
   }
 
-  interface ObservationProcessMetaData
+  interface ObservationManagementProcessMetaData
   {
-    roomName: string;
-    scanRooms?: string[];
-    initializeData: boolean;
-    currentBank: BankData;
-    scanIndex: number;
+    roomName: string
+    observingRooms?: string[]
+    scanIndex: number
+    scoredRooms: {
+      [roomName: string]: {
+        sourceNumbers: number
+        controllerPos: RoomPosition
+      }
+    }
   }
+
+interface StripManagementProcessMetaData {
+  roomName: string
+  stripperCreeps: string[]
+  flagName: string
+}
+
+interface StripperLifetimeProcessMetaData {
+  creep: string
+  roomName: string
+  flagName: string
+}
+
+interface FlagWatcherProcessMetaData {
+  skFlagCount?: {[roomName: string]: number};
+}
+
+interface TestProcessManagementMetaData {
+  roomName: string
+  leaders: string[]
+  followers: string[]
+  flagName: string
+}
+
+interface PowerManagementProcessMetaData
+{
+}
+
+interface PowerCreepLifetimeProcessMetaData
+{
+  powerCreep: string,
+  roomName: string
+}
+
+interface AlleyObservationManagementProcessMetaData
+{
+  roomName: string,
+  lastCanTick: number,
+  scanIndex: number,
+  scanRooms: string[],
+  checkRoom: string,
+}
+
+interface DepositMiningManagementProcessMetaData
+{
+  roomName:string,
+  targetRoomName: string,
+  vision: boolean,
+  harvester: string[];
+  haulers: string[];
+  harvesterDone: boolean,
+  harvesterCount?: number,
+  haulerDone: boolean,
+}
+
+interface Spinner2LifeTimeProcessMetaData
+{
+  roomName: string,
+  renewSpawnId?: string,
+  numberOfFlags: number,
+  skFeedRoom?: boolean,
+  skMinerals?: string[],
+}
+
+interface TransferManagementProcessMetaData
+{
+  roomName: string,
+  transferFlagName: string
+  upgraders: string[];
+  movers: string[];
+  builders: string[];
+  transportHealers: string[];
+  clearStorage: boolean;
+  lvl4Complete?: boolean;
+  lvl5Complete?: boolean;
+}
 //// Minerals
 
 
@@ -780,14 +974,14 @@ interface ProcessLog {
 
 interface OpenPositionsOptions
 {
-  offset: number,
-  ignoreIds: string[],
-  maxPositions: number,
-  avoidEdges: number,
-  avoidStructures: string[],
-  avoidTerrain: string[],
-  avoidCreeps: boolean,
-  avoidConstructionSites: boolean,
+  offset?: number,
+  ignoreIds?: string[],
+  maxPositions?: number,
+  avoidEdges?: number,
+  avoidStructures?: string[],
+  avoidTerrain?: number[],
+  avoidCreeps?: boolean,
+  avoidConstructionSites?: boolean,
 }
 
 interface BankData
@@ -813,4 +1007,19 @@ interface BankData
    y: number;
    xDir: string;
    yDir: string;
+ }
+
+ interface Instruction
+ {
+    [type:string]: number
+ }
+
+ interface Recipe
+ {
+   [type: string]: number;
+ }
+
+ interface RoomDistance
+ {
+   [roomName: string]: string;
  }

@@ -5,10 +5,12 @@ import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
 import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 import {TowerRepairProcess} from './buildingProcesses/towerRepair'
 import { MineralManagementProcess } from 'processTypes/management/mineral';
-import { ObservationProcess } from './buildingProcesses/observation';
 import { skRoomManagementProcess } from './management/skroom';
 import { TowerHealProcess } from './buildingProcesses/towerHeal';
-import { PowerManagementProcess } from './management/power';
+import { PowerHarvestingManagement } from './management/powerHarvesting';
+import { ObservationManagementProcess } from './management/observation';
+import { WorldMap } from 'lib/WorldMap';
+import { AlleyObservationManagementProcess } from './management/alleyObservation';
 
 interface RoomDataMeta{
   roomName: string
@@ -31,7 +33,7 @@ export class RoomDataProcess extends Process{
 
   singleFields = [
     'lastVision', 'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
-    'nuker', 'observer', 'powerBank'
+    'nuker', 'observer', 'powerBank', 'factory'
   ]
 
   run(){
@@ -56,11 +58,13 @@ export class RoomDataProcess extends Process{
       else
         room.memory.seigeDetected = false;
 
-    if(room.name === 'E32S44')
+    if(room.name === 'E45S56')
       console.log(this.name, 'Siege Status ', room.memory.seigeDetected);
 
-    if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
-      if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
+    if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0)
+    {
+      if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN)
+      {
         this.kernel.addProcess(SpawnRemoteBuilderProcess, 'srm-' + this.metaData.roomName, 90, {
           site: this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].id,
           roomName: this.metaData.roomName
@@ -76,7 +80,8 @@ export class RoomDataProcess extends Process{
           room.name == 'E52S46' || room.name == 'E42S48' || room.name == 'E38S46' || room.name == 'E36S43' ||
           room.name == 'E35S41' || room.name == 'E48S56' || room.name == 'E41S41' || room.name == 'E55S48' ||
           room.name == 'E58S52')*/
-      if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor)
+      if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0
+        && this.roomData().extractor)
       {
         this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 40, {
           roomName: room.name
@@ -84,12 +89,38 @@ export class RoomDataProcess extends Process{
       }
 
 
+      //////////// Code to find alley rooms ///////////////////////
       let observer = this.kernel.data.roomData[room.name].observer
-      if(observer)
+      if(observer?.my)
       {
-        this.kernel.addProcessIfNotExist(ObservationProcess, 'op-' + this.metaData.roomName, 18, {
-          roomName: room.name
-        })
+        let coord = WorldMap.getRoomCoordinates(this.metaData.roomName);
+        let zoneX = Math.floor(coord.x / 10) * 10;
+        let zoneY = Math.floor(coord.y / 10) * 10;
+
+        const cpTop = ((coord.y - (zoneY + 1)) * ((zoneX + 9) - (zoneX + 1)) - (coord.x - (zoneX + 1)) * ((zoneY + 1) - (zoneY + 1)));
+        const cpLeft = ((coord.y - (zoneY + 1)) * ((zoneX + 1) - (zoneX + 1)) - (coord.x - (zoneX + 1)) * ((zoneY + 9) - (zoneY + 1)));
+        const cpBot = ((coord.y - (zoneY + 9)) * ((zoneX + 9) - (zoneX + 1)) - (coord.x - (zoneX + 1)) * ((zoneY + 9) - (zoneY + 9)));
+        const cpRight = ((coord.y - (zoneY + 1)) * ((zoneX + 9) - (zoneX + 9)) - (coord.x - (zoneX + 9)) * ((zoneY + 9) - (zoneY + 1)));
+        if(!cpTop || !cpLeft || !cpBot || !cpRight)
+        {
+          if(this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E39S35' ||
+            this.metaData.roomName === 'E48S49')
+          {
+            this.kernel.addProcessIfNotExist(AlleyObservationManagementProcess, 'aomp' + this.metaData.roomName, 25, {
+              roomName: this.metaData.roomName
+            });
+          }
+        }
+      }
+      // Top
+
+
+
+      if(observer && (this.metaData.roomName === 'E52S46' || this.metaData.roomName === 'E42S48'))
+      {
+        /*this.kernel.addProcessIfNotExist(ObservationManagementProcess, 'omp-' + this.metaData.roomName, 33, {
+          roomName: this.metaData.roomName
+        });*/
       }
     }
 
@@ -123,7 +154,7 @@ export class RoomDataProcess extends Process{
 
       if(this.roomData().observer && this.roomData().powerSpawn)
       {
-        this.kernel.addProcessIfNotExist(PowerManagementProcess, 'powm-' + room.name, 25, {
+        this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powm-' + room.name, 25, {
           roomName: room.name
         });
       }
@@ -172,6 +203,29 @@ export class RoomDataProcess extends Process{
         //room.memory.rampartCostMatrix = undefined;
       }
 
+      if(!room.memory.completed && room.controller.level >= 8)
+      {
+        const spawns = this.roomData().spawns.length;
+        const towers = this.roomData().towers.length;
+        const extensions = this.roomData().extensions.length;
+        const labs = this.roomData().labs.length;
+        const link = this.roomData().storageLink;
+        const nuker = this.roomData().nuker;
+        const powerSpawn = this.roomData().powerSpawn;
+        const observer = this.roomData().observer;
+        const factory = this.roomData().factory;
+
+        if(spawns === 3 && extensions === 60 && link && room.storage && towers === 6
+          && observer && powerSpawn && room.terminal && labs === 10 && nuker && factory)
+          room.memory.completed = true;
+        else
+        {
+          if(!factory)
+            console.log(this.name, 'Need to build factory');
+        }
+      }
+
+
     }
 
     this.completed = true
@@ -206,17 +260,23 @@ export class RoomDataProcess extends Process{
     let skSourceContainerMaps = <{[id: string]: {container: StructureContainer, lair: StructureKeeperLair}}>{}
 
     let sourceContainers = _.filter(containers, function(container){
-      var sources: Array<Source> = container.pos.findInRange(FIND_SOURCES, 1)
+      let sources: Array<Source> = container.pos.findInRange(FIND_SOURCES, 1)
 
-      if(isSK)
+      if(sources.length)
       {
-        let lair = container.pos.findClosestByRange(lairs);
-        skSourceContainerMaps[sources[0].id] = { container: container, lair: lair };
-      }
-      else
-      {
-        if(sources[0]){
-          sourceContainerMaps[sources[0].id] = container
+        if(isSK)
+        {
+          if(sources[0])
+          {
+            let lair = container.pos.findClosestByRange(lairs);
+            skSourceContainerMaps[sources[0].id] = { container: container, lair: lair };
+          }
+        }
+        else
+        {
+          if(sources[0]){
+            sourceContainerMaps[sources[0].id] = container
+          }
         }
       }
 
@@ -381,6 +441,9 @@ export class RoomDataProcess extends Process{
       powerBank: <StructurePowerBank>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_POWER_BANK);
       })[0],
+      factory: <StructureFactory>_.filter(myStructures, function(structure) {
+        return (structure.structureType === STRUCTURE_FACTORY);
+      })[0],
       powerSpawn: <StructurePowerSpawn>_.filter(structures, function(structure){
         return (structure.structureType === STRUCTURE_POWER_SPAWN);
       })[0],
@@ -492,6 +555,7 @@ export class RoomDataProcess extends Process{
       observer: undefined,
       powerSpawn: undefined,
       powerBank: undefined,
+      factory: undefined,
       generalContainers: [],
       mineral: undefined,
       labs: [],
@@ -714,13 +778,9 @@ export class RoomDataProcess extends Process{
     let controller = room.controller;
     if(controller && controller.level >= 3)
     {
-      let damagedCreeps = <Creep[]>room.find(FIND_MY_CREEPS, {filter: cp => cp.hits < cp.hitsMax});
-      if(damagedCreeps.length > 0)
-      {
-        this.kernel.addProcessIfNotExist(TowerHealProcess, 'th-' + this.metaData.roomName, 90, {
-          roomName: this.metaData.roomName
-        })
-      }
+      this.kernel.addProcessIfNotExist(TowerHealProcess, 'th-' + this.metaData.roomName, 90, {
+        roomName: this.metaData.roomName
+      })
     }
   }
 

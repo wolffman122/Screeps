@@ -26,17 +26,17 @@
   "homepage": "https://github.com/screepers/screeps-typescript-starter#readme",
   "devDependencies": {
     "@types/lodash": "^3.10.1",
-    "@types/screeps": "^2.5.4",
-    "rollup": "^0.55.3",
+    "@types/screeps": "^3.0.0",
     "rollup-plugin-clean": "^1.0.0",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-screeps": "^0.1.2",
     "rollup-plugin-typescript2": "^0.11.0",
-    "tslint": "^5.8.0",
-    "typescript": "^2.7.1"
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
   },
   "dependencies": {
+    "rollup": "^0.55.3",
     "source-map": "~0.6.1"
   }
 }

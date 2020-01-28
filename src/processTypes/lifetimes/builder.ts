@@ -9,6 +9,11 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
     let creep = this.getCreep()
 
     if(!creep){ return }
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(creep.name === 'sm-E41S41-11147991')
     {

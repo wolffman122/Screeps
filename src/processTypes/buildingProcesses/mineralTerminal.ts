@@ -11,17 +11,29 @@ export class MinetalTerminalManagementProcess extends Process
     return;
       }
 }
-export const ENERGY_KEEP_AMOUNT = 295000;
+export const ENERGY_KEEP_AMOUNT = 120000;
 export const KEEP_AMOUNT = 10000;
+export const MINERAL_KEEP_AMOUNT = 5000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];
-export const PRODUCT_LIST = [RESOURCE_ZYNTHIUM_HYDRIDE, RESOURCE_LEMERGIUM_OXIDE, RESOURCE_KEANIUM_OXIDE, RESOURCE_GHODIUM_ACID, RESOURCE_CATALYZED_GHODIUM_ACID,
+export const PRODUCT_LIST = [RESOURCE_UTRIUM_OXIDE,
+                             RESOURCE_ZYNTHIUM_HYDRIDE,
+                             RESOURCE_LEMERGIUM_OXIDE,
+                             RESOURCE_KEANIUM_OXIDE,
+                             RESOURCE_GHODIUM_ACID,
                              RESOURCE_GHODIUM_ACID,
                              RESOURCE_GHODIUM,
                              RESOURCE_LEMERGIUM_HYDRIDE,
-                             RESOURCE_CATALYZED_GHODIUM_ALKALIDE, RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+                             RESOURCE_LEMERGIUM_ACID,
+                             RESOURCE_UTRIUM_ACID,
+                             RESOURCE_CATALYZED_GHODIUM_ACID,
+                             RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
+                             RESOURCE_CATALYZED_GHODIUM_ACID,
+                             RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
+                             RESOURCE_CATALYZED_KEANIUM_ACID,
                              RESOURCE_CATALYZED_UTRIUM_ACID,
                              RESOURCE_CATALYZED_ZYNTHIUM_ACID,
+                             RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
                              RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE];
 export const PRODUCTION_AMOUNT = 6000;
 
@@ -62,12 +74,22 @@ export const REAGENT_LIST = {
   XKH2O: ["KH2O", "X"],
 };
 
+type CommodityLvl1Constnat =
+  | RESOURCE_UTRIUM_BAR
+  | RESOURCE_LEMERGIUM_BAR
+  | RESOURCE_ZYNTHIUM_BAR
+  | RESOURCE_KEANIUM_BAR
+  | RESOURCE_GHODIUM_MELT
+  | RESOURCE_OXIDANT
+  | RESOURCE_REDUCTANT
+  | RESOURCE_PURIFIER
+  | RESOURCE_BATTERY;
 
 export const WHITE_LIST = ['admon',
   'Baj', 'cazantyl', 'DoctorPC', 'Geir1983', 'InvisioBlack', 'Issacar', 'Komir',
   'Lolzor', 'ncsupheo', 'NobodysNightmare', 'omnomwombat', 'Parthon',
   'Plemenit', 'poppahorse', 'Rengare', 'Subodai', 'Tantalas', 'Tijnoz', 'Totalschaden',
-  'Vlahn', 'W4rl0ck', 'weaves', 'Xaq', 'Yilmas', 'Zeekner', 'Zyzyzyryxy',
+  'Vlahn', 'W4rl0ck', 'weaves', 'Xaq', 'Yilmas', 'Zeekner', 'Zyzyzyryxy', 'likeafox', "Solace",
   // Temporary ones
   'smitt33'];
 

@@ -5,9 +5,16 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
   type = 'hlf'
 
   run(){
+
     let creep = this.getCreep()
 
     if(!creep){ return }
+
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(creep.name === 'em-E32S44-21171336')
       console.log(this.name, 'exists')

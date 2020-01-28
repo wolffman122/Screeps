@@ -51,7 +51,6 @@ export class Process
 
   init(kernel: Kernel)
   {
-    //console.log('Process ' + this.name + ' did not have init function written.');
 
   }
 

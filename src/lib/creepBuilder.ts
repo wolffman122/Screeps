@@ -13,6 +13,10 @@ export const CreepBuilder = {
     {
       console.log('Vision problems 1')
     }
+    if(creepType === 'bigWorker')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY];
+    }
     if(creepType === 'guard')
     {
       return [MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,   MOVE,
@@ -52,6 +56,78 @@ export const CreepBuilder = {
               HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
               HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
               HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL];
+    }
+    else if(creepType === 'SHRange')
+    {
+      return [TOUGH, TOUGH, TOUGH, TOUGH, RANGED_ATTACK, TOUGH, TOUGH, TOUGH, RANGED_ATTACK, TOUGH,
+              TOUGH, RANGED_ATTACK, TOUGH, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,
+              RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, TOUGH,
+              RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, TOUGH,
+              MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+    }
+    else if(creepType === 'SH4Heal')
+    {
+      return [TOUGH, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL,
+              HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL,
+              HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL,
+              HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, MOVE,
+              MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL];
+    }
+    else if(creepType === 'shHauler')
+    {
+      return [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+              CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+              CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+              CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
+    }
+    else if(creepType === 'maxHealer')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL];
+    }
+    else if(creepType === 'maxRange')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,
+              RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,
+              RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,
+              RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK];
+    }
+    else if(creepType === 'mage')
+    {
+      return [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,RANGED_ATTACK,RANGED_ATTACK,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
+              RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
+              RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL];
+    }
+    else if(creepType === 'despositMiner')
+    {
+      return [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+              WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
+    }
+    else if(creepType === 'transferUpgrader')
+    {
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+              MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,
+              WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
+              WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY];
+    }
+    else if(creepType === 'transportHealer')
+    {
+      return [HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
     }
     else if(creepType === 'custom')
     {
@@ -164,13 +240,12 @@ export const CreepBuilder = {
 
   typeStarts: <PartList>{
     'claimer': [TOUGH, CLAIM, MOVE, MOVE, MOVE, MOVE],
-    'harvester': [WORK, WORK, CARRY, MOVE],
+    'harvester': [WORK, CARRY, MOVE, MOVE],
     'skHarvester': [WORK, WORK, WORK, CARRY, MOVE, MOVE],
     'hold': [CLAIM, MOVE],
     'mover': [CARRY, MOVE],
     'bigMover': [CARRY, MOVE],
     'worker': [WORK, CARRY, MOVE, MOVE],
-    'bigWorker': [WORK, WORK, CARRY, MOVE, MOVE],
     'upgrader': [WORK,WORK, CARRY,CARRY, MOVE],
     'defender': [ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
                  ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
@@ -187,6 +262,7 @@ export const CreepBuilder = {
     'attack': [ATTACK, MOVE],
     'attackController': [CLAIM, MOVE, MOVE],
     'dismantler': [WORK,MOVE],
+    'dismantleCarry': [WORK, CARRY, MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
     'rangeAttack': [RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
@@ -208,7 +284,6 @@ export const CreepBuilder = {
     'bigMover': [CARRY, CARRY, MOVE],
     //'worker': [WORK, CARRY, MOVE, MOVE]
     'worker': [CARRY, WORK, MOVE, MOVE],
-    'bigWorker': [WORK, WORK, CARRY, MOVE, MOVE],
     'upgrader': [WORK, WORK, MOVE],
     'defender': [],
     'spinner': [CARRY],
@@ -221,7 +296,7 @@ export const CreepBuilder = {
     'attack': [ATTACK, MOVE],
     'attackController': [CLAIM, MOVE, MOVE],
     'dismantler': [WORK, MOVE],
-    'dismantleCarry': [WORK,WORK,WORK,CARRY,MOVE,MOVE],
+    'dismantleCarry': [WORK, MOVE],
     'labDistro': [CARRY,MOVE],
     'special': [MOVE],
     'rangeAttack': [],
@@ -238,7 +313,6 @@ export const CreepBuilder = {
     'mover': 32,
     'bigMover': 42,
     'worker': 16,
-    'bigWorker': 40,
     'upgrader': 32,
     'defender': 49,
     'spinner': 14,
@@ -251,6 +325,7 @@ export const CreepBuilder = {
     'attack': 50,
     'attackController': 15,
     'dismantler': 50,
+    'dismantleCarry': 49,
     'labDistro': 40,
     'special': 2,
     'rangeAttack': 50,

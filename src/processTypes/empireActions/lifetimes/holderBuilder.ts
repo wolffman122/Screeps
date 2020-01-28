@@ -314,7 +314,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
                   creep.travelTo(openSpace);
                   return;
                 }
-                
+
                 missingConatiners[0].room.createConstructionSite(openSpace.x, openSpace.y, STRUCTURE_CONTAINER);
               }
 

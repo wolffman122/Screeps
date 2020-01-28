@@ -26,11 +26,9 @@ export class HoldProcess extends Process
     if(Game.time % 10 == 0)
     {
       /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS)
-
       enemies = _.filter(enemies, (e: Creep)=> {
         return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
       });
-
       if(enemies.length > 1)
       {
         flag.memory.enemies = true;

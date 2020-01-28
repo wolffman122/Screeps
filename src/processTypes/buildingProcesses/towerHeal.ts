@@ -6,7 +6,7 @@ export class TowerHealProcess extends Process
 
     run()
     {
-        if(this.name === 'th-E41S32')
+        if(this.name === 'th-E56S43')
             console.log(this.name, 1);
         let room = Game.rooms[this.metaData.roomName];
 
@@ -17,7 +17,7 @@ export class TowerHealProcess extends Process
         }
 
         let damagedCreeps = <Creep[]>room.find(FIND_MY_CREEPS, {filter: cp => cp.my && cp.hits < cp.hitsMax});
-
+        let damagedPowerCreeps = <PowerCreep[]>room.find(FIND_MY_POWER_CREEPS, {filter: pc => pc.my && pc.hits < pc.hitsMax});
         if(damagedCreeps.length > 0)
         {
             _.forEach(this.kernel.data.roomData[this.metaData.roomName].towers, function(tower)
@@ -25,11 +25,11 @@ export class TowerHealProcess extends Process
                 let rangeDamage = tower.pos.findInRange(damagedCreeps, 30);
                 if(rangeDamage.length > 0)
                 {
-                    let target = tower.pos.findClosestByPath(rangeDamage);
+                    let target = tower.pos.findClosestByRange(rangeDamage);
                     const enemiesPresent = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
                     if(enemiesPresent.length > 0)
                     {
-                        if(target && target.hits < (target.hits * .5))
+                        if(target?.hits < (target?.hitsMax * .5))
                         {
                             tower.heal(target);
                         }
@@ -41,11 +41,29 @@ export class TowerHealProcess extends Process
                 }
             });
         }
-        else
+        else if(damagedPowerCreeps.length)
         {
-            flag.memory.timeEnemies = 0;
-            this.completed = true;
-            return;
+            for(let i = 0; i < this.kernel.data.roomData[this.metaData.roomName].towers.length; i++)
+            {
+                const tower = this.kernel.data.roomData[this.metaData.roomName].towers[i];
+                let damage = tower.pos.findInRange(damagedPowerCreeps, 15);
+                if(damage.length)
+                {
+                    let target = tower.pos.findClosestByRange(damage);
+                    const enemiesPresent = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
+                    if(enemiesPresent.length)
+                    {
+                        if(target?.hits < target?.hitsMax)
+                            tower.heal(target);
+                    }
+                    else
+                        tower.heal(target);
+                }
+            }
         }
+        else
+            this.suspend = 50;
+
+    return;
     }
 }

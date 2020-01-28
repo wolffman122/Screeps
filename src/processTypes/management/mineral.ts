@@ -7,10 +7,13 @@ import { SPREAD_AMOUNT, KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal
 export class  MineralManagementProcess extends Process
 {
   type = 'minerals';
-  metaData: MineralManagementProcessMetaData
+  metaData: MineralManagementProcessMetaData;
+  harvesters: number;
 
   run()
   {
+    if(this.name === 'minerals-E58S52')
+      console.log(this.name, '!!!!!!!!!!!!!!!!!!!!!')
     if(Game.cpu.bucket < 8000)
       return;
     if(!this.kernel.data.roomData[this.metaData.roomName])
@@ -21,17 +24,23 @@ export class  MineralManagementProcess extends Process
 
     let proc = this;
 
-    let extractor = this.kernel.data.roomData[this.metaData.roomName].extractor;
-    let terminal = Game.rooms[this.metaData.roomName].terminal;
-    let mineral = this.kernel.data.roomData[this.metaData.roomName].mineral;
-    let container = this.kernel.data.roomData[this.metaData.roomName].mineralContainer;
-    let storage = Game.rooms[this.metaData.roomName].storage;
+    let room = Game.rooms[this.metaData.roomName];
+    let extractor = this.roomData().extractor;
+    let terminal = room.terminal;
+    let mineral = this.roomData().mineral;
+    let container = this.roomData().mineralContainer;
+    let storage = room.storage;
+    let factory = this.roomData().factory;
 
+    if(this.name === 'minerals-E58S52')
+      console.log(this.name, 1)
     if(!mineral || !container || !extractor)
     {
       this.completed = true;
       return;
     }
+    if(this.name === 'minerals-E58S52')
+      console.log(this.name, 2)
 
     let ipcMsg: IPCMessage|undefined = this.kernel.getIpc(this.name);
     if(ipcMsg)
@@ -55,26 +64,21 @@ export class  MineralManagementProcess extends Process
 
     }
 
+    if(this.name === 'minerals-E58S52')
+      console.log(this.name, 3)
     if(mineral.mineralAmount === 0)
     {
       this.metaData.mining = false;
     }
+    if(this.name === 'minerals-E58S52')
+      console.log(this.name, 4)
 
-    if(this.metaData.roomName === 'E36S43')
-      console.log('Mining ', storage.store[mineral.mineralType])
+    if(this.metaData.roomName === 'E58S52')
+      console.log('Mining ', storage.store[mineral.mineralType], room.memory.specialMining)
 
     //if(this.metaData.mining && mineral.mineralAmount > 0)
 
-    if(storage && (storage.store[mineral.mineralType] < 100000 || storage.store[mineral.mineralType] === undefined))
-    {
-      if(this.metaData.mining || (mineral.mineralAmount > 0 && (terminal && (terminal.store[mineral.mineralType] === undefined || terminal.store[mineral.mineralType]! < KEEP_AMOUNT))))
-      {
-        this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
-        this.metaData.mineralHaulers = Utils.clearDeadCreeps(this.metaData.mineralHaulers);
-
-        let harvesters = 0;
-
-        switch(proc.metaData.roomName)
+    switch(proc.metaData.roomName)
         {
           //case 'E44S51':
           //case 'E46S52':
@@ -87,17 +91,19 @@ export class  MineralManagementProcess extends Process
           case 'E56S43':
           case 'E47S46':
           case 'E45S53':
-            harvesters = 1;
+          case 'E38S54':
+            this.harvesters = 1;
             break;
           case 'E43S52':
           case 'E41S49':
           case 'E38S46':
-          case 'E48S56':
+          case 'E58S52':
           case 'E55S48':
           case 'E36S38':
           case 'E41S38':
           case 'E32S44':
-            harvesters = 2;
+          case 'E41S38':
+            this.harvesters = 2;
             break;
           case 'E43S53':
           case 'E46S51':
@@ -109,24 +115,75 @@ export class  MineralManagementProcess extends Process
           case 'E35S41':
           case 'E58S52':
           case 'E38S39':
-            harvesters = 3;
+            this.harvesters = 3;
             break;
           case 'E36S43':
           case 'E39S35':
           case 'E38S59':
-            harvesters = 4;
+          case 'E27S38':
+          case 'E41S32':
+          case 'E48S56':
+            this.harvesters = 4;
             break;
           default:
-            harvesters = 1;
+            this.harvesters = 1;
             break;
         }
 
-        if(this.metaData.mineralHarvesters.length < harvesters) // Need to find a way of how many creeps can mine a mineral
+        if(this.name === 'minerals-E58S52')
+          console.log(this.name,'test', (mineral.mineralType === RESOURCE_CATALYST && mineral.mineralAmount > 0
+            && factory.store.getFreeCapacity() > 0
+            && terminal.store.getUsedCapacity(RESOURCE_PURIFIER) < KEEP_AMOUNT
+            && storage.store.getUsedCapacity(RESOURCE_CATALYST) >= 90000),
+            (storage?.store.getUsedCapacity(mineral.mineralType) < 100000 && !room.memory.specialMining))
+
+    if(this.metaData.mining || (storage?.store.getUsedCapacity(mineral.mineralType) < 100000 && !room.memory.specialMining))
+    {
+      if( (mineral.mineralAmount > 0))
+      {
+        if(this.name === 'minerals-E58S52')
+      console.log(this.name, 'should be spawing')
+        this.spawnCreeps(container, mineral)
+        return;
+      }
+    }
+    else if((mineral.mineralType === RESOURCE_CATALYST && mineral.mineralAmount > 0
+      && factory?.store.getFreeCapacity() > 0
+      && terminal.store.getUsedCapacity(RESOURCE_PURIFIER) < KEEP_AMOUNT
+      && storage.store.getUsedCapacity(RESOURCE_CATALYST) > 90000)
+      ||
+      (room.memory.specialMining && mineral.mineralAmount > 0))
+    {
+      if(this.name === 'minerals-E58S52')
+        console.log(this.name, 3)
+      room.memory.specialMining = true;
+      // Making Purifier, also might need to make sure there is room in terminal before doing this.
+      this.spawnCreeps(container, mineral);
+      return;
+
+    }
+    else
+    {
+      room.memory.specialMining = false;
+      if(this.name === 'minerals-E58S52')
+        console.log(this.name, 'Suspend')
+      this.suspend = 5;
+    }
+  }
+
+  private spawnCreeps(container: StructureContainer, mineral: Mineral)
+  {
+    this.metaData.mineralHarvesters = Utils.clearDeadCreeps(this.metaData.mineralHarvesters);
+        this.metaData.mineralHaulers = Utils.clearDeadCreeps(this.metaData.mineralHaulers);
+
+
+
+        if(this.metaData.mineralHarvesters.length < this.harvesters) // Need to find a way of how many creeps can mine a mineral
         {
-          let creepName = 'min-h-' + proc.metaData.roomName + '-' + Game.time;
+          let creepName = 'min-h-' + this.metaData.roomName + '-' + Game.time;
           let spawned = Utils.spawn(
-            proc.kernel,
-            proc.metaData.roomName,
+            this.kernel,
+            this.metaData.roomName,
             'mineralHarvester',
             creepName,
             {}
@@ -148,10 +205,10 @@ export class  MineralManagementProcess extends Process
 
         if(this.metaData.mineralHarvesters.length > 0 && this.metaData.mineralHaulers.length < 1)
         {
-          let creepName = 'min-m-' + proc.metaData.roomName + '-' + Game.time;
+          let creepName = 'min-m-' + this.metaData.roomName + '-' + Game.time;
           let spawned = Utils.spawn(
-            proc.kernel,
-            proc.metaData.roomName,
+            this.kernel,
+            this.metaData.roomName,
             'mover',
             creepName,
             {}
@@ -167,12 +224,6 @@ export class  MineralManagementProcess extends Process
             })
           }
         }
-      }
-    }
-    else
-    {
-      this.suspend = 5;
-    }
   }
 }
 

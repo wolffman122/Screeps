@@ -116,7 +116,9 @@ export class Traveler {
           // uncomment to visualize destination
           // this.circle(destination.pos, "orange");
           // check if creep is stuck
-          if (this.isStuck(creep, state)) {
+          if (this.isStuck(creep, state))
+          {
+
               state.stuckCount++;
               Traveler.circle(creep.pos, "magenta", state.stuckCount * .2);
           } else {
@@ -202,6 +204,29 @@ export class Traveler {
               options.returnData.path = travelData.path;
           }
           return creep.move(nextDirection);
+      }
+
+      public static pushyTravelTo(creep: Creep, destination: HasPos|RoomPosition, options: TravelToOptions = {}, stuck: boolean)
+      {
+        if(stuck)
+        {
+            options.returnData = {nextPos: undefined}
+            this.travelTo(creep, destination, options);
+            if(options.returnData.nextPos)
+            {
+                let blocker = options.returnData.nextPos.lookFor(LOOK_CREEPS)[0] as Creep;
+                if(blocker?.my)
+                {
+                    console.log('pushed creep', blocker.pos);
+                    creep.say('excuse me', true);
+                    blocker.move(creep.pos.getDirectionTo(creep));
+                }
+            }
+        }
+        else
+        {
+            this.travelTo(creep, destination, options);
+        }
       }
 
       /**
@@ -666,4 +691,14 @@ export class Traveler {
   // assigns a function to Creep.prototype: creep.travelTo(destination)
   Creep.prototype.travelTo = function(destination: RoomPosition|{pos: RoomPosition}, options?: TravelToOptions) {
       return Traveler.travelTo(this, destination, options);
+  };
+
+  Creep.prototype.pushyTravelTo = function(destination: RoomPosition|{pos: RoomPosition}, options?: TravelToOptions)
+  {
+    if(this.memory._trav?.stuck >= 1)
+      return Traveler.pushyTravelTo(this, destination, options, true);
+    else
+      return Traveler.pushyTravelTo(this, destination, options, false);
+
+
   };

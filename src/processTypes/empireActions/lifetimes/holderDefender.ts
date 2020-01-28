@@ -11,7 +11,12 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
         let creep = this.getCreep();
         let enemies: Creep[];
         if(flag.room)
+        {
             enemies = flag.room.find(FIND_HOSTILE_CREEPS);
+            enemies = _.filter(enemies, (e) => {
+                return ((e.getActiveBodyparts(ATTACK) > 0) || (e.getActiveBodyparts(RANGED_ATTACK) > 0));
+            });
+        }
 
         if(creep.name === 'hrm-defender-E32S45-21148870')
             console.log(this.name, 0)

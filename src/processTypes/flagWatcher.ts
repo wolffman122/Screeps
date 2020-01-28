@@ -15,12 +15,23 @@ import { HoldRoomOptManagementProcess } from './management/holdRoomOpt';
 import { RangeAttackManagementProcess } from './management/rangeAttack';
 import { SquadManagementProcess } from './management/squad';
 import { StrongHoldDestructionProcess } from './management/strongHoldDestruction';
+import { StripManagementProcess } from './management/strip';
+import { Utils } from 'lib/utils';
+import { TestProcessManagement } from './management/test';
 
 export class FlagWatcherProcess extends Process
 {
   type='flagWatcher';
-
+  metaData: FlagWatcherProcessMetaData
   //  Purple & Purpel
+
+  ensureMetaData()
+  {
+    if(this.metaData.skFlagCount === undefined)
+    {
+      this.metaData.skFlagCount = {};
+    }
+  }
 
   remoteDismantleFlag(flag: Flag)
   {
@@ -30,7 +41,11 @@ export class FlagWatcherProcess extends Process
   //  Purple &  Yellow
   strongHoldDestruction(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + flag.name, 35, {flagName: flag.name});
+    const roomName = flag.name.split('-')[0];
+    if(flag.memory.coreInfo?.coreLevel <= 3)
+    {
+     // this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});
+    }
   }
 
   AttackController(flag: Flag)
@@ -57,6 +72,7 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(HoldRoomManagementProcess, 'hrm-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
   }
 
+  // Red green flag
   remoteHoldOptFlag(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(HoldRoomOptManagementProcess, 'hrmOpt-' + flag.pos.roomName, 30, {flagName: flag.name, roomName: flag.pos.roomName});
@@ -64,7 +80,7 @@ export class FlagWatcherProcess extends Process
 
   transferFlag(flag: Flag)
   {
-    this.kernel.addProcessIfNotExist(TransferProcess, 'transfer-' + flag.name, 25, {flagName: flag.name});
+    //this.kernel.addProcessIfNotExist(TransferProcess, 'transfer-' + flag.name, 25, {flagName: flag.name});
   }
 
   BounceAttack(flag: Flag)
@@ -99,13 +115,23 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(SquadManagementProcess, 'sqm-' + flag.name, 31, {flagName: flag.name});
   }
 
+  // Red & Blue
+  // SpawnRoom-Text-NumberOfStrippers-Boost
   stripRoom(flag: Flag)
   {
-    //this.kernel.addProcessIfNotExist(StripManagementProcess, 'strip-' + flag.name, 30, {flagName: flag.name});
+    this.kernel.addProcessIfNotExist(StripManagementProcess, 'strip-' + flag.name, 30, {flagName: flag.name});
+  }
+
+  // Green
+  TestProcess(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(TestProcessManagement, 'test-' + flag.name, 40, {roomName: flag.pos.roomName, flagName: flag.name});
   }
 
   run()
   {
+    this.ensureMetaData();
+
     this.completed = true;
     let proc = this;
 
@@ -154,7 +180,12 @@ export class FlagWatcherProcess extends Process
           proc.holdFlag(flag)
           break;*/
         case COLOR_ORANGE:
-          proc.transferFlag(flag);
+          switch(flag.secondaryColor)
+          {
+            case COLOR_ORANGE:
+              proc.transferFlag(flag);
+              break;
+          }
           break;
         case COLOR_BROWN:
           switch(flag.secondaryColor)
@@ -178,6 +209,9 @@ export class FlagWatcherProcess extends Process
               proc.AttackController(flag);
               break;
           }
+          break;
+        case COLOR_GREEN:
+          proc.TestProcess(flag);
           break;
       }
     })

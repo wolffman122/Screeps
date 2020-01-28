@@ -3,7 +3,6 @@ import {Process} from './process'
 import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
-import {DistroLifetimeProcess} from '../processTypes/lifetimes/distro'
 import {EnergyManagementProcess} from '../processTypes/management/energy'
 import {MoveProcess} from '../processTypes/creepActions/move'
 import {RoomDataProcess} from '../processTypes/roomData'
@@ -70,17 +69,27 @@ import { BounceAttackerLifetimeProcess } from 'processTypes/lifetimes/bounceAtta
 import { SquadManagementProcess } from 'processTypes/management/squad';
 import { HealerLifetimeProcess } from 'processTypes/lifetimes/healer';
 import { SquadAttackerLifetimeProcess } from 'processTypes/lifetimes/squadAttacker';
-import { ObservationProcess } from 'processTypes/buildingProcesses/observation';
 import { ReportProcess } from 'processTypes/system/reports';
 import { skRoomManagementProcess } from 'processTypes/management/skroom';
 import { TowerHealProcess } from 'processTypes/buildingProcesses/towerHeal';
 import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
-import { PowerManagementProcess } from 'processTypes/management/power';
+import { PowerHarvestingManagement } from 'processTypes/management/powerHarvesting';
 import { DefenderLifetimeProcess } from 'processTypes/lifetimes/defender';
 import { DefendProcess } from 'processTypes/creepActions/defend';
 import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
 import { BusterLifetimeProcess } from 'processTypes/empireActions/lifetimes/buster';
 import { StrongHoldDestructionProcess } from 'processTypes/management/strongHoldDestruction';
+import { ObservationManagementProcess } from 'processTypes/management/observation'
+import { AutomaticHoldManagementProcess } from 'processTypes/management/automaticHold'
+import { StripManagementProcess } from 'processTypes/management/strip'
+import { StripperLifetimeProcess } from 'processTypes/lifetimes/stripper'
+import { TestProcessManagement } from 'processTypes/management/test'
+import { PowerManagement } from 'processTypes/management/power'
+import { PowerCreepLifetimeProcess } from 'processTypes/lifetimes/powerCreep'
+import { AlleyObservationManagementProcess } from 'processTypes/management/alleyObservation'
+import { DepositMiningManagementProcess } from 'processTypes/management/depositMining'
+import { Spinner2LifeTimeProcess } from 'processTypes/lifetimes/spinner2'
+import { TransferManagementProcess } from 'processTypes/management/transfer'
 
 
 
@@ -89,7 +98,6 @@ const processTypes = <{[type: string]: any}>{
   'harvest': HarvestProcess,
   'hlf': HarvesterLifetimeProcess,
   'lhlf': LinkHarvesterLifetimeProcess,
-  'dlf': DistroLifetimeProcess,
   'em': EnergyManagementProcess,
   'move': MoveProcess,
   'roomData': RoomDataProcess,
@@ -120,6 +128,7 @@ const processTypes = <{[type: string]: any}>{
   'transfer': TransferProcess,
   'lm': LinkManagementProcess,
   'slf': SpinnerLifetimeProcess,
+  'slf2': Spinner2LifeTimeProcess,  // 45
   'holdWorkerlf': HoldWorkerLifetimeProcess,
   'udlf': UpgradeDistroLifetimeProcess,
   'minerals': MineralManagementProcess,
@@ -150,16 +159,25 @@ const processTypes = <{[type: string]: any}>{
   'sqm': SquadManagementProcess,
   'heallf': HealerLifetimeProcess,
   'salf': SquadAttackerLifetimeProcess,
-  'op': ObservationProcess,
   'report': ReportProcess,
   'skrmp': skRoomManagementProcess,
   'lh': TowerHealProcess,
   'atmp': AllTerminalManagementProcess,
-  'powm': PowerManagementProcess,
+  'powm': PowerHarvestingManagement,
   'deflf': DefenderLifetimeProcess,
   'defend': DefendProcess,
   'busterlf': BusterLifetimeProcess,
   'shdp': StrongHoldDestructionProcess, // 35
+  'omp': ObservationManagementProcess,
+  'strip': StripManagementProcess,
+  'stripper': StripperLifetimeProcess,
+  'ahmp': AutomaticHoldManagementProcess,
+  'test':  TestProcessManagement, // 40
+  'powerm': PowerManagement, // 50
+  'pclf': PowerCreepLifetimeProcess, // 49
+  'aomp': AlleyObservationManagementProcess, // 25
+  'dmmp': DepositMiningManagementProcess, // 24
+  'tmp': TransferManagementProcess // 20
 }
 
 interface KernelData{
@@ -237,6 +255,17 @@ export class Kernel{
     let kernel = this
 
     _.forEach(Memory.wolffOS.processTable, function(entry){
+      // Old process clean up code
+      //
+      //
+      // let time = +entry.name.split('-')[3];
+      // if(time < 22000000)
+      // {
+      //   console.log('Problem old processes', entry.name, entry.type);
+      //   if(entry.type  === 'lhlf' || entry.type  === 'hlf')
+      //     return;
+      // }
+
       if(processTypes[entry.type]){
         //kernel.processTable.push(new processTypes[entry.type](entry, kernel))
         kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel)

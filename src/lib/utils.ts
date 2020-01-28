@@ -21,7 +21,7 @@ export const Utils = {
     })
   },
 
-  creepPreSpawnCount: function(list: string[]): Number
+  creepPreSpawnCount: function(list: string[], extraTime?: number): Number
   {
     let creeps = _.transform(list, function(result, entry){
       result.push(Game.creeps[entry]);
@@ -31,7 +31,7 @@ export const Utils = {
     {
       let count = 0;
       _.forEach(creeps, (c) => {
-        let ticksNeeded = c.body.length * 3 + 60;
+        let ticksNeeded = c.body.length * 3 + extraTime;
         if(!c.ticksToLive || c.ticksToLive > ticksNeeded) { count++; }
       })
 
@@ -60,18 +60,19 @@ export const Utils = {
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
 
-    if(creepType === "vision")
-        {
-          console.log('Spawn result', body.length);
-        }
+
     let spawns = kernel.data.roomData[roomName].spawns
     let outcome = false
 
+    if(creepType === "holdmover")
+        {
+          console.log('Body result', body.length, spawns.length, spawns[0].spawnCreep(body, name, {dryRun: true}));
+        }
     _.forEach(spawns, function(spawn){
-      if(!_.includes(kernel.data.usedSpawns, spawn.id) &&!spawn.spawning && spawn.canCreateCreep(body) === OK){
+      if(!_.includes(kernel.data.usedSpawns, spawn.id) &&!spawn.spawning && spawn.spawnCreep(body, name, {dryRun: true}) === OK){
 
-        let ret = spawn.createCreep(body, name, memory)
-        if(creepType === "rangeAttack")
+        let ret = spawn.spawnCreep(body, name, {memory: memory})
+        if(creepType === "holdmover")
         {
           console.log('Spawn result', ret);
         }
@@ -142,23 +143,25 @@ export const Utils = {
 
   /** Returns the room closest to the source room with the required spawn energy */
   nearestRoom(sourceRoom: string, minSpawnEnergy = 0){
-    let bestRoom = ''
-    let bestDistance = 999
+      let bestRoom = ''
+      let bestDistance = 999
 
-    _.forEach(Game.rooms, function(room){
-      if(room.controller && room.controller.my){
-        if(room.energyCapacityAvailable > minSpawnEnergy){
-          let path = new RoomPathFinder(sourceRoom, room.name).results()
 
-          if(path.length < bestDistance){
-            bestDistance = path.length
-            bestRoom = room.name
+      _.forEach(Game.rooms, function(room){
+        if(room.controller && room.controller.my){
+          if(room.energyCapacityAvailable > minSpawnEnergy){
+            let path = new RoomPathFinder(sourceRoom, room.name).results()
+
+            if(path.length < bestDistance)
+            {
+              bestDistance = path.length;
+              bestRoom = room.name;
+            }
           }
         }
-      }
-    })
+      })
 
-    return bestRoom
+      return bestRoom
   },
 
   pathFind(startPos: RoomPosition, targetPos: RoomPosition)
@@ -197,9 +200,12 @@ export const Utils = {
     }
   },
 
-  rampartHealth(kernel: Kernel, roomName: string)
+  rampartHealth(kernel: Kernel, roomName: string, target?: number)
   {
     let room = Game.rooms[roomName];
+    let max = RAMPARTTARGET;
+    if(target && (target > RAMPARTTARGET))
+      max = target
 
     if(room.controller!.level < 3)
     {
@@ -207,8 +213,6 @@ export const Utils = {
     }
     else
     {
-      let max = RAMPARTTARGET;
-
       let average = Math.ceil(_.sum(<never[]>kernel.data.roomData[roomName].ramparts, 'hits') / kernel.data.roomData[roomName].ramparts.length);
 
       let target = average + 10000;

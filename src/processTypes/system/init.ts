@@ -12,7 +12,9 @@ import { MinetalTerminalManagementProcess } from '../buildingProcesses/mineralTe
 import { LabManagementProcess } from 'processTypes/management/lab';
 import { ReportProcess } from './reports';
 import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/allTerminal';
-import { PowerManagementProcess } from 'processTypes/management/power';
+import { PowerHarvestingManagement } from 'processTypes/management/powerHarvesting';
+import { PowerManagement } from 'processTypes/management/power'
+import { TransferManagementProcess } from 'processTypes/management/transfer'
 
 /*
 
@@ -31,27 +33,41 @@ export class InitProcess extends Process{
       this.kernel.limit = (Game.cpu.limit + 500) - 20
     }
 
+    console.log(this.name, 1)
+
     for(var name in Memory.creeps){
       if(!Game.creeps[name]){
         delete Memory.creeps[name]
       }
     }
 
+    console.log(this.name, 2)
     let gRooms = Object.keys(Game.rooms);
-    let mRooms = Object.keys(Memory.rooms);
+    let mRooms: string[] = []
+    if(Memory.rooms)
+      mRooms = Object.keys(Memory.rooms);
 
     let observedRooms = _.difference(mRooms, gRooms);
     if(observedRooms.length)
     {
+      console.log(this.name, 2, observedRooms.length)
       _.forEach(observedRooms, (or) => {
         //console.log('Hoping observed rooms ', or );
         if(!Game.rooms[or])
           Memory.rooms[or] = undefined;
       })
     }
+    console.log(this.name, 3)
     _
     //console.log('Observer', 0)
     _.forEach(Game.rooms, function(room){
+
+      const flags = room.find(FIND_FLAGS, {filter: f=> f.name === room.name + '-kill'});
+      if(flags.length)
+      {
+        room.memory.shutdown = true;
+        return;
+      }
 
       proc.kernel.addProcessIfNotExist(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
@@ -59,6 +75,24 @@ export class InitProcess extends Process{
 
       if(room.controller && room.controller.my)
       {
+        if(Game.time % 3000 === 0)
+        {
+          const flags = room.find(FIND_FLAGS, {filter: f => f.color === COLOR_ORANGE && f.secondaryColor === COLOR_RED});
+          if(flags.length)
+          {
+            room.memory.transfering = true;
+            room.memory.transferFlagName = flags[0].name;
+          }
+        }
+
+        if(room.memory.transfering)
+        {
+          proc.kernel.addProcessIfNotExist(TransferManagementProcess, 'tmp-' + room.name, 20, {
+            roomName: room.name,
+            transferFlagName: room.memory.transferFlagName
+          });
+        }
+
         if(!proc.kernel.getProcessByName('em-' + room.name)){
           proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 50, {
             roomName: room.name
@@ -99,7 +133,8 @@ export class InitProcess extends Process{
              room.name === 'E39S35' || room.name === 'E38S59' || room.name === 'E55S47' || room.name === 'E48S56' ||
              room.name === 'E56S43' || room.name === 'E47S46' || room.name === 'E38S54' || room.name === 'E45S53' ||
              room.name === 'E27S38' || room.name === 'E58S44' || room.name === 'E32S44' || room.name === 'E41S32' ||
-             room.name === 'E35S51' || room.name === 'E35S51')
+             room.name === 'E35S51' || room.name === 'E35S51' || room.name === 'E38S35' || room.name === 'E44S42' ||
+             room.name === 'E46S51' || room.name === 'E36S33' || room.controller.level >= 6)
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
@@ -121,10 +156,12 @@ export class InitProcess extends Process{
       }
     })
 
+
+    this.kernel.addProcessIfNotExist(PowerManagement, 'powerm', 50, {});
     this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});
     this.kernel.addProcessIfNotExist(SuspensionProcess, 'suspension-master', 99, {master: true})
     this.kernel.addProcessIfNotExist(FlagWatcherProcess, 'flag-watcher', 98, {})
-    //this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
+    this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});
     this.kernel.addProcessIfNotExist(AllTerminalManagementProcess, 'atmp', 15, {});
     //this.kernel.addProcessIfNotExist(MinetalTerminalManagementProcess, 'mineralTerminal', 15, {});
     this.kernel.addProcessIfNotExist(TerminalManagementProcess, 'terminal', 14, {});

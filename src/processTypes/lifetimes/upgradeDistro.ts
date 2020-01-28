@@ -16,6 +16,11 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
       {
         return
       }
+      if(creep.room.memory.shutdown)
+      {
+        this.completed = true;
+        return;
+      }
 
       if(creep.ticksToLive < 50 && _.sum(creep.carry) > 0)
       {
@@ -29,9 +34,19 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
         }
       }
 
+      const target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
       if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
       {
-        if(creep.room.storage)
+        if(!creep.room.storage?.my && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
+        {
+          if(!creep.pos.isNearTo(creep.room.storage))
+            creep.travelTo(creep.room.storage);
+          else
+            creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+          return;
+        }
+        else if(creep.room.storage?.my)
         {
           let storage = creep.room.storage;
 
@@ -45,7 +60,7 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
             return;
           }
         }
-        else if (creep.room.terminal)
+        else if (creep.room.terminal?.my)
         {
           let terminal = creep.room.terminal;
 
@@ -78,21 +93,30 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
       }
 
 
-      if(this.kernel.data.roomData[creep.room.name] && this.kernel.data.roomData[creep.room.name])
+      if(this.kernel.data.roomData[creep.room.name])
       {
         let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
 
         if(target && _.sum(target.store) < target.storeCapacity)
         {
           if(!creep.pos.inRangeTo(target, 1))
-        {
-          if(!creep.fixMyRoad())
           {
-            creep.travelTo(target);
+            if(!creep.fixMyRoad())
+            {
+              creep.travelTo(target);
+            }
           }
-        }
+          else
+          {
+            if(creep.transfer(target, RESOURCE_ENERGY) === OK)
+            {
+              if(creep.store.getUsedCapacity() === 0 && target.store[RESOURCE_ENERGY] < target.store.getUsedCapacity())
+              {
+                creep.withdrawEverythingBut(target, RESOURCE_ENERGY);
+              }
+            }
 
-        creep.transfer(target, RESOURCE_ENERGY);
+          }
         }
         else
         {
