@@ -305,6 +305,7 @@ interface Flag {
     }
     transfering?: boolean;
     transferFlagName?: string;
+    spinnerDump?: boolean;
   }
 
   interface SpawnMemory {}

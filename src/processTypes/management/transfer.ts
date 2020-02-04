@@ -96,8 +96,10 @@ export class TransferManagementProcess extends Process
         this.SpawnHealerTransports();
       else
         this.TerminalTransfer(false);
-
-
+    }
+    else if(this.destRoom.controller.level === 6)
+    {
+      this.DumpMinerals();
     }
 
 
@@ -160,6 +162,11 @@ export class TransferManagementProcess extends Process
     }
 
     return false;
+  }
+
+  DumpMinerals()
+  {
+    this.sourceRoom.memory.spinnerDump = true;
   }
 
   SpawnUpgrader()

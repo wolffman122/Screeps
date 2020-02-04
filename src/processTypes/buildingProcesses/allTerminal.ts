@@ -49,8 +49,8 @@ export class AllTerminalManagementProcess extends Process
             _.forEach(Game.rooms, (r) => {
                 if(r.controller?.my && r.controller.level >= 6)
                 {
-                    //if(this.metaData.shutDownTransfers[r.name] ?? false)
-                    //    return;
+                    if(this.metaData.shutDownTransfers[r.name] ?? false)
+                        return;
 
                     let terminal = r.terminal;
                     if(terminal?.my)
