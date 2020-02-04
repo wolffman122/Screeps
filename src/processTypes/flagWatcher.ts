@@ -42,7 +42,7 @@ export class FlagWatcherProcess extends Process
   strongHoldDestruction(flag: Flag)
   {
     const roomName = flag.name.split('-')[0];
-    if(flag.memory.coreInfo?.coreLevel <= 3)
+    //if(flag.memory.coreInfo?.coreLevel <= 3)
     {
      // this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + roomName, 35, {flagName: flag.name});
     }

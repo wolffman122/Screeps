@@ -95,19 +95,8 @@ export class skRoomManagementProcess extends Process
           return;
       }
 
-      this.coreInSk = false;
-      if(this.metaData.coreInfo?.invaderCorePresent)
-      {
-        let testRoomName = this.metaData.coreInfo.coreFlagName.split('-')[0];
-        if(this.metaData.skRoomName === testRoomName)
-        {
-          const core = Game.getObjectById(this.metaData.coreInfo.coreId) as StructureInvaderCore;
-          if(core?.ticksToDeploy < 300)
-            this.coreInSk = true;
-          else
-            this.coreInSk = false;
-        }
-      }
+      this.coreSearching();
+
 
       if(this.skFlag.room.memory.skSourceRoom === undefined)
       {
@@ -151,128 +140,16 @@ export class skRoomManagementProcess extends Process
       }
 
 
-      this.DevilSpawn();
-
-      if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
+      if(!this.coreInSk)
       {
-        this.BuilderSpawn();
-        this.HarvesterSpawn();
-        this.HaulerSpawn();
+        this.DevilSpawn();
 
-      //       let room = Game.rooms[this.skRoomName];
-      //       if(room)
-      //       {
-      //         let flag =  room.find(FIND_FLAGS)[0];
-      //         if(flag)
-      //         {
-      //           if(!this.mineralMining)
-      //           {
-
-      //             let name = flag.name.split('-')[0];
-      //             if(flag && name === 'Mining')
-      //             {
-      //               this.metaData.miningFlag = flag.name;
-      //               this.metaData.mineralMining = true;
-      //               this.mineralMining = true;
-      //             }
-      //           }
-      //         }
-      //         else
-      //         {
-      //           this.metaData.miningFlag = undefined;
-      //           this.metaData.mineralMining = false;
-      //           this.mineralMining = false;
-      //         }
-      //       }
-
-      //       if(this.metaData.mineralMining)
-      //       {
-      //         ////////////////////////////////////////////////////////////
-      //         ///
-      //         ///          Mining Spawn Code
-      //         ///
-      //         ////////////////////////////////////////////////////////////
-      //         if(this.roomInfo(this.skRoomName))
-      //         {
-      //           this.mineral = this.roomInfo(this.skRoomName).mineral;
-      //           let terminal = Game.rooms[this.metaData.roomName].terminal;
-      //           // Check if terminal has capacity
-      //           if(terminal && (this.mineral.mineralAmount <= (terminal.storeCapacity -_.sum(terminal.store))))
-      //           {
-      //             if(this.skFlag.memory.skMineral === undefined)
-      //             {
-      //               this.skFlag.memory.skMineral = this.mineral.id;
-      //             }
-
-      //             if(this.metaData.miningDistance === undefined)
-      //             {
-      //               let ret = PathFinder.search(this.centerFlag.pos, this.mineral.pos);
-
-      //               this.metaData.miningDistance = ret.path.length;
-      //             }
-
-      //             this.metaData.miner = Utils.clearDeadCreeps(this.metaData.miner);
-      //             if(this.metaData.miner.length < 1 && this.mineral.mineralAmount > 0)
-      //             {
-      //               let creepName = 'sk-miner-' + this.skRoomName + '-' + Game.time;
-      //               let spawned = Utils.spawn(
-      //                 this.kernel,
-      //                 this.metaData.roomName,
-      //                 'skMiner',
-      //                 creepName,
-      //                 {}
-      //               );
-
-      //               if(spawned)
-      //               {
-      //                 this.metaData.miner.push(creepName);
-      //               }
-      //             }
-
-      //             ////////////////////////////////////////////////////////////
-      //             ///
-      //             ///          Mine Hauler Spawn Code
-      //             ///
-      //             ////////////////////////////////////////////////////////////
-      //             this.metaData.minerHauler = Utils.clearDeadCreeps(this.metaData.minerHauler);
-
-      //             if(this.metaData.minerHauler.length < 1 && this.metaData.miner.length === 1)
-      //             {
-      //               let creepName = 'sk-mineHauler-' + this.skRoomName + '-' + Game.time;
-      //               let spawned = Utils.spawn(
-      //                 this.kernel,
-      //                 this.metaData.roomName,
-      //                 'skMinerHauler',
-      //                 creepName,
-      //                 {}
-      //               );
-
-      //               if(spawned)
-      //               {
-      //                 this.metaData.minerHauler.push(creepName);
-      //               }
-      //             }
-      //           }
-      //         }
-
-      //         for(let i = 0; i < this.metaData.miner.length; i++)
-      //           {
-      //             let miner = Game.creeps[this.metaData.miner[i]];
-      //             if(miner)
-      //             {
-      //               this.MinerActions(miner);
-      //             }
-      //           }
-
-      //           for(let i = 0; i < this.metaData.minerHauler.length; i++)
-      //           {
-      //             let hauler = Game.creeps[this.metaData.minerHauler[i]];
-      //             if(hauler)
-      //             {
-      //               this.MinerHaulerActions(hauler, this.mineral);
-      //             }
-      //           }
-      //       }
+        if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
+        {
+          this.BuilderSpawn();
+          this.HarvesterSpawn();
+          this.HaulerSpawn();
+        }
       }
 
       for(let i = 0; i < this.metaData.devils.length; i++)
@@ -1871,108 +1748,42 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
-        if(this.roomData().observer)
+        // SK Room check for core.
+        if(this.skRoomName && !this.metaData.coreInfo.invaderCorePresent /*&& Game.time % 2000 === 15*/)
         {
-          let observer = this.roomData().observer;
-          let roomNames = this.findSkRooms(this.metaData.roomName);
-
-          let index = this.metaData.scanIndex++;
-
-          if(this.metaData.coreInfo)
+          const invaderCores = this.skRoom.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
+          if(invaderCores.length)
           {
-            const flag = Game.flags[this.metaData.coreInfo?.coreFlagName];
-
-            // Setup flag with data.
-            if(flag)
+            const invaderCore = invaderCores[0] as StructureInvaderCore;
+            if(invaderCore?.effects[EFFECT_INVULNERABILITY]?.ticksRemaining < 500)
             {
-              let createTime = +flag.name.split('-')[2];
-              let coreRoomName = flag.name.split('-')[0];
-
-              if(createTime + 1 === Game.time)
-              {
-                flag.memory.coreInfo = this.metaData.coreInfo;
-                //const ret = observer.observeRoom(coreRoomName);
-                return;
-              }
-
-              // Destructions
-              if(flag?.memory.coreInfo?.done)
-              {
-                let searchStr = flag.name.split('-')[0] + flag.name.split('-')[1]
-                this.metaData.coreInfo = undefined;
-                flag.memory.coreInfo = undefined;
-                flag.remove();
-                const removalFlags = _.filter(Game.flags, (f) => {
-                  return (f.name.indexOf(searchStr) !== -1);
-                })
-
-                removalFlags.forEach(f => f.remove());
-              }
-
-              // Checks to remove the flag once core is gone.
-              if(!flag?.memory.coreInfo?.cleaning)
-              {
-                if(Game.time % 10 === 3)
-                  observer.observeRoom(coreRoomName);
-                else if(Game.time % 10 === 4)
-                {
-                  let core = Game.getObjectById(flag.memory.coreInfo.coreId);
-                  if(core === null)
-                  {
-                    this.metaData.coreInfo = undefined;
-                    flag.memory.coreInfo.invaderCorePresent = false;
-                    flag.memory.coreInfo.done = true;
-                    return;
-                  }
-                }
-              }
-
-              return;
+              this.coreInSk = true;
+              this.metaData.coreInfo.invaderCorePresent = true;
+              this.metaData.coreInfo.coreId = invaderCore.id;
+              this.metaData.coreInfo.coreRoomName = invaderCore.room.name;
+              Game.notify("Invader Core in room " + this.skRoomName + " spawn room is " + this.metaData.roomName + " level is " + invaderCore.level + " creation time " + invaderCore.effects[EFFECT_INVULNERABILITY].ticksRemaining);
             }
           }
+        }
 
-          // Look for cores.
-          if(this.metaData.coreInfo === undefined)
-          {
-            this.clearFlags(this.metaData.roomName);
-            observer.observeRoom(roomNames[index]);
+        if(this.metaData.coreInfo.invaderCorePresent && !this.metaData.coreInfo.goodbyeTime)
+        {
+          const core = Game.getObjectById(this.metaData.coreInfo.coreId) as StructureInvaderCore;
+          if(core?.effects[EFFECT_COLLAPSE_TIMER])
+            this.metaData.coreInfo.goodbyeTime = Game.time + core.effects[EFFECT_COLLAPSE_TIMER].ticksRemaining;
 
-            if(index >= roomNames.length - 1)
-            {
-              this.metaData.scanIndex = 0;
-            }
+        }
 
-            let scanRoom = Game.rooms[roomNames[index > 0 ? index - 1 : roomNames.length -1]];
-            if(scanRoom)
-            {
-              let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
-              if(invaderCores.length)
-              {
-                const invaderCore = invaderCores[0];
-                if(invaderCore instanceof StructureInvaderCore)
-                {
-                  // Check for SK Lair
-                  let lairs = invaderCore.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, {filter: s => s.structureType === STRUCTURE_KEEPER_LAIR});
+        if(this.coreInSk && (this.metaData.coreInfo.goodbyeTime - Game.time) <= 150)
+            this.coreInSk = false;
 
-                  let info: CoreInfo = {
-                    invaderCorePresent: true,
-                    coreFlagName: scanRoom.name + '-Core-' + Game.time,
-                    coreId: invaderCore.id,
-                    coreLevel: invaderCore.level,
-                    coreLocation: invaderCore.pos,
-                    skLairPresent: (lairs.length ? true : false),
-                    cleaning: false,
-                    done: false
-                  };
-
-                  if(info.coreFlagName === new RoomPosition(25,25, this.metaData.roomName).createFlag(info.coreFlagName, COLOR_PURPLE, COLOR_YELLOW))
-                  {
-                    this.metaData.coreInfo = info;
-                  }
-                }
-              }
-            }
-          }
+        if(this.metaData.coreInfo.goodbyeTime === Game.time)
+        {
+          this.metaData.coreInfo.invaderCorePresent = false;
+          this.metaData.coreInfo.goodbyeTime = undefined;
+          this.metaData.coreInfo.coreId = undefined;
+          Game.notify("Invader core gone in " + this.metaData.coreInfo.coreRoomName);
+          this.metaData.coreInfo.coreRoomName = undefined;
         }
       }
       catch(error)

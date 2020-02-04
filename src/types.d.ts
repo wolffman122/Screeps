@@ -794,13 +794,9 @@ interface Flag {
   interface CoreInfo
   {
     invaderCorePresent: boolean,
-    coreFlagName?: string,
     coreId?: string,
-    coreLevel?: number,
-    coreLocation?: RoomPosition,
-    skLairPresent: boolean,
-    cleaning: boolean,
-    done: boolean,
+    coreRoomName?: string,
+    goodbyeTime?: number,
   }
 
   interface SKRoomManagementProcessMetaData
