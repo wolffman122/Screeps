@@ -39,7 +39,9 @@ export class TransferManagementProcess extends Process
 
     this.ShutDownRamparts();
     this.ShutDownTransfers();
-    this.SpawnUpgrader();
+
+    if(this.destRoom.controller.level !== 8)
+      this.SpawnUpgrader();
 
     if(this.destRoom.controller.level === 3)
     {
