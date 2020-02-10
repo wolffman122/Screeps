@@ -1749,7 +1749,8 @@ export class skRoomManagementProcess extends Process
       try
       {
         // SK Room check for core.
-        if(this.skRoomName && !this.metaData.coreInfo.invaderCorePresent /*&& Game.time % 2000 === 15*/)
+        if((this.skRoom && !this.metaData.coreInfo.invaderCorePresent /*&& Game.time % 2000 === 15*/)
+          || this.metaData.keepScanning)
         {
           const invaderCores = this.skRoom.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
           if(invaderCores.length)
@@ -1762,6 +1763,37 @@ export class skRoomManagementProcess extends Process
               this.metaData.coreInfo.coreId = invaderCore.id;
               this.metaData.coreInfo.coreRoomName = invaderCore.room.name;
               Game.notify("Invader Core in room " + this.skRoomName + " spawn room is " + this.metaData.roomName + " level is " + invaderCore.level + " creation time " + invaderCore.effects[EFFECT_INVULNERABILITY].ticksRemaining);
+            }
+          }
+          else
+          {
+            this.metaData.keepScanning = true;
+            const observer = this.roomData().observer;
+            if(observer)
+            {
+              const skRoomNames = this.findSkRooms(this.metaData.roomName);
+              const index = this.metaData.scanIndex++;
+
+              observer.observeRoom(skRoomNames[index]);
+
+              if(index > skRoomNames.length -1)
+              {
+                this.metaData.scanIndex = 0;
+                this.metaData.keepScanning = false;
+              }
+
+              const scanRoom = Game.rooms[skRoomNames[index > 0 ? index - 1 : skRoomNames.length -1]];
+              if(scanRoom)
+              {
+                let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
+                if(invaderCores.length)
+                {
+                  const invaderCore = invaderCores[0];
+                  if(invaderCore instanceof StructureInvaderCore)
+                  {
+                    
+                  }
+              }
             }
           }
         }

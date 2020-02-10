@@ -814,6 +814,7 @@ interface Flag {
     scoutName?: string,
     vision: boolean,
     scanIndex: number,
+    keepScanning: boolean,
     coreInfo?: CoreInfo,
     locations: {
       [types: string]: any[]
