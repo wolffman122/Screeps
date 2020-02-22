@@ -79,25 +79,38 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     if(this.link?.store[RESOURCE_ENERGY] > 0)
     {
       if(this.creep.store.getFreeCapacity() === 0)
-        this.creep.transferEverything(this.storage);
+      {
+        if(this.storage.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
+          this.creep.transferEverything(this.storage);
+        else
+          this.creep.transferEverything(this.terminal);
+      }
       else
         this.creep.withdrawEverything(this.link);
 
       return;
     }
 
+    if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Spinner problems', 1)
     if(this.terminal?.store[RESOURCE_ENERGY] < 75000)
     {
-      this.TransferEnergyToTerminal();
-      return;
+      if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Spinner problems', 2)
+      if(this.TransferEnergyToTerminal())
+        return;
     }
 
-    if(this.terminal?.store[RESOURCE_ENERGY] !== 75000)
+    if(this.terminal?.store[RESOURCE_ENERGY] !== 75000 && this.storage.store.getFreeCapacity() > 3000)
     {
-      this.TransferEnergyToStorage();
-      return;
+      if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Spinner problems', 3)
+      if(this.TransferEnergyToStorage())
+        return;
     }
 
+    if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Spinner problems', 6)
     if(this.terminal?.store[this.mineral.mineralType] < KEEP_AMOUNT)
     {
       this.TransferToTerminal(this.mineral.mineralType);
@@ -105,7 +118,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     }
 
     let amount = this.terminal.store[this.mineral.mineralType] - KEEP_AMOUNT
-    if(amount > 0)
+    if(amount > 0 && this.storage.store.getFreeCapacity() > 3000)
     {
       this.TransferToStorage(this.mineral.mineralType, KEEP_AMOUNT);
       return;
@@ -157,7 +170,9 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     for(let i = 0; i < PRODUCT_LIST.length; i++)
     {
       const prod = PRODUCT_LIST[i];
-      if(this.terminal?.store[prod] < PRODUCTION_AMOUNT)
+      if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Production trouble', this.terminal.store[prod], ((this.terminal?.store[prod] ?? 0) < PRODUCTION_AMOUNT))
+      if((this.terminal?.store[prod] ?? 0) < PRODUCTION_AMOUNT)
       {
         if(this.TransferToTerminal(prod))
           return;
@@ -228,30 +243,57 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       this.renewSpawn.renewCreep(this.creep);
   }
 
-  private TransferEnergyToTerminal()
+  private TransferEnergyToTerminal(): boolean
   {
     if(this.creep.store.getUsedCapacity() === 0)
     {
       if(this.storage.store[RESOURCE_ENERGY] > this.creep.store.getCapacity())
+      {
+        this.creep.say('WE🏟');
         this.creep.withdraw(this.storage, RESOURCE_ENERGY);
+        return true;
+      }
+      else
+        return false;
     }
 
     if(this.terminal.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
+    {
+      this.creep.say('TA🏦');
       this.creep.transferEverything(this.terminal);
+    }
+
+    return true;
   }
 
-  private TransferEnergyToStorage()
+  private TransferEnergyToStorage() : boolean
   {
+    if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Spinner problems', 4)
     if(this.creep.store.getUsedCapacity() === 0)
     {
+
       let amount = 0;
       amount = this.terminal.store[RESOURCE_ENERGY] - 75000;
       amount = (amount > this.creep.store.getCapacity()) ? this.creep.store.getCapacity() : amount;
-      this.creep.withdraw(this.terminal, RESOURCE_ENERGY, amount);
+      if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Spinner problems', 5, amount, this.creep.store.getCapacity())
+      this.creep.say('WE🏦');
+      const ret = this.creep.withdraw(this.terminal, RESOURCE_ENERGY, amount);
+      return true;
     }
 
-    if(this.storage.store.getUsedCapacity() > this.creep.store.getUsedCapacity())
+    if(this.creep.name === 'em-s-E36S43-24525230')
+        console.log(this.name, 'Spinner problems', 5.2)
+
+    if(this.storage.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
+    {
+      this.creep.say('TA🏟');
       this.creep.transferEverything(this.storage);
+      return true;
+    }
+    else
+      return false;
   }
 
   private TransferToTerminal(res: ResourceConstant)

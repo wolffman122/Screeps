@@ -822,17 +822,10 @@ export class LabManagementProcess extends Process
   {
     try
     {
-      if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findlabprocess', 0)
       if(!this.reagentLabs)
       {
-        if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findlabprocess', 10)
         return;
       }
-
-      if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findlabprocess', 1)
 
       if(this.metaData.labProcess)
       {
@@ -879,16 +872,10 @@ export class LabManagementProcess extends Process
         this.metaData.checkProcessTick = Game.time - 100;
       }
 
-      if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findlabprocess tick', this.metaData.checkProcessTick+100)
-
       if(Game.time < this.metaData.checkProcessTick+100)
-      {
         return; // early
-      }
 
       this.metaData.labProcess = this.findNewProcess();
-
       return;
     }
     catch(error)
@@ -941,12 +928,8 @@ export class LabManagementProcess extends Process
 
   private findNewProcess(): LabProcess|undefined
   {
-    if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findnewprocess', 0)
     let store = this.gatherInventory();
 
-    if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findnewprocess', 1)
     for (let compound of PRODUCT_LIST)
     {
       if(store[compound] >= PRODUCTION_AMOUNT)
@@ -956,8 +939,9 @@ export class LabManagementProcess extends Process
         continue;
       }
 
-      if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findnewprocess', 3)
+      if(this.storage.store[compound] >= PRODUCTION_AMOUNT)
+        continue;
+
       return this.generateProcess({mineralType: compound,
         amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (this.terminal!.store[compound] || 0) });
     }

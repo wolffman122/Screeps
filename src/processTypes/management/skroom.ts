@@ -1791,7 +1791,7 @@ export class skRoomManagementProcess extends Process
                   const invaderCore = invaderCores[0];
                   if(invaderCore instanceof StructureInvaderCore)
                   {
-                    
+
                   }
               }
             }
@@ -1818,6 +1818,7 @@ export class skRoomManagementProcess extends Process
           this.metaData.coreInfo.coreRoomName = undefined;
         }
       }
+    }
       catch(error)
       {
         console.log(this.name, "Core Searching: ", error);

@@ -1,6 +1,6 @@
 import { Process } from "os/process";
 import { TerminalManagementProcess } from "./terminal";
-import { ENERGY_KEEP_AMOUNT, MINERALS_RAW, REAGENT_LIST } from "./mineralTerminal";
+import { ENERGY_KEEP_AMOUNT, MINERALS_RAW, REAGENT_LIST, KEEP_AMOUNT } from "./mineralTerminal";
 
 export class AllTerminalManagementProcess extends Process
 {
@@ -114,9 +114,59 @@ export class AllTerminalManagementProcess extends Process
 
                 if(RESOURCE_KEANIUM === r)
                     console.log(this.name, min.terminal);
+
+                let minOk = false;
+                do
+                {
+                    if(min.roomName === 'E36S43')
+                        console.log(this.name, 'H Problems', 1, this.roomInfo(min.roomName).mineral.mineralType, r)
+                    if(this.roomInfo(min.roomName).mineral.mineralType === r)
+                    {
+                        if(min.roomName === 'E36S43')
+                        console.log(this.name, 'H Problems', 2)
+                        const index = this.metaData.resources[r].indexOf(min, 0);
+                        if(index > -1)
+                        {
+                            if(min.roomName === 'E36S43')
+                                console.log(this.name, 'H Problems', 3)
+                            this.metaData.resources[r].splice(index, 1);
+                            min = _.min(this.metaData.resources[r], 'amount');
+                            if(min.roomName === 'E36S43')
+                                console.log(this.name, 'H Problems', 4, min.roomName)
+                            minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
+                        }
+                    }
+                    else
+                        minOk = true;
+
+                        if(min.roomName === 'E36S43')
+                            console.log(this.name, 'H Problems', 5, minOk)
+
+                }while(!minOk);
+
+                let minStorageOk = false;
+                do
+                {
+                    const storage = Game.rooms[min.roomName].storage;
+                    if(storage?.store[r] > KEEP_AMOUNT)
+                    {
+                        const index = this.metaData.resources[r].indexOf(min, 0);
+                        if(index > -1)
+                        {
+                            this.metaData.resources[r].splice(index, 1);
+                            min = _.min(this.metaData.resources[r], 'amount')
+                            minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
+                        }
+                    }
+                    else
+                    minStorageOk = true;
+                    
+                }while(!minStorageOk);
+
                 // Hopefully remove any terminals that don't have room.
                 if(minTerminal?.store.getFreeCapacity() < 5000)
                 {
+
                     do
                     {
                         const index = this.metaData.resources[r].indexOf(min, 0);

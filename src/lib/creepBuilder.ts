@@ -140,7 +140,11 @@ export const CreepBuilder = {
     let creepCount = _.filter(Game.creeps, function(creep){
       return creep.room.name === room.name
     }).length
-    let emergancy = (creepType === 'harvester' && creepCount < 2) || (creepType === 'mover' && creepCount < 4)
+
+    const containers = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTAINER});
+
+    let emergancy = (creepType === 'harvester' && creepCount < 2) || (creepType === 'mover' && creepCount < 4) || (room.storage && containers.length < 1);
+
 
     if(emergancy){
       spendCap = 300
