@@ -132,7 +132,8 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
       if(!creep.pos.inRangeTo(target, 3))
         creep.travelTo(target, {range: 3});
       else
-        creep.build(target);
+        if(creep.build(target) === OK)
+          creep.yieldRoad(target, true);
       return
     }
     else
