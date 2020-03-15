@@ -135,21 +135,26 @@ export const Stats = {
           const creep_energy = _.sum(Game.creeps, c => c.pos.roomName == room.name ? c.carry.energy : 0);
           Memory.stats['rooms.' + roomName + '.creep_energy'] = creep_energy;
 
-          const containers = <StructureContainer[]>room.find(FIND_STRUCTURES, {filter: s => s.structureType == STRUCTURE_CONTAINER});
+          const containers = kernel.data.roomData[room.name].containers;
+          //const containers = <StructureContainer[]>room.find(FIND_STRUCTURES, {filter: s => s.structureType == STRUCTURE_CONTAINER});
           const container_energy = _.sum(containers, c => c.store.energy);
           Memory.stats['rooms.' + roomName + '.container_energy'] = container_energy;
 
-          const towers = <StructureTower[]>room.find(FIND_STRUCTURES, { filter: s =>  s.structureType == STRUCTURE_TOWER});
+          const towers = kernel.data.roomData[room.name].towers
+          //const towers = <StructureTower[]>room.find(FIND_STRUCTURES, { filter: s =>  s.structureType == STRUCTURE_TOWER});
           Memory.stats['rooms.' + roomName + '.tower_energy'] = _.sum(towers, t => t.energy);
 
-          const const_sites = <ConstructionSite[]>room.find(FIND_CONSTRUCTION_SITES, { filter: cs => cs.my});
+          const const_sites = kernel.data.roomData[room.name].constructionSites;
+          //const const_sites = <ConstructionSite[]>room.find(FIND_CONSTRUCTION_SITES, { filter: cs => cs.my});
           Memory.stats['rooms.' + roomName + '.construction_sites'] = const_sites.length;
 
-          const spawns = <StructureSpawn[]>room.find(FIND_MY_SPAWNS);
+          const spawns = kernel.data.roomData[room.name].spawns
+          //const spawns = <StructureSpawn[]>room.find(FIND_MY_SPAWNS);
           const spawns_spawning = _.sum(spawns, s => s.spawning ? 1 : 0);
           Memory.stats['rooms.' + roomName + '.spawns_spawning'] = spawns_spawning;
 
-          const sources = <Source[]>room.find(FIND_SOURCES);
+          const sources = kernel.data.roomData[room.name].sources;
+          //const sources = <Source[]>room.find(FIND_SOURCES);
           const source_energy = _.sum(sources, s => s.energy);
           Memory.stats['rooms.' + roomName + '.source_energy'] = source_energy;
 
