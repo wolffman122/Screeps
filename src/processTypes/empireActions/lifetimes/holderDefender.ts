@@ -7,37 +7,42 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
 
     run()
     {
+
         let flag = Game.flags[this.metaData.flagName];
         let creep = this.getCreep();
-        let enemies: Creep[];
-        if(flag.room)
+        let enemies: Creep[] = [];
+        if(flag?.room)
         {
-            enemies = flag.room.find(FIND_HOSTILE_CREEPS);
-            enemies = _.filter(enemies, (e) => {
-                return ((e.getActiveBodyparts(ATTACK) > 0) || (e.getActiveBodyparts(RANGED_ATTACK) > 0));
-            });
+            if(flag.room.memory.hostileCreepIds?.length)
+            {
+                for(let i = 0; i < flag.room.memory.hostileCreepIds.length; i++)
+                {
+                    const eCreep = Game.getObjectById(flag.room.memory.hostileCreepIds[i]) as Creep;
+                    if(eCreep)
+                        enemies.push(eCreep);
+                }
+
+                enemies = _.filter(enemies, (e) => {
+                    return ((e.getActiveBodyparts(ATTACK) > 0) || (e.getActiveBodyparts(RANGED_ATTACK) > 0));
+                });
+            }
         }
 
-        if(creep.name === 'hrm-defender-E32S45-21148870')
-            console.log(this.name, 0)
-
-
-        if(!creep || !flag)
+        if(!creep)
         {
             this.completed = true;
             return;
         }
 
-        //console.log(this.name, 'Defender running');
-
-        if(creep.name === 'hrm-defender-E32S45-21148870')
-            console.log(this.name, 1)
+        if(this.metaData.boosted && !creep.memory.boost)
+        {
+            creep.boostRequest([RESOURCE_CATALYZED_UTRIUM_ACID], false);
+            return;
+        }
 
         if(flag.pos.roomName != creep.pos.roomName && !creep.memory.atPlace)
         {
-            if(creep.name === 'hrm-defender-E32S45-21148870')
-                console.log(this.name, 2, enemies)
-            if(enemies && enemies.length)
+            if(enemies?.length)
             {
                 let target = enemies[0];
                 if(!creep.pos.inRangeTo(target, 5))
@@ -54,6 +59,9 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
         const rangeAttack = creep.getActiveBodyparts(RANGED_ATTACK) ? true : false;
         const attack = creep.getActiveBodyparts(ATTACK) ? true : false;
         const range = rangeAttack ? 1 : 3;
+
+        if(!rangeAttack && !attack)
+            creep.suicide();
 
         if(heal)
             creep.heal(creep);
@@ -75,7 +83,7 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
                         let distance = creep.pos.getRangeTo(target);
                         if(range && distance <= 3)
                         {
-                            let multiples = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+                            let multiples = creep.pos.findInRange(enemies, 3);
                             if(multiples.length > 1)
                                 creep.rangedMassAttack();
                             else
@@ -89,7 +97,7 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
                                 creep.memory.atPlace = true;
                         }
 
-                        creep.travelTo(target);
+                        creep.travelTo(target, {movingTarget: true});
                         return;
                     }
                 }
@@ -101,7 +109,7 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
                         let distance = creep.pos.getRangeTo(target);
                         if(range && distance <= 3)
                         {
-                            let multiples = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+                            let multiples = creep.pos.findInRange(enemies, 3);
                             if(multiples.length > 1)
                                 creep.rangedMassAttack();
                             else
@@ -115,7 +123,7 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
                                 creep.memory.atPlace = true;
                         }
 
-                        creep.travelTo(target, {range: 1});
+                        creep.travelTo(target, {movingTarget: true, range: 1});
                         return;
                     }
                 }
@@ -132,14 +140,14 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
                         {
                             if(!creep.memory.atPlace)
                                 creep.memory.atPlace = true;
-                            let multiples = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+                            let multiples = creep.pos.findInRange(enemies, 3);
                             if(multiples.length > 1)
                                 creep.rangedMassAttack();
                             else
                                 creep.rangedAttack(target);
                         }
 
-                        creep.travelTo(target, {range: 3});
+                        creep.travelTo(target, {movingTarget: true, range: 3});
                         return;
                     }
                 }
@@ -152,14 +160,14 @@ export class HolderDefenderLifetimeProcess extends LifetimeProcess
                         {
                             if(!creep.memory.atPlace)
                                 creep.memory.atPlace = true;
-                            let multiples = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+                            let multiples = creep.pos.findInRange(enemies, 3);
                             if(multiples.length > 1)
                                 creep.rangedMassAttack();
                             else
                                 creep.rangedAttack(target);
                         }
 
-                        creep.travelTo(target, {range: 3});
+                        creep.travelTo(target, {movingTarget: true, range: 3});
                         return;
                     }
                 }
