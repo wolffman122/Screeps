@@ -16,7 +16,6 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
   run()
   {
-    console.log(this.name, 'Spinner 2 Running');
     this.creep = this.getCreep();
     this.logName = '';
     this.logging = false;
@@ -91,26 +90,18 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       return;
     }
 
-    if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Spinner problems', 1)
     if(this.terminal?.store[RESOURCE_ENERGY] < 75000)
     {
-      if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Spinner problems', 2)
       if(this.TransferEnergyToTerminal())
         return;
     }
 
     if(this.terminal?.store[RESOURCE_ENERGY] !== 75000 && this.storage.store.getFreeCapacity() > 3000)
     {
-      if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Spinner problems', 3)
       if(this.TransferEnergyToStorage())
         return;
     }
 
-    if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Spinner problems', 6)
     if(this.terminal?.store[this.mineral.mineralType] < KEEP_AMOUNT)
     {
       this.TransferToTerminal(this.mineral.mineralType);
@@ -124,7 +115,6 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       return;
     }
 
-    console.log(this.name, 6, 'SK Mineral Length', this.skMinerals.length)
     // SK Mineral transfer code.
     for(let i = 0; i < this.skMinerals.length; i++)
     {
@@ -142,7 +132,6 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       }
     }
 
-    console.log(this.name, 7, 'MINERALS Lenght', MINERALS_RAW.length)
     // Minerals
     for(let i = 0; i < MINERALS_RAW.length; i++)
     {
@@ -165,13 +154,11 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       }
     }
 
-    console.log(this.name, 8)
+
     // Production list
     for(let i = 0; i < PRODUCT_LIST.length; i++)
     {
       const prod = PRODUCT_LIST[i];
-      if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Production trouble', this.terminal.store[prod], ((this.terminal?.store[prod] ?? 0) < PRODUCTION_AMOUNT))
       if((this.terminal?.store[prod] ?? 0) < PRODUCTION_AMOUNT)
       {
         if(this.TransferToTerminal(prod))
@@ -187,7 +174,13 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       }
     }
 
-    console.log(this.name, 9)
+    // for(const strCom in COMMODITIES)
+    // {
+    //   const com = COMMODITIES[strCom];
+    //   if(com instanceof CommodityConstant)
+
+    // }
+
     if(this.creep.ticksToLive < 1500)
       this.RenewCreep();
 
@@ -268,23 +261,16 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
   private TransferEnergyToStorage() : boolean
   {
-    if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Spinner problems', 4)
     if(this.creep.store.getUsedCapacity() === 0)
     {
 
       let amount = 0;
       amount = this.terminal.store[RESOURCE_ENERGY] - 75000;
       amount = (amount > this.creep.store.getCapacity()) ? this.creep.store.getCapacity() : amount;
-      if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Spinner problems', 5, amount, this.creep.store.getCapacity())
       this.creep.say('WE🏦');
       const ret = this.creep.withdraw(this.terminal, RESOURCE_ENERGY, amount);
       return true;
     }
-
-    if(this.creep.name === 'em-s-E36S43-24525230')
-        console.log(this.name, 'Spinner problems', 5.2)
 
     if(this.storage.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
     {
