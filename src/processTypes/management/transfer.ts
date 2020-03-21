@@ -78,6 +78,8 @@ export class TransferManagementProcess extends Process
     }
     else if(this.destRoom.controller.level === 6)
     {
+      this.DumpMinerals();
+
       if(this.roomInfo(this.destRoom.name).extensions.length < 40)
       {
         const sites = this.roomInfo(this.destRoom.name).constructionSites.filter(x => x.structureType === STRUCTURE_TERMINAL);
@@ -99,9 +101,11 @@ export class TransferManagementProcess extends Process
       else
         this.TerminalTransfer(false);
     }
-    else if(this.destRoom.controller.level === 6)
+    else if(this.destRoom.controller.level >= 7 )
     {
+      console.log(this.name, 'Transfer everything')
       this.DumpMinerals();
+      this.TerminalTransfer(false);
     }
 
 
@@ -282,6 +286,22 @@ export class TransferManagementProcess extends Process
             if(cost < sourceTerminal.store[RESOURCE_ENERGY]
               && destTerminal.store.getFreeCapacity() > sourceTerminal.store[res])
               sourceTerminal.send(res as ResourceConstant, sourceTerminal.store[res], this.destRoom.name);
+          }
+        }
+      }
+      else
+      {
+        if(sourceTerminal.store.getUsedCapacity() > 0)
+        {
+          console.log(this.name, 'Next step')
+          for(let res in sourceTerminal.store)
+          {
+            let resC = res as ResourceConstant;
+            if(res !== RESOURCE_ENERGY)
+            {
+              if(sourceTerminal.send(resC, sourceTerminal.store[res], this.destRoom.name) === OK)
+                break;
+            }
           }
         }
       }

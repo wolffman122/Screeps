@@ -10,6 +10,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
   link: StructureLink
   storage: StructureStorage
   terminal: StructureTerminal
+  factory: StructureFactory;
   mineral: Mineral<MineralConstant>
   skMinerals: Mineral<MineralConstant>[] = [];
   renewSpawn: StructureSpawn
@@ -36,9 +37,8 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     this.link = this.roomData().storageLink;
     this.storage = room.storage;
     this.terminal = room.terminal;
-    const factory = this.roomData().factory;
+    this.factory = this.roomData().factory;
     this.mineral = this.roomData().mineral
-
 
     const yellowFlags = this.creep.room.find(FIND_FLAGS, {filter: f => f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW });
     // Need to find a better way to reset the stale data
@@ -61,6 +61,27 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     {
       this.creep.travelTo(this.djFlag)
       this.creep.say('T');
+      return;
+    }
+
+    if(room.memory.spinnerDump)
+    {
+      if(this.creep.store.getUsedCapacity() > 0)
+      {
+        this.creep.transferEverything(room.terminal);
+        return;
+      }
+
+      if(room.terminal.store.getFreeCapacity() > this.creep.store.getCapacity())
+      {
+        for(let res in room.storage.store)
+        {
+          const resc = res as ResourceConstant
+          if(this.creep.withdraw(room.storage, resc) === OK)
+            break;
+        }
+      }
+
       return;
     }
 
@@ -174,11 +195,33 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       }
     }
 
-    // for(const strCom in COMMODITIES)
-    // {
-    //   const com = COMMODITIES[strCom];
-    //   if(com instanceof CommodityConstant)
+    const commodities = Object.keys(COMMODITIES).filter(n => n !== RESOURCE_ENERGY && !REACTIONS[n]) as CommodityConstant[]
+    for(let i = 0; i < commodities.length; i++)
+    {
+      if((this.terminal?.store[commodities[i]] ?? 0) < PRODUCTION_AMOUNT)
+      {
+        if(this.TransferToTerminal(commodities[i]))
+          return;
+        else
+          continue;
+      }
 
+      if(this.terminal?.store[commodities[i]] !== PRODUCTION_AMOUNT)
+      {
+        this.TransferToStorage(commodities[i], PRODUCTION_AMOUNT);
+      }
+
+      if((this.factory.store[commodities[i]] ?? 0) > 0)
+      {
+        this.creep.withdraw(this.factory, commodities[i]);
+        return;
+      }
+    }
+
+    // if((this.storage.store[this.mineral.mineralType] ?? 0) > 10000 &&
+    //   this.factory.store.getFreeCapacity() > this.creep.store.getCapacity() * 2)
+    // {
+    //   this.creep.withdraw(this.storage.store[this.mineral.mineralType])
     // }
 
     if(this.creep.ticksToLive < 1500)
@@ -319,6 +362,6 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     }
 
     //if(this.storage.store.getUsedCapacity() > this.creep.store.getUsedCapacity())
-      this.creep.transferEverything(this.storage);
+    this.creep.transferEverything(this.storage);
   }
 }
