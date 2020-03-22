@@ -129,8 +129,7 @@ export const Stats = {
           });
           Memory.stats['rooms.' + roomName + '.num_creeps'] = creeps ? creeps.length : 0;
 
-          const enemyCreeps = room.find(FIND_HOSTILE_CREEPS);
-          Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = enemyCreeps ? enemyCreeps.length : 0;
+          Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = room.memory.hostileCreepIds ? room.memory.hostileCreepIds.length : 0;
 
           const creep_energy = _.sum(Game.creeps, c => c.pos.roomName == room.name ? c.carry.energy : 0);
           Memory.stats['rooms.' + roomName + '.creep_energy'] = creep_energy;
@@ -158,7 +157,8 @@ export const Stats = {
           const source_energy = _.sum(sources, s => s.energy);
           Memory.stats['rooms.' + roomName + '.source_energy'] = source_energy;
 
-          const links = <StructureLink[]>room.find(FIND_STRUCTURES, { filter: s => s.structureType == STRUCTURE_LINK && s.my });
+          const links = kernel.data.roomData[room.name].links.filter(l => l.my);
+          //const links = <StructureLink[]>room.find(FIND_STRUCTURES, { filter: s => s.structureType == STRUCTURE_LINK && s.my });
           const link_energy = _.sum(links, l => l.energy);
           Memory.stats['rooms.' + roomName + '.link_energy'] = link_energy;
 
@@ -246,6 +246,7 @@ export const Stats = {
 
           }
 
+
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
           Memory.stats['rooms.' + roomName + '.mineral_available'] = mineral[0].mineralAmount
           Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = mineral[0].ticksToRegeneration;
@@ -322,7 +323,8 @@ export const Stats = {
           {
             Memory.stats['remote_rooms.' + roomName + '.reservation'] = room.controller.reservation.ticksToEnd
 
-            const sources = <Source[]>room.find(FIND_SOURCES);
+            const sources = kernel.data.roomData[room.name].sources;
+            //const sources = <Source[]>room.find(FIND_SOURCES);
             const source_energy = _.sum(sources, s => s.energy);
             Memory.stats['remote_rooms.' + roomName + '.source_energy'] = source_energy;
 

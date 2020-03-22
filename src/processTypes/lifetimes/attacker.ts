@@ -33,13 +33,26 @@ export class AttackerLifetimeProcess extends LifetimeProcess
         }
 
         let hostileSpawns = creep.room.find(FIND_HOSTILE_SPAWNS);
-        let hostileCreeps = creep.room.find(FIND_HOSTILE_CREEPS, {filter: cr => cr.getActiveBodyparts(ATTACK) > 0});
+
+        let attackingCreeps: Creep[] = [];
+        let hostileCreeps: Creep[] = [];
+        if(creep.room.memory.hostileCreepIds.length)
+        {
+            for(let i = 0; i < creep.room.memory.hostileCreepIds.length; i++)
+            {
+                const tcreep = Game.creeps[creep.room.memory.hostileCreepIds[i]];
+                if(tcreep.getActiveBodyparts(ATTACK) > 0 || tcreep.getActiveBodyparts(RANGED_ATTACK) > 0)
+                    attackingCreeps.push(tcreep);
+                else
+                    hostileCreeps.push(tcreep);
+            }
+        }
 
         console.log(this.name, 0)
-        if(hostileCreeps.length > 0)
+        if(attackingCreeps.length > 0)
         {
             console.log(this.name, 1)
-            let target = creep.pos.findClosestByPath(hostileCreeps);
+            let target = creep.pos.findClosestByPath(attackingCreeps);
             if(!creep.pos.inRangeTo(target, 1))
             {
                 creep.travelTo(target);
@@ -51,10 +64,9 @@ export class AttackerLifetimeProcess extends LifetimeProcess
         else
         {
             console.log(this.name, 2)
-            let creeps = creep.room.find(FIND_HOSTILE_CREEPS);
-            if(creeps.length)
+            if(hostileCreeps.length)
             {
-                let target = creep.pos.findClosestByPath(creeps);
+                let target = creep.pos.findClosestByPath(hostileCreeps);
                 if(!creep.pos.inRangeTo(target, 1))
                 {
                     creep.travelTo(target);

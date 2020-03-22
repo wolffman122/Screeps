@@ -16,6 +16,9 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       return;
     }
 
+    if(creep.name === 'em-u-E45S57-25129892')
+      console.log(this.name, 'Problem upgrader');
+
     if(!creep.memory.boost && this.metaData.boosts)
     {
       if(creep.room.name === 'E41S32' || creep.room.name === 'E45S57')

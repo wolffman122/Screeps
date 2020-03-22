@@ -25,32 +25,6 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(Game.time % 10 === 5)
-    {
-      /*let enemies = flag.room!.find(FIND_HOSTILE_CREEPS);
-
-      enemies = _.filter(enemies, (e: Creep)=> {
-        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
-      });
-
-      if(enemies.length > 0)
-      {
-        flag.memory.enemies = true;
-        if(flag.memory.timeEnemies === undefined)
-        {
-          flag.memory.timeEnemies = Game.time;
-        }
-
-        let fleeRoom = this.metaData.flagName.split('-')[1];
-        creep.travelTo(RoomPosition(10,10, fleeRoom));
-        return;
-      }
-      else
-      {
-        flag.memory.enemies = false;
-      }*/
-    }
-
     let room = Game.rooms[this.metaData.targetRoom];
 
     if(room.name != creep.pos.roomName && !flag.memory.enemies)

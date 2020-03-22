@@ -9,70 +9,54 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
   run()
   {
-    let creep = this.getCreep();
+    const creep = this.getCreep();
 
-    let flag = Game.flags[this.metaData.flagName];
-    let spawnName = flag.name.split('-')[0];
+    const flag = Game.flags[this.metaData.flagName];
     if(!flag)
     {
+      flag.memory.roadComplete = undefined;
       this.completed = true;
       return;
     }
+
+    const spawnName = flag.name.split('-')[0];
+    const spawnRoom = Game.rooms[spawnName];
+    const mineRoom = flag.room;
 
     if(!creep)
     {
       return;
     }
 
-    let fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
+    const fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
 
     // Setup for road complete
     if(flag.memory.roadComplete === undefined)
       flag.memory.roadComplete = 0;
 
-    if(Game.time % 10 === 5 && creep.room.name  !== spawnName)
-    {
-      let enemies = creep.room!.find(FIND_HOSTILE_CREEPS);
-
-      enemies = _.filter(enemies, (e: Creep)=> {
-        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
-      });
-    }
-
     if(flag.memory.enemies)
     {
       if(_.sum(creep.carry) > 0)
       {
-        let storage = Game.rooms[spawnName].storage;
+        const storage = spawnRoom.storage;
         if(storage)
         {
           if(!creep.pos.inRangeTo(storage, 1))
-          {
-            if(!creep.fixMyRoad())
-            {
-              creep.travelTo(storage);
-              return;
-            }
-          }
 
-          creep.transfer(storage, RESOURCE_ENERGY);
+            creep.travelTo(storage);
+          else
+            creep.transfer(storage, RESOURCE_ENERGY);
+
           return;
         }
       }
       else
       {
-
         if(fleeFlag)
         {
           if(!creep.pos.inRangeTo(fleeFlag, 5))
-          {
             creep.travelTo(fleeFlag.pos);
-          }
-          else
-          {
-            if(creep.ticksToLive < 50)
-              creep.suicide();
-          }
+
           return;
         }
         else
@@ -83,74 +67,83 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       }
     }
 
-    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
+    const sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
     if(sourceContainer)
     {
-      if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
+      if(creep.store.getUsedCapacity() === 0 && creep.ticksToLive! > 100)
       {
         const sources = this.kernel.data.roomData[flag.pos.roomName].sources;
-        if(!creep.pos.inRangeTo(sourceContainer, 1) && _.sum(sourceContainer.store) > creep.carryCapacity * .5)
+        if(!creep.pos.inRangeTo(sourceContainer, 1))
         {
-          if(creep.room.name === flag.room!.name)
+          // Test code
+          if(mineRoom.name === 'E44S49')
           {
+            let holdData: HoldRoomData;
+            if(!flag.memory.holdData)
+              flag.memory.holdData = {roads: {}, cores: false, enemies: false, roadComplete: false};
+            else
+              holdData = flag.memory.holdData;
 
-            if(flag.memory.roadComplete < sources.length)
+            if(creep.room.name === mineRoom.name && !creep.pos.isNearTo(sourceContainer))
             {
-              creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+
+              console.log(this.name, creep.name, 'Hold Data', !holdData.roads[sourceContainer.id]);
+              let roomPositions: RoomPosition[] = [];
+              if(!holdData.roads[sourceContainer.id])
+              {
+                console.log(this.name, 'Should not be running this code');
+                const ret = PathFinder.search(creep.pos, sourceContainer.pos);
+                if(!ret.incomplete)
+                {
+                  if(Object.keys(Game.constructionSites).length + ret.path.length < 100)
+                  {
+                    let allCreated = true;
+                    for(let i = 0; i < ret.path.length; i++)
+                      allCreated = allCreated && (mineRoom.createConstructionSite(ret.path[i], STRUCTURE_ROAD) === OK);
+
+                    if(allCreated)
+                      holdData.roads[sourceContainer.id] = true;
+                  }
+                }
+              }
             }
+            flag.memory.holdData = holdData;
           }
+          else if(creep.room.name === mineRoom.name && flag.memory.roadComplete < sources.length)
+            creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
 
           creep.travelTo(sourceContainer);
           return;
-        }
-        else
-        {
-          //console.log(this.name, 'Sitting');
-          if(flag.memory.roadComplete < sources.length)
-            flag.memory.roadComplete++;
-        }
 
-        let resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
+        }
+        else if(flag.memory.roadComplete < sources.length)
+            flag.memory.roadComplete++;
+
+        const resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
         if(resource.length > 0)
         {
-          let withdrawAmount = creep.carryCapacity - _.sum(creep.carry) - resource[0].amount;
+          let withdrawAmount = creep.store.getCapacity() - creep.store.getUsedCapacity() - resource[0].amount;
 
           if(withdrawAmount >= 0)
-          {
             creep.withdraw(sourceContainer, RESOURCE_ENERGY, withdrawAmount);
-          }
 
           creep.pickup(resource[0]);
           return;
-          /*creep.pickup(resource[0]);
-          let remainingRoom = creep.carryCapacity - resource[0].amount
-          if(sourceContainer.store.energy > remainingRoom)
-          {
-            creep.withdraw(sourceContainer, RESOURCE_ENERGY)
-          }
-          else
-          {
-            this.suspend = 10;
-          }*/
         }
-        else if(sourceContainer.store.energy > creep.carryCapacity)
+        else if(sourceContainer.store[RESOURCE_ENERGY] > creep.store.getCapacity())
         {
           creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           return;
         }
-        else if(flag.room.storage && _.sum(flag.room.storage.store) > 0)
+        else if(flag.room.storage && flag.room.storage.store.getUsedCapacity() > 0)
         {
-          let storage = flag.room.storage;
-          if(creep.pos.isNearTo(storage))
-          {
-            creep.withdrawEverything(storage);
-            return;
-          }
-          else
-          {
+          const storage = flag.room.storage;
+          if(!creep.pos.isNearTo(storage))
             creep.travelTo(storage);
-            return;
-          }
+          else
+            creep.withdrawEverything(storage);
+
+          return;
         }
         else
         {
@@ -166,187 +159,107 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
           return;
         }
       }
-      else if(_.sum(creep.carry) === 0 && creep.room.name !== this.metaData.spawnRoom)
+      else if(creep.store.getUsedCapacity() === 0 && creep.room.name !== this.metaData.spawnRoom)
       {
         if(creep.pos.isNearTo(sourceContainer))
-        {
           creep.withdraw(sourceContainer, RESOURCE_ENERGY);
-          return;
-        }
       }
     }
 
-    if(this.kernel.data.roomData[this.metaData.spawnRoom])
+
+    if(creep.store.getFreeCapacity() === 0 || creep.memory.full)
     {
-      if(this.kernel.data.roomData[this.metaData.spawnRoom].links.length > 0)
+      creep.memory.full = true;
+      if(this.kernel.data.roomData[this.metaData.spawnRoom]?.links.length > 0)
       {
         let links = this.kernel.data.roomData[this.metaData.spawnRoom].links
 
-        links = creep.pos.findInRange(links, 8);
-        links = _.filter(links, (l) => {
-          return (l.energy == 0 || l.cooldown == 0);
-        });
+        links = creep.pos.findInRange(links, 8, {filter: l => (l.store[RESOURCE_ENERGY] ?? 0) != 800});
 
         if(links.length > 0)
         {
-          let link = creep.pos.findClosestByPath(links);
+          creep.say('L', true);
+          const link = creep.pos.findClosestByPath(links);
 
-          if(link.energy < link.energyCapacity)
+          if(creep.room.name === 'E43S53')
+            console.log(this.name, 'Link Distance', creep.room.memory.linkDistances[link.id]);
+
+          if(!creep.pos.inRangeTo(link, 1))
           {
-            if(!creep.pos.inRangeTo(link, 1))
+            if(!creep.fixMyRoad())
             {
-              if(!creep.fixMyRoad())
-              {
-                creep.travelTo(link);
-              }
-            }
-
-            if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
-            {
-              this.suspend = 2;
-              return;
+              creep.travelTo(link);
             }
           }
-          else
+
+          const linkDistance = creep.room.memory.linkDistances[link.id];
+          if(link.cooldown < (linkDistance * 1.8))
+          {}
+
+          if(creep.transfer(link, RESOURCE_ENERGY) == ERR_FULL)
+            this.suspend = 2;
+
+            if(creep.store.getUsedCapacity() === 0)
+              creep.memory.full = false;
+          return;
+        }
+      }
+
+      const storage = spawnRoom.storage;
+      if(storage)
+      {
+        creep.say('S', true);
+        if(!creep.pos.inRangeTo(storage,1))
+        {
+          if(!creep.fixMyRoad())
           {
-            let storage = creep.room.storage;
-            if(storage)
-            {
-              if(!creep.pos.inRangeTo(storage,1))
-              {
-                if(!creep.fixMyRoad())
-                {
-                  creep.travelTo(storage);
-                  return;
-                }
-              }
-
-              if(creep.transfer(storage, RESOURCE_ENERGY) === ERR_FULL)
-              {
-                return;
-              }
-            }
-            else
-            {
-              let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
-              if(target)
-              {
-                if(creep.pos.isNearTo(target))
-                {
-                  creep.transfer(target, RESOURCE_ENERGY);
-                  return;
-                }
-
-                creep.travelTo(target, {range: 1});
-                return;
-              }
-              else
-              {
-                this.suspend = 2;
-              }
-            }
+            creep.travelTo(storage);
           }
         }
         else
         {
-          if(Game.rooms[this.metaData.spawnRoom].storage)
-          {
-            let target = Game.rooms[this.metaData.spawnRoom].storage;
-
-            if(target)
-            {
-              if(!creep.pos.inRangeTo(target, 1))
-              {
-                if(!creep.fixMyRoad())
-                {
-                  creep.travelTo(target);
-                }
-              }
-
-              if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-              {
-                return;
-              }
-            }
-          }
-          else
-          {
-            let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
-            if(target)
-            {
-              if(creep.pos.isNearTo(target))
-              {
-                creep.transfer(target, RESOURCE_ENERGY);
-                return;
-              }
-
-              creep.travelTo(target, {range: 1});
-              return;
-            }
-            else
-            {
-              this.suspend = 2;
-            }
-          }
+          creep.transfer(storage, RESOURCE_ENERGY);
+          creep.memory.full = false;
         }
-      }
-      else
-      {
-        // creep is filled
-        if(Game.rooms[this.metaData.spawnRoom].storage)
-        {
-          let target = Game.rooms[this.metaData.spawnRoom].storage;
 
-          if(target)
-          {
-            if(!creep.pos.inRangeTo(target, 1))
-            {
-              if(!creep.fixMyRoad())
-              {
-                creep.travelTo(target);
-              }
-            }
-
-            if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-            {
-              return;
-            }
-          }
-        }
-        else if (this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers.length)
-        {
-          let target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
-
-          if(target)
-          {
-            if(!creep.pos.inRangeTo(target, 1))
-            {
-              if(!creep.fixMyRoad())
-              {
-                creep.travelTo(target);
-              }
-            }
-
-            if(creep.transfer(target, RESOURCE_ENERGY) == ERR_FULL)
-            {
-              return;
-            }
-          }
-        }
+        return;
       }
 
-      if(_.sum(creep.carry) === 0 && creep.ticksToLive <= 100)
+      const target = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
+      if(target)
       {
-        let container = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
-        if(container)
+        creep.say('C', true);
+        if(!creep.pos.isNearTo(target))
         {
-          if(creep.pos.inRangeTo(container, 0))
-            creep.suicide();
-
-          creep.travelTo(container);
-          return;
+          if(!creep.fixMyRoad())
+            creep.travelTo(target, {range: 1});
         }
+        else
+        {
+          creep.transfer(target, RESOURCE_ENERGY);
+          creep.memory.full = false;
+        }
+
+        return;
+      }
+
+      this.suspend = 2;
+    }
+
+
+
+    if(_.sum(creep.carry) === 0 && creep.ticksToLive <= 100)
+    {
+      let container = this.kernel.data.roomData[this.metaData.spawnRoom].generalContainers[0];
+      if(container)
+      {
+        if(creep.pos.inRangeTo(container, 0))
+          creep.suicide();
+
+        creep.travelTo(container);
+        return;
       }
     }
   }
 }
+

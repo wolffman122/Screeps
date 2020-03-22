@@ -48,7 +48,7 @@ export class TerminalManagementProcess extends Process
 
           if(r.terminal && r.storage)
           {
-            return ((r.storage.store.energy < 25000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+            return ((r.storage.store.energy < 50000 || r.storage.store === undefined) && r.controller && r.controller.my &&
               r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
           }
           else
@@ -197,6 +197,7 @@ export class TerminalManagementProcess extends Process
                   if((cost + amount) < room.terminal.store.energy)
                   {
                     retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
+                    console.log(this.name, room.name, "to", lRooms[0].name, retVal);
                     if(retVal ==- OK)
                     {
                       const minRoom = Game.rooms[lRooms[0].name];

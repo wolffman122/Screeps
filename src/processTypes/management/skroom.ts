@@ -4,6 +4,8 @@ import { HoldBuilderLifetimeProcess } from "../empireActions/lifetimes/holderBui
 import { MoveProcess } from "../creepActions/move";
 import { WorldMap } from "lib/WorldMap";
 import { Traveler } from "lib/Traveler";
+import { AttackControllerManagementProcess } from "./attackController";
+import { StrongHoldDestructionProcess } from "./strongHoldDestruction";
 
 export class skRoomManagementProcess extends Process
 {
@@ -95,15 +97,21 @@ export class skRoomManagementProcess extends Process
           return;
       }
 
-      this.coreSearching();
-
-
       if(this.skFlag.room.memory.skSourceRoom === undefined)
       {
         this.skFlag.room.memory.skSourceRoom = true;
       }
 
       this.ensureMetaData();
+
+      this.coreSearching();
+
+      if(this.name === 'skrmp-E46S46')
+      {
+        console.log(this.name, 'Invader core status', this.metaData.coreInfo?.invaderCorePresent);
+        if(this.metaData.coreInfo?.invaderCorePresent)
+          this.coreInSk = true;
+      }
 
       ////////////////////////////////////////////////////////////
       ///
@@ -144,7 +152,7 @@ export class skRoomManagementProcess extends Process
       {
         this.DevilSpawn();
 
-        if(!this.invaders) // ADD to check for enemies here if they are present and no devil then flee.
+        if(!this.invaders && this.metaData.devils.length) // ADD to check for enemies here if they are present and no devil then flee.
         {
           this.BuilderSpawn();
           this.HarvesterSpawn();
@@ -187,7 +195,7 @@ export class skRoomManagementProcess extends Process
             }
           }
 
-          for(let i = 0; i < this.metaData.distroCreeps[s.id].length; i++)
+          for(let i = 0; i < this.metaData.distroCreeps[s.id]?.length; i++)
           {
             const creep = Game.creeps[this.metaData.distroCreeps[s.id][i]];
             if(creep)
@@ -464,12 +472,12 @@ export class skRoomManagementProcess extends Process
 
               if(target)
               {
-                let numberInRange = devil.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+                let numberInRange = devil.pos.findInRange(invaders, 3);
                 if(numberInRange.length > 1)
                 {
-                  if(devil.pos.inRangeTo(target, 3))
+                  if(devil.pos.inRangeTo(target, 3) && !devil.pos.inRangeTo(target,1))
                   {
-                    devil.rangedAttack(target);
+                    devil.rangedMassAttack();
                   }
                   else if(devil.pos.inRangeTo(target, 1))
                   {
@@ -492,7 +500,7 @@ export class skRoomManagementProcess extends Process
                   devil.heal(devil);
                 }
 
-                devil.travelTo(target);
+                devil.travelTo(target, {movingTarget: true});
                 return;
               }
               return;
@@ -704,13 +712,14 @@ export class skRoomManagementProcess extends Process
         }
 
         console.log(this.name, 'Builder actions', 2)
-        if(builder.pos.roomName !== this.skRoomName)
+        if(builder.pos.roomName !== this.skRoomName && !builder.memory.atPlace)
         {
           builder.travelTo(new RoomPosition(25, 25, this.skRoomName));
           builder.memory.filling = true
         }
         else
         {
+          builder.memory.atPlace = true;
           // Create constructions sites
           if(this.roomInfo(this.skRoomName).containers.length <= 3)
           {
@@ -731,9 +740,11 @@ export class skRoomManagementProcess extends Process
           {
             /////////// SK Lair Checking ///////////////////////
             console.log(this.name, 'Builder actions', 4);
-            const lair = builder.pos.findClosestByRange(this.lairs);
+            let lair: StructureKeeperLair;
+            if(builder.room.name === this.skRoomName)
+              lair = builder.pos.findClosestByRange(this.lairs);
 
-            if(lair.ticksToSpawn < 7 && lair.pos.inRangeTo(builder, 5))
+            if(lair?.ticksToSpawn < 7 && lair.pos.inRangeTo(builder, 5))
             {
               console.log(this.name, 'Builder actions', 6)
 
@@ -767,7 +778,11 @@ export class skRoomManagementProcess extends Process
 
             console.log(this.name, 'Builder actions', 7)
 
-            let sks = builder.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
+            let distance = 7;
+            if(builder.room.name !== this.skRoomName)
+              distance = 4;
+
+            let sks = builder.pos.findInRange(FIND_HOSTILE_CREEPS, distance);
             if(sks.length)
             {
               console.log(this.name, 'Builder actions', 8)
@@ -929,26 +944,37 @@ export class skRoomManagementProcess extends Process
                   if(builder.almostFull())
                     builder.memory.filling = false;
                 }
+                console.log(this.name, 'Builder actions', 23.1)
                 return;
               }
             }
 
+            console.log(this.name, 'Builder actions', 24)
+
             ///////////// Have the builder Build. ///////////////////////
             if(_.sum(builder.carry) === builder.carryCapacity || !builder.memory.filling)
             {
-              ///////////// Site Building ///////////////////////
-              let sites = _.filter(this.roomInfo(this.skRoomName).constructionSites, (cs) => {
-                  return (cs.my);
-              });
-              let target = builder.pos.findClosestByRange(sites);
+              let target: ConstructionSite;
+              if(!builder.memory.target)
+              {
+                ///////////// Site Building ///////////////////////
+                let sites = _.filter(this.roomInfo(this.skRoomName).constructionSites, (cs) => {
+                    return (cs.my);
+                });
+                target = builder.pos.findClosestByRange(sites);
+                builder.memory.target = target.id;
+              }
+              else
+                target = Game.getObjectById(builder.memory.target) as ConstructionSite;
 
               if(target)
               {
                 if(builder.pos.inRangeTo(target, 3))
                 {
                   builder.build(target);
-                  if(_.sum(builder.carry) === 0)
+                  if(_.sum(builder.carry) === 0 || !target)
                   {
+                    builder.memory.target = undefined;
                     builder.memory.filling = true;
                   }
                   return;
@@ -958,7 +984,11 @@ export class skRoomManagementProcess extends Process
                   builder.travelTo(target, {range: 3})
                 }
               }
+              else
+              builder.memory.target = undefined;
             }
+
+            console.log(this.name, 'Builder actions', 25)
           }
         }
       }
@@ -1418,7 +1448,19 @@ export class skRoomManagementProcess extends Process
         }
         else
         {
-          hauler.travelTo(this.skFlag);
+          if(hauler.store.getUsedCapacity() > 0)
+          {
+            let terminal = Game.rooms[this.metaData.roomName].terminal;
+            if(!hauler.pos.isNearTo(terminal))
+              hauler.travelTo(terminal);
+            else
+              hauler.transferEverything(terminal);
+
+            return;
+          }
+
+          if(!hauler.pos.inRangeTo(this.skFlag, 2))
+            hauler.travelTo(this.skFlag, {range: 2});
         }
       }
       catch (error)
@@ -1748,77 +1790,37 @@ export class skRoomManagementProcess extends Process
     {
       try
       {
-        // SK Room check for core.
-        if((this.skRoom && !this.metaData.coreInfo.invaderCorePresent /*&& Game.time % 2000 === 15*/)
-          || this.metaData.keepScanning)
+        const cores = this.skRoom.find(FIND_HOSTILE_STRUCTURES, {filter: s=> s.structureType === STRUCTURE_INVADER_CORE});
+        console.log(this.name, 'Number of cores', this.skRoom.name, cores.length)
+        if(cores.length)
         {
-          const invaderCores = this.skRoom.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
-          if(invaderCores.length)
-          {
-            const invaderCore = invaderCores[0] as StructureInvaderCore;
-            if(invaderCore?.effects[EFFECT_INVULNERABILITY]?.ticksRemaining < 500)
+          const core = cores[0] as StructureInvaderCore;
+
+          if(core.ticksToDeploy < 5000)
+            console.log(this.name, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DEPLOYING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+          if(_.any(core.effects, e => e.effect === EFFECT_INVULNERABILITY && e.ticksRemaining < 300))
             {
               this.coreInSk = true;
-              this.metaData.coreInfo.invaderCorePresent = true;
-              this.metaData.coreInfo.coreId = invaderCore.id;
-              this.metaData.coreInfo.coreRoomName = invaderCore.room.name;
-              Game.notify("Invader Core in room " + this.skRoomName + " spawn room is " + this.metaData.roomName + " level is " + invaderCore.level + " creation time " + invaderCore.effects[EFFECT_INVULNERABILITY].ticksRemaining);
-            }
-          }
-          else
-          {
-            this.metaData.keepScanning = true;
-            const observer = this.roomData().observer;
-            if(observer)
-            {
-              const skRoomNames = this.findSkRooms(this.metaData.roomName);
-              const index = this.metaData.scanIndex++;
-
-              observer.observeRoom(skRoomNames[index]);
-
-              if(index > skRoomNames.length -1)
+              Game.notify("Found Core in skroom " + this.skRoomName + " going active in " + 350 + " " + Game.time);
+              if(core.level <= 3)
               {
-                this.metaData.scanIndex = 0;
-                this.metaData.keepScanning = false;
-              }
-
-              const scanRoom = Game.rooms[skRoomNames[index > 0 ? index - 1 : skRoomNames.length -1]];
-              if(scanRoom)
-              {
-                let invaderCores = scanRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
-                if(invaderCores.length)
+                this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + this.skRoomName, 35,
                 {
-                  const invaderCore = invaderCores[0];
-                  if(invaderCore instanceof StructureInvaderCore)
-                  {
-
-                  }
+                  roomName: this.skRoomName,
+                  spawnRoomName: this.metaData.roomName,
+                  coreId: core.id,
+                });
               }
             }
-          }
-        }
 
-        if(this.metaData.coreInfo.invaderCorePresent && !this.metaData.coreInfo.goodbyeTime)
-        {
-          const core = Game.getObjectById(this.metaData.coreInfo.coreId) as StructureInvaderCore;
-          if(core?.effects[EFFECT_COLLAPSE_TIMER])
-            this.metaData.coreInfo.goodbyeTime = Game.time + core.effects[EFFECT_COLLAPSE_TIMER].ticksRemaining;
-
-        }
-
-        if(this.coreInSk && (this.metaData.coreInfo.goodbyeTime - Game.time) <= 150)
-            this.coreInSk = false;
-
-        if(this.metaData.coreInfo.goodbyeTime === Game.time)
-        {
-          this.metaData.coreInfo.invaderCorePresent = false;
-          this.metaData.coreInfo.goodbyeTime = undefined;
-          this.metaData.coreInfo.coreId = undefined;
-          Game.notify("Invader core gone in " + this.metaData.coreInfo.coreRoomName);
-          this.metaData.coreInfo.coreRoomName = undefined;
+            if(_.any(core.effects, e => e.effect === EFFECT_COLLAPSE_TIMER && e.ticksRemaining > 150))
+            {
+              this.coreInSk = true;
+              Game.notify("Found core in skroom" + this.skRoomName + " Time to kill it");
+            }
+          console.log(this.name, 'Found a core', core.id, core.effects, (core.effects[EFFECT_COLLAPSE_TIMER]?.ticksRemaining ?? 0));
         }
       }
-    }
       catch(error)
       {
         console.log(this.name, "Core Searching: ", error);

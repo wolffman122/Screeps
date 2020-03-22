@@ -11,8 +11,9 @@ export class MinetalTerminalManagementProcess extends Process
     return;
       }
 }
-export const ENERGY_KEEP_AMOUNT = 120000;
+export const ENERGY_KEEP_AMOUNT = 150000;
 export const KEEP_AMOUNT = 10000;
+export const FACTORY_KEEP_AMOUNT = 5000;
 export const MINERAL_KEEP_AMOUNT = 5000;
 export const SPREAD_AMOUNT = 2000;
 export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHIUM, RESOURCE_UTRIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_CATALYST];

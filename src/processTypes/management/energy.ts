@@ -153,7 +153,8 @@ export class EnergyManagementProcess extends Process{
               numberOfHarvesters = 1;
           }
 
-
+          if(proc.metaData.roomName === 'E36S43')
+            console.log(proc.name, 'Harvester issue', count, numberOfHarvesters, seige);
           if(count < numberOfHarvesters && !seige) //300
           {
             let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
@@ -406,21 +407,11 @@ export class EnergyManagementProcess extends Process{
             if(spawned)
             {
               this.metaData.spinCreeps.push(creepName);
-              if(room.name === 'E38S46' || room.name === 'E36S43' || room.name === 'E37S46')
-              {
-                this.kernel.addProcessIfNotExist(Spinner2LifeTimeProcess, 'slf2-' + creepName, 45, {
-                  roomName: room.name,
-                  creep: creepName,
-                  storageLink: storageLink.id
-                });
-              }
-              else
-              {
-                this.kernel.addProcess(SpinnerLifetimeProcess, 'slf-' + creepName, 45, {
-                  creep: creepName,
-                  storageLink: storageLink.id
-                })
-              }
+              this.kernel.addProcessIfNotExist(Spinner2LifeTimeProcess, 'slf2-' + creepName, 45, {
+                roomName: room.name,
+                creep: creepName,
+                storageLink: storageLink.id
+              });
             }
           }
         }

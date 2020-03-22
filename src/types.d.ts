@@ -173,6 +173,16 @@ interface Flag {
     };
   }
 
+  interface HoldRoomData
+  {
+    roadComplete?: boolean;
+    roads: {
+      [sourceId: string]: boolean
+    }
+    enemies?: boolean;
+    cores?: boolean;
+  }
+
   interface Memory
   {
     observeRoom: {[name: string]: ObserveMemory}
@@ -233,7 +243,6 @@ interface Flag {
 
   interface FlagMemory
   {
-    enemies: boolean;
     timeEnemies?: number;
     source: string;
     droppedResource: boolean;
@@ -241,12 +250,14 @@ interface Flag {
     follower: string;
     skMineral?: string;
     centerSKMineral?: string;
-    roadComplete?: number;
     healer?: string;
     attacker?: string;
     coreInfo?: CoreInfo;
-    cores?: boolean;
     nuker?: boolean;
+    holdData?: HoldRoomData;
+    roadComplete?: number;
+    enemies?: boolean;
+    cores?: boolean;
   }
 
   interface RoomMemory
@@ -306,6 +317,8 @@ interface Flag {
     transfering?: boolean;
     transferFlagName?: string;
     spinnerDump?: boolean;
+    hostileCreepIds?: string[];
+    barType?: CommodityConstant;
   }
 
   interface SpawnMemory {}
@@ -417,6 +430,7 @@ interface Flag {
     coreBuster: string[]
     flagName: string
     increasing: boolean
+    enemiesPresent: boolean
   }
 
   interface AutomaticHoldManagementProcessMetaData
@@ -475,9 +489,9 @@ interface Flag {
 
   interface StrongHoldDestructionProcessMetaData
   {
-    vision: boolean,
     roomName: string,
-    flagName: string,
+    spawnRoomName: string,
+    coreId: string,
     attackers: string[]
     healers: string[],
     dismantlers: string[],
@@ -488,6 +502,10 @@ interface Flag {
     standPos?: RoomPosition,
     moving?:boolean,
     stage?: number,
+    cleaning: boolean
+    finishTime?: number;
+    coreLevel: number;
+    corePos: RoomPosition;
   }
 
   interface DismantleMetaData
@@ -550,7 +568,8 @@ interface Flag {
     creep: string,
     remoteName: string
     flagName: string
-    spawnRoomName: string
+    spawnRoomName: string,
+    boosted: boolean
   }
 
   interface DefenderLifetimeProcessMetaData

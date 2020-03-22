@@ -153,6 +153,12 @@ export class LabManagementProcess extends Process
 
           if(this.creep)
           {
+            if(this.creep.room.name !== this.metaData.roomName)
+            {
+              this.creep.travelTo(new RoomPosition(25, 25, this.metaData.roomName));
+              return;
+            }
+            
             if(this.name === this.logName && this.logOn)
               console.log(this.name, 'Running', 7, this.creep.pos)
             //console.log(this.name, 1, this.creep.name);

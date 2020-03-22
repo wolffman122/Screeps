@@ -16,7 +16,7 @@ export class MarketManagementProcess extends Process
     const catRooms = _.filter(Game.rooms, (r) => {
       return (r.controller?.my
         && this.kernel.data.roomData[r.name].mineral?.mineralType === RESOURCE_CATALYST &&
-        r.terminal?.store[RESOURCE_PURIFIER] > 6000);
+        r.terminal?.store[RESOURCE_PURIFIER] >= 6000);
     })
 
     this.metaData.roomWithResource = catRooms.map(r => r.name);

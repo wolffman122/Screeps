@@ -26,8 +26,7 @@ export class TowerHealProcess extends Process
                 if(rangeDamage.length > 0)
                 {
                     let target = tower.pos.findClosestByRange(rangeDamage);
-                    const enemiesPresent = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
-                    if(enemiesPresent.length > 0)
+                    if(room.memory.hostileCreepIds?.length > 0)
                     {
                         if(target?.hits < (target?.hitsMax * .5))
                         {
@@ -50,8 +49,8 @@ export class TowerHealProcess extends Process
                 if(damage.length)
                 {
                     let target = tower.pos.findClosestByRange(damage);
-                    const enemiesPresent = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
-                    if(enemiesPresent.length)
+
+                    if(room.memory.hostileCreepIds?.length)
                     {
                         if(target?.hits < target?.hitsMax)
                             tower.heal(target);

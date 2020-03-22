@@ -1,5 +1,5 @@
 import { LifetimeProcess } from "os/process";
-import { KEEP_AMOUNT, MINERALS_RAW, MINERAL_KEEP_AMOUNT, PRODUCT_LIST, PRODUCTION_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { KEEP_AMOUNT, MINERALS_RAW, MINERAL_KEEP_AMOUNT, PRODUCT_LIST, PRODUCTION_AMOUNT, FACTORY_KEEP_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 
 export class Spinner2LifeTimeProcess extends LifetimeProcess
 {
@@ -38,7 +38,10 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     this.storage = room.storage;
     this.terminal = room.terminal;
     this.factory = this.roomData().factory;
-    this.mineral = this.roomData().mineral
+    this.mineral = this.roomData().mineral;
+
+    if(!room.memory.barType)
+      this.FindBarType(room);
 
     const yellowFlags = this.creep.room.find(FIND_FLAGS, {filter: f => f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW });
     // Need to find a better way to reset the stale data
@@ -136,6 +139,24 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       return;
     }
 
+    const bar = room.memory.barType
+    if((this.terminal.store[bar] ?? 0) < PRODUCTION_AMOUNT)
+    {
+      const commodity = COMMODITIES[bar];
+      if(this.creep.name === 'em-s-E55S47-25284665')
+      {
+        for(let comp in commodity.components)
+        {
+          console.log(this.name, 'Components', comp);
+          if((this.factory?.store[comp] ?? 0) < FACTORY_KEEP_AMOUNT)
+          {
+            this.TransferToFactory(comp);
+            return;
+          }
+        }
+      }
+    }
+
     // SK Mineral transfer code.
     for(let i = 0; i < this.skMinerals.length; i++)
     {
@@ -211,7 +232,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         this.TransferToStorage(commodities[i], PRODUCTION_AMOUNT);
       }
 
-      if((this.factory.store[commodities[i]] ?? 0) > 0)
+      if((this.factory?.store[commodities[i]] ?? 0) > 0)
       {
         this.creep.withdraw(this.factory, commodities[i]);
         return;
@@ -363,5 +384,38 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
     //if(this.storage.store.getUsedCapacity() > this.creep.store.getUsedCapacity())
     this.creep.transferEverything(this.storage);
+  }
+
+  private TransferToFactory(res: ResourceConstant|String)
+  {
+    const resource = res as ResourceConstant;
+    if(this.creep.store[resource] !== this.creep.store.getUsedCapacity())
+    {
+      this.creep.transferEverything(this.storage);
+      return false;
+    }
+
+    if(this.creep.store.getUsedCapacity() === 0)
+    {
+      if(this.storage.store[resource] > this.creep.store.getCapacity())
+        return (this.creep.withdraw(this.storage, resource) === OK);
+    }
+
+    if(this.factory.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
+      return (this.creep.transferEverything(this.factory) === OK);
+
+    return false;
+  }
+
+  private FindBarType(room: Room)
+  {
+    for(let c in COMMODITIES)
+    {
+      for(let comp in COMMODITIES[c].components)
+      {
+        if(comp === this.mineral.mineralType)
+          room.memory.barType = c as CommodityConstant;
+      }
+    }
   }
 }

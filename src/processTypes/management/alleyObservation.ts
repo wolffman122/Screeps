@@ -11,8 +11,6 @@ export class AlleyObservationManagementProcess extends Process
   type = 'aomp'
   metaData: AlleyObservationManagementProcessMetaData
 
-
-
   run()
   {
     try

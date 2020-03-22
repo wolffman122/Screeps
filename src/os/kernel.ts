@@ -217,6 +217,7 @@ export class Kernel{
   processLogs: ProcessLog = {};
   suspendCount = 0
   schedulerUsage = 0;
+  oldProcessCount = 0;
 
   /**  Creates a new kernel ensuring that memory exists and re-loads the process table from the last. */
   constructor(){
@@ -244,6 +245,15 @@ export class Kernel{
     }
     else
     {
+      // _.forEach(Object.keys(this.processTable), (key) => {
+      //   const splitKeys = key.split('-');
+      //   if(splitKeys[0].indexOf("lf") > -1 && +splitKeys[3] < 24000000)
+      //     {
+      //       delete this.processTable[key];
+      //       console.log("Old Process", key);
+      //     }
+      // });
+
       return _.filter(this.processTable, function(process) {
         return (!process.ticked && process.suspend === false)
       }).length > 0
@@ -291,6 +301,7 @@ export class Kernel{
 
   /** Tear down the OS ready for the end of the tick */
   teardown(stats = true){
+    console.log("Old Process count", this.oldProcessCount)
     let list: SerializedProcess[] = []
     _.forEach(this.processTable, function(entry){
       if(!entry.completed)
@@ -353,6 +364,9 @@ export class Kernel{
     let process = this.getHighestProcess()
     let cpuUsed = Game.cpu.getUsed()
     let faulted = false
+
+
+
 
     try{
       process.init(this);

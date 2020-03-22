@@ -53,10 +53,19 @@ export class RoomDataProcess extends Process{
     this.importFromMemory(room)
 
     let hostiles = room.find(FIND_HOSTILE_CREEPS);
+    if(hostiles.length)
+    {
       if(hostiles.length > 2)
         room.memory.seigeDetected = true;
       else
         room.memory.seigeDetected = false;
+
+      room.memory.hostileCreepIds = [];
+      for(let i = 0; i < hostiles.length; i++)
+        room.memory.hostileCreepIds.push(hostiles[i].id);
+    }
+    else
+      room.memory.hostileCreepIds = undefined;
 
     if(room.name === 'E45S56')
       console.log(this.name, 'Siege Status ', room.memory.seigeDetected);
@@ -793,7 +802,7 @@ export class RoomDataProcess extends Process{
       return (s.structureType != STRUCTURE_WALL && s.hits < s.hitsMax);
     });
 
-    if(repairTargets.length > 0 && !this.kernel.hasProcess('tr-' + this.metaData.roomName))
+    if(room.memory.hostileCreepIds === undefined && repairTargets.length > 0 && !this.kernel.hasProcess('tr-' + this.metaData.roomName))
     {
       this.kernel.addProcess(TowerRepairProcess, 'tr-' + this.metaData.roomName, 80, {
         roomName: this.metaData.roomName

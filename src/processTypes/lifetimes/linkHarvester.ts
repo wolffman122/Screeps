@@ -11,6 +11,7 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
 
     if(!creep)
     {
+      this.completed = true;
       return;
     }
 
@@ -29,9 +30,23 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
       let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
       let link = this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id];
 
+      if(creep.store.getFreeCapacity() === 0 && link.energy === link.energyCapacity
+        && container.store[RESOURCE_ENERGY] > container.store.getCapacity() * .75)
+      {
+        let extensions = this.roomInfo(creep.room.name).extensions;
+        extensions = extensions.filter(e => (e.store[RESOURCE_ENERGY] ?? 0) === 0);
+        const extension = creep.pos.findClosestByPath(extensions);
+        if(!creep.pos.isNearTo(extension))
+          creep.moveTo(extension);
+        else
+          creep.transfer(extension, RESOURCE_ENERGY);
+
+        return;
+      }
+
       if(!creep.pos.inRangeTo(container, 0))
       {
-        creep.travelTo(container);
+        creep.moveTo(container);
         return;
       }
 

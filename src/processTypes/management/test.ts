@@ -31,40 +31,56 @@ export class TestProcessManagement extends Process
         return;
       }
 
-      const top = (flag.pos.y - 2 > 0) ? flag.pos.y - 2: 0;
-      const right = (flag.pos.x + 2 < 49) ? flag.pos.x + 2 : 49;
-      const bottom = (flag.pos.y + 2 < 49) ? flag.pos.y + 2 : 49;
-      const left = (flag.pos.x - 2 > 0) ? flag.pos.x - 2: 0;
-      const lCreeps = flag.room.lookAtArea(top, left, bottom, right, true) as LookAtResultWithPos[];
-      for(let i = 0; i < lCreeps.length; i++)
-      {
-        const look = lCreeps[i];
-        if (look.structure?.structureType !== STRUCTURE_CONTAINER)
-          continue;
+      console.log(this.name, '*********************************** Test *******************************************');
 
-        if (lCreeps.some(l => l.x === look.x && l.y === look.y /*&& l.creep?.owner.username === "Invader"*/))
+      const mineral = this.roomInfo(flag.room.name).mineral;
+
+      for(let c in COMMODITIES)
+      {
+        const com = COMMODITIES[c];
+        for(let comp in com.components)
         {
-          console.log(1, look.x, look.y, flag.pos.roomName);
-          console.log(2, look.structure);
+          if(comp === mineral.mineralType)
+          {
+            const test = c as CommodityConstant
+            console.log(this.name, 'Found component constant', test);
+          }
         }
       }
+      // const top = (flag.pos.y - 2 > 0) ? flag.pos.y - 2: 0;
+      // const right = (flag.pos.x + 2 < 49) ? flag.pos.x + 2 : 49;
+      // const bottom = (flag.pos.y + 2 < 49) ? flag.pos.y + 2 : 49;
+      // const left = (flag.pos.x - 2 > 0) ? flag.pos.x - 2: 0;
+      // const lCreeps = flag.room.lookAtArea(top, left, bottom, right, true) as LookAtResultWithPos[];
+      // for(let i = 0; i < lCreeps.length; i++)
+      // {
+      //   const look = lCreeps[i];
+      //   if (look.structure?.structureType !== STRUCTURE_CONTAINER)
+      //     continue;
 
-       console.log(this.name, 'Look For Results', top, left, bottom, right);
-      if(lCreeps.length)
-      {
-        console.log(this.name, 'Found creeps', lCreeps.length)
-      }
-      //let xCord, yCord;
-      // console.log(this.name, 'Look For Results');
-      // _.forEach(Object.keys(results), (y) => {
-      //   console.log(this.name, y)
-      //   _.forEach(Object.keys(results[y]), (x) => {
-      //     console.log(this.name, y, x);
-      //     _.forEach(Object.keys(results[y][x]), (type) => {
-      //         console.log(this.name, y, x, type, results[y][x][type]);
-      //     });
-      //   });
-      // });
+      //   if (lCreeps.some(l => l.x === look.x && l.y === look.y /*&& l.creep?.owner.username === "Invader"*/))
+      //   {
+      //     console.log(1, look.x, look.y, flag.pos.roomName);
+      //     console.log(2, look.structure);
+      //   }
+      // }
+
+      //  console.log(this.name, 'Look For Results', top, left, bottom, right);
+      // if(lCreeps.length)
+      // {
+      //   console.log(this.name, 'Found creeps', lCreeps.length)
+      // }
+      // //let xCord, yCord;
+      // // console.log(this.name, 'Look For Results');
+      // // _.forEach(Object.keys(results), (y) => {
+      // //   console.log(this.name, y)
+      // //   _.forEach(Object.keys(results[y]), (x) => {
+      // //     console.log(this.name, y, x);
+      // //     _.forEach(Object.keys(results[y][x]), (type) => {
+      // //         console.log(this.name, y, x, type, results[y][x][type]);
+      // //     });
+      // //   });
+      // // });
 
     }
     catch(error)
