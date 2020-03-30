@@ -2,6 +2,7 @@ import { LifetimeProcess } from "os/process";
 
 export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 {
+  metaData: UpgradeDistroLifetimeProcessMetaData;
   type = 'udlf';
 
   run()
@@ -16,11 +17,14 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
       {
         return
       }
+
       if(creep.room.memory.shutdown)
       {
         this.completed = true;
         return;
       }
+
+      creep.say("P " + this.metaData.numberOfDropPickups, true);
 
       if(creep.ticksToLive < 50 && _.sum(creep.carry) > 0)
       {
@@ -43,7 +47,8 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
           if(!creep.pos.isNearTo(creep.room.storage))
             creep.travelTo(creep.room.storage);
           else
-            creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+            if(creep.withdraw(creep.room.storage, RESOURCE_ENERGY) === OK)
+              this.metaData.numberOfDropPickups++;
           return;
         }
         else if(creep.room.storage?.my)
@@ -55,7 +60,8 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
             if(!creep.pos.isNearTo(storage))
               creep.travelTo(storage);
             else
-              creep.withdraw(storage, RESOURCE_ENERGY);
+              if(creep.withdraw(storage, RESOURCE_ENERGY) === OK)
+                this.metaData.numberOfDropPickups++;
 
             return;
           }
@@ -69,7 +75,8 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
             if(!creep.pos.isNearTo(terminal))
               creep.travelTo(terminal);
             else
-              creep.withdraw(terminal, RESOURCE_ENERGY);
+              if(creep.withdraw(terminal, RESOURCE_ENERGY) === OK)
+                this.metaData.numberOfDropPickups++;
           }
         }
         else if(this.kernel.data.roomData[creep.pos.roomName].generalContainers.length > 0)
@@ -85,7 +92,8 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
             if(!creep.pos.isNearTo(container))
               creep.travelTo(container);
             else
-              creep.withdraw(container, RESOURCE_ENERGY);
+              if(creep.withdraw(container, RESOURCE_ENERGY) === OK)
+                this.metaData.numberOfDropPickups++;
 
             return;
           }

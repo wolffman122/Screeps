@@ -12,7 +12,7 @@ export class LinkManagementProcess extends Process
       this.completed = true;
       return;
     }
-    
+
     if(!this.roomData())
     {
       this.completed = true;
@@ -26,9 +26,11 @@ export class LinkManagementProcess extends Process
       let storage = storageLink.room.storage;
 
       _.forEach(this.roomData().sourceLinks, (sl) => {
-        if(controllerLink?.store.getFreeCapacity() > (sl.store[RESOURCE_ENERGY] ?? 0))
+        if(this.metaData.roomName === 'E32S44')
+          console.log(this.name, (controllerLink.store.getFreeCapacity(RESOURCE_ENERGY) ?? 0));
+        if((controllerLink?.store.getFreeCapacity(RESOURCE_ENERGY) ?? 0) > 100)
         {
-          if(sl.cooldown == 0 && sl.energy > 700 && controllerLink.energy < 200 &&
+          if(sl.cooldown == 0 && sl.energy > 700 &&
             storage.store.getUsedCapacity(RESOURCE_ENERGY) > 30000)
           {
             if(sl.transferEnergy(controllerLink) === OK)

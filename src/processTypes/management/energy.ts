@@ -155,7 +155,7 @@ export class EnergyManagementProcess extends Process{
 
           if(proc.metaData.roomName === 'E36S43')
             console.log(proc.name, 'Harvester issue', count, numberOfHarvesters, seige);
-          if(count < numberOfHarvesters && !seige) //300
+          if(count < numberOfHarvesters) //300
           {
             let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
             let spawned = false;
@@ -294,7 +294,7 @@ export class EnergyManagementProcess extends Process{
             upgraders = 1;
           }
 
-          if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0 && !seige)
+          if(count < upgraders && this.kernel.data.roomData[this.metaData.roomName].generalContainers.length > 0 /*&& !seige*/)
           {
             let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
             let spawned = false;
@@ -338,27 +338,25 @@ export class EnergyManagementProcess extends Process{
 
               if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
               {
-                let noUpgradeRooms = ['E52S46', 'E48S49', 'E39S35', 'E41S41', 'E41S38', 'E36S43', 'E38S46',
-  /* temp no upgrades*/               'E43S52', 'E43S53', 'E43S55', 'E45S57', 'E48S57', 'E48S56', 'E58S52',
-                                      'E41S49', 'E38S59', 'E39S35', 'E41S41', 'E42S48', 'E58S44']
-                // if(_.indexOf(noUpgradeRooms, proc.metaData.roomName) === -1)
-                // {
-                //   let boosts = [];
-                //   boosts.push(RESOURCE_GHODIUM_ACID)
-                //   this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                //     creep: creepName,
-                //     roomName: proc.metaData.roomName,
-                //     boosts: boosts,
-                //     allowUnboosted: true
-                //   })
-                // }
-                // else
-                // {
+                const upgradeRooms = ['E52S46']
+                if(_.indexOf(upgradeRooms, proc.metaData.roomName) >= 0)
+                {
+                  let boosts = [];
+                  boosts.push(RESOURCE_GHODIUM_ACID)
+                  this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+                    creep: creepName,
+                    roomName: proc.metaData.roomName,
+                    boosts: boosts,
+                    allowUnboosted: true
+                  })
+                }
+                else
+                {
                   this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
                     creep: creepName,
                     roomName: proc.metaData.roomName
                   });
-                //}
+                }
               }
               else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB}).length >= 3)
               {
@@ -445,7 +443,7 @@ export class EnergyManagementProcess extends Process{
               upgradeDistroAmount = 1;
             }
 
-            if(count < upgradeDistroAmount && !seige)
+            if(count < upgradeDistroAmount /*&& !seige*/)
             {
               let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
               let spawned = false;
@@ -475,7 +473,8 @@ export class EnergyManagementProcess extends Process{
               {
                 this.metaData.upgradeDistroCreeps.push(creepName);
                 this.kernel.addProcess(UpgradeDistroLifetimeProcess, 'udlf-' + creepName, 25, {
-                  creep: creepName
+                  creep: creepName,
+                  roomName: room.name
                 })
               }
             }

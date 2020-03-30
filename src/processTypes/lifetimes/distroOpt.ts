@@ -127,7 +127,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         // Enemy terminal
         if(creep.room.storage?.my && terminal?.my)
         {
-          if(terminal.store.getUsedCapacity() > 0)
+          if(terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
           {
             creep.say('👹🏦');
             if(creep.pos.isNearTo(terminal))
@@ -142,7 +142,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         // My Terminal withdraw (CHECK might not need anymore)
         if(terminal?.my)
         {
-          if(terminal.store.getUsedCapacity() > 0)
+          if(terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
           {
             creep.say('🏦1');
             if(creep.pos.isNearTo(terminal))
@@ -291,7 +291,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       if(storage && storage.my)
       {
         targets = [].concat(
-          <never[]>this.kernel.data.roomData[creep.room.name].labs
+          <never[]>this.kernel.data.roomData[creep.room.name].labs,
+          <never[]>[this.kernel.data.roomData[creep.room.name].controllerContainer]
         )
       }
       else
