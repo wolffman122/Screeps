@@ -388,7 +388,14 @@ export class RoomDataProcess extends Process{
     let generalLinks: StructureLink[] = []
     if(room.controller)
     {
-      controllerLink = <StructureLink>room.controller!.pos.findInRange(links, 2)[0];
+      let distance = 2;
+      while(controllerLink === undefined)
+      {
+      controllerLink = <StructureLink>room.controller!.pos.findInRange(links, distance)[0];
+      distance++;
+      if(distance === 5)
+        break;
+      };
 
 
       generalLinks = _.filter(links, function(l){
