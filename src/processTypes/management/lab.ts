@@ -39,13 +39,15 @@ export class LabManagementProcess extends Process
   run()
   {
 
+  if(this.name === 'labm-E41S32')
+    console.log(this.name, 101, this.metaData.shutdownLabs);
   if(this.metaData.shutdownLabs)
     return;
 
   if(Game.cpu.bucket < 7000)
       return;
     this.logOn = false;
-    this.logName = "labm-E55S47";
+    this.logName = "labm-E41S32";
 
     this.room = Game.rooms[this.metaData.roomName];
     if(this.room.memory.shutdown)
@@ -137,7 +139,14 @@ export class LabManagementProcess extends Process
       {
 
         if(this.name === this.logName && this.logOn)
-          console.log(this.name, 17, this.metaData.labDistros.length, this.labProcess, Object.keys(this.room.memory.boostRequests).length);
+        {
+          if(this.metaData.labDistros[0] === 'lab-d-E58S52-25536331')
+          {
+            this.metaData.labDistros = [];
+            this.metaData.roomName = 'E41S32';
+          }
+          console.log(this.name, 17, this.metaData.roomName, this.metaData.labDistros.length, this.metaData.labDistros[0], this.labProcess, Object.keys(this.room.memory.boostRequests).length);
+        }
         if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
         {
           let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
@@ -158,7 +167,7 @@ export class LabManagementProcess extends Process
               this.creep.travelTo(new RoomPosition(25, 25, this.metaData.roomName));
               return;
             }
-            
+
             if(this.name === this.logName && this.logOn)
               console.log(this.name, 'Running', 7, this.creep.pos)
             //console.log(this.name, 1, this.creep.name);
@@ -521,7 +530,9 @@ export class LabManagementProcess extends Process
         if(this.metaData.command)
         {
           if(this.name === this.logName && this.logOn)
+          {
             console.log(this.name, 'AccessCommand', 4, this.metaData.command.destination)
+          }
           let lab = Game.getObjectById(this.metaData.command.destination) as StructureLab;
           if(lab && !lab.isActive())
             this.metaData.command = undefined;

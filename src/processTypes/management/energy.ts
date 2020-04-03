@@ -266,7 +266,7 @@ export class EnergyManagementProcess extends Process{
             room.memory.pauseUpgrading = false;
         }
 
-        room.memory.pauseUpgrading = false;
+        room.memory.pauseUpgrading = true;
 
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
@@ -338,7 +338,7 @@ export class EnergyManagementProcess extends Process{
 
               if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
               {
-                const upgradeRooms = ['E52S46']
+                const upgradeRooms = ['E52S46', 'E45S57']
                 if(_.indexOf(upgradeRooms, proc.metaData.roomName) >= 0)
                 {
                   let boosts = [];
@@ -443,41 +443,41 @@ export class EnergyManagementProcess extends Process{
               upgradeDistroAmount = 1;
             }
 
-            if(count < upgradeDistroAmount /*&& !seige*/)
-            {
-              let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
-              let spawned = false;
+            // if(count < upgradeDistroAmount /*&& !seige*/)
+            // {
+            //   let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
+            //   let spawned = false;
 
-              if(!this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
-              {
-                spawned = Utils.spawn(
-                  proc.kernel,
-                  proc.metaData.roomName,
-                  'mover',
-                  creepName,
-                  {}
-                )
-              }
-              else
-              {
-                spawned = Utils.spawn(
-                  proc.kernel,
-                  proc.metaData.roomName,
-                  'bigMover',
-                  creepName,
-                  {max: 48}
-                );
-              }
+            //   if(!this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
+            //   {
+            //     spawned = Utils.spawn(
+            //       proc.kernel,
+            //       proc.metaData.roomName,
+            //       'mover',
+            //       creepName,
+            //       {}
+            //     )
+            //   }
+            //   else
+            //   {
+            //     spawned = Utils.spawn(
+            //       proc.kernel,
+            //       proc.metaData.roomName,
+            //       'bigMover',
+            //       creepName,
+            //       {max: 48}
+            //     );
+            //   }
 
-              if(spawned)
-              {
-                this.metaData.upgradeDistroCreeps.push(creepName);
-                this.kernel.addProcess(UpgradeDistroLifetimeProcess, 'udlf-' + creepName, 25, {
-                  creep: creepName,
-                  roomName: room.name
-                })
-              }
-            }
+            //   if(spawned)
+            //   {
+            //     this.metaData.upgradeDistroCreeps.push(creepName);
+            //     this.kernel.addProcess(UpgradeDistroLifetimeProcess, 'udlf-' + creepName, 25, {
+            //       creep: creepName,
+            //       roomName: room.name
+            //     })
+            //   }
+            // }
 
           }
         }

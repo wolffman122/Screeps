@@ -54,11 +54,30 @@ export class StrongHoldDestructionProcess extends Process
       this.coreRoom = Game.rooms[this.metaData.roomName];
       this.core = Game.getObjectById(this.metaData.coreId) as StructureInvaderCore;
 
-      if(!this.coreRoom)
-        observer.observeRoom(this.coreRoom.name);
+      console.log(this.name, 3, this.coreRoom)
+      if(!this.metaData.vision)
+        observer.observeRoom(this.metaData.roomName);
+
+      if(!this.coreRoom && this.metaData.vision)
+        this.metaData.vision;
+
+      if(this.core?.level > 2)
+      {
+        const flag = Game.flags[this.metaData.roomName + '-SK'];
+        flag.remove();
+        this.completed = true;
+        return;
+      }
+
+      if(this.metaData.haulerDone && this.metaData.dismantleDone)
+      {
+        this.completed = true;
+        return;
+      }
 
       if(this.core)
       {
+        this.metaData.cleaning = false;
         this.metaData.coreLevel = this.core.level;
         this.metaData.corePos = this.core.pos;
 
@@ -126,7 +145,7 @@ export class StrongHoldDestructionProcess extends Process
           }
         }
       }
-      else
+      else if(this.metaData.cleaning)
       {
         console.log(this.name, 'Time to do clean up', this.metaData.dismantleDone, this.metaData.haulerDone, this.haulerAlmostDone);
 
@@ -141,6 +160,8 @@ export class StrongHoldDestructionProcess extends Process
         //////////// TODO: Core is gone at this point Need to fix this ///////////////////////
         if(this.metaData.coreLevel === 1)
           numberOfHaulers = 1;
+        else if(this.metaData.coreLevel === 2)
+          numberOfHaulers = 1;
         else if(this.metaData.coreLevel <= 3)
         {
           numberOfHaulers = 1;
@@ -151,7 +172,7 @@ export class StrongHoldDestructionProcess extends Process
         this.metaData.haulers = Utils.clearDeadCreeps(this.metaData.haulers);
 
         console.log(this.name, 'Hualer info', this.metaData.haulers.length, numberOfHaulers, !this.metaData.haulerDone);
-        if(this.metaData.haulers.length < numberOfHaulers /*&& !this.metaData.haulerDone*/)
+        if(this.metaData.haulers.length < numberOfHaulers && !this.metaData.haulerDone)
         {
           const creepName = 'haulers-' + this.metaData.spawnRoomName + '-' + Game.time;
           const spawned = Utils.spawn(this.kernel, this.metaData.spawnRoomName, 'shHauler', creepName, {});
@@ -261,64 +282,64 @@ export class StrongHoldDestructionProcess extends Process
       }
 
       //////////// TODO: Need way to check for sklairs in the future ///////////////////////
-      if(this.core) /*|| this.flag.memory.coreInfo.skLairPresent*/
-      {
-        if(creep.room.name === this.coreRoom.name)
-        {
-          const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
-          if(structures.length)
-          {
-            const structure = structures[0];
-            if(!creep.pos.isNearTo(structure))
-              creep.travelTo(structure);
-            else
-              creep.rangedMassAttack();
+      // if(this.core) /*|| this.flag.memory.coreInfo.skLairPresent*/
+      // {
+      //   if(creep.room.name === this.coreRoom.name)
+      //   {
+      //     const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
+      //     if(structures.length)
+      //     {
+      //       const structure = structures[0];
+      //       if(!creep.pos.isNearTo(structure))
+      //         creep.travelTo(structure);
+      //       else
+      //         creep.rangedMassAttack();
 
 
-            creep.say('💣');
-            creep.heal(creep);
-            return;
-          }
-        }
-        else
-        {
-          if(!creep.pos.isNearTo(this.core))
-            creep.travelTo(this.core);
+      //       creep.say('💣');
+      //       creep.heal(creep);
+      //       return;
+      //     }
+      //   }
+      //   else
+      //   {
+      //     if(!creep.pos.isNearTo(this.core))
+      //       creep.travelTo(this.core);
 
-          creep.heal(creep);
-        }
-      }
+      //     creep.heal(creep);
+      //   }
+      // }
 
-      const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
-      if(structures.length)
-      {
-        const structure = structures[0];
-        if(!creep.pos.isNearTo(structure))
-          creep.travelTo(structure);
-        else
-          creep.rangedMassAttack();
+      // const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
+      // if(structures.length)
+      // {
+      //   const structure = structures[0];
+      //   if(!creep.pos.isNearTo(structure))
+      //     creep.travelTo(structure);
+      //   else
+      //     creep.rangedMassAttack();
 
-        creep.heal(creep);
-        creep.say('💣');
-        return;
-      }
+      //   creep.heal(creep);
+      //   creep.say('💣');
+      //   return;
+      // }
 
-      const container = this.roomInfo(this.metaData.spawnRoomName).generalContainers[0];
-      if(container)
-      {
-        const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
-          if(!creep.pos.isNearTo(spawn))
-            creep.travelTo(spawn);
-          else
-          {
-            if(!spawn.spawning)
-              spawn.recycleCreep(creep);
-          }
+      // const container = this.roomInfo(this.metaData.spawnRoomName).generalContainers[0];
+      // if(container)
+      // {
+      //   const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+      //     if(!creep.pos.isNearTo(spawn))
+      //       creep.travelTo(spawn);
+      //     else
+      //     {
+      //       //if(!spawn.spawning)
+      //         //spawn.recycleCreep(creep);
+      //     }
 
-          creep.say('☠', true);
-          return;
+      //     creep.say('☠', true);
+      //     return;
 
-      }
+      // }
     }
     catch(error)
     {
@@ -331,6 +352,7 @@ export class StrongHoldDestructionProcess extends Process
     try
     {
       let target: RoomPosition;
+      console.log(this.name, 'Lead', 1);
       if(!creep.memory.boost)
       {
         creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
@@ -367,9 +389,11 @@ export class StrongHoldDestructionProcess extends Process
         }
       }
 
-      console.log(this.name, 'LAA', 1)
-      if(this.core) // Clean up
+      console.log(this.name, 'LAA', 1, this.core)
+      if(!this.core) // Clean up
       {
+        console.log(this.name, 'LAA', 1.1)
+        this.metaData.cleaning = true;
         // Will need to put new code in for level 4 also
         if(this.metaData.coreLevel === 3)
         {
@@ -431,35 +455,62 @@ export class StrongHoldDestructionProcess extends Process
         }
         else if(this.metaData.coreLevel  === 2)
         {
-          const tPos = this.core.pos;
-          const corePos = new RoomPosition(tPos.x, tPos.y, tPos.roomName);
-          let ramparts = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
-          if(ramparts.length === 8)
+          console.log(this.name, 'LAA', 1.2)
+          const skLairs = creep.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, {filter: s => s.structureType === STRUCTURE_KEEPER_LAIR});
+          if(skLairs.length === 0)  // No core present clean up
           {
-            let rampart = creep.pos.findClosestByRange(ramparts);
-            if(!creep.pos.isNearTo(rampart))
-              creep.travelTo(rampart);
-            else
+            console.log(this.name, 'LAA', 1.1)
+            let ramparts = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
+            if(ramparts.length)
             {
-              creep.say('💣');
-              creep.rangedMassAttack();
+              let target = creep.pos.findClosestByPath(ramparts);
+              if(!creep.pos.isNearTo(target))
+                creep.travelTo(target);
+              else
+                creep.rangedMassAttack();
+              return;
             }
           }
           else
           {
-            console.log(this.name, 'LAA core pos', corePos)
-            if(!creep.pos.isEqualTo(corePos))
-              creep.travelTo(corePos);
-            else
+            console.log(this.name, 'LAA', 1)
+            const rampart = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {filter: s=> s.structureType === STRUCTURE_RAMPART});
+            if(rampart)
             {
-              creep.say('💣');
-              creep.rangedMassAttack();
+              console.log(this.name, 'LAA', 2)
+              if(!creep.pos.isNearTo(rampart))
+              {
+                console.log(this.name, 'LAA', 3)
+                creep.travelTo(rampart);
+              }
+              else
+              {
+                console.log(this.name, 'LAA', 4)
+                creep.rangedMassAttack();
+              }
+
+              return;
             }
+
+            const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+            if(!creep.pos.isNearTo(spawn))
+              creep.travelTo(spawn);
+            else if(!spawn.spawning)
+              spawn.recycleCreep(creep);
+            else
+              creep.suicide();
+            return;
           }
 
-          return;
+          const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+            if(!creep.pos.isNearTo(spawn))
+              creep.travelTo(spawn);
+            else if(!spawn.spawning)
+              spawn.recycleCreep(creep);
+            else
+              creep.suicide();
+            return;
         }
-
       }
 
       // Might be good to check attacker size and flee if it is to small.
@@ -482,6 +533,8 @@ export class StrongHoldDestructionProcess extends Process
         console.log(this.name, 'LAA', 2)
         if(this.core)
         {
+          if(creep.room.name === this.core.room.name)
+            this.metaData.vision = true;
           console.log(this.name, 'LAA', 3)
           if(creep.memory.standPos === undefined)
           {
@@ -687,12 +740,12 @@ export class StrongHoldDestructionProcess extends Process
 
             if(follower.hits < follower.hitsMax)
             {
-              creep.say('⛑S');
+              creep.say('⛑F');
               creep.heal(follower);
             }
             else if(creep.hits < creep.hitsMax)
             {
-              creep.say('⛑F');
+              creep.say('⛑S');
               creep.heal(creep);
             }
 
@@ -713,6 +766,7 @@ export class StrongHoldDestructionProcess extends Process
     {
       let strSay = '';
       let target: string;
+      console.log(this.name, 'Follow', 1)
       if(!creep.memory.boost)
       {
         creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
@@ -723,7 +777,6 @@ export class StrongHoldDestructionProcess extends Process
       }
 
       // Gather at location.
-      console.log(this.name, )
       if(this.metaData.coreLevel  === 4 && !this.metaData.moving)
       {
         const remoteFlag = Game.flags['RemoteFlee-' + this.metaData.roomName];
@@ -767,7 +820,7 @@ export class StrongHoldDestructionProcess extends Process
           if(!creep.pos.inRangeTo(target, 0))
             creep.travelTo(target);
           else
-            creep.suicide();
+            //creep.suicide();
 
           return;
         }
@@ -788,14 +841,33 @@ export class StrongHoldDestructionProcess extends Process
               console.log(this.name, 'FAA', 4)
               creep.rangedMassAttack();
             }
+
+            return;
           }
+
+          const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+            if(!creep.pos.isNearTo(spawn))
+              creep.travelTo(spawn);
+            else if(!spawn.spawning)
+              spawn.recycleCreep(creep);
+            else
+              creep.suicide();
+            return;
         }
 
-        return;
+        const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+            if(!creep.pos.isNearTo(spawn))
+              creep.travelTo(spawn);
+            else if(!spawn.spawning)
+              spawn.recycleCreep(creep);
+            else
+              creep.suicide();
+            return;
       }
 
 
 
+      console.log(this.name, 'FAA', 1)
       // Healing code
       let tower = attacker.pos.findInRange(FIND_HOSTILE_STRUCTURES, 6, {filter: s => s.structureType === STRUCTURE_TOWER});
       if(creep.pos.roomName === leader.pos.roomName &&
@@ -884,7 +956,6 @@ export class StrongHoldDestructionProcess extends Process
         }
         else if(this.core?.level === 2 && attacker.pos.isEqualTo(standPos))
         {
-
           let standPos = new RoomPosition(attacker.pos.x, attacker.pos.y - 1, attacker.pos.roomName);
           const look = standPos.lookFor(LOOK_TERRAIN);
           if(look.length)
@@ -935,60 +1006,6 @@ export class StrongHoldDestructionProcess extends Process
           creep.rangedMassAttack();
         }
       }
-
-      /*if(leader.pos.inRangeTo(this.core, 3))
-      {
-        if(!creep.pos.inRangeTo(this.core, 3))
-        {
-          const lX = leader.pos.x;
-          const lY = leader.pos.y;
-          const dir = leader.pos.getDirectionTo(this.core);
-          if(dir === 1 || dir === 2)
-          {
-            const leftPos = new RoomPosition(lX-1, lY, leader.room.name);
-            const rightPos = new RoomPosition(lX+1, lY, leader.room.name);
-            if(leftPos.inRangeTo(this.core, 3))
-              creep.moveTo(leftPos);
-
-            if(rightPos.inRangeTo(this.core, 3))
-              creep.moveTo(rightPos);
-          }
-          else if(dir === 3 || dir === 4)
-          {
-            const upPos = new RoomPosition(lX, lY-1, leader.room.name);
-            const downPos = new RoomPosition(lX, lY + 1, leader.room.name);
-            if(upPos.inRangeTo(this.core, 3))
-              creep.moveTo(upPos);
-            else if(downPos.inRangeTo(this.core, 3))
-              creep.moveTo(downPos);
-          }
-          else if(dir === 5 || dir === 6)
-          {
-            const leftPos = new RoomPosition(lX-1, lY, leader.room.name);
-            const rightPos = new RoomPosition(lX+1, lY, leader.room.name);
-            if(leftPos.inRangeTo(this.core, 3))
-              creep.moveTo(leftPos);
-
-            if(rightPos.inRangeTo(this.core, 3))
-              creep.moveTo(rightPos);
-          }
-          else if(dir === 7 || dir === 8)
-          {
-            const upPos = new RoomPosition(lX, lY-1, leader.room.name);
-            const downPos = new RoomPosition(lX, lY + 1, leader.room.name);
-            if(upPos.inRangeTo(this.core, 3))
-              creep.moveTo(upPos);
-            else if(downPos.inRangeTo(this.core, 3))
-              creep.moveTo(downPos);
-          }
-        }
-        const rampartsLook = this.core.pos.lookForStructures(STRUCTURE_RAMPART);
-        if(rampartsLook)
-          creep.rangedAttack(rampartsLook);
-        else
-          creep.rangedAttack(this.core);
-
-      }*/
       creep.say(strSay);
       return;
     }
@@ -1175,6 +1192,7 @@ export class StrongHoldDestructionProcess extends Process
       // Travel back to dump in terminal
       if(creep.store.getFreeCapacity() === 0 || creep.memory.full)
       {
+        console.log(this.name, 'ha',0.2, this.metaData.haulerAlmostDone)
         if(this.metaData.haulerAlmostDone)
         {
           let container = this.roomData().generalContainers[0];
@@ -1205,7 +1223,7 @@ export class StrongHoldDestructionProcess extends Process
         }
 
         creep.memory.full = true;
-        let terminal = Game.rooms[this.metaData.roomName].terminal;
+        let terminal = Game.rooms[this.metaData.spawnRoomName].terminal;
 
         // Might need to look at this code to avoid sk
         if(!creep.pos.isNearTo(terminal))
@@ -1243,7 +1261,7 @@ export class StrongHoldDestructionProcess extends Process
 
       console.log(this.name, 'ha',0.4)
       // IN the core room
-      if(creep.room.name === this.core.room.name)
+      if(creep.room.name === this.metaData.roomName)
       {
         console.log(this.name, 'ha',1)
         const dropped = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 5);
@@ -1342,7 +1360,7 @@ export class StrongHoldDestructionProcess extends Process
         console.log(this.name, 'hauler',3)
         // Stand nex to the dismantler
         let dismantler = Game.creeps[this.metaData.dismantlers[0]];
-        if(dismantler && dismantler.room.name === this.core.room.name)
+        if(dismantler && dismantler.room.name === this.metaData.roomName)
         {
           if(!creep.pos.isNearTo(dismantler))
           {

@@ -122,12 +122,13 @@ export class StructureManagementProcess extends Process{
           let spawned = false;
           if(upgrading && this.metaData.repairCreeps.length < 2)
             spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
-          else if(this.metaData.repairCreeps.length < 1)
-            spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {});
+          // else if(this.metaData.repairCreeps.length < 1)
+          //   spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {});
 
           if(spawned)
           {
-            let boosts = upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
+            //let boosts = upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
+            let boosts = [RESOURCE_LEMERGIUM_HYDRIDE];
             this.metaData.repairCreeps.push(creepName);
 
             this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
@@ -145,27 +146,42 @@ export class StructureManagementProcess extends Process{
   CheckRamparts(room: Room)
   {
     let retValue = false;
-    const storage = room.storage;
+    const rsites = this.kernel.data.roomData[this.metaData.roomName].constructionSites.filter(cs => cs.structureType === STRUCTURE_RAMPART);
+    if(rsites.length)
+      return true;
+
     const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
-    let average = ramparts.reduce((total, next) => total + next.hits, 0) / ramparts.length;
-    if(room.memory.rampartTarget === undefined && ramparts.length)
-    {
-      room.memory.rampartTarget = average;
-    }
 
-    const percentDiference = ((room.memory.rampartTarget - average) / room.memory.rampartTarget) * 100;
 
-    if(percentDiference >= 5 && storage.store[RESOURCE_ENERGY] > ENERGY_KEEP_AMOUNT * 1.25)
-      retValue = true;
-    else if (percentDiference <= 1 && storage.store[RESOURCE_ENERGY] > ENERGY_KEEP_AMOUNT * 1.25)
-    {
-      if(room.memory.rampartTarget < 11000000)
-        room.memory.rampartTarget += 1000;
+      let min: number = WALL_HITS_MAX;
+      let total = 0;
+      for(let i = 0; i < ramparts.length; i++)
+      {
+        const rampart = ramparts[i];
+        if(rampart.hits < min)
+          min = rampart.hits;
+        total += rampart.hits;
+      }
 
-      retValue = true;
-    }
+      const average = total / ramparts.length;
 
-    //console.log(this.name, 'Percent Diference', percentDiference, 'Average', average, 'Target', room.memory.rampartTarget, retValue);
+      //////////// This should probably be toggled depending on energy reserves ///////////////////////
+      const storage = room.storage;
+      if((storage?.store[RESOURCE_ENERGY] ?? 0) > ENERGY_KEEP_AMOUNT * 2.5)
+        return true;
+
+      if(average > 30000000)
+      {
+        return false;
+      }
+      //console.log(this.name, 'Average ramparts', average, 'minimum rampart amount', min);
+      if(min < (average - 500000))
+        return true;
+
+    const minRampart = _.min(ramparts, r => r.hits);
+    if(minRampart.hits < 60000)
+      return true
+
     return retValue;
   }
 }

@@ -239,6 +239,7 @@ interface Flag {
   {
     opGenerationRoom?: string;
     renewTarget?: string;
+    factoryRequest?: boolean;
   }
 
   interface FlagMemory
@@ -506,6 +507,7 @@ interface Flag {
     finishTime?: number;
     coreLevel: number;
     corePos: RoomPosition;
+    vision: boolean;
   }
 
   interface DismantleMetaData
@@ -787,6 +789,13 @@ interface Flag {
     openSpaces?: RoomPosition
   }
 
+  interface UpgradeDistroLifetimeProcessMetaData
+  {
+    creep: string,
+    roomName: string,
+    numberOfDropPickups: number,
+  }
+
   interface PowerHarvestingManagementProcessMetaData
   {
     roomName: string;
@@ -860,6 +869,8 @@ interface Flag {
     minerHauler: string[],
     loggingAverage: number,
     logginCount: number,
+    coreInSK: boolean,
+    invaderFailCount: number,
   }
 
   interface ObservationManagementProcessMetaData

@@ -1,5 +1,6 @@
 import { Process } from "os/process";
 import { Utils } from "lib/utils";
+import { FACTORY_KEEP_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 
 
 export class MarketManagementProcess extends Process
@@ -13,60 +14,99 @@ export class MarketManagementProcess extends Process
 
   run()
   {
+    let buying = false;
+    const barRooms: {
+      [bar: string]: string[]
+    } = {};
     const catRooms = _.filter(Game.rooms, (r) => {
-      return (r.controller?.my
-        && this.kernel.data.roomData[r.name].mineral?.mineralType === RESOURCE_CATALYST &&
-        r.terminal?.store[RESOURCE_PURIFIER] >= 6000);
+      if(r.memory.barType && r.controller?.my && r.terminal?.store[r.memory.barType] >= FACTORY_KEEP_AMOUNT)
+      {
+        if(!barRooms[r.memory.barType])
+          barRooms[r.memory.barType]  = [];
+
+        barRooms[r.memory.barType].push(r.name);
+      }
     })
 
     this.metaData.roomWithResource = catRooms.map(r => r.name);
 
-    console.log(this.name, 'Rooms that have purifier', this.metaData.roomWithResource.length)
-
-    if(Game.time % 5 === 0 && this.metaData.roomWithResource.length)
+    console.log(this.name, 'Rooms that have bars', this.metaData.roomWithResource.length)
+    let totalTransactions = 0;
+    if(buying)
     {
-      let roomDistance: RoomDistance = {};
-
-      const orders = this.getOrders(RESOURCE_PURIFIER)
-      console.log(this.name, 'Orders for Purifier', orders.length);
-
-      for(let i = 0; i < orders.length; i++)
+      if(Game.time % 5 === 0)
       {
-        console.log(this.name, 1)
-        const order = orders[i];
-        if(order.remainingAmount > 0)
+        for(let b in barRooms)
         {
-          let bestDistance = 999;
-          let bestRoom = '';
-          for(let j = 0; j < this.metaData.roomWithResource.length; j++)
+          const bar = b as CommodityConstant;
+          console.log(this.name, bar, barRooms[bar].length);
+          let roomDistance: RoomDistance = {};
+          const orders = this.getBuyOrders(bar);
+          console.log(this.name, 'Orders for', bar, orders.length);
+
+          for(let i = 0; i < orders.length; i++)
           {
-            console.log(this.name, 3)
-            const sourceRoom = Game.rooms[this.metaData.roomWithResource[j]];
-            const terminal = sourceRoom.terminal;
-            if(terminal?.cooldown === 0 && terminal.store[RESOURCE_PURIFIER] >= order.amount)
+            console.log(this.name, 1)
+            const order = orders[i];
+            if(order.remainingAmount > 0)
             {
-              console.log(this.name, 4)
-              const cost = Game.market.calcTransactionCost(order.amount, order.roomName, sourceRoom.name)
-              console.log(this.name, 'Cost', cost);
-              if(cost < 5000)
+              let bestDistance = 999;
+              let bestRoom = '';
+              for(let j = 0; j < barRooms[bar].length; j++)
               {
-                console.log(this.name, 5)
-                const ret = Game.market.deal(order.id, order.amount, sourceRoom.name);
-                console.log(this.name, 'Order info destroom', order.roomName, 'cost', cost, 'Amount', order.amount, 'sourceRoom', sourceRoom.name, 'Ret', ret);
-                if(ret === OK)
-                  break;
+                console.log(this.name, 3)
+                const sourceRoom = Game.rooms[barRooms[bar][j]];
+                const terminal = sourceRoom.terminal;
+                if(terminal?.cooldown === 0 && terminal.store[RESOURCE_PURIFIER] >= order.amount)
+                {
+                  console.log(this.name, 4)
+                  const cost = Game.market.calcTransactionCost(order.amount, order.roomName, sourceRoom.name)
+                  console.log(this.name, 'Cost', cost);
+                  if(cost < 5000)
+                  {
+                    console.log(this.name, 5)
+                    const ret = Game.market.deal(order.id, order.amount, sourceRoom.name);
+                    console.log(this.name, 'Order info destroom', order.roomName, 'cost', cost, 'Amount', order.amount, 'sourceRoom', sourceRoom.name, 'Ret', ret);
+                    if(ret === OK)
+                    {
+                      totalTransactions++;
+                      break;
+                    }
+                  }
+                }
               }
             }
           }
         }
       }
+    }
+    else
+    {
+      if(Game.time % 105 === 0)
+      {
+        for(let b in barRooms)
+        {
+          const bar = b as CommodityConstant;
+          this.AnalyzeMarket(bar);
+          const orders = this.getSellOrders(bar);
 
+          for(let i = 0; i < orders.length; i++)
+          {
+            const order = orders[i]
+          }
+        }
+      }
     }
   }
 
-  private getOrders(resource: CommodityConstant) : Order[]
+  private getBuyOrders(resource: CommodityConstant) : Order[]
   {
     return Game.market.getAllOrders({type: ORDER_BUY, resourceType: resource});
+  }
+
+  private getSellOrders(resource: CommodityConstant) : Order[]
+  {
+    return Game.market.getAllOrders({type: ORDER_SELL, resourceType: resource});
   }
 
   private TakeInventory(room: Room)
@@ -130,6 +170,9 @@ export class MarketManagementProcess extends Process
     threeDayPriceAverage /= 3;
     threeDayQuantityAverage /= 3;
 
+    // console.log(this.name, "14 Day Price:", fourteenDayPriceAverage, "Volume:", fourteenDayQuantityAverage,
+    //   "7 Day Price:", sevenDayPriceAverage, "Voluem:", sevenDayQuantityAverage,
+    //   "3 Day Price:", threeDayPriceAverage, "Voluem:", threeDayQuantityAverage)
   }
 }
 

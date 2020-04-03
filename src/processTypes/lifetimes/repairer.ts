@@ -20,14 +20,22 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       return;
     }
 
+    if(creep.room.name === 'E41S32')
+    {
+        console.log(this.name, 0.1, this.metaData.boosts, creep.memory.boost)
+    }
     let room = Game.rooms[this.metaData.roomName];
 
     if(this.metaData.boosts && !creep.memory.boost)
     {
+      if(creep.name === 'sm-E41S32-25419534')
+        console.log(this.name, 0.11)
       creep.boostRequest(this.metaData.boosts, false);
       return;
     }
 
+    if(creep.name === 'sm-E41S32-25419534')
+        console.log(this.name, 0.2)
     //Dump carry before dieing
     if(creep.ticksToLive! < 50 && _.sum(creep.carry) > 0)
     {
@@ -50,14 +58,20 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
     }
 
+    if(creep.name === 'sm-E41S32-25419534')
+        console.log(this.name, 0.3)
     // Fill up
     if(_.sum(creep.carry) === 0)
     {
+      if(creep.name === 'sm-E41S32-25419534')
+        console.log(this.name, 'filling', 1)
       creep.memory.target = undefined;
       let target = Utils.withdrawTarget(creep, this)
 
       if (target)
       {
+        if(creep.name === 'sm-E41S32-25419534')
+        console.log(this.name, 'filling', 2)
       if(!creep.pos.isNearTo(target))
         creep.pushyTravelTo(target);
       else
@@ -67,6 +81,8 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       }
       else
       {
+        if(creep.name === 'sm-E41S32-25419534')
+        console.log(this.name, 'filling', 3)
         if(creep.room.controller && creep.room.controller.level < 8)
         {
           let sources = creep.room.find(FIND_SOURCES);
@@ -152,49 +168,65 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     }
     else //////////// Rampart upgrading ///////////////////////
     {
-      if(creep.name === 'sm-E47S46-23627651')
-        console.log(this.name, 'Should be finding a rampart')
+      let target: ConstructionSite|StructureRampart;;
+      const rampartSites = this.kernel.data.roomData[this.metaData.roomName].constructionSites.filter(cs => cs.structureType === STRUCTURE_RAMPART);
+      if(rampartSites.length)
+      {
+        const site = creep.pos.findClosestByPath(rampartSites);
+        if(creep.memory.target === undefined)
+        {
+          creep.memory.target = site.id;
+          target = site;
+        }
+      }
+      if(creep.name === 'sm-E41S32-25419534')
+        console.log(this.name, 'Should be finding a rampart', creep.memory.target, this.metaData.upgrading)
 
-      let target: StructureRampart;
+
 
       if(creep.memory.target === undefined)
       {
+        if(creep.name === 'sm-E41S32-25419534')
+          console.log(this.name, 1);
         const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
         if(ramparts.length)
         {
-
+          if(creep.name === 'sm-E41S32-25419534')
+          console.log(this.name, 2)
           const minRampart = _.min(ramparts, (r) => r.hits);
-          if(this.metaData.upgrading)
-          {
-            if(minRampart)
-            {
-              creep.memory.target = minRampart.id;
-              target = minRampart;
-            }
-          }
-          else
-          {
-            if(minRampart?.hits < room.memory.rampartTarget)
-            {
-              creep.memory.target = minRampart.id;
-              target = minRampart;
-            }
-          }
+          creep.memory.target = minRampart.id;
+          target = minRampart;
         }
       }
       else
       {
+        if(creep.name === 'sm-E41S32-25419534')
+          console.log(this.name, 3)
         target = Game.getObjectById(creep.memory.target);
-        if(!creep.pos.inRangeTo(target, 3))
-          creep.travelTo(target, {range: 3});
-        else
+        if(target)
         {
-          let outcome = creep.repair(target);
-          if(outcome === OK)
-            creep.yieldRoad(target, true);
-        }
+          if(!creep.pos.inRangeTo(target, 3))
+            creep.travelTo(target, {range: 3});
+          else
+          {
+            let outcome: number;
+            if(target instanceof StructureRampart)
+              outcome = creep.repair(target);
+            else if(target instanceof ConstructionSite)
+              if(creep.build(target) === OK)
+              {
+                creep.memory.target = undefined;
+                return;
+              }
 
-        return;
+            if(outcome === OK)
+              creep.yieldRoad(target, true);
+          }
+
+          return;
+        }
+        else
+          creep.memory.target = undefined;
       }
     }
   }

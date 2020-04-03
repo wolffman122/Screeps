@@ -14,7 +14,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
     let creep = this.getCreep();
     let room = flag.room;
 
-    if(creep.name === 'hrm-build-E27S39-24896185')
+    if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 0,creep.memory.atPlace);
     if(!creep || !flag)
     {
@@ -24,7 +24,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
     if(!creep.memory.atPlace)
     {
-      if(creep.name === 'hrm-build-E27S39-24896185')
+      if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 0.1);
       if(!creep.pos.inRangeTo(flag, 3))
         creep.travelTo(flag);
@@ -37,21 +37,21 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
     {
       const sources = this.kernel.data.roomData[flag.room.name].sources.filter(s => s.energy > 0);
       const source = creep.pos.findClosestByRange(sources);
-      if(creep.name === 'hrm-build-E27S39-24896185')
+      if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 0.2);
       if(_.sum(creep.carry) === 0 || !creep.memory.full)
       {
         creep.memory.full = false;
-        if(creep.name === 'hrm-build-E27S39-24896185')
+        if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 1);
         if(this.kernel.data.roomData[flag.room.name].containers.length > 0)
         {
-          if(creep.name === 'hrm-build-E27S39-24896185')
+          if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2);
           let structures = flag.room!.find(FIND_HOSTILE_STRUCTURES);
           if(structures)
           {
-            if(creep.name === 'hrm-build-E27S39-24896185')
+            if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2.1);
             let targets = _.filter(structures, (s) => {
               return ((s.structureType === STRUCTURE_LINK || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_LAB) && s.energy > 50);
@@ -59,7 +59,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
             if(targets.length > 0)
             {
-              if(creep.name === 'hrm-build-E27S39-24896185')
+              if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2.2);
               let target = <Structure>creep.pos.findClosestByPath(targets);
 
@@ -76,7 +76,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
             }
             else
             {
-              if(creep.name === 'hrm-build-E27S39-24896185')
+              if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2.3);
               let targets = _.filter(structures, (s)=>{
                 return ((s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_TERMINAL) && s.store.energy > 0);
@@ -103,7 +103,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
                 let container = creep.pos.findClosestByPath(this.kernel.data.roomData[flag.room.name].sourceContainers);
 
-                if(creep.name === 'hrm-build-E27S39-24896185')
+                if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2.4, container);
                 if(container && container.store.energy >= creep.carryCapacity)
                 {
@@ -140,7 +140,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
           }
           else
           {
-            if(creep.name === 'hrm-build-E27S39-24896185')
+            if(creep.name === 'hrm-build-E34S51-25539475')
               console.log(this.name, "In the ROOM", 13);
             let targets = _.filter(this.kernel.data.roomData[flag.room.name].containers, (c: StructureContainer) => {
               return (c.store.energy > 0);
@@ -148,7 +148,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
             if(targets.length)
             {
-              if(creep.name === 'hrm-build-E27S39-24896185')
+              if(creep.name === 'hrm-build-E34S51-25539475')
               console.log(this.name, "In the ROOM", 14);
               let target = creep.pos.findClosestByPath(targets);
 
@@ -200,7 +200,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
               }
             }
           }
-          if(creep.name === 'hrm-build-E27S39-24896185')
+          if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2.6);
         }
         else
@@ -278,40 +278,37 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
                           }
                           return;
                         });
-
-                        creep.say ('H1', true);
-                        this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-                          creep: creep.name,
-                          source: source.id,
-                          resource: RESOURCE_ENERGY
-                        });
-
-                        return;
                       }
-
-                      creep.say ('H2', true);
-                      this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-                        creep: creep.name,
-                        source: source.id,
-                        resource: RESOURCE_ENERGY
-                      });
-
-                      return;
                     }
                   }
                 }
               }
             }
           }
+
+          if(!creep.pos.isNearTo(source))
+            creep.travelTo(source);
+          else
+          {
+            creep.harvest(source);
+
+            if(creep.name === 'hrm-build-E34S51-25539475')
+              console.log(this.name, 'Creep full', creep.store.getFreeCapacity());
+
+            if(creep.store.getFreeCapacity() === 0)
+              creep.memory.full = true;
+
+            return;
+          }
         }
       }
 
-      if(creep.name === 'hrm-build-E27S39-24896185')
+      if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 3);
 
       if(_.sum(creep.carry) != 0)
       {
-        if(creep.name === 'hrm-build-E27S39-24896185')
+        if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 4);
         let sites = _.filter(this.kernel.data.roomData[flag.room.name].constructionSites, (cs) => {
           return (cs.my);
@@ -320,21 +317,21 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
         if(target)
         {
-          if(creep.name === 'hrm-build-E27S39-24896185')
+          if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 4.1);
           if(!creep.pos.inRangeTo(target, 3))
             creep.travelTo(target, {range: 3});
           else
           {
-            if(creep.name === 'hrm-build-E27S39-24896185')
+            if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 4.2);
             if(creep.pos.isEqualTo(target))
             {
               let dir = creep.pos.getDirectionTo(source) as number;
-              if(creep.name === 'hrm-build-E27S39-24896185')
+              if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 4.3, dir);
               dir = +((dir + 4) % 8 === 0) ? 1 : (dir+4) % 8;
-              if(creep.name === 'hrm-build-E27S39-24896185')
+              if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 4.4, dir);
               const pos = creep.pos.getPositionAtDirection(dir);
               creep.travelTo(pos);
@@ -342,7 +339,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
             }
             else
             {
-              if(creep.name === 'hrm-build-E27S39-24896185')
+              if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 4.5);
               creep.build(target);
             }
