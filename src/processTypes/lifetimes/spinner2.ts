@@ -51,7 +51,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
     const yellowFlags = this.creep.room.find(FIND_FLAGS, {filter: f => f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW });
     // Need to find a better way to reset the stale data
-    if(this.metaData.numberOfFlags !== yellowFlags.length)
+    if(yellowFlags.length)
     {
       this.CheckForSKMining(yellowFlags);
     }
@@ -132,16 +132,14 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         return;
     }
 
-    if(this.creep.name === 'em-s-E56S43-25377903')
-      console.log(this.name, 'Problem', 1)
-    if(this.terminal?.store[this.mineral.mineralType] < KEEP_AMOUNT)
+    if(this.terminal?.store[this.mineral.mineralType] < KEEP_AMOUNT
+      && (this.storage?.store[this.mineral.mineralType] ?? 0) > 10000)
     {
-      this.TransferToTerminal(this.mineral.mineralType);
-      return;
+      if(this.TransferToTerminal(this.mineral.mineralType))
+        return;
     }
 
-    if(this.creep.name === 'em-s-E56S43-25377903')
-      console.log(this.name, 'Problem', 2)
+
     let amount = this.terminal.store[this.mineral.mineralType] - KEEP_AMOUNT
     if(amount > 0 && this.storage.store.getFreeCapacity() > 3000)
     {
@@ -149,8 +147,6 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       return;
     }
 
-    if(this.creep.name === 'em-s-E56S43-25377903')
-      console.log(this.name, 'Problem', 3)
     const bar = room.memory.barType
     if((this.terminal.store[bar] ?? 0) < FACTORY_KEEP_AMOUNT &&
       (this.storage.store[this.mineral.mineralType] ?? 0) > 100000)
@@ -167,11 +163,11 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       const skMineral = this.skMinerals[i];
       if(this.terminal?.store[skMineral.mineralType] < KEEP_AMOUNT)
       {
-        this.TransferToTerminal(skMineral.mineralType);
-        return;
+        if(this.TransferToTerminal(skMineral.mineralType))
+          return;
       }
 
-      if(this.terminal?.store[skMineral.mineralType] > KEEP_AMOUNT)
+      if(this.terminal?.store[skMineral.mineralType] !== KEEP_AMOUNT)
       {
         this.TransferToStorage(skMineral.mineralType, KEEP_AMOUNT);
         return;
@@ -299,15 +295,12 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
             let miningFlags = skRoom.find(FIND_FLAGS, {filter: f => f.name === 'Mining-' + skRoomName});
             if(miningFlags.length)
             {
-              const minerals = skRoom.find(FIND_MINERALS);
-              if(minerals.length === 1)
-              {
-                if(!this.metaData.skMinerals)
+              const mineral = this.roomInfo(skRoomName).mineral;
+              if(!this.metaData.skMinerals)
                   this.metaData.skMinerals = [];
 
-                this.metaData.skMinerals.push(minerals[0].id);
-                this.skMinerals.push(minerals[0]);
-              }
+              this.metaData.skMinerals.push(mineral.id);
+              this.skMinerals.push(mineral);
             }
           }
         }
