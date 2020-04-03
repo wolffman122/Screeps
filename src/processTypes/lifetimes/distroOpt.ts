@@ -222,9 +222,9 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
     }
 
-    if(creep.store.getUsedCapacity(RESOURCE_POWER) > 0)
+    const powerSpawn = this.kernel.data.roomData[creep.room.name].powerSpawn;
+    if(creep.store.getUsedCapacity(RESOURCE_POWER) > 0 && (powerSpawn.store.getFreeCapacity(RESOURCE_POWER) ?? 0) > creep.store.getUsedCapacity(RESOURCE_POWER))
     {
-      const powerSpawn = this.kernel.data.roomData[creep.room.name].powerSpawn;
       if(!creep.pos.isNearTo(powerSpawn))
         creep.travelTo(powerSpawn);
       else
