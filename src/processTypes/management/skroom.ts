@@ -589,7 +589,7 @@ export class skRoomManagementProcess extends Process
               return i.getActiveBodyparts(ATTACK) > 0 || i.getActiveBodyparts(RANGED_ATTACK) > 0;
             })
 
-            if(healers.length === 3 && attackers.length)
+            if(healers.length >= 3 && attackers.length)
             {
               target = devil.pos.findClosestByRange(attackers);
             }
@@ -2117,7 +2117,7 @@ export class skRoomManagementProcess extends Process
             return i.getActiveBodyparts(RANGED_ATTACK) > 0;
           });
 
-          if(healers.length === 3 && rangers.length)
+          if(healers.length > 3 && rangers.length)
           {
             target = creep.pos.findClosestByRange(rangers);
           }
