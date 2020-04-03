@@ -104,7 +104,8 @@ export class skRoomManagementProcess extends Process
 
     this.ensureMetaData();
 
-    this.coreSearching();
+    if(!this.skFlag.memory.attackingCore)
+      this.coreSearching();
 
     if(this.skRoom)
     {
@@ -1989,7 +1990,8 @@ export class skRoomManagementProcess extends Process
       else
         this.metaData.coreInSK = false;
 
-      if(Game.time % 1000 > 0 && Game.time % 1000 < 9)
+      //if(Game.time % 1000 > 0 && Game.time % 1000 < 9)
+      if(this.skRoomName === 'E36S34')
       {
         const observer = this.roomInfo(this.metaData.roomName).observer;
         if(observer)
@@ -2002,25 +2004,32 @@ export class skRoomManagementProcess extends Process
           let prevIndex = this.metaData.scanIndex - 1;
           if(prevIndex < 0)
             prevIndex = roomNames.length - 1;
-
           const obRoom = Game.rooms[roomNames[prevIndex]];
+
+          console.log(this.name, roomNames[this.metaData.scanIndex], this.metaData.scanIndex, roomNames[prevIndex], prevIndex)
           if(obRoom)
           {
+            console.log(this.name, obRoom.name);
             const cores = obRoom.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType === STRUCTURE_INVADER_CORE});
             if(cores.length)
             {
               const core = cores[0] as StructureInvaderCore;
-              if(core?.ticksToDeploy < 150 && core?.level < 3)
+              console.log(this.name, 'Cores', obRoom.name, 'Tickts', core.ticksToDeploy);
+              if((core?.ticksToDeploy ?? 0) < 150 && core?.level < 3)
               {
-                this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp-' + core.room.name, 35,
+                this.skFlag.memory.attackingCore = true;
+                this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + this.skRoomName, 35,
                 {
-                  roomName: core.room.name,
+                  roomName: obRoom.name,
                   spawnRoomName: this.metaData.roomName,
                   coreId: core.id,
                 });
+                Game.notify("Found core in skroom" + this.skRoomName + " Time to kill it");
               }
+
+          //     console.log(this.name, 'Found core but wont start', core.id)
             }
-            console.log(this.name, 'Observing room', obRoom.name);
+          //   console.log(this.name, 'Observing room', obRoom.name);
           }
           else
             console.log(this.name, 'Not observing', roomNames[prevIndex], prevIndex, this.metaData.scanIndex);

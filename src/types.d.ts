@@ -253,7 +253,7 @@ interface Flag {
     centerSKMineral?: string;
     healer?: string;
     attacker?: string;
-    coreInfo?: CoreInfo;
+    attackingCore?: boolean;
     nuker?: boolean;
     holdData?: HoldRoomData;
     roadComplete?: number;

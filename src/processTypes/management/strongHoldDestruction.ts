@@ -59,27 +59,35 @@ export class StrongHoldDestructionProcess extends Process
         observer.observeRoom(this.metaData.roomName);
 
       if(!this.coreRoom && this.metaData.vision)
-        this.metaData.vision;
+        this.metaData.vision = false;
 
-      if(this.core?.level > 2)
-      {
-        const flag = Game.flags[this.metaData.roomName + '-SK'];
-        flag.remove();
-        this.completed = true;
-        return;
-      }
+      // if(this.core?.level > 2)
+      // {
+      //   const flag = Game.flags[this.metaData.roomName + '-SK'];
+      //   flag.remove();
+      //   this.completed = true;
+      //   return;
+      // }
 
       if(this.metaData.haulerDone && this.metaData.dismantleDone)
       {
-        this.completed = true;
-        return;
+        const flag = this.spawnRoom.find(FIND_FLAGS, {filter: f => f.color === COLOR_YELLOW && f.secondaryColor === COLOR_YELLOW})[0] as Flag;
+        if(flag)
+        {
+          flag.memory.attackingCore = false;
+          this.completed = true;
+          return;
+        }
       }
 
-      if(this.core)
+      if(this.core || !this.metaData.cleaning)
       {
         this.metaData.cleaning = false;
-        this.metaData.coreLevel = this.core.level;
-        this.metaData.corePos = this.core.pos;
+        if(this.core)
+        {
+          this.metaData.coreLevel = this.core.level;
+          this.metaData.corePos = this.core.pos;
+        }
 
         //console.log(this.name, 'Ticks to deploy', this.core.ticksToDeploy, (this.core.ticksToDeploy === undefined || this.core.ticksToDeploy < 150));
 
@@ -90,12 +98,12 @@ export class StrongHoldDestructionProcess extends Process
         let typeOfHealer = 'testhealer';
 
         // MOve to spawning function later
-        if(this.metaData.coreLevel === 1)
+        if(this.metaData.coreLevel === 1 || this.metaData.coreLevel === 2)
         {
-          typeOfAttacker = 'mage';
+          typeOfAttacker = 'soloMage';
           numberOfAttackers = 1;
         }
-        else if(this.metaData.coreLevel === 2 || this.metaData.coreLevel === 3)
+        else if(this.metaData.coreLevel === 3)
         {
           typeOfAttacker = 'mage';
           numberOfAttackers = 2;
@@ -202,7 +210,7 @@ export class StrongHoldDestructionProcess extends Process
 
       console.log(this.name, 'Attacker cleaning', 1, this.metaData.coreLevel)
 
-      if(this.metaData.coreLevel > 1)
+      if(this.metaData.coreLevel > 2)
       {
         const leader = Game.creeps[this.metaData.attackers[0]];
         if(leader)
@@ -215,7 +223,7 @@ export class StrongHoldDestructionProcess extends Process
             this.FollowerAttackerActions(follower);
         }
       }
-      else if(this.metaData.coreLevel === 1)
+      else if(this.metaData.coreLevel <= 2)
       {
         console.log(this.name, 'Attacker cleaning', 2)
         for(let i = 0; i < this.metaData.attackers.length; i++)
@@ -271,7 +279,6 @@ export class StrongHoldDestructionProcess extends Process
     {
       let target: string;
 
-      console.log(this.name, creep.room.name, this.core)
       console.log(this.name, creep.name, creep.memory.boost);
       if(!creep.memory.boost)
       {
@@ -281,65 +288,110 @@ export class StrongHoldDestructionProcess extends Process
         return;
       }
 
+      console.log(this.name, 'A', 1, creep.pos)
       //////////// TODO: Need way to check for sklairs in the future ///////////////////////
-      // if(this.core) /*|| this.flag.memory.coreInfo.skLairPresent*/
-      // {
-      //   if(creep.room.name === this.coreRoom.name)
-      //   {
-      //     const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
-      //     if(structures.length)
-      //     {
-      //       const structure = structures[0];
-      //       if(!creep.pos.isNearTo(structure))
-      //         creep.travelTo(structure);
-      //       else
-      //         creep.rangedMassAttack();
+      if(this.core) /*|| this.flag.memory.coreInfo.skLairPresent*/
+      {
+        console.log(this.name, 'A', 2)
+        if(creep.room.name === this.core.room.name)
+        {
+          console.log(this.name, 'A', 3)
 
+              console.log(this.name, 'A', 5)
+            if(!creep.pos.inRangeTo(this.core, 3))
+              creep.travelTo(this.core, {range: 3});
+            else
+            {
+              let rampart = this.core.pos.lookForStructures(STRUCTURE_RAMPART);
+              if(rampart)
+                creep.rangedAttack(rampart);
+              else
+                creep.rangedAttack(this.core);
+            }
 
-      //       creep.say('💣');
-      //       creep.heal(creep);
-      //       return;
-      //     }
-      //   }
-      //   else
-      //   {
-      //     if(!creep.pos.isNearTo(this.core))
-      //       creep.travelTo(this.core);
+            creep.say('💣');
+            creep.heal(creep);
+            return;
+        }
+        else
+        {
+          console.log(this.name, 'A', 6, this.core.pos)
+          if(!creep.pos.isNearTo(this.core))
+            creep.travelTo(this.core, {allowSK: true});
 
-      //     creep.heal(creep);
-      //   }
-      // }
+          creep.heal(creep);
 
-      // const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
-      // if(structures.length)
-      // {
-      //   const structure = structures[0];
-      //   if(!creep.pos.isNearTo(structure))
-      //     creep.travelTo(structure);
-      //   else
-      //     creep.rangedMassAttack();
+          return;
+        }
+      }
+      else if(creep.room.name !== this.metaData.roomName && !this.metaData.cleaning)
+      {
+        if(creep.hits < creep.hitsMax)
+          creep.heal(creep);
 
-      //   creep.heal(creep);
-      //   creep.say('💣');
-      //   return;
-      // }
+        creep.travelTo(new RoomPosition(25,25,this.metaData.roomName), {allowSK: true});
+        return;
+      }
 
-      // const container = this.roomInfo(this.metaData.spawnRoomName).generalContainers[0];
-      // if(container)
-      // {
-      //   const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
-      //     if(!creep.pos.isNearTo(spawn))
-      //       creep.travelTo(spawn);
-      //     else
-      //     {
-      //       //if(!spawn.spawning)
-      //         //spawn.recycleCreep(creep);
-      //     }
+      console.log(this.name, 'A', 9)
+      const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
+      if(structures.length)
+      {
+        const structure = structures[0];
+        if(!creep.pos.isNearTo(structure))
+          creep.travelTo(structure);
+        else
+          creep.rangedMassAttack();
 
-      //     creep.say('☠', true);
-      //     return;
+        if(creep.hits < creep.hitsMax)
+          creep.heal(creep);
 
-      // }
+        const containers = this.roomInfo(this.metaData.roomName).containers.filter(c => c.effects.length);
+        let covered = true;
+        containers.forEach( c => {
+          if(c.pos.lookForStructures(STRUCTURE_RAMPART))
+            covered = false;
+        });
+
+        console.log(this.name, 'covered', covered);
+
+        creep.say('💣');
+        return;
+      }
+      else
+        this.metaData.cleaning = true;
+
+      const container = this.roomInfo(this.metaData.spawnRoomName).generalContainers[0];
+      if(container)
+      {
+        const spawns = this.roomInfo(this.metaData.spawnRoomName).spawns.filter(s => !s.spawning);
+        if(spawns.length)
+        {
+          const spawn = spawns[0];
+          if(!creep.pos.isNearTo(spawn))
+            creep.travelTo(spawn, {allowSK: true});
+          else
+          {
+            if(!spawn.spawning)
+              spawn.recycleCreep(creep);
+          }
+        }
+        else
+        {
+          const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+          if(!creep.pos.isNearTo(spawn))
+            creep.travelTo(spawn, {allowSK: true});
+          else
+          {
+            if(!spawn.spawning)
+              spawn.recycleCreep(creep);
+          }
+        }
+
+        creep.say('☠', true);
+        return;
+
+      }
     }
     catch(error)
     {
@@ -1171,7 +1223,7 @@ export class StrongHoldDestructionProcess extends Process
     try
     {
 
-      console.log(this.name, 'ha',0.1)
+      console.log(this.name, 'ha',0.1, creep.pos)
       if(!creep.memory.atPlace)
       {
         creep.memory.distance++;
@@ -1186,6 +1238,18 @@ export class StrongHoldDestructionProcess extends Process
         else if(this.metaData.coreLevel  === 3)
           creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_KEANIUM_ACID], false);
         return;
+      }
+
+      if(this.metaData.haulerAlmostDone)
+      {
+        const storage = this.spawnRoom.storage;
+        if(!creep.pos.isNearTo(storage))
+          creep.travelTo(storage, {allowSK: true});
+        else
+          creep.transferEverything(storage);
+
+        if(creep.store.getUsedCapacity() === 0)
+          this.metaData.haulerDone = true;
       }
 
       console.log(this.name, 'ha',0.2)
@@ -1209,14 +1273,8 @@ export class StrongHoldDestructionProcess extends Process
               }
               else
               {
-                creep.travelTo(container);
+                creep.travelTo(container, {allowSK: true});
               }
-              return;
-            }
-            else
-            {
-              this.metaData.haulerDone = true;
-              creep.suicide();
               return;
             }
           }
@@ -1255,7 +1313,7 @@ export class StrongHoldDestructionProcess extends Process
       {
         const cPos = this.metaData.corePos;
         const pos = new RoomPosition(cPos.x, cPos.y, cPos.roomName)
-        creep.travelTo(pos);
+        creep.travelTo(pos, {allowSK: true});
         return;
       }
 
@@ -1281,7 +1339,7 @@ export class StrongHoldDestructionProcess extends Process
               }
               else
               {
-                creep.travelTo(tar);
+                creep.travelTo(tar, {allowSK: true});
               }
             }
             else
@@ -1307,7 +1365,7 @@ export class StrongHoldDestructionProcess extends Process
             }
             else
             {
-              creep.travelTo(ruin);
+              creep.travelTo(ruin, {allowSK: true});
             }
           }
           else
@@ -1347,7 +1405,7 @@ export class StrongHoldDestructionProcess extends Process
               }
               else
               {
-                creep.travelTo(container);
+                creep.travelTo(container, {allowSK: true});
               }
             }
             else
@@ -1407,7 +1465,7 @@ export class StrongHoldDestructionProcess extends Process
         if(lastRuins.length)
         {
           if(!creep.pos.isNearTo(lastRuins[0]))
-            creep.travelTo(lastRuins[0])
+            creep.travelTo(lastRuins[0], {allowSK: true})
           else
             creep.withdrawEverything(lastRuins[0]);
 
