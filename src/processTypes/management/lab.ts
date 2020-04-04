@@ -254,6 +254,7 @@ export class LabManagementProcess extends Process
           }
           else
           {
+            this.creep.say('🏦1');
             this.creep.travelTo(this.terminal!);
           }
           return;
@@ -274,6 +275,7 @@ export class LabManagementProcess extends Process
             {
               this.creep.pickup(target);
             }
+            this.creep.say('2');
             this.creep.travelTo(target, {range: 1});
             return;
           }
@@ -296,6 +298,7 @@ export class LabManagementProcess extends Process
             {
               this.creep.withdrawEverything(target);
             }
+            this.creep.say('3');
             this.creep.travelTo(target);
             return;
           }
@@ -364,13 +367,14 @@ export class LabManagementProcess extends Process
           let destination = Game.getObjectById<Structure>(command.destination);
           if(!this.creep.pos.isNearTo(destination!))
           {
+            strSay = '🏦';
             this.creep.say(strSay);
             this.creep.travelTo(destination!);
           }
         }
         else
         {
-          this.creep.say(strSay);
+          this.creep.say('3');
           this.creep.travelTo(origin!);
         }
         return; // early
@@ -390,7 +394,7 @@ export class LabManagementProcess extends Process
       }
       else
       {
-        this.creep.say(strSay);
+        this.creep.say('4');
         this.creep.travelTo(destination!);
       }
     }
