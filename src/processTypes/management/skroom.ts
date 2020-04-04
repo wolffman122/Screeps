@@ -1991,7 +1991,7 @@ export class skRoomManagementProcess extends Process
         this.metaData.coreInSK = false;
 
       //if(Game.time % 1000 > 0 && Game.time % 1000 < 9)
-      if(this.skRoomName === 'E36S34')
+      if(this.skRoomName === 'E45S54')
       {
         const observer = this.roomInfo(this.metaData.roomName).observer;
         if(observer)

@@ -297,6 +297,16 @@ export class StrongHoldDestructionProcess extends Process
         {
           console.log(this.name, 'A', 3)
 
+          if(this.core.level === 1)
+          {
+            if(!creep.pos.isNearTo(this.core))
+              creep.travelTo(this.core);
+
+            creep.rangedMassAttack();
+          }
+
+          if(this.core.level === 2)
+          {
               console.log(this.name, 'A', 5)
             if(!creep.pos.inRangeTo(this.core, 3))
               creep.travelTo(this.core, {range: 3});
@@ -308,6 +318,7 @@ export class StrongHoldDestructionProcess extends Process
               else
                 creep.rangedAttack(this.core);
             }
+          }
 
             creep.say('💣');
             creep.heal(creep);
@@ -337,7 +348,18 @@ export class StrongHoldDestructionProcess extends Process
       const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
       if(structures.length)
       {
-        const structure = structures[0];
+        const containers = this.roomInfo(this.metaData.roomName).containers.filter(c => c.effects.length);
+        let unCovered = false;
+        containers.forEach( c=> {
+          const rampart = c.pos.lookForStructures(STRUCTURE_RAMPART);
+          if(!rampart)
+            unCovered = true;
+        });
+
+        if(unCovered)
+          this.metaData.cleaning = true;
+
+        const structure = creep.pos.findClosestByRange(structures);
         if(!creep.pos.isNearTo(structure))
           creep.travelTo(structure);
         else
@@ -345,15 +367,6 @@ export class StrongHoldDestructionProcess extends Process
 
         if(creep.hits < creep.hitsMax)
           creep.heal(creep);
-
-        const containers = this.roomInfo(this.metaData.roomName).containers.filter(c => c.effects.length);
-        let covered = true;
-        containers.forEach( c => {
-          if(c.pos.lookForStructures(STRUCTURE_RAMPART))
-            covered = false;
-        });
-
-        console.log(this.name, 'covered', covered);
 
         creep.say('💣');
         return;
@@ -1231,9 +1244,7 @@ export class StrongHoldDestructionProcess extends Process
 
       if(!creep.memory.boost)
       {
-        if(this.metaData.coreLevel == 1)
-          creep.memory.boost = true;
-        else if(this.metaData.coreLevel  <= 2)
+        if(this.metaData.coreLevel  <= 2)
           creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE], false);
         else if(this.metaData.coreLevel  === 3)
           creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_KEANIUM_ACID], false);
