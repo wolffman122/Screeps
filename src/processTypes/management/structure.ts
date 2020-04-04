@@ -127,8 +127,8 @@ export class StructureManagementProcess extends Process{
 
           if(spawned)
           {
-            //let boosts = upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
-            let boosts = [RESOURCE_LEMERGIUM_HYDRIDE];
+            let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
+            //let boosts = [RESOURCE_LEMERGIUM_HYDRIDE];
             this.metaData.repairCreeps.push(creepName);
 
             this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
