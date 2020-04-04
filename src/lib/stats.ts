@@ -108,6 +108,10 @@ export const Stats = {
       [mineralType: string]: string[]
     } = {}
 
+    let lowBoostRooms: {
+      [boostType: string]: string[]
+    } = {}
+
 
 
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
@@ -209,7 +213,6 @@ export const Stats = {
             // Basic Mineral amounts
             for(let mineral in MINERALS_RAW)
             {
-
               let type = MINERALS_RAW[mineral];
               if(!lowMineralRooms[type])
               {
@@ -229,6 +232,28 @@ export const Stats = {
                 {
                   lowMineralRooms[type].push(room.name);
                 }
+              }
+
+              for(let boost in PRODUCT_LIST)
+              {
+                let type = PRODUCT_LIST[boost];
+                if(!lowBoostRooms[type])
+                  lowBoostRooms[type] = [];
+
+                if(!boostTerminalAmounts[type])
+                {
+                  boostTerminalAmounts[type] = 0;
+                  lowBoostRooms[type].push(room.name);
+                }
+
+                if(terminal.store.hasOwnProperty(type))
+                {
+                  boostTerminalAmounts[type] += terminal.store[type];
+                  if(terminal.store[type] < 1000)
+                    lowBoostRooms[type].push(room.name);
+                }
+                else
+                  lowBoostRooms[type].push(room.name);
               }
 
               if(!basicStorageMineralAmounts[type])
@@ -386,6 +411,27 @@ export const Stats = {
     table += "</TABLE>";
 
     console.log(table);
+
+    try
+    {
+      console.log("<BOLD>Boosts</BOLD>");
+      let table2 = "<TABLE border=1>";
+      _.forEach(Object.keys(lowBoostRooms), (key)=>{
+        table2 += "<TR><TD>" + key + "</TD>";
+        _.forEach(lowBoostRooms[key], (lRoom)=>{
+          table2 += "<TD>" + lRoom + "</TD>";
+        })
+        table2 += "</TR>"
+      })
+
+      table2 += "</TABLE>"
+
+      console.log(table2);
+    }
+    catch(e)
+    {
+      console.log(this.name, 'table2', e)
+    }
   },
 
   DisplayStats()
