@@ -266,8 +266,6 @@ export class EnergyManagementProcess extends Process{
             room.memory.pauseUpgrading = false;
         }
 
-        room.memory.pauseUpgrading = true;
-
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
           let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
