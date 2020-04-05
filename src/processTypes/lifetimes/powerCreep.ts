@@ -15,6 +15,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
   run()
   {
     console.log(this.name, '??????????? Running ????????????')
+    console.log(this.name, global.test);
     const powerCreep = Game.powerCreeps[this.metaData.powerCreep];
     const room = Game.rooms[this.metaData.roomName];
     const factory = this.roomData().factory;
@@ -133,29 +134,42 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
-    if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown === 0
+    console.log(this.name, 'extensions', 1)
+    if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown < 10
       && powerCreep.store[RESOURCE_OPS] >= 2)
       {
+        console.log(this.name, 'extensions', 2)
         let fillExt = false;
-        if(powerCreep.powers[PWR_OPERATE_EXTENSION].level === 1)
+        if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.level === 1)
         {
-          if(powerCreep.room.energyAvailable < powerCreep.room.energyAvailable * 0.8)
+
+          if(powerCreep.room.energyAvailable <= powerCreep.room.energyCapacityAvailable * 0.8)
+            fillExt = true;
+        }
+        else if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.level === 2)
+        {
+          if(powerCreep.room.energyAvailable <= powerCreep.room.energyCapacityAvailable * 0.6)
             fillExt = true;
         }
 
+        console.log(this.name, 'extensions', 4)
         if(fillExt)
         {
+          console.log(this.name, 'extensions', 5)
           if(!powerCreep.pos.inRangeTo(storage, 3))
             powerCreep.moveTo(storage, {range: 3});
           else
             {
-              powerCreep.usePower(PWR_OPERATE_EXTENSION, storage);
-              powerCreep.say('filRoom', true);
-              return
+              if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown === 0)
+              {
+                powerCreep.usePower(PWR_OPERATE_EXTENSION, storage);
+                powerCreep.say('filRoom', true);
+                return
+              }
             }
         }
       }
-
+      console.log(this.name, 'extensions', 6)
     if(powerCreep.powers[PWR_GENERATE_OPS].cooldown === 0
       && powerCreep.store.getFreeCapacity() > 0)
     {

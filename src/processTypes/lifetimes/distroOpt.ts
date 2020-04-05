@@ -14,6 +14,15 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       return;
     }
 
+    // if(creep.room.name === 'E56S43')
+    // {
+    //   const flag = Game.flags['RemoteFlee-E56S43']
+    //   if(!creep.pos.inRangeTo(flag,2))
+    //     creep.travelTo(flag, {range: 2});
+
+    //   return;
+    // }
+
     let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
 
     // Room energy full parts
