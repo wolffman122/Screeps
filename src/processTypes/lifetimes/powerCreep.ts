@@ -133,11 +133,35 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
+    if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown === 0
+      && powerCreep.store[RESOURCE_OPS] >= 2)
+      {
+        let fillExt = false;
+        if(powerCreep.powers[PWR_OPERATE_EXTENSION].level === 1)
+        {
+          if(powerCreep.room.energyAvailable < powerCreep.room.energyAvailable * 0.8)
+            fillExt = true;
+        }
+
+        if(fillExt)
+        {
+          if(!powerCreep.pos.inRangeTo(storage, 3))
+            powerCreep.moveTo(storage, {range: 3});
+          else
+            {
+              powerCreep.usePower(PWR_OPERATE_EXTENSION, storage);
+              powerCreep.say('filRoom', true);
+              return
+            }
+        }
+      }
+
     if(powerCreep.powers[PWR_GENERATE_OPS].cooldown === 0
       && powerCreep.store.getFreeCapacity() > 0)
     {
       powerCreep.usePower(PWR_GENERATE_OPS);
       powerCreep.say('📀');
+      return;
     }
 
     if(powerCreep.store.getFreeCapacity() === 0)
