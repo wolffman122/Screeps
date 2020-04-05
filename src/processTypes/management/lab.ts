@@ -329,6 +329,26 @@ export class LabManagementProcess extends Process
           return;
         }
 
+        // const powerCreeps = this.creep.room.find(FIND_POWER_CREEPS).filter(pc => pc.my && pc.powers[PWR_OPERATE_EXTENSION]);
+        // if(powerCreeps.length)
+        // {
+        //   const spawns = this.roomData().spawns.filter(s => (s.store[RESOURCE_ENERGY] ?? 0) < (s.store.getCapacity() ?? 0));
+        //   if(spawns.length)
+        //   {
+        //     if(this.terminal.store[RESOURCE_ENERGY] >= this.creep.store.getCapacity())
+        //     {
+        //       if(!this.creep.pos.isNearTo(this.terminal))
+        //         this.creep.travelTo(this.terminal);
+        //       else
+        //         this.creep.withdraw(this.terminal, RESOURCE_ENERGY);
+
+        //       return;
+        //     }
+        //   }
+
+        // }
+
+
         this.creep.say('😴');
         this.creep.idleOffRoad(this.reagentLabs![0], true);
         return;
