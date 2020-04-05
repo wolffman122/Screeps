@@ -105,8 +105,11 @@ export const Stats = {
     } = {}
 
     let lowMineralRooms: {
-      [mineralType: string]: string[]
-    } = {}
+      [mineralType: string]: {
+        roomName: string,
+        amount: number
+      }[]
+     } = {};
 
     let lowBoostRooms: {
       [boostType: string]: string[]
@@ -222,7 +225,6 @@ export const Stats = {
               if(!basicTerminalMineralAmounts[type])
               {
                 basicTerminalMineralAmounts[type] = 0;
-                lowMineralRooms[type].push(room.name);
               }
 
               if(terminal.store.hasOwnProperty(type))
@@ -230,7 +232,7 @@ export const Stats = {
                 basicTerminalMineralAmounts[type] += terminal.store[type]!;
                 if(terminal.store[type]! < 1000)
                 {
-                  lowMineralRooms[type].push(room.name);
+                  lowMineralRooms[type].push({roomName: room.name, amount: terminal.store[type]});
                 }
               }
 
@@ -249,7 +251,7 @@ export const Stats = {
                 if(terminal.store.hasOwnProperty(type))
                 {
                   boostTerminalAmounts[type] += terminal.store[type];
-                  if(terminal.store[type] < 1000)
+                  if(terminal.store[type] < 2000)
                     lowBoostRooms[type].push(room.name);
                 }
                 else
@@ -398,13 +400,11 @@ export const Stats = {
     console.log("<TABLE border=1><TR><TD>Storage Total Energy</TD><TD>Terminal</TD></TR><TR><TD>", storageEnergy, "</TD><TD>", terminalEnergy, "</TD></TR></TABLE>");
     console.log("<Bold>Minerals</BOLD");
 
-    let table = "<TABLE border=1>";
+    let table = "<TABLE border=1><TR><TH>Mineral</TH><TH>Count</TH><TH>Min Room</TH></TR>";
+
     _.forEach(Object.keys(lowMineralRooms), (key)=>{
-      table += "<TR><TD>" + key + "</TD>";
-      _.forEach(lowMineralRooms[key], (lRoom)=>{
-        table += "<TD>" + lRoom + "</TD>";
-      })
-      table += "</TR>"
+      const minRoom = _.min(lowMineralRooms[key], lmr => lmr.amount);
+      table += "<TR><TD>" + key + "</TD><TD>" + lowMineralRooms[key].length + "</TD><TD>" + (minRoom.roomName ?? "") + "</TD></TR>";
     })
 
 
@@ -417,11 +417,14 @@ export const Stats = {
       console.log("<BOLD>Boosts</BOLD>");
       let table2 = "<TABLE border=1>";
       _.forEach(Object.keys(lowBoostRooms), (key)=>{
-        table2 += "<TR><TD>" + key + "</TD>";
-        _.forEach(lowBoostRooms[key], (lRoom)=>{
-          table2 += "<TD>" + lRoom + "</TD>";
-        })
-        table2 += "</TR>"
+        if(lowBoostRooms[key.length])
+        {
+          table2 += "<TR><TD>" + key + "</TD>";
+          _.forEach(lowBoostRooms[key], (lRoom)=>{
+            table2 += "<TD>" + lRoom + "</TD>";
+          })
+          table2 += "</TR>"
+        }
       })
 
       table2 += "</TABLE>"
