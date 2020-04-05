@@ -48,7 +48,7 @@ export class TerminalManagementProcess extends Process
 
           if(r.terminal && r.storage)
           {
-            return ((r.storage.store.energy < 190000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+            return ((r.storage.store.energy < 210000 || r.storage.store === undefined) && r.controller && r.controller.my &&
               r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
           }
           else
