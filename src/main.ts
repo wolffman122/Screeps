@@ -55,6 +55,8 @@ global.conLog = (message: string) => {
   global.displayOldProcesses = true;
 }
 
+global.test = "Is this global working"; 
+
 initRoomPrototype();
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change

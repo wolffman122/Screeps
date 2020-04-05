@@ -167,8 +167,8 @@ export class StructureManagementProcess extends Process{
 
       //////////// This should probably be toggled depending on energy reserves ///////////////////////
       const storage = room.storage;
-      if((storage?.store[RESOURCE_ENERGY] ?? 0) > ENERGY_KEEP_AMOUNT * 2.5)
-        return true;
+      // if((storage?.store[RESOURCE_ENERGY] ?? 0) > ENERGY_KEEP_AMOUNT * 2.5)
+      //   return true;
 
       if(average > 30000000)
       {
@@ -179,7 +179,7 @@ export class StructureManagementProcess extends Process{
         return true;
 
     const minRampart = _.min(ramparts, r => r.hits);
-    if(minRampart.hits < 60000)
+    if(minRampart.hits < 5500000)
       return true
 
     return retValue;

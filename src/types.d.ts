@@ -54,6 +54,7 @@ interface Flag {
       displayOldProcesses: boolean
       conLog: (message: string) => void;
       gcl: number
+      test: string;
     }
   }
 
