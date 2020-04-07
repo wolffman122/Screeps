@@ -1,5 +1,5 @@
 import { LifetimeProcess } from "os/process";
-import { KEEP_AMOUNT, MINERALS_RAW, MINERAL_KEEP_AMOUNT, PRODUCT_LIST, PRODUCTION_AMOUNT, FACTORY_KEEP_AMOUNT, ENERGY_KEEP_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { KEEP_AMOUNT, MINERALS_RAW, MINERAL_KEEP_AMOUNT, PRODUCT_LIST, PRODUCTION_TERMINAL_AMOUNT, FACTORY_KEEP_AMOUNT, ENERGY_KEEP_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 
 export class Spinner2LifeTimeProcess extends LifetimeProcess
 {
@@ -148,8 +148,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     }
 
     const bar = room.memory.barType
-    if((this.terminal.store[bar] ?? 0) < FACTORY_KEEP_AMOUNT &&
-      (this.storage.store[this.mineral.mineralType] ?? 0) > 100000)
+    if((this.terminal.store[bar] ?? 0) < FACTORY_KEEP_AMOUNT)
     {
       if(this.creep.room.name === 'E36S33')
         console.log(this.name, 'Check Bars', 1)
@@ -201,7 +200,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     for(let i = 0; i < PRODUCT_LIST.length; i++)
     {
       const prod = PRODUCT_LIST[i];
-      if((this.terminal?.store[prod] ?? 0) < PRODUCTION_AMOUNT)
+      if((this.terminal?.store[prod] ?? 0) < PRODUCTION_TERMINAL_AMOUNT)
       {
         if(this.TransferToTerminal(prod))
           return;
@@ -209,9 +208,9 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
           continue;
       }
 
-      if(this.terminal?.store[prod] !== PRODUCTION_AMOUNT)
+      if(this.terminal?.store[prod] !== PRODUCTION_TERMINAL_AMOUNT)
       {
-        this.TransferToStorage(prod, PRODUCTION_AMOUNT);
+        this.TransferToStorage(prod, PRODUCTION_TERMINAL_AMOUNT);
         return;
       }
     }
@@ -248,15 +247,15 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     const commodities = Object.keys(COMMODITIES).filter(n => n !== RESOURCE_ENERGY && !REACTIONS[n]) as CommodityConstant[]
     for(let i = 0; i < commodities.length; i++)
     {
-      if((this.terminal?.store[commodities[i]] ?? 0) < PRODUCTION_AMOUNT)
+      if((this.terminal?.store[commodities[i]] ?? 0) < PRODUCTION_TERMINAL_AMOUNT)
       {
         if(this.TransferToTerminal(commodities[i]))
           return;
       }
 
-      if(this.terminal?.store[commodities[i]] !== PRODUCTION_AMOUNT)
+      if(this.terminal?.store[commodities[i]] !== PRODUCTION_TERMINAL_AMOUNT)
       {
-        this.TransferToStorage(commodities[i], PRODUCTION_AMOUNT);
+        this.TransferToStorage(commodities[i], PRODUCTION_TERMINAL_AMOUNT);
       }
 
       if((this.factory?.store[commodities[i]] ?? 0) >= 600)
@@ -492,8 +491,9 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
             break;
           }
         }
-        else if(comp !== RESOURCE_ENERGY &&
-          (this.factory?.store[comp] ?? 0) < componentNeeded)
+        else if(comp !== RESOURCE_ENERGY
+          && ((this.factory?.store[comp] ?? 0) < componentNeeded)
+          && ((this.storage.store[this.mineral.mineralType] ?? 0) >= 100600))
         {
           console.log(this.name, 'Transfer to factory')
           if(this.TransferToFactory(comp))
