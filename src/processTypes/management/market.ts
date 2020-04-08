@@ -14,10 +14,11 @@ export class MarketManagementProcess extends Process
 
   run()
   {
-    let buying = false;
+    let buying = true;
     const barRooms: {
       [bar: string]: string[]
     } = {};
+    console.log(this.name, 'Filter Rooms');
     const catRooms = _.filter(Game.rooms, (r) => {
       if(r.memory.barType && r.controller?.my && r.terminal?.store[r.memory.barType] >= FACTORY_KEEP_AMOUNT)
       {
@@ -34,8 +35,10 @@ export class MarketManagementProcess extends Process
     let totalTransactions = 0;
     if(buying)
     {
-      if(Game.time % 5 === 0)
+      console.log(this.name, 'Buying');
+      if(Game.time % 6 === 0)
       {
+        console.log(this.name, 'Bar Rooms')
         for(let b in barRooms)
         {
           const bar = b as CommodityConstant;
@@ -57,7 +60,7 @@ export class MarketManagementProcess extends Process
                 console.log(this.name, 3)
                 const sourceRoom = Game.rooms[barRooms[bar][j]];
                 const terminal = sourceRoom.terminal;
-                if(terminal?.cooldown === 0 && terminal.store[RESOURCE_PURIFIER] >= order.amount)
+                if(terminal?.cooldown === 0 && terminal.store[bar] >= order.amount)
                 {
                   console.log(this.name, 4)
                   const cost = Game.market.calcTransactionCost(order.amount, order.roomName, sourceRoom.name)
