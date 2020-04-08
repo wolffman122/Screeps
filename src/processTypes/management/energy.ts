@@ -216,6 +216,8 @@ export class EnergyManagementProcess extends Process{
           })
         })
 
+        if(this.metaData.roomName !== 'E56S43')
+        {
         _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
           let count = 0;
           if(proc.metaData.distroCreeps[container.id])
@@ -255,6 +257,7 @@ export class EnergyManagementProcess extends Process{
             }
           }
         })
+        }
 
         this.metaData.upgradeCreeps = Utils.clearDeadCreeps(this.metaData.upgradeCreeps)
 
@@ -262,12 +265,10 @@ export class EnergyManagementProcess extends Process{
         {
           if(room.controller.ticksToDowngrade === 200000)
             room.memory.pauseUpgrading = true;
-          else if(room.controller.ticksToDowngrade < 154000)
+          else if(room.controller.ticksToDowngrade < 100000)
             room.memory.pauseUpgrading = false;
         }
 
-        room.memory.pauseUpgrading = false;
-        
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
           let creeps = Utils.inflateCreeps(this.metaData.upgradeCreeps);
