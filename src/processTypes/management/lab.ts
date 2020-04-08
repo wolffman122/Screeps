@@ -44,7 +44,7 @@ export class LabManagementProcess extends Process
   if(Game.cpu.bucket < 7000)
       return;
     this.logOn = false;
-    this.logName = "labm-E41S32";
+    this.logName = "labm-E43S52";
 
     this.room = Game.rooms[this.metaData.roomName];
     if(this.room.memory.shutdown)
@@ -109,6 +109,7 @@ export class LabManagementProcess extends Process
       {
         if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
         {
+          this.metaData.command = undefined;
           let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
           let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
           if(spawned)
@@ -152,19 +153,10 @@ export class LabManagementProcess extends Process
     {
       let command = this.accessCommand();
 
+
       //////////// Could not find a command do some other stuff. ///////////////////////
       if(!command)
       {
-        if(this.creep.store.getUsedCapacity(RESOURCE_POWER) > 0)
-        {
-          this.creep.say('😴-🔴');
-          if(!this.creep.pos.isNearTo(this.powerSpawn))
-            this.creep.travelTo(this.powerSpawn);
-          else
-            this.creep.transfer(this.powerSpawn, RESOURCE_POWER);
-
-          return;
-        }
 
         //////////// Empty creep ///////////////////////
         if(this.creep.store.getUsedCapacity() > 0)
@@ -181,50 +173,6 @@ export class LabManagementProcess extends Process
             this.creep.travelTo(this.terminal!);
           }
           return;
-        }
-
-        let resources = this.creep.room.find(FIND_DROPPED_RESOURCES);
-        if(resources.length)
-        {
-          resources = _.filter(resources, (r)=>{
-            if(this.creep.pos.inRangeTo(r, 5))
-              return r;
-          });
-
-          let target = this.creep.pos.findClosestByPath(resources);
-          if(target)
-          {
-            if(this.creep.pos.isNearTo(target))
-            {
-              this.creep.pickup(target);
-            }
-            this.creep.say('2');
-            this.creep.travelTo(target, {range: 1});
-            return;
-          }
-        }
-
-        let enemies = this.creep.room.find(FIND_HOSTILE_CREEPS);
-        let flag = Game.flags['Center-'+this.metaData.roomName];
-        let tombstones = this.creep.room.find(FIND_TOMBSTONES);
-        if(tombstones.length && enemies.length === 0)
-        {
-          tombstones = _.filter(tombstones, (t) => {
-            if(flag.pos.inRangeTo(t, 15) && _.sum(t.store) > 0)
-              return t;
-          });
-
-          let target = this.creep.pos.findClosestByPath(tombstones);
-          if(target)
-          {
-            if(this.creep.pos.isNearTo(target))
-            {
-              this.creep.withdrawEverything(target);
-            }
-            this.creep.say('3');
-            this.creep.travelTo(target);
-            return;
-          }
         }
 
         const generalContainer = this.roomData().generalContainers[0];
@@ -259,15 +207,26 @@ export class LabManagementProcess extends Process
         return;
       }
 
+      // if(this.name === this.logName && this.logOn)
+      //   console.log(this.name, 1, command.origin, command.resourceType, command.destination, command.amount);
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 2)
       ////////////// Do the command actions ///////////////////////
       let strSay: string;
       if(_.sum(this.creep.carry) === 0)
       {
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 3)
         if(!command.origin)
         {
+          if(this.name === this.logName && this.logOn)
+        console.log(this.name, 4, 'command undefined');
           command = undefined;
         }
 
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 5)
         let origin = Game.getObjectById<Structure>(command.origin);
         if(this.creep.pos.isNearTo(origin!))
         {
@@ -345,7 +304,7 @@ export class LabManagementProcess extends Process
       }
 
       if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 1)
+        console.log(this.name, 'FindCommand', 1, this.labProcess)
 
       let command = this.checkPullFlags();
 
@@ -364,11 +323,34 @@ export class LabManagementProcess extends Process
 
       command = this.checkProductLabs();
       if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 3, command.origin)
+        console.log(this.name, 'FindCommand', 3, command)
 
       if(command) return command;
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'FindCommand', 4)
+
+      // Load the towers
+      const towers = this.roomData().towers;
+      if(towers.length)
+      {
+        const tower = _.min(towers, t => (t.store[RESOURCE_ENERGY] ?? 0));
+        if((tower.store[RESOURCE_ENERGY] ?? 0) < tower.energyCapacity * .5)
+        {
+          if((this.terminal.store[RESOURCE_ENERGY] ?? 0) >= this.creep.store.getCapacity())
+          {
+            let command: Command = {origin: this.terminal.id, destination: tower.id, resourceType: RESOURCE_ENERGY};
+            return command;
+          }
+          else if((this.storage.store[RESOURCE_ENERGY] ?? 0) >= this.creep.store.getCapacity())
+          {
+            let command: Command = {origin: this.storage.id, destination: tower.id, resourceType: RESOURCE_ENERGY};
+            return command;
+          }
+        }
+      }
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 5)
 
       // load nukers
       let nuker = this.roomData().nuker;
@@ -385,6 +367,74 @@ export class LabManagementProcess extends Process
           return command;
         }
       }
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 6)
+
+      if((this.powerSpawn?.store[RESOURCE_POWER] ?? 0)  < 20)
+      {
+        if((this.terminal?.store[RESOURCE_POWER] ?? 0) >= 100)
+        {
+          let command: Command = {origin: this.terminal.id, destination: this.powerSpawn.id, resourceType: RESOURCE_POWER, amount: 100};
+          return command;
+        }
+        else if((this.storage?.store[RESOURCE_POWER] ?? 0) >= 100)
+        {
+          let command: Command = {origin: this.storage.id, destination: this.powerSpawn.id, resourceType: RESOURCE_POWER, amount: 100};
+          return command;
+        }
+      }
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 7)
+
+      if((this.powerSpawn?.store[RESOURCE_ENERGY] ?? 0)  < 500)
+      {
+        if((this.terminal?.store[RESOURCE_ENERGY] ?? 0) >= 100)
+        {
+          let command: Command = {origin: this.terminal.id, destination: this.powerSpawn.id, resourceType: RESOURCE_ENERGY};
+          return command;
+        }
+        else if((this.storage?.store[RESOURCE_POWER] ?? 0) >= 100)
+        {
+          let command: Command = {origin: this.storage.id, destination: this.powerSpawn.id, resourceType: RESOURCE_ENERGY};
+          return command;
+        }
+      }
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 8)
+
+      // Load the spawns
+      const spawns = this.roomData().spawns;
+      if(spawns.length)
+      {
+        const spawn = _.min(spawns, s => (s.store[RESOURCE_ENERGY] ?? 0));
+        if((spawn.store[RESOURCE_ENERGY] ?? 0) === 0)
+        {
+          const command: Command = {origin: this.terminal.id, destination: spawn.id, resourceType: RESOURCE_ENERGY};
+          return command;
+        }
+      }
+
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'FindCommand', 8)
+
+      const enemies = this.creep.room.find(FIND_HOSTILE_CREEPS);
+      if(!enemies.length)
+      {
+        const flag = Game.flags['Center-'+this.metaData.roomName];
+        const tombstones = flag.pos.findInRange(FIND_TOMBSTONES, 5, {filter: t => t.store.getUsedCapacity() > 0});
+        if(tombstones.length)
+        {
+          const tombstone = tombstones[0];
+          const res = Object.keys(tombstone.store)[0] as ResourceConstant;
+          let command: Command = {origin: tombstone.id, destination: this.storage.id, resourceType: res};
+          return command;
+        }
+
+      }
+
       if(this.name === this.logName && this.logOn)
         console.log(this.name, 'FindCommand', 5)
       return;
@@ -490,14 +540,20 @@ export class LabManagementProcess extends Process
       {
         let lab = this.reagentLabs[i];
         let mineralType = (this.labProcess ? Object.keys(this.labProcess.reagentLoads)[i] : undefined) as ResourceConstant;
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'checkReagentLabs', 1, mineralType, lab.mineralType, lab.mineralAmount)
         if(!mineralType && lab.mineralAmount > 0)
         {
+          if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'checkReagentLabs', 2)
           // clear labs when there is no current process
           let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType!};
           return command;
         }
         else if(mineralType && lab.mineralType && lab.mineralType !== mineralType)
         {
+          if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'checkReagentLabs', 3)
           let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType};
           return command;
         }
@@ -506,6 +562,8 @@ export class LabManagementProcess extends Process
 
           let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], LABDISTROCAPACITY);
 
+          if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'checkReagentLabs', 4, amountNeeded)
           if(this.storage.room.name === 'E35S51'
             && amountNeeded > 0 && this.storage!.store[mineralType]! >= amountNeeded
             && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
@@ -775,8 +833,8 @@ export class LabManagementProcess extends Process
         let processFinished = this.checkProcessFinished(process);
         if(processFinished)
         {
-          Game.notify(this.name + " has finished with " + process.currentShortage.mineralType);
-          console.log(this.name, "has finished with", process.currentShortage.mineralType);
+          //Game.notify(this.name + " has finished with " + process.currentShortage.mineralType);
+          //console.log(this.name, "has finished with", process.currentShortage.mineralType);
           this.metaData.labProcess = undefined;
           return this.findLabProcess();
         }
@@ -812,7 +870,7 @@ export class LabManagementProcess extends Process
         return; // early
 
     this.metaData.labProcess = this.findNewProcess();
-    console.log(this.name, 'Found process', this.metaData.labProcess.currentShortage.mineralType, this.metaData.labProcess.currentShortage.amount, this.metaData.labProcess.targetShortage.mineralType, this.metaData.labProcess.currentShortage.amount)
+    //console.log(this.name, 'Found process', this.metaData.labProcess.currentShortage.mineralType, this.metaData.labProcess.currentShortage.amount, this.metaData.labProcess.targetShortage.mineralType, this.metaData.labProcess.currentShortage.amount)
     return;
     }
     catch(error)
@@ -869,13 +927,15 @@ export class LabManagementProcess extends Process
 
     for (let compound of PRODUCT_LIST)
     {
+      if(this.storage.store[compound] >= PRODUCTION_STORAGE_AMOUNT)
+        continue;
+
       if(store[compound] >= PRODUCTION_AMOUNT)
       {
         continue;
       }
 
-      if(this.storage.store[compound] >= PRODUCTION_STORAGE_AMOUNT)
-        continue;
+
 
       return this.generateProcess({mineralType: compound,
         amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (this.terminal!.store[compound] || 0) });
