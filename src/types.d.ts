@@ -14,6 +14,7 @@ interface Creep extends RoomObject {
     boostRequest(boosts: string[], allowUnboosted: boolean): any
     getBodyPart(type: BodyPartConstant): boolean;
     getBodyParts(): BodyPartConstant[];
+    getBodyPartBoosted(type: BodyPartConstant): boolean;
     moveDir(dir: DirectionConstant): string;
     almostFull(): boolean;
   }

@@ -350,6 +350,29 @@ Creep.prototype.getBodyParts = function(): BodyPartConstant[]
   return retValue;
 }
 
+Creep.prototype.getBodyPartBoosted = function(type: BodyPartConstant): boolean
+{
+  console.log('GetBodyPartsBoosted', type);
+
+  let foundBoosted = false;
+  for(let i = 0; i < this.body.length && !foundBoosted; i++)
+  {
+    const part = this.body[i];
+    if(part.type === type && part.boost && part.hits > 0)
+      foundBoosted = true;
+  }
+
+  // Use string lenght of boost to determin tier level
+//   part.boost.length === 2 tier 2
+// 4:24
+// part.boost.length === 4 tier 3
+// 4:25
+// oh, I mean tier 1 and 2,
+  console.log(foundBoosted);
+
+  return foundBoosted;
+}
+
 Creep.prototype.partCount = function(partType: string): number
 {
   let count = 0;
