@@ -160,7 +160,7 @@ export class AllTerminalManagementProcess extends Process
                     }
                     else
                     minStorageOk = true;
-                    
+
                 }while(!minStorageOk);
 
                 // Hopefully remove any terminals that don't have room.
@@ -180,8 +180,8 @@ export class AllTerminalManagementProcess extends Process
                 }
 
                 let maxTerminal = <StructureTerminal>Game.getObjectById(max.terminal);
-                console.log(this.name, r, max.roomName, max.amount);
-                console.log(this.name, r, min.roomName, min.amount);
+                //console.log(this.name, r, max.roomName, max.amount);
+                //console.log(this.name, r, min.roomName, min.amount);
 
                 if(r === RESOURCE_ENERGY)
                 {
@@ -199,7 +199,7 @@ export class AllTerminalManagementProcess extends Process
                             this.metaData.sendStrings[maxRoom.name] = 'Send Information: To ' + minRoom.name + ' ' + r + ' ' + (5000 - min.amount) + ' : ' + Game.time;
                             this.metaData.receiveStr[minRoom.name] = 'Recieved Information: From ' + maxRoom.name + ' ' + r + ' ' + (5000 - min.amount) + ' : ' + Game.time;
                         }
-                        console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
+                        //console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
                     }
                 }
             })
