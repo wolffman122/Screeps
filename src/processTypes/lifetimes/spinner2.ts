@@ -13,7 +13,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
   factory: StructureFactory;
   powerSpawn: StructurePowerSpawn;
   mineral: Mineral<MineralConstant>
-  skMinerals: Mineral<MineralConstant>[] = [];
+  skMinerals: MineralConstant[] = [];
   renewSpawn: StructureSpawn
 
   run()
@@ -159,16 +159,16 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     // SK Mineral transfer code.
     for(let i = 0; i < this.skMinerals.length; i++)
     {
-      const skMineral = this.skMinerals[i];
-      if(this.terminal?.store[skMineral.mineralType] < KEEP_AMOUNT)
+      const skMineral = this.skMinerals[i] as MineralConstant;
+      if(this.terminal?.store[skMineral] < KEEP_AMOUNT)
       {
-        if(this.TransferToTerminal(skMineral.mineralType))
+        if(this.TransferToTerminal(skMineral))
           return;
       }
 
-      if(this.terminal?.store[skMineral.mineralType] !== KEEP_AMOUNT)
+      if(this.terminal?.store[skMineral] !== KEEP_AMOUNT)
       {
-        this.TransferToStorage(skMineral.mineralType, KEEP_AMOUNT);
+        this.TransferToStorage(skMineral, KEEP_AMOUNT);
         return;
       }
     }
@@ -177,7 +177,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     for(let i = 0; i < MINERALS_RAW.length; i++)
     {
       const mineral = MINERALS_RAW[i];
-      if(mineral === this.mineral.mineralType)
+      if(mineral === this.mineral.mineralType || (this.skMinerals.length && mineral === this.skMinerals[0]))
         continue;
 
       if(this.terminal?.store[mineral] < MINERAL_KEEP_AMOUNT)
@@ -299,7 +299,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
                   this.metaData.skMinerals = [];
 
               this.metaData.skMinerals.push(mineral.id);
-              this.skMinerals.push(mineral);
+              this.skMinerals.push(mineral.mineralType);
             }
           }
         }
