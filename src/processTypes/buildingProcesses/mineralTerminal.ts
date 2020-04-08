@@ -36,6 +36,8 @@ export const PRODUCT_LIST = [RESOURCE_UTRIUM_OXIDE,
                              RESOURCE_CATALYZED_ZYNTHIUM_ACID,
                              RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
                              RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE];
+export const PRODUCTION_TERMINAL_AMOUNT = 6000;
+export const PRODUCTION_STORAGE_AMOUNT = 2000;
 export const PRODUCTION_AMOUNT = 6000;
 
 export const REAGENT_LIST = {
