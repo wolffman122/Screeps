@@ -138,7 +138,7 @@ export class InitProcess extends Process{
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
-              proc.kernel.addProcess(LabManagementProcess, 'labm-' + room.name, 30, {
+              proc.kernel.addProcess(LabManagementProcess, 'labm-' + room.name, 33, {
                 roomName: room.name
               });
             }
@@ -148,7 +148,7 @@ export class InitProcess extends Process{
           {
             const labs = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB});
             if(room.controller && room.controller.my && room.controller.level >= 6 && labs.length > 0)
-              proc.kernel.addProcessIfNotExist(LabManagementProcess, 'labm-' + room.name, 30, {
+              proc.kernel.addProcessIfNotExist(LabManagementProcess, 'labm-' + room.name, 33, {
                 roomName: room.name
               });
           }
