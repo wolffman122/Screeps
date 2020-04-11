@@ -120,6 +120,7 @@ export const Stats = {
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
 
+      if(roomName)
       if(room)
       {
         if(room.controller && room.controller.my){
@@ -324,7 +325,7 @@ export const Stats = {
         }
         else if(room.controller && !room.controller.my)
         {
-          if(roomName === 'E43S58')
+          if(roomName === '32S51')
             {
               Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined
               Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined

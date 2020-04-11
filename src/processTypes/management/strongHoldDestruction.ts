@@ -31,6 +31,11 @@ export class StrongHoldDestructionProcess extends Process
   {
     try
     {
+      if(this.metaData.roomName === 'E44S55')
+      {
+        this.completed = true;
+        return;
+      }
       console.log(this.name, 'running');
       this.ensureMetaData();
       console.log(this.name)
@@ -428,7 +433,8 @@ export class StrongHoldDestructionProcess extends Process
 
       if(this.metaData.coreLevel === 4 && this.metaData.moving === undefined) // Gather creeps before leaving.
       {
-        const remoteFlag = Game.flags['RemoteFlee-' + this.metaData.roomName];
+        console.log(this.name, 'Lead', 2, creep.name);
+        const remoteFlag = Game.flags['RemoteFlee-' + this.metaData.spawnRoomName];
         if(!creep.pos.isNearTo(remoteFlag))
         {
           creep.travelTo(remoteFlag);
@@ -844,7 +850,7 @@ export class StrongHoldDestructionProcess extends Process
       // Gather at location.
       if(this.metaData.coreLevel  === 4 && !this.metaData.moving)
       {
-        const remoteFlag = Game.flags['RemoteFlee-' + this.metaData.roomName];
+        const remoteFlag = Game.flags['RemoteFlee-' + this.metaData.spawnRoomName];
         if(!creep.pos.isNearTo(remoteFlag))
           creep.travelTo(remoteFlag);
         else

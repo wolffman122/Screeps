@@ -9,6 +9,17 @@ interface WeightList{
 export const CreepBuilder = {
   design: function(creepType: string, room: Room, memory: any) : BodyPartConstant[]
   {
+
+
+    let creepCount = _.filter(Game.creeps, function(creep){
+      return creep.room.name === room.name
+    }).length
+
+    const containers = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTAINER});
+
+    let emergancy = ((creepType === 'harvester' || creepType === 'pHarvester') && creepCount < 2) || (creepType === 'mover' && creepCount < 4) || (room.storage && containers.length < 1);
+
+
     if(creepType === 'vision')
     {
       console.log('Vision problems 1')
@@ -137,28 +148,31 @@ export const CreepBuilder = {
               HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
               MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
     }
+    else if(creepType === 'pHarvester')
+    {
+      if(emergancy)
+        creepType = 'harvester';
+      else
+        return [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
+                MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY];
+    }
     else if(creepType === 'custom')
     {
       return memory.body;
     }
 
-    let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
+    if(room.name === 'E36S38' && creepType === 'harvester')
+      console.log('Creep design', 1, creepType)
+
+      let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
-
-    let creepCount = _.filter(Game.creeps, function(creep){
-      return creep.room.name === room.name
-    }).length
-
-    const containers = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTAINER});
-
-    let emergancy = (creepType === 'harvester' && creepCount < 2) || (creepType === 'mover' && creepCount < 4) || (room.storage && containers.length < 1);
-
 
     if(emergancy){
       spendCap = 300
     }else{
       spendCap = room.energyCapacityAvailable
     }
+
 
     let add = true
     let extendIndex = 0
@@ -167,14 +181,24 @@ export const CreepBuilder = {
     {
       console.log('Vision problems 2')
     }
+
+
     if(CreepBuilder.typeExtends[creepType].length === 0)
     {
       add = false;
     }
 
-    while(add){
+    if(room.name === 'E36S38' && creepType === 'harvester')
+      console.log('Creep design', 1.1, creepType, add, spendCap)
+
+    while(add)
+    {
+      if(room.name === 'E36S38' && creepType === 'harvester')
+        console.log('Creep design', 0.2, creepCost, body)
       var creepCost = CreepBuilder.bodyCost(body)
 
+      if(room.name === 'E36S38' && creepType === 'harvester')
+      console.log('Creep design', 1.2, creepCost, body)
       if(memory.addition)
       {
         creepType = memory.addition;
@@ -221,10 +245,14 @@ export const CreepBuilder = {
       {
         console.log('Vision problems 4')
       }
+      if(room.name === 'E36S38' && creepType === 'pHarvester')
+      console.log('Creep design', 2)
       return temp;
     }
     else
     {
+      if(room.name === 'E36S38' && creepType === 'pHarvester')
+      console.log('Creep design', 3)
       return body;
     }
   },

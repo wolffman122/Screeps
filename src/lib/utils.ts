@@ -60,27 +60,28 @@ export const Utils = {
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
 
-
+    if(roomName === 'E36S38')
+      console.log('Spawn', 1.01, body);
     let spawns = kernel.data.roomData[roomName].spawns
     let outcome = false
 
-    if(creepType === "holdmover")
-        {
-          console.log('Body result', body.length, spawns.length, spawns[0].spawnCreep(body, name, {dryRun: true}));
-        }
     _.forEach(spawns, function(spawn){
+      if(roomName === 'E36S38')
+        console.log('Spawn', 1.02, _.includes(kernel.data.usedSpawns, spawn.id), spawn.spawnCreep(body, name, {dryRun: true}) === OK);
       if(!_.includes(kernel.data.usedSpawns, spawn.id) &&!spawn.spawning && spawn.spawnCreep(body, name, {dryRun: true}) === OK){
 
+        if(roomName === 'E36S38')
+      console.log('Spawn', 1.1)
         let ret = spawn.spawnCreep(body, name, {memory: memory})
-        if(creepType === "holdmover")
-        {
-          console.log('Spawn result', ret);
-        }
+        if(roomName === 'E36S38')
+      console.log('Spawn', 1.2, ret)
         outcome = true
         kernel.data.usedSpawns.push(spawn.id)
       }
     })
 
+    if(roomName === 'E36S38')
+      console.log('Spawn', 2, outcome)
     return outcome
   },
 

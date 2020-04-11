@@ -139,120 +139,108 @@ export class HoldRoomOptManagementProcess extends Process
     }
 
     let defenderCount = 0;
-    try
+    if(enemiesPresent && flag.room)
     {
-      if(enemiesPresent && flag.room)
+      const enemieIds = flag.room.memory.hostileCreepIds;
+      let enemies: Creep[] = [];
+      for(let i = 0; i < enemieIds.length; i++)
       {
-        const enemieIds = flag.room.memory.hostileCreepIds;
-        let enemies: Creep[] = [];
-        for(let i = 0; i < enemieIds.length; i++)
+        const eCreep = Game.getObjectById(enemieIds[i]) as Creep;
+        enemies.push(eCreep);
+      }
+
+      enemies = _.filter(enemies, (e: Creep)=> {
+        return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
+      });
+
+      defenderCount = enemies.length;
+      let bodyMakeup: BodyPartConstant[] = [];
+      let  boosted = false;
+      _.forEach(enemies, (e)=>{
+        bodyMakeup = e.getBodyParts();
+        boosted = (e.body.filter(e => e.boost !== undefined).length) ? true : false;
+      });
+
+      let moveCount = 0;
+      for(var i = bodyMakeup.length - 1; i >= 0; i--)
+      {
+        switch(bodyMakeup[i])
         {
-          const eCreep = Game.getObjectById(enemieIds[i]) as Creep;
-          enemies.push(eCreep);
-        }
-
-        enemies = _.filter(enemies, (e: Creep)=> {
-          return (e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0);
-        });
-
-        defenderCount = enemies.length;
-        let bodyMakeup: BodyPartConstant[] = [];
-        let  boosted = false;
-        _.forEach(enemies, (e)=>{
-          bodyMakeup = e.getBodyParts();
-          boosted = (e.body.filter(e => e.boost !== undefined).length) ? true : false;
-        });
-
-        let moveCount = 0;
-        for(var i = bodyMakeup.length - 1; i >= 0; i--)
-        {
-          switch(bodyMakeup[i])
-          {
-            case MOVE:
-              moveCount++;
-              break;
-            case WORK:
-            case RANGED_ATTACK:
-              bodyMakeup[i] = ATTACK;
-              break;
-          }
-        }
-
-        if(moveCount <= bodyMakeup.length / 2)
-        {
-          let add = bodyMakeup.length / 2 - moveCount;
-          add = Math.floor(add);
-          if(add > 0)
-          {
-            for(var j = 0; j < add; j++)
-              bodyMakeup.push(MOVE);
-          }
-        }
-
-        this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
-        console.log(this.name, 'Defender counts', this.metaData.defenderCreeps.length, defenderCount);
-        if(this.metaData.defenderCreeps.length < defenderCount)
-        {
-          let creepName = 'hrm-defender-' + flag.pos.roomName + '-' + Game.time;
-          let spawned = Utils.spawn(
-            this.kernel,
-            spawnRoomName,
-            'custom',
-            creepName,
-            {body: bodyMakeup.reverse()}
-          );
-
-          if(spawned)
-          {
-
-            this.metaData.defenderCreeps.push(creepName);
-            this.kernel.addProcessIfNotExist(HolderDefenderLifetimeProcess, 'holderDefenderlf-' + creepName, 20, {
-              creep: creepName,
-              flagName: this.metaData.flagName,
-              spawnRoomName: spawnRoomName,
-              boosted: boosted
-            })
-          }
+          case MOVE:
+            moveCount++;
+            break;
+          case WORK:
+          case RANGED_ATTACK:
+            bodyMakeup[i] = ATTACK;
+            break;
         }
       }
 
-      if(flag.memory.cores && flag.room && !enemiesPresent)
+      if(moveCount <= bodyMakeup.length / 2)
+      {
+        let add = bodyMakeup.length / 2 - moveCount;
+        add = Math.floor(add);
+        if(add > 0)
         {
-          this.metaData.coreBuster = Utils.clearDeadCreeps(this.metaData.coreBuster);
-          if(this.metaData.coreBuster.length < 1)
-          {
-            let creepName = 'hrm-buster-' + flag.pos.roomName + '-' + Game.time;
-            let spawned = Utils.spawn(
-              this.kernel,
-              spawnRoomName,
-              'buster',
-              creepName,
-              {}
-            );
-            if(spawned)
-            {
-              let boost = [];
-              boost.push(RESOURCE_CATALYZED_UTRIUM_ACID);
-              this.metaData.coreBuster.push(creepName);
-              this.kernel.addProcessIfNotExist(BusterLifetimeProcess, 'busterlf-' + creepName, 30, {
-                creep: creepName,
-                flagName: this.metaData.flagName,
-                spawnRoom: spawnRoomName,
-                coreId: coreId,
-                boosts: boost
-              })
-            }
-          }
+          for(var j = 0; j < add; j++)
+            bodyMakeup.push(MOVE);
         }
+      }
 
-      //if(flag.memory.nuker && flag.room)
-        //this.DismantleNuker(flag);
+      this.metaData.defenderCreeps = Utils.clearDeadCreeps(this.metaData.defenderCreeps);
+      console.log(this.name, 'Defender counts', this.metaData.defenderCreeps.length, defenderCount);
+      if(this.metaData.defenderCreeps.length < defenderCount)
+      {
+        let creepName = 'hrm-defender-' + flag.pos.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(
+          this.kernel,
+          spawnRoomName,
+          'custom',
+          creepName,
+          {body: bodyMakeup.reverse()}
+        );
 
+        if(spawned)
+        {
 
+          this.metaData.defenderCreeps.push(creepName);
+          this.kernel.addProcessIfNotExist(HolderDefenderLifetimeProcess, 'holderDefenderlf-' + creepName, 20, {
+            creep: creepName,
+            flagName: this.metaData.flagName,
+            spawnRoomName: spawnRoomName,
+            boosted: boosted
+          })
+        }
+      }
     }
-    catch(err)
+
+    if(flag.memory.cores && flag.room && !enemiesPresent)
     {
-      console.log(this.name, err)
+      this.metaData.coreBuster = Utils.clearDeadCreeps(this.metaData.coreBuster);
+      if(this.metaData.coreBuster.length < 1)
+      {
+        let creepName = 'hrm-buster-' + flag.pos.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(
+          this.kernel,
+          spawnRoomName,
+          'buster',
+          creepName,
+          {}
+        );
+        if(spawned)
+        {
+          let boost = [];
+          boost.push(RESOURCE_CATALYZED_UTRIUM_ACID);
+          this.metaData.coreBuster.push(creepName);
+          this.kernel.addProcessIfNotExist(BusterLifetimeProcess, 'busterlf-' + creepName, 30, {
+            creep: creepName,
+            flagName: this.metaData.flagName,
+            spawnRoom: spawnRoomName,
+            coreId: coreId,
+            boosts: boost
+          })
+        }
+      }
     }
 
     if(!enemiesPresent && this.kernel.data.roomData[spawnRoomName].containers.length >= 3)
@@ -552,85 +540,72 @@ export class HoldRoomOptManagementProcess extends Process
 
   DismantleNuker(flag: Flag)
   {
-    try
+    const nuker = this.roomInfo(flag.room.name).nuker;
+    if((nuker?.store[RESOURCE_ENERGY] > 0 ?? 0) || (nuker?.store[RESOURCE_GHODIUM] ?? 0) === nuker.store.getCapacity(RESOURCE_GHODIUM))
     {
-      const nuker = this.roomInfo(flag.room.name).nuker;
-      if((nuker?.store[RESOURCE_ENERGY] > 0 ?? 0) || (nuker?.store[RESOURCE_GHODIUM] ?? 0) === nuker.store.getCapacity(RESOURCE_GHODIUM))
+      this.metaData.dismantlerCreeps = Utils.clearDeadCreeps(this.metaData.dismantlerCreeps);
+      if(this.metaData.dismantlerCreeps.length < 1)
       {
-        this.metaData.dismantlerCreeps = Utils.clearDeadCreeps(this.metaData.dismantlerCreeps);
-        if(this.metaData.dismantlerCreeps.length < 1)
-        {
-          let creepName = 'hrm-dismantle-' + flag.pos.roomName + '-' + Game.time;
-          let spawned = Utils.spawn(
-            this.kernel,
-            this.spawnRoom.name,
-            'worker',
-            creepName,
-            {}
-          );
+        let creepName = 'hrm-dismantle-' + flag.pos.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(
+          this.kernel,
+          this.spawnRoom.name,
+          'worker',
+          creepName,
+          {}
+        );
 
-          if(spawned)
-            this.metaData.dismantlerCreeps.push(creepName);
-        }
-      }
-      else
-      {
-        const ruins = flag.room.find(FIND_RUINS, {filter: r => r.structure.structureType === STRUCTURE_NUKER});
-        if(ruins.length)
-        {
-          const ruin = ruins[0];
-          const amount = (ruin.store[RESOURCE_ENERGY] ?? 0) + (ruin.store[RESOURCE_GHODIUM] ?? 0);
-          if(amount > 2000)
-          {
-
-          }
-        }
-      }
-
-
-
-      for(let i = 0; i < this.metaData.dismantlerCreeps.length; i++)
-      {
-        const creep = Game.creeps[this.metaData.dismantlerCreeps[i]];
-        if(creep)
-          this.DismantlerActions(creep, nuker);
+        if(spawned)
+          this.metaData.dismantlerCreeps.push(creepName);
       }
     }
-    catch(error)
+    else
     {
-      console.log(this.name, 'DismantleNuker', error);
+      const ruins = flag.room.find(FIND_RUINS, {filter: r => r.structure.structureType === STRUCTURE_NUKER});
+      if(ruins.length)
+      {
+        const ruin = ruins[0];
+        const amount = (ruin.store[RESOURCE_ENERGY] ?? 0) + (ruin.store[RESOURCE_GHODIUM] ?? 0);
+        if(amount > 2000)
+        {
+
+        }
+      }
     }
+
+
+
+    for(let i = 0; i < this.metaData.dismantlerCreeps.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.dismantlerCreeps[i]];
+      if(creep)
+        this.DismantlerActions(creep, nuker);
+    }
+
   }
 
   DismantlerActions(creep: Creep, nuker: StructureNuker)
   {
-    try
+    if(nuker)
     {
-      if(nuker)
-      {
-        if(!creep.pos.isNearTo(nuker))
-          creep.travelTo(nuker);
-        else
-          creep.dismantle(nuker);
-
-        creep.say('💥');
-        return;
-      }
+      if(!creep.pos.isNearTo(nuker))
+        creep.travelTo(nuker);
       else
-      {
-        const spawn = this.roomData().spawns[0];
-        if(!creep.pos.isNearTo(spawn))
-          creep.travelTo(spawn);
-        else if(!spawn.spawning)
-          spawn.recycleCreep(creep);
+        creep.dismantle(nuker);
 
-        creep.say('☠');
-        return;
-      }
+      creep.say('💥');
+      return;
     }
-    catch (error)
+    else
     {
-      console.log(this.name, 'DismantlerActions', error);
+      const spawn = this.roomData().spawns[0];
+      if(!creep.pos.isNearTo(spawn))
+        creep.travelTo(spawn);
+      else if(!spawn.spawning)
+        spawn.recycleCreep(creep);
+
+      creep.say('☠');
+      return;
     }
   }
 }

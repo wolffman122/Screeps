@@ -12,11 +12,11 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
 
     if(creep.room.memory.shutdown)
     {
-      this.completed = true;
+      //this.completed = true;
       return;
     }
 
-    if(creep.name === 'em-E32S44-21171336')
+    if(creep.name === 'em-E36S38-25754790')
       console.log(this.name, 'exists')
 
     if(_.sum(creep.carry) === 0 || creep.memory.filling)

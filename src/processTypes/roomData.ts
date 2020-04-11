@@ -67,8 +67,8 @@ export class RoomDataProcess extends Process{
     else
       room.memory.hostileCreepIds = undefined;
 
-    if(room.name === 'E45S56')
-      console.log(this.name, 'Siege Status ', room.memory.seigeDetected);
+    if(room.memory.seigeDetected)
+      console.log(this.name, 'Siege Status ', room.memory.seigeDetected, room.name);
 
     if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0)
     {

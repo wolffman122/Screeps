@@ -138,19 +138,13 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown < 10
       && powerCreep.store[RESOURCE_OPS] >= 2)
       {
+        if(!room.memory.powerHarvesting)
+            room.memory.powerHarvesting = true;
+
         console.log(this.name, 'extensions', 2)
         let fillExt = false;
-        if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.level === 1)
-        {
-
-          if(powerCreep.room.energyAvailable <= powerCreep.room.energyCapacityAvailable * 0.8)
-            fillExt = true;
-        }
-        else if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.level === 2)
-        {
-          if(powerCreep.room.energyAvailable <= powerCreep.room.energyCapacityAvailable * 0.6)
-            fillExt = true;
-        }
+        if(powerCreep.room.energyAvailable < (powerCreep.room.energyCapacityAvailable - 900))
+          fillExt = true;
 
         console.log(this.name, 'extensions', 4)
         if(fillExt)
@@ -164,9 +158,10 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
               {
                 powerCreep.usePower(PWR_OPERATE_EXTENSION, storage);
                 powerCreep.say('filRoom', true);
-                return
+
               }
             }
+          return;
         }
       }
       console.log(this.name, 'extensions', 6)

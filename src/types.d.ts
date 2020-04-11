@@ -322,6 +322,7 @@ interface Flag {
     spinnerDump?: boolean;
     hostileCreepIds?: string[];
     barType?: CommodityConstant;
+    powerHarvesting?: boolean;
   }
 
   interface SpawnMemory {}

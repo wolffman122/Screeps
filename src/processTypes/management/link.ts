@@ -26,8 +26,6 @@ export class LinkManagementProcess extends Process
       let storage = storageLink.room.storage;
 
       _.forEach(this.roomData().sourceLinks, (sl) => {
-        if(this.metaData.roomName === 'E32S44')
-          console.log(this.name, (controllerLink.store.getFreeCapacity(RESOURCE_ENERGY) ?? 0));
         if((controllerLink?.store.getFreeCapacity(RESOURCE_ENERGY) ?? 0) > 100)
         {
           if(sl.cooldown == 0 && sl.energy > 700 &&

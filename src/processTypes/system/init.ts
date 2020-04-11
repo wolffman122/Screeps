@@ -33,15 +33,12 @@ export class InitProcess extends Process{
       this.kernel.limit = (Game.cpu.limit + 500) - 20
     }
 
-    console.log(this.name, 1)
-
     for(var name in Memory.creeps){
       if(!Game.creeps[name]){
         delete Memory.creeps[name]
       }
     }
 
-    console.log(this.name, 2)
     let gRooms = Object.keys(Game.rooms);
     let mRooms: string[] = []
     if(Memory.rooms)
@@ -50,16 +47,12 @@ export class InitProcess extends Process{
     let observedRooms = _.difference(mRooms, gRooms);
     if(observedRooms.length)
     {
-      console.log(this.name, 2, observedRooms.length)
       _.forEach(observedRooms, (or) => {
-        //console.log('Hoping observed rooms ', or );
         if(!Game.rooms[or])
           Memory.rooms[or] = undefined;
       })
     }
-    console.log(this.name, 3)
-    _
-    //console.log('Observer', 0)
+
     _.forEach(Game.rooms, function(room){
 
       const flags = room.find(FIND_FLAGS, {filter: f=> f.name === room.name + '-kill'});

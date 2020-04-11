@@ -8,32 +8,22 @@ export class PowerManagement extends Process
 
   run()
   {
-    try
-    {
-      console.log(this.name, '!!!!!!!!!!!running!!!!!!!!!!')
-      _.forEach(Game.powerCreeps, (p)=> {
-        console.log(this.name, 1, p.name, !p.ticksToLive);
-        if(!p.ticksToLive)
+    _.forEach(Game.powerCreeps, (p)=> {
+      if(!p.ticksToLive)
+      {
+        const roomName = p.name.split('-')[0];
+        const powerSpawn = this.roomInfo(roomName).powerSpawn;
+        if(powerSpawn)
         {
-          const roomName = p.name.split('-')[0];
-          const powerSpawn = this.roomInfo(roomName).powerSpawn;
-          console.log(this.name, 2, roomName, powerSpawn)
-          if(powerSpawn)
+          if(p.spawn(powerSpawn) === OK)
           {
-            if(p.spawn(powerSpawn) === OK)
-            {
-              this.kernel.addProcess(PowerCreepLifetimeProcess, 'pclf-' + p.name, this.priority - 1, {
-                powerCreep: p.name,
-                roomName: roomName
-              });
-            }
+            this.kernel.addProcess(PowerCreepLifetimeProcess, 'pclf-' + p.name, this.priority - 1, {
+              powerCreep: p.name,
+              roomName: roomName
+            });
           }
         }
-      });
-    }
-    catch(error)
-    {
-      console.log(this.name, 'run', error);
-    }
+      }
+    });
   }
 }
