@@ -99,8 +99,7 @@ export class EnergyManagementProcess extends Process{
         let sourceContainers = this.kernel.data.roomData[this.metaData.roomName].sourceContainers;
         let sourceLinks = this.kernel.data.roomData[this.metaData.roomName].sourceLinks;
 
-        if(this.metaData.roomName === 'E36S38')
-          console.log(this.name, 'Source Links', sourceLinks.length);
+
         _.forEach(sources, function(source)
         {
           if(!proc.metaData.harvestCreeps[source.id])
@@ -231,45 +230,91 @@ export class EnergyManagementProcess extends Process{
 
         if(this.metaData.roomName !== 'E56S43' && this.metaData.roomName !== 'E58S52')
         {
-        _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
-          let count = 0;
-          if(proc.metaData.distroCreeps[container.id])
+          if(sourceContainers.length)
           {
-            let creep = Game.creeps[proc.metaData.distroCreeps[container.id]]
-            if(!creep){
-              delete proc.metaData.distroCreeps[container.id]
-              return
-            }
-            else
-            {
-              let ticksNeeded = creep.body.length * 3;
-              if(!creep.ticksToLive || creep.ticksToLive > ticksNeeded)
+            _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
+              let count = 0;
+              if(proc.metaData.distroCreeps[container.id])
               {
-                count++;
+                let creep = Game.creeps[proc.metaData.distroCreeps[container.id]]
+                if(!creep){
+                  delete proc.metaData.distroCreeps[container.id]
+                  return
+                }
+                else
+                {
+                  let ticksNeeded = creep.body.length * 3;
+                  if(!creep.ticksToLive || creep.ticksToLive > ticksNeeded)
+                  {
+                    count++;
+                  }
+                }
               }
-            }
-          }
 
-          if(count < 1)
+              if(count < 1)
+              {
+                let creepName = 'em-m-' + proc.metaData.roomName + '-' + Game.time
+                let spawned = Utils.spawn(
+                  proc.kernel,
+                  proc.metaData.roomName,
+                  'mover',
+                  creepName,
+                  {}
+                )
+
+                if(spawned){
+                  proc.metaData.distroCreeps[container.id] = creepName
+                  proc.kernel.addProcess(DistroLifetimeOptProcess, 'dlfOpt-' + creepName, 48, {
+                    sourceContainer: container.id,
+                    creep: creepName
+                  })
+                }
+              }
+            })
+          }
+          else if(sourceLinks.length)
           {
-            let creepName = 'em-m-' + proc.metaData.roomName + '-' + Game.time
-            let spawned = Utils.spawn(
-              proc.kernel,
-              proc.metaData.roomName,
-              'mover',
-              creepName,
-              {}
-            )
+            if(this.name === 'em-E37S46')
+              console.log(this.name, 'Source Links', 1, this.kernel.data.roomData[proc.metaData.roomName].sourceLinks.length)
+            _.forEach(this.kernel.data.roomData[proc.metaData.roomName].sourceLinks, function(link){
+              let count = 0;
+              if(proc.metaData.distroCreeps[link.id])
+              {
+                let creep = Game.creeps[proc.metaData.distroCreeps[link.id]]
+                if(!creep){
+                  delete proc.metaData.distroCreeps[link.id]
+                  return
+                }
+                else
+                {
+                  let ticksNeeded = creep.body.length * 3;
+                  if(!creep.ticksToLive || creep.ticksToLive > ticksNeeded)
+                  {
+                    count++;
+                  }
+                }
+              }
 
-            if(spawned){
-              proc.metaData.distroCreeps[container.id] = creepName
-              proc.kernel.addProcess(DistroLifetimeOptProcess, 'dlfOpt-' + creepName, 48, {
-                sourceContainer: container.id,
-                creep: creepName
-              })
-            }
+              if(count < 1)
+              {
+                let creepName = 'em-m-' + proc.metaData.roomName + '-' + Game.time
+                let spawned = Utils.spawn(
+                  proc.kernel,
+                  proc.metaData.roomName,
+                  'mover',
+                  creepName,
+                  {}
+                )
+
+                if(spawned){
+                  proc.metaData.distroCreeps[link.id] = creepName
+                  proc.kernel.addProcess(DistroLifetimeOptProcess, 'dlfOpt-' + creepName, 48, {
+                    creep: creepName
+                  })
+                }
+              }
+            })
           }
-        })
         }
 
         this.metaData.upgradeCreeps = Utils.clearDeadCreeps(this.metaData.upgradeCreeps)
@@ -394,6 +439,8 @@ export class EnergyManagementProcess extends Process{
           }
         }
 
+        if(this.name === 'em-E37S46')
+          console.log(this.name, 'distro creeps', Object.keys(this.metaData.distroCreeps).length, this.metaData.distroCreeps[0], this.metaData.distroCreeps[1]);
         if(this.kernel.data.roomData[this.metaData.roomName].storageLink
             &&
           (this.metaData.upgradeCreeps.length > 0 || room.memory.pauseUpgrading)

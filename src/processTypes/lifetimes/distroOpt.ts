@@ -23,11 +23,11 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     //   return;
     // }
 
-    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
+    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer) as StructureContainer;
 
     // Room energy full parts
     if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable &&
-      sourceContainer && _.sum(sourceContainer.store) <= creep.carryCapacity * .85)
+      _.sum(sourceContainer?.store) <= creep.carryCapacity * .85)
     {
 
       const minContainer = this.kernel.data.roomData[creep.room.name].mineralContainer;
@@ -69,9 +69,6 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       // Source Link routine
       if(this.kernel.data.roomData[creep.pos.roomName].sourceLinks.length == 2)
       {
-        if(!sourceContainer)
-          return;
-
         const storage = creep.room.storage;
 
         // With draw form storage because source containers are not full yet
@@ -107,7 +104,9 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           creep.say('🌎');
           let target = creep.pos.findClosestByPath(dropped);
 
-          if(!creep.pos.inRangeTo(target, 5))
+          if(creep.name === 'em-m-E36S33-25790836')
+            console.log(this.name, 'Dropped problem', target.id);
+          if(!creep.pos.isNearTo(target))
             creep.pushyTravelTo(target);
           else
             creep.pickup(target);
