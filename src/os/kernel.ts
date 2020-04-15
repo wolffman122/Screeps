@@ -161,7 +161,7 @@ const processTypes = <{[type: string]: any}>{
   'salf': SquadAttackerLifetimeProcess,
   'report': ReportProcess,
   'skrmp': skRoomManagementProcess,
-  'lh': TowerHealProcess,
+  'th': TowerHealProcess,
   'atmp': AllTerminalManagementProcess,
   'powm': PowerHarvestingManagement,
   'deflf': DefenderLifetimeProcess,
