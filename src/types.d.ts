@@ -290,6 +290,7 @@ interface Flag {
     skCostMatrix?: number[];
     miningStopTime?: number;
     pauseUpgrading?: boolean;
+    upgradingTick?: number;
     fullEnergyCount?: number;
     specialMining?: boolean;
     depositMining?: boolean;
@@ -950,6 +951,9 @@ interface Spinner2LifeTimeProcessMetaData
   numberOfFlags: number,
   skFeedRoom?: boolean,
   skMinerals?: string[],
+  commands?: Command[],
+  commandIndex?: number,
+  factoryEmpty?: boolean,
 }
 
 interface TransferManagementProcessMetaData
