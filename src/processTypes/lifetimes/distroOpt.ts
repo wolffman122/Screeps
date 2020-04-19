@@ -1,4 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
+import { ENERGY_KEEP_AMOUNT } from 'processTypes/buildingProcesses/mineralTerminal';
 
 export class DistroLifetimeOptProcess extends LifetimeProcess{
   type = 'dlfOpt';
@@ -132,12 +133,22 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         }
 
         const terminal = creep.room.terminal;
-        // Enemy terminal
-        if(creep.room.storage?.my && terminal?.my)
+        if(storage?.my && terminal?.my)
         {
+          if((storage.store[RESOURCE_ENERGY] ?? 0) > ENERGY_KEEP_AMOUNT)
+          {
+            creep.say('🏟');
+            if(!creep.pos.isNearTo(storage))
+              creep.travelTo(storage);
+            else
+              creep.withdraw(storage, RESOURCE_ENERGY);
+
+            return;
+          }
+
           if(terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
           {
-            creep.say('👹🏦');
+            creep.say('🏦');
             if(creep.pos.isNearTo(terminal))
               creep.withdrawEverything(terminal);
             else
@@ -312,11 +323,14 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
 
       deliverTargets = _.filter(targets, function(target: DeliveryTarget){
-        if(target && target.store){
+        if(target?.store)
+        {
           return (_.sum(target.store) < target.storeCapacity)
-        }else{
-          return (target.energy < target.energyCapacity)
         }
+        // else
+        // {
+        //   return (target.energy < target.energyCapacity)
+        // }
       })
     }
 

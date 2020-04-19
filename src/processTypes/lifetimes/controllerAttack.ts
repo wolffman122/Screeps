@@ -6,6 +6,7 @@ interface ControllerrAttackMetaData
   creep: string,
   flagName: string,
   numberAttack: number
+  rollCall: number
 };
 
 export class ControllerAttackLifetimeProcess extends LifetimeProcess
@@ -39,10 +40,10 @@ export class ControllerAttackLifetimeProcess extends LifetimeProcess
     {
       this.log('Increase');
       creep.memory.atPlace = true;
-      flag.memory.rollCall++;
+      this.metaData.rollCall++
     }
 
-    if(flag.memory.rollCall === this.metaData.numberAttack && !creep.room.controller!.upgradeBlocked)
+    if(this.metaData.rollCall === this.metaData.numberAttack && !creep.room.controller!.upgradeBlocked)
     {
       this.log('Attacking the controller');
       creep.attackController(creep.room.controller!);
@@ -55,7 +56,7 @@ export class ControllerAttackLifetimeProcess extends LifetimeProcess
 
     if(creep.ticksToLive === 1)
     {
-      flag.memory.rollCall--;
+      this.metaData.rollCall--;
     }
   }
 }

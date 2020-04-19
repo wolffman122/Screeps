@@ -56,6 +56,7 @@ interface Flag {
       conLog: (message: string) => void;
       gcl: number
       test: string;
+      diagnoseMemory
     }
   }
 
@@ -213,27 +214,20 @@ interface Flag {
 
   interface CreepMemory
   {
-      _trav: {};
-      _travel: {};
-      storageDelivery: boolean;
-      atPlace: boolean;
-      currentRoom: string;
-      roomPath: -2 | { exit: ExitConstant, room: string}[],
-      flagIndex: number;
-      dieing: boolean;
-      boost: boolean;
-      boosts: string[];
+      _trav?: {};
+      _travel?: {};
+      storageDelivery?: boolean;
+      atPlace?: boolean;
+      flagIndex?: number;
+      boost?: boolean;
+      boosts?: string[];
       distance?: number;
-      reachedDest?: boolean;
-      devilName: string;
+      devilName?: string;
       target?: string;
-      filling: boolean;
-      pickup: boolean;
+      filling?: boolean;
+      pickup?: boolean;
       fleePath?: RoomPosition[];
-      full: boolean;
-      sleep?: number;
-      stuck?: number;
-      swap?: RoomPosition;
+      full?: boolean;
       standPos?: RoomPosition;
   }
 
@@ -247,18 +241,9 @@ interface Flag {
   interface FlagMemory
   {
     timeEnemies?: number;
-    source: string;
-    droppedResource: boolean;
-    rollCall: number;
-    follower: string;
-    skMineral?: string;
-    centerSKMineral?: string;
-    healer?: string;
-    attacker?: string;
+    follower?: string;
     attackingCore?: boolean;
-    nuker?: boolean;
     holdData?: HoldRoomData;
-    roadComplete?: number;
     enemies?: boolean;
     cores?: boolean;
   }
@@ -266,21 +251,11 @@ interface Flag {
   interface RoomMemory
   {
     shutdown?: boolean;
-    completed?: boolean;
     seigeDetected?: boolean;
     avoid: number;
     cache: {[key: string]: any};
-    numSites: number;
-    boostRequests: BoostRequests;
-    observeTarget: string;
-    randomN: number;
-    Information: {
-      owner: string,
-      level: number
-    };
-    assisted: boolean;
-    rampartTarget?: number;
-    invadersPresent?: boolean;
+    boostRequests?: BoostRequests;
+    assisted?: boolean;
     skSourceRoom?: boolean;
     lastVision: number;
     enemyId?: string;
@@ -299,8 +274,9 @@ interface Flag {
         sourceNumbers: number
         controllerPos: RoomPosition
         harvesting: boolean
-      }
+      };
     };
+    templeRoom: boolean;
     remoteHarvesting?: boolean;
     enemies?: boolean;
     roadComplete?: number;
@@ -631,6 +607,21 @@ interface Flag {
     processFlag?: string;
     testMessage?: string;
     fillTowers?: boolean;
+  }
+
+  interface TempleProcessMetaData
+  {
+    roomName: string;
+    flagName: string;
+    feedRoom: string;
+    claimed?: boolean;
+    claim?: string[];
+    builders: string[];
+    haulers: string[];
+    upgraders: string[];
+    distros: string[];
+    openSpaces?: {x:number, y:number};
+    
   }
 
   interface LabMemory

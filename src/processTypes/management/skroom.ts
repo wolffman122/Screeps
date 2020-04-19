@@ -104,9 +104,15 @@ export class skRoomManagementProcess extends Process
 
     this.ensureMetaData();
 
+
+    if(this.name === 'skrmp-E47S46')
+      console.log(this.name, 'Problem', 1)
+
     if(!this.skFlag.memory.attackingCore)
       this.coreSearching();
 
+      if(this.name === 'skrmp-E47S46')
+      console.log(this.name, 'Problem', 2)
     if(this.skRoom)
     {
       let flag =  this.skRoom.find(FIND_FLAGS)[0];
@@ -174,6 +180,8 @@ export class skRoomManagementProcess extends Process
 
       if(!this.invaders && this.metaData.mineralMining)
       {
+        if(this.name === 'skrmp-E47S46')
+      console.log(this.name, 'Problem', 5)
         this.MiningSpawn()
       }
     }
@@ -451,9 +459,6 @@ export class skRoomManagementProcess extends Process
     let storage = Game.rooms[this.metaData.roomName].storage;
     if(this.mineral?.mineralAmount <= (storage?.store.getCapacity() - storage?.store.getUsedCapacity()))
     {
-      if(this.skFlag.memory.skMineral === undefined)
-        this.skFlag.memory.skMineral = this.mineral.id;
-
       if(this.metaData.miningDistance === undefined)
       {
         const ret = PathFinder.search(this.centerFlag.pos, this.mineral.pos, {});
@@ -483,7 +488,7 @@ export class skRoomManagementProcess extends Process
 
       this.metaData.minerHauler = Utils.clearDeadCreeps(this.metaData.minerHauler);
       const haulerCount = Utils.creepPreSpawnCount(this.metaData.minerHauler, 20);
-      if(haulerCount < 1 && this.metaData.miner.length === 1)
+      if(haulerCount < 1)
       {
         let creepName = 'sk-mineHauler-' + this.skRoomName + '-' + Game.time;
         let spawned = Utils.spawn(
@@ -1636,6 +1641,8 @@ export class skRoomManagementProcess extends Process
       return;
     }
 
+    if(miner.name === 'sk-miner-E47S46-25852157')
+      console.log(this.name, 'MinerActions', 1, this.metaData.minerHauler.length, this.metaData.minerHauler[0])
     const mineHauler = Game.creeps[this.metaData.minerHauler[0]];
     const mineral = this.roomInfo(this.skRoomName).mineral;
     if(!mineral)
@@ -1667,16 +1674,29 @@ export class skRoomManagementProcess extends Process
         }
       }
 
-      console.log(this.name, 'Miner numbers', (miner.store[mineral.mineralType] ?? 0) + mineHauler?.store.getUsedCapacity())
+      if(miner.name === 'sk-miner-E47S46-25852157')
+      console.log(this.name, 'MinerActions', 2)
+      console.log(this.name, 'Miner numbers', (miner.store.getUsedCapacity()), mineHauler?.store.getFreeCapacity(), miner.store.getUsedCapacity() > mineHauler?.store.getFreeCapacity())
+
+      if(miner.name === 'sk-miner-E47S46-25852157')
+      console.log(this.name, 'MinerActions', 3)
 
       if(_.sum(miner.carry) < miner.carryCapacity && mineral.mineralAmount > 0)
       {
+        console.log(this.name, 'Miner numbers', 1);
         let extractor = <StructureExtractor[]>Game.rooms[this.skRoomName].find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_EXTRACTOR});
         if(extractor[0] && miner.pos.inRangeTo(extractor[0], 1))
         {
           if(extractor[0].cooldown == 0)
           {
             miner.harvest(mineral);
+          }
+
+          if(miner.store.getUsedCapacity() > mineHauler?.store.getFreeCapacity())
+          {
+            console.log(this.name, 'Miner numbers', 4)
+            if(mineHauler.pos.isNearTo(miner))
+              miner.transferEverything(mineHauler);
           }
         }
         else
@@ -1686,6 +1706,7 @@ export class skRoomManagementProcess extends Process
       }
       else if(_.sum(miner.carry) > 0 && miner.ticksToLive < this.metaData.miningDistance * 1.25)
       {
+        console.log(this.name, 'Miner numbers', 2)
         let storage = Game.rooms[this.metaData.roomName].storage;
         if(storage)
         {
@@ -1703,7 +1724,7 @@ export class skRoomManagementProcess extends Process
       }
       else if(_.sum(miner.carry) >= miner.carryCapacity - miner.getActiveBodyparts(WORK))
       {
-
+        console.log(this.name, 'Miner numbers', 3)
         if(mineHauler)
         {
           if(mineHauler.pos.isNearTo(miner))
@@ -1712,8 +1733,9 @@ export class skRoomManagementProcess extends Process
           }
         }
       }
-      else if((miner.store[mineral.mineralType] ?? 0) + mineHauler?.store.getUsedCapacity() >= mineHauler.store.getCapacity())
+      else if(miner.store.getUsedCapacity() > mineHauler.store.getFreeCapacity())
       {
+        console.log(this.name, 'Miner numbers', 4)
         if(mineHauler.pos.isNearTo(miner))
           miner.transferEverything(mineHauler);
       }
@@ -1754,6 +1776,8 @@ export class skRoomManagementProcess extends Process
   ////////////////////////////////////////////////////////////
   MinerHaulerActions(hauler: Creep, mineral: Mineral)
   {
+    const miner = Game.creeps[this.metaData.miner[0]];
+
     if(this.metaData.coreInSK)
     {
       const spawn = this.roomData().spawns[0];
@@ -1775,12 +1799,15 @@ export class skRoomManagementProcess extends Process
       if(lairs.length)
       {
         let lair = mineral.pos.findClosestByRange(lairs) as StructureKeeperLair;
-        let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
-        if(lair.ticksToSpawn < 20 || sk.length > 0)
+        if(hauler.pos.inRangeTo(lair, 10))
         {
-          let ret = PathFinder.search(hauler.pos, {pos: mineral.pos, range: 10}, {flee: true});
-          hauler.moveByPath(ret.path);
-          return;
+          let sk = lair.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
+          if(lair.ticksToSpawn < 20 || sk.length > 0)
+          {
+            let ret = PathFinder.search(hauler.pos, {pos: mineral.pos, range: 10}, {flee: true});
+            hauler.moveByPath(ret.path);
+            return;
+          }
         }
       }
 
@@ -1817,9 +1844,9 @@ export class skRoomManagementProcess extends Process
           return;
         }
 
-        let tombStone = hauler.pos.findInRange(FIND_TOMBSTONES, 4)[0]
-
-        if(tombStone && tombStone.store.energy > 0)
+        let tombStone = hauler.pos.findInRange(FIND_TOMBSTONES, 4, {filter: t => (t.store[this.mineral.mineralType] ?? 0) > 0 })[0]
+        console.log(this.name, 'Min hauler tombstones', tombStone, this.mineral.mineralType)
+        if(tombStone)
         {
           if(hauler.pos.isNearTo(tombStone))
           {
@@ -1833,7 +1860,7 @@ export class skRoomManagementProcess extends Process
           }
         }
 
-        let dropped = hauler.pos.findInRange(FIND_DROPPED_RESOURCES, 6)[0];
+        let dropped = hauler.pos.findInRange(FIND_DROPPED_RESOURCES, 6, {filter: t => (t.resourceType === this.mineral.mineralType) })[0];
 
         if(dropped)
         {
@@ -1936,34 +1963,32 @@ export class skRoomManagementProcess extends Process
         {
           const core = cores[0] as StructureInvaderCore;
 
-          if(core.ticksToDeploy < 5000)
-            console.log(this.name, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DEPLOYING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-          if(_.any(core.effects, e => e.effect === EFFECT_INVULNERABILITY && e.ticksRemaining < 300))
-            {
-              this.metaData.coreInSK = true;
-              Game.notify("Found Core in skroom " + this.skRoomName + " going active in " + 350 + " " + Game.time);
-              if(core.level <= 3)
-              {
-                this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + this.skRoomName, 35,
-                {
-                  roomName: this.skRoomName,
-                  spawnRoomName: this.metaData.roomName,
-                  coreId: core.id,
-                });
-              }
-            }
-
+          if(core.ticksToDeploy < 300)
+          {
+            this.metaData.coreInSK = true;
+            Game.notify("Found Core in skroom " + this.skRoomName + " going active in " + 300 + " " + Game.time);
             if(core.level <= 3)
             {
-              this.metaData.coreInSK = true;
               this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + this.skRoomName, 35,
-                {
-                  roomName: this.skRoomName,
-                  spawnRoomName: this.metaData.roomName,
-                  coreId: core.id,
-                });
-              Game.notify("Found core in skroom" + this.skRoomName + " Time to kill it");
+              {
+                roomName: this.skRoomName,
+                spawnRoomName: this.metaData.roomName,
+                coreId: core.id,
+              });
             }
+          }
+
+          if(core.level <= 3)
+          {
+            this.metaData.coreInSK = true;
+            this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + this.skRoomName, 35,
+              {
+                roomName: this.skRoomName,
+                spawnRoomName: this.metaData.roomName,
+                coreId: core.id,
+              });
+            Game.notify("Found core in skroom" + this.skRoomName + " Time to kill it");
+          }
           console.log(this.name, 'Found a core', core.id, core.effects, (core.effects[EFFECT_COLLAPSE_TIMER]?.ticksRemaining ?? 0));
         }
         else

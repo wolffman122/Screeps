@@ -41,7 +41,7 @@ export class RoomDataProcess extends Process{
     if(room === undefined)
     {
       if(Memory.rooms[this.metaData.roomName])
-        Memory.rooms[this.metaData.roomName].cache = {};
+        Memory.rooms[this.metaData.roomName].cache = undefined;
       this.completed;
       return;
     }
@@ -52,20 +52,23 @@ export class RoomDataProcess extends Process{
 
     this.importFromMemory(room)
 
-    let hostiles = room.find(FIND_HOSTILE_CREEPS);
-    if(hostiles.length)
+    if(Game.time % 10 === 0 && room?.controller?.my)
     {
-      if(hostiles.length > 2)
-        room.memory.seigeDetected = true;
-      else
-        room.memory.seigeDetected = false;
+      let hostiles = room.find(FIND_HOSTILE_CREEPS);
+      if(hostiles.length)
+      {
+        if(hostiles.length > 2)
+          room.memory.seigeDetected = true;
+        else
+          room.memory.seigeDetected = false;
 
-      room.memory.hostileCreepIds = [];
-      for(let i = 0; i < hostiles.length; i++)
-        room.memory.hostileCreepIds.push(hostiles[i].id);
+        room.memory.hostileCreepIds = [];
+        for(let i = 0; i < hostiles.length; i++)
+          room.memory.hostileCreepIds.push(hostiles[i].id);
+      }
+      else
+        room.memory.hostileCreepIds = undefined;
     }
-    else
-      room.memory.hostileCreepIds = undefined;
 
     if(room.memory.seigeDetected)
       console.log(this.name, 'Siege Status ', room.memory.seigeDetected, room.name);
@@ -81,14 +84,10 @@ export class RoomDataProcess extends Process{
       }
     }
 
+    if(this.metaData.roomName === 'E37S45')
+      console.log(this.name, 6)
     if(room)
     {
-      /*if((room.name ==='E45S57' || room.name == 'E43S52' || room.name == 'E44S51' || room.name == 'E43S53' ||
-          room.name == 'E46S51' || room.name == 'E46S52' || room.name == 'E48S57' || room.name == 'E45S48' ||
-          room.name == 'E48S49' || room.name == 'E41S49' || room.name == 'E43S55' || room.name == 'E51S49' ||
-          room.name == 'E52S46' || room.name == 'E42S48' || room.name == 'E38S46' || room.name == 'E36S43' ||
-          room.name == 'E35S41' || room.name == 'E48S56' || room.name == 'E41S41' || room.name == 'E55S48' ||
-          room.name == 'E58S52')*/
       if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0
         && this.roomData().extractor)
       {
@@ -121,20 +120,13 @@ export class RoomDataProcess extends Process{
           }
         }
       }
-      // Top
-
-
-
-      if(observer && (this.metaData.roomName === 'E52S46' || this.metaData.roomName === 'E42S48'))
-      {
-        /*this.kernel.addProcessIfNotExist(ObservationManagementProcess, 'omp-' + this.metaData.roomName, 33, {
-          roomName: this.metaData.roomName
-        });*/
-      }
     }
 
-    if(room && room.controller && room.controller!.my){
-      //if(Game.time % 10505 === 0)
+    if(this.metaData.roomName === 'E37S45')
+      console.log(this.name, 7)
+    if(room && room.controller && room.controller!.my)
+    {
+      if(Game.time % 25 === 0)
       {
         let flags = <Flag[]>room.find(FIND_FLAGS);
         flags = _.filter(flags, (f)=>{
@@ -155,18 +147,20 @@ export class RoomDataProcess extends Process{
       }
     }
 
-    if(room && room.controller && room.controller.my)
+    if(this.metaData.roomName === 'E37S45')
+      console.log(this.name, 8, room.memory.templeRoom)
+    if(room && room.controller && room.controller.my && !room.memory.templeRoom)
     {
       this.enemyDetection(room);
       this.healDetection(room);
       this.repairDetection(room)
 
-      if(this.roomData().observer && this.roomData().powerSpawn)
-      {
-        this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powm-' + room.name, 25, {
-          roomName: room.name
-        });
-      }
+      // if(this.roomData().observer && this.roomData().powerSpawn)
+      // {
+      //   this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powm-' + room.name, 25, {
+      //     roomName: room.name
+      //   });
+      // }
 
       if(room.memory.rampartCostMatrix === undefined)
       {
@@ -211,32 +205,10 @@ export class RoomDataProcess extends Process{
       {
         //room.memory.rampartCostMatrix = undefined;
       }
-
-      if(!room.memory.completed && room.controller.level >= 8)
-      {
-        const spawns = this.roomData().spawns.length;
-        const towers = this.roomData().towers.length;
-        const extensions = this.roomData().extensions.length;
-        const labs = this.roomData().labs.length;
-        const link = this.roomData().storageLink;
-        const nuker = this.roomData().nuker;
-        const powerSpawn = this.roomData().powerSpawn;
-        const observer = this.roomData().observer;
-        const factory = this.roomData().factory;
-
-        if(spawns === 3 && extensions === 60 && link && room.storage && towers === 6
-          && observer && powerSpawn && room.terminal && labs === 10 && nuker && factory)
-          room.memory.completed = true;
-        else
-        {
-          if(!factory)
-            console.log(this.name, 'Need to build factory');
-        }
-      }
-
-
     }
 
+    if(this.metaData.roomName === 'E37S45')
+      console.log(this.name, 9)
     this.completed = true
   }
 
@@ -598,13 +570,13 @@ export class RoomDataProcess extends Process{
     let run = true
     let i = 0
 
-    if(room)
-    {
-      if(room.memory.numSites != Object.keys(Game.constructionSites).length){
-        delete room.memory.cache.constructionSites
-        room.memory.numSites = Object.keys(Game.constructionSites).length
-      }
-    }
+    // if(room)
+    // {
+    //   if(room.memory.numSites != Object.keys(Game.constructionSites).length){
+    //     delete room.memory.cache.constructionSites
+    //     room.memory.numSites = Object.keys(Game.constructionSites).length
+    //   }
+    // }
 
     ////////////////////////////////////////////////////////////
     ///
@@ -777,15 +749,12 @@ export class RoomDataProcess extends Process{
   /** Find enemies in the room */
   enemyDetection(room: Room)
   {
-    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS);
     let controller = Game.rooms[this.metaData.roomName].controller;
-    if(controller)
+    if(controller?.my && room.memory.hostileCreepIds.length)
     {
-      if(enemies.length > 0 && !this.kernel.hasProcess('td-' + this.metaData.roomName)){
-        this.kernel.addProcess(TowerDefenseProcess, 'td-' + this.metaData.roomName, 95, {
-          roomName: this.metaData.roomName
-        })
-      }
+      this.kernel.addProcessIfNotExist(TowerDefenseProcess, 'td-' + this.metaData.roomName, 95, {
+        roomName: this.metaData.roomName
+      })
     }
   }
 

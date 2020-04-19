@@ -321,10 +321,25 @@ export class EnergyManagementProcess extends Process{
 
         if(room?.controller?.my && room.controller.level === 8)
         {
-          if(room.controller.ticksToDowngrade === 200000)
+          if(this.name === 'em-E36S38')
+            console.log(this.name, 'Pause Upgrading work', room.memory.pauseUpgrading, Game.time, room.memory.upgradingTick + 25000)
+          if(!room.memory.pauseUpgrading
+            && Game.time > room.memory.upgradingTick + 25000
+            && room.controller.ticksToDowngrade == 200000)
+          {
             room.memory.pauseUpgrading = true;
-          else if(room.controller.ticksToDowngrade < 100000)
+          }
+
+          if((room.memory.pauseUpgrading
+            && room.controller.ticksToDowngrade < 175000)
+            ||
+            (!room.memory.pauseUpgrading && room.storage.store.getFreeCapacity() < 30000))
+          {
             room.memory.pauseUpgrading = false;
+            room.memory.upgradingTick = Game.time;
+          }
+
+          //room.memory.pauseUpgrading = true;
         }
 
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
@@ -397,25 +412,25 @@ export class EnergyManagementProcess extends Process{
 
               if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
               {
-                const upgradeRooms = ['E52S46', 'E45S57']
-                if(_.indexOf(upgradeRooms, proc.metaData.roomName) >= 0)
-                {
+                // const upgradeRooms = ['E52S46', 'E45S57']
+                // if(_.indexOf(upgradeRooms, proc.metaData.roomName) >= 0)
+                // {
                   let boosts = [];
-                  boosts.push(RESOURCE_GHODIUM_ACID)
+                  //boosts.push(RESOURCE_GHODIUM_ACID)
                   this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
                     creep: creepName,
                     roomName: proc.metaData.roomName,
                     boosts: boosts,
                     allowUnboosted: true
                   })
-                }
-                else
-                {
-                  this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                    creep: creepName,
-                    roomName: proc.metaData.roomName
-                  });
-                }
+                // }
+                // else
+                // {
+                //   this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
+                //     creep: creepName,
+                //     roomName: proc.metaData.roomName
+                //   });
+                // }
               }
               else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB}).length >= 3)
               {

@@ -32,7 +32,9 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     const storage = Game.rooms[this.metaData.roomName].storage;
 
     // Look if we have sk mining going on
-    const flag = Game.flags['RemoteFlee-' + this.metaData.roomName];
+    let flag = Game.flags['PC-' + this.metaData.roomName];
+    if(!flag)
+      flag = Game.flags['RemoteFlee-' + this.metaData.roomName];
 
     if(powerCreep.ticksToLive < 200)
     {
@@ -122,7 +124,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
-    if(powerCreep.powers[PWR_REGEN_SOURCE]?.cooldown < 10)
+    if(powerCreep.powers[PWR_REGEN_SOURCE]?.cooldown < 15)
     {
       const sources = this.roomData().sources.filter(s =>
         {
@@ -153,7 +155,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     // Go Generate ops in sk room
     if(powerCreep.store.getUsedCapacity() !== 0)
     {
-      if(!powerCreep.pos.isNearTo(flag))
+      if(!powerCreep.pos.isEqualTo(flag))
       {
         powerCreep.moveTo(flag);
         powerCreep.say('💨');

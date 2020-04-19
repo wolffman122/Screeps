@@ -14,7 +14,6 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     const flag = Game.flags[this.metaData.flagName];
     if(!flag)
     {
-      flag.memory.roadComplete = undefined;
       this.completed = true;
       return;
     }
@@ -31,9 +30,6 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     const fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
 
     // Setup for road complete
-    if(flag.memory.roadComplete === undefined)
-      flag.memory.roadComplete = 0;
-
     if(flag.memory.enemies)
     {
       if(_.sum(creep.carry) > 0)
@@ -109,15 +105,11 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
             }
             flag.memory.holdData = holdData;
           }
-          else if(creep.room.name === mineRoom.name && flag.memory.roadComplete < sources.length)
-            creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
 
           creep.travelTo(sourceContainer);
           return;
 
         }
-        else if(flag.memory.roadComplete < sources.length)
-            flag.memory.roadComplete++;
 
         const resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
         if(resource.length > 0)

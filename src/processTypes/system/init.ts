@@ -66,6 +66,9 @@ export class InitProcess extends Process{
         roomName: room.name
       })
 
+      if(room.memory.templeRoom)
+        return;
+        
       if(room.controller && room.controller.my)
       {
         if(Game.time % 3000 === 0)

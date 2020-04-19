@@ -133,9 +133,6 @@ export class HoldRoomOptManagementProcess extends Process
         //console.log("Hold room cores present" + flag.pos.roomName);
         coreId = cores[0].id;
       }
-
-      let nuker = this.roomInfo(flag.room.name).nuker;
-      flag.memory.nuker = nuker ? true : false;
     }
 
     let defenderCount = 0;

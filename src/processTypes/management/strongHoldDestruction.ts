@@ -29,6 +29,12 @@ export class StrongHoldDestructionProcess extends Process
 
   run()
   {
+    this.completed = true;
+    return;
+  }
+
+  test()
+  {
     try
     {
       if(this.metaData.roomName === 'E44S55')

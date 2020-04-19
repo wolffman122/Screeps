@@ -26,6 +26,8 @@ export class StructureManagementProcess extends Process{
 
   run()
   {
+    if(this.metaData.roomName === 'E37S45')
+      console.log(this.name, '??????????????????????????????????????????????????????????????????????????');
     this.ensureMetaData()
 
     if(!this.kernel.data.roomData[this.metaData.roomName]){
@@ -128,7 +130,7 @@ export class StructureManagementProcess extends Process{
           if(spawned)
           {
             //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
-            let boosts = [RESOURCE_LEMERGIUM_HYDRIDE];
+            let boosts = []; //[RESOURCE_LEMERGIUM_HYDRIDE];
             this.metaData.repairCreeps.push(creepName);
 
             this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
@@ -174,7 +176,7 @@ export class StructureManagementProcess extends Process{
       {
         return false;
       }
-      else if(average < 7000000)
+      else if(average < 8000000)
         return true;
       //console.log(this.name, 'Average ramparts', average, 'minimum rampart amount', min);
       if(min < (average - 500000))
