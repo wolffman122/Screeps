@@ -95,7 +95,7 @@ import { TempleProcess } from 'processTypes/management/temple'
 
 
 
-const processTypes = <{[type: string]: any}>{
+export const processTypes = <{[type: string]: any}>{
   'harvest': HarvestProcess,
   'hlf': HarvesterLifetimeProcess,
   'lhlf': LinkHarvesterLifetimeProcess,
@@ -189,6 +189,9 @@ interface KernelData{
   usedSpawns: string[];
   labProcesses: { [resourceType: string]: number };
   activeLabCount: number;
+  costMatrixs: {
+    [roomName: string]: CostMatrix
+  }
 }
 
 interface ProcessTable{
@@ -197,11 +200,9 @@ interface ProcessTable{
 
 export class Kernel{
   /** The CPU Limit for this tick */
-  limit = Game.cpu.limit * 0.9
+  limit: number
   /** The process table */
   processTable: ProcessTable = {}
-
-  toRunProcesses?: string[]
 
   /** IPC Messages */
   ipc: IPCMessage[] = []
@@ -213,25 +214,54 @@ export class Kernel{
     usedSpawns: [],
     activeLabCount: 0,
     labProcesses: {},
+    costMatrixs: {},
   }
 
   execOrder: ExecOrder[] = []
-  processLogs: ProcessLog = {};
   suspendCount = 0
-  schedulerUsage = 0;
-  oldProcessCount = 0;
 
   /**  Creates a new kernel ensuring that memory exists and re-loads the process table from the last. */
   constructor(){
     if(!Memory.wolffOS)
-    {
-      Memory.wolffOS = {}
-    }
+      Memory.wolffOS = {};
+
+    this.setCPULimit();
 
     this.loadProcessTable()
-    this.loadIpcMessages();
 
-    this.addProcess(InitProcess, 'init', 99, {})
+    this.addProcess(WOS_INIT_PROCESS, 'init', 99, {})
+  }
+
+  sigmoid(x: number)
+  {
+    return 1.0/(1.0 + Math.exp(-x));
+  }
+
+  sigmoidSkewed(x: number)
+  {
+    return this.sigmoid((x * 12.0) - 6.0);
+  }
+
+  setCPULimit()
+  {
+    let bucketCeiling = 9500;
+    let bucketFloor = 2000;
+    let cpuMin = 0.6;
+
+    if(Game.cpu.bucket > bucketCeiling)
+      this.limit = Game.cpu.tickLimit - 10;
+    else if(Game.cpu.bucket < 1000)
+      this.limit = Game.cpu.limit * 0.4;
+    else if(Game.cpu.bucket < bucketFloor)
+      this.limit = Game.cpu.limit * cpuMin;
+    else
+    {
+      let bucketRange = bucketCeiling - bucketFloor;
+      let depthInRange = (Game.cpu.bucket - bucketFloor) / bucketRange;
+      let minAssignable = Game.cpu.limit * cpuMin;
+      let maxAssignable = Game.cpu.tickLimit - 15;
+      this.limit = Math.round(minAssignable + this.sigmoidSkewed(depthInRange) * (maxAssignable - minAssignable));
+    }
   }
 
   /** Check if the current cpu usage is below the limit for this tick */
@@ -240,26 +270,9 @@ export class Kernel{
   }
 
   /** Is there any processes left to run */
-  needsToRun(){
-    if(this.toRunProcesses && this.toRunProcesses.length > 0)
-    {
-      return true;
-    }
-    else
-    {
-      // _.forEach(Object.keys(this.processTable), (key) => {
-      //   const splitKeys = key.split('-');
-      //   if(splitKeys[0].indexOf("lf") > -1 && +splitKeys[3] < 24000000)
-      //     {
-      //       delete this.processTable[key];
-      //       console.log("Old Process", key);
-      //     }
-      // });
-
-      return _.filter(this.processTable, function(process) {
-        return (!process.ticked && process.suspend === false)
-      }).length > 0
-    }
+  needsToRun()
+  {
+    return(!!this.getHighestProcess());
   }
 
   /** Load the process table from Memory */
@@ -267,17 +280,6 @@ export class Kernel{
     let kernel = this
 
     _.forEach(Memory.wolffOS.processTable, function(entry){
-      // Old process clean up code
-      //
-      //
-      // let time = +entry.name.split('-')[3];
-      // if(time < 22000000)
-      // {
-      //   console.log('Problem old processes', entry.name, entry.type);
-      //   if(entry.type  === 'lhlf' || entry.type  === 'hlf')
-      //     return;
-      // }
-
       if(processTypes[entry.type]){
         //kernel.processTable.push(new processTypes[entry.type](entry, kernel))
         kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel)
@@ -287,78 +289,29 @@ export class Kernel{
     })
   }
 
-  loadIpcMessages()
-  {
-    let kernel = this;
-    if(kernel.ipc)
-    {
-      kernel.ipc = Memory.wolffOS.ipcMessages;
-      //console.log("IPC Lenght", kernel.ipc.length, kernel.ipc[0].from, kernel.ipc[0].to, kernel.ipc[0].message);
-    }
-    else
-    {
-      console.log("IPC Failed");
-    }
-  }
-
   /** Tear down the OS ready for the end of the tick */
   teardown(stats = true){
-    console.log("Old Process count", this.oldProcessCount)
     let list: SerializedProcess[] = []
     _.forEach(this.processTable, function(entry){
       if(!entry.completed)
         list.push(entry.serialize())
     })
 
-    //if(this.data.usedSpawns.length != 0){
-    //  console.log(this.execOrder.length)
-    //}
-
     if(stats)
     {
       Stats.build(this);
     }
-
-    if(this.ipc && this.ipc.length > 0)
-    {
-      _.remove(this.ipc, (ip) => {
-        return ip.read;
-      });
-
-      Memory.wolffOS.ipcMessages = this.ipc;
-    }
-
-
     Memory.wolffOS.processTable = list
   }
 
   /** Returns the highest priority process in the process table */
   getHighestProcess()
   {
-    let cpu = Game.cpu.getUsed()
-
-    if(!this.toRunProcesses || this.toRunProcesses.length === 0)
-    {
-      let toRunProcesses = _.filter(this.processTable, function(entry) {
-        /*let splits = entry.name.split('-');
-        let split = +splits[splits.length - 1];
-        if(split < Game.time - 500000)
-        {
-          console.log('Finding old process', entry.name);
-         // entry.completed = true;
-        }*/
+    let toRunProcesses = _.filter(this.processTable, function(entry) {
         return (!entry.ticked && entry.suspend === false);
       });
 
-      let sorted = _.sortBy(toRunProcesses, 'priority').reverse();
-      this.toRunProcesses = _.map(sorted, 'name');
-    }
-
-    let name = this.toRunProcesses.shift()!;
-
-    this.schedulerUsage += Game.cpu.getUsed() - cpu;
-
-    return this.processTable[name!];
+    return _.sortBy(toRunProcesses, 'priority').reverse[0];
   }
 
   /** Run the highest priority process in the process table */
@@ -375,29 +328,25 @@ export class Kernel{
       faulted = true
     }
 
-    let processCpu = Game.cpu.getUsed() - cpuUsed;
     this.execOrder.push({
       name: process.name,
-      cpu: processCpu,
+      cpu: Game.cpu.getUsed() - cpuUsed,
       type: process.type,
       faulted: faulted
     })
-
-    if(this.processLogs[process.type] === undefined)
-      this.processLogs[process.type] = {cpuUsed: processCpu, count: 1};
-    else
-    {
-      this.processLogs[process.type].cpuUsed += processCpu;
-      this.processLogs[process.type].count++;
-    }
-
 
     process.ticked = true
   }
 
   /** Add a process to the process table */
-  addProcess(processClass: any, name: string, priority: number, meta: {}, parent?: string | undefined){
-    let process = new processClass({
+  addProcess<T extends ProcessTypes>(
+    processClass: T,
+    name: string,
+    priority: number,
+    meta: MetaData[T],
+    parent?: string | undefined)
+  {
+    let process = new processTypes[processClass]({
       name: name,
       priority: priority,
       metaData: meta,
@@ -405,13 +354,15 @@ export class Kernel{
       parent: parent
     }, this)
 
-    //console.log("Add process ", name);
     this.processTable[name] = process
-    this.toRunProcesses = [];
   }
 
   /** Add a process to the process table if it does not exist */
-  addProcessIfNotExist(processClass: any, name: string, priority: number, meta: {}){
+  addProcessIfNotExist<T extends ProcessTypes>(
+    processClass: T,
+    name: string,
+    priority: number, meta: MetaData[T])
+  {
     if(!this.hasProcess(name)){
       this.addProcess(processClass, name, priority, meta)
     }
@@ -467,6 +418,17 @@ export class Kernel{
     return;
   }
 
+  getProcess<T extends ProcessTypes>(
+    processType: T,
+    name: string)
+  {
+    let proc = this.getProcessByName(name);
+    if(proc && proc.type === processType)
+      return <ProcessWithTypedMetaData<T>>proc;
+    else
+      return false;
+  }
+
   /** get a process by name */
   getProcessByName(name: string){
     return this.processTable[name]
@@ -498,5 +460,12 @@ export class Kernel{
       proc.completed = true
       proc.ticked = true
     }
+  }
+
+  getProcessByType(type: ProcessTypes)
+  {
+    return _.filter(this.processTable, function(process){
+      return (process.type = type);
+    })
   }
 }
