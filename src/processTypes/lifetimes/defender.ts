@@ -1,5 +1,4 @@
 import {LifetimeProcess} from '../../os/process'
-import {MoveProcess} from '../creepActions/move'
 import {DefendProcess} from '../creepActions/defend'
 
 export class DefenderLifetimeProcess extends LifetimeProcess
@@ -21,7 +20,7 @@ export class DefenderLifetimeProcess extends LifetimeProcess
       this.completed = true;
       return;
     }
-    
+
     console.log(this.name, 0)
     if(creep.name === 'dm-E41S49-21090530')
         console.log(this.name, 'Problems', this.metaData.boosts, creep.memory.boost);
@@ -152,16 +151,8 @@ export class DefenderLifetimeProcess extends LifetimeProcess
           {
             if(!creep.pos.inRangeTo(flag.pos, 2))
             {
-              this.fork(MoveProcess, 'move-' + creep.name,this.priority - 1, {
-                creep: creep.name,
-                pos: {
-                  x: flag.pos.x,
-                  y: flag.pos.y,
-                  roomName: flag.room!.name
-                },
-                range: 2
-              });
-              this.suspend = 'move-' + creep.name;
+              creep.moveTo(flag, {range: 2});
+              return
             }
           }
           else

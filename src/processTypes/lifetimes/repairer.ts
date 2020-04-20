@@ -1,9 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
-import {Utils, RAMPARTTARGET} from '../../lib/utils'
-import {RepairProcess} from '../creepActions/repair'
-import { HarvestProcess } from '../creepActions/harvest';
-import { LABDISTROCAPACITY } from '../management/lab';
-import { StructureManagementProcess } from 'processTypes/management/structure';
+import {Utils} from '../../lib/utils'
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
   type = 'rlf'
@@ -89,10 +85,10 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           let source = creep.pos.findClosestByPath(sources);
           if(source)
           {
-            this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-              creep: creep.name,
-              source: source.id
-            });
+            if(!creep.pos.isNearTo(source))
+              creep.moveTo(source);
+            else
+              creep.harvest(source);
 
             return;
           }

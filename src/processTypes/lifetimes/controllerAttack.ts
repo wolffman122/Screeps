@@ -1,5 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { MoveProcess } from "processTypes/creepActions/move";
 
 interface ControllerrAttackMetaData
 {
@@ -27,12 +26,7 @@ export class ControllerAttackLifetimeProcess extends LifetimeProcess
 
     if(creep.pos.roomName != flag.pos.roomName && creep.hits === creep.hitsMax)
     {
-      this.kernel.addProcess(MoveProcess, 'move-' + creep.name, this.priority - 1, {
-        creep: creep.name,
-        pos: flag.pos,
-        range: 1
-      });
-
+      creep.travelTo(flag);
       return;
     }
 

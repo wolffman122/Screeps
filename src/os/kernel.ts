@@ -6,7 +6,6 @@ import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
 import {EnergyManagementProcess} from '../processTypes/management/energy'
 import {MoveProcess} from '../processTypes/creepActions/move'
 import {RoomDataProcess} from '../processTypes/roomData'
-import {UpgradeProcess} from '../processTypes/creepActions/upgrade'
 import {UpgraderLifetimeProcess} from '../processTypes/lifetimes/upgrader'
 import {BuilderLifetimeProcess} from '../processTypes/lifetimes/builder'
 import {RepairProcess} from '../processTypes/creepActions/repair'
@@ -102,7 +101,6 @@ export const processTypes = <{[type: string]: any}>{
   'em': EnergyManagementProcess,
   'move': MoveProcess,
   'roomData': RoomDataProcess,
-  'upgrade': UpgradeProcess,
   'ulf': UpgraderLifetimeProcess,
   'blf': BuilderLifetimeProcess,
   'repair': RepairProcess,

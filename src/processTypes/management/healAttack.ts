@@ -1,6 +1,5 @@
 import { Process } from "os/process";
 import { Utils } from "lib/utils";
-import { MoveProcess } from "processTypes/creepActions/move";
 
 export class HealAttackProcess extends Process
 {

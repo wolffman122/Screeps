@@ -1,7 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { HarvestProcess } from "processTypes/creepActions/harvest";
-import { MoveProcess } from "../../creepActions/move";
-
 
 export class HoldBuilderLifetimeProcess extends LifetimeProcess
 {

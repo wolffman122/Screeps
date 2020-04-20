@@ -1,5 +1,4 @@
 import {Process} from '../../os/process'
-import {MoveProcess} from '../creepActions/move'
 import {Utils} from '../../lib/utils'
 
 export class ClaimProcess extends Process{

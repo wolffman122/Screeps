@@ -1,9 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { HarvestProcess } from "../creepActions/harvest";
-import { UpgradeProcess } from "../creepActions/upgrade";
-import { LABDISTROCAPACITY } from "../management/lab";
-import { LabDistroLifetimeProcess } from "./labDistro";
-import { Utils } from "lib/utils";
 
 export class HelperLifetimeProcess extends LifetimeProcess
 {

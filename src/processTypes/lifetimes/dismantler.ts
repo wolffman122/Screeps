@@ -1,6 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
 import {DismantleProcess} from '../creepActions/dismantle'
-import {MoveProcess} from '../creepActions/move'
 
 export class DismantleLifetimeProcess extends LifetimeProcess
 {

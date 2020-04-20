@@ -1,6 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
 import {Utils} from '../../lib/utils'
-import { HarvestProcess } from '../creepActions/harvest';
 
 export class BuilderLifetimeProcess extends LifetimeProcess{
   type = 'blf'
@@ -63,22 +62,14 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
           }
           else
           {
-            if(creep.name === 'sm-E41S41-11147991')
-    {
-      console.log(this.name, '3')
-    }
             let sources = creep.room.find(FIND_SOURCES);
             let source = creep.pos.findClosestByPath(sources);
             if(source)
             {
-              if(creep.name === 'sm-E41S41-11147991')
-    {
-      console.log(this.name, '4')
-    }
-              this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-                creep: creep.name,
-                source: source.id
-              });
+              if(!creep.pos.isNearTo(source))
+                creep.moveTo(source);
+              else
+                creep.harvest(source);
 
               return;
             }
@@ -102,10 +93,11 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
         let source = creep.pos.findClosestByPath(FIND_SOURCES)[0];
         if(source)
         {
-          this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-            creep: creep.name,
-            source: source.id
-          });
+          if(!creep.pos.isNearTo(source))
+            creep.moveTo(source);
+          else
+            creep.harvest(source);
+
 
           return;
         }

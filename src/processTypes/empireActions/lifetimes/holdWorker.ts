@@ -1,5 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { MoveProcess } from "processTypes/creepActions/move";
 import { RepairProcess } from "processTypes/creepActions/repair";
 
 export class HoldWorkerLifetimeProcess extends LifetimeProcess
@@ -29,11 +28,8 @@ export class HoldWorkerLifetimeProcess extends LifetimeProcess
 
     if(room.name != creep.pos.roomName && !flag.memory.enemies)
     {
-      this.fork(MoveProcess, 'move-' + creep.name, this.priority -1, {
-        creep: creep.name,
-        pos: Game.flags[this.metaData.flagName].pos,
-        range: 10
-      })
+      creep.travelTo(flag);
+      return;
     }
 
     if(_.sum(creep.carry) === 0)

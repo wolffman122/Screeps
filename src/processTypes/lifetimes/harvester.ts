@@ -1,5 +1,4 @@
 import {LifetimeProcess} from '../../os/process'
-import {UpgradeProcess} from '../creepActions/upgrade'
 
 export class HarvesterLifetimeProcess extends LifetimeProcess{
   type = 'hlf'
@@ -136,11 +135,15 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
 
     if(deliverTargets.length === 0){
       // If there is no where to deliver to
-      this.kernel.addProcess(UpgradeProcess, creep.name + '-upgrade', this.priority, {
-        creep: creep.name
-      })
-
-      this.suspend = creep.name + '-upgrade'
+      const controller = Game.rooms[this.metaData.roomName].controller
+      if(controller?.my)
+      {
+        if(!creep.pos.inRangeTo(controller, 3))
+          creep.moveTo(controller, {range: 3});
+        else
+          creep.upgradeController(controller);
+      }
+      
       return
     }
 

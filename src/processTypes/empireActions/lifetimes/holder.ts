@@ -1,5 +1,4 @@
 import { LifetimeProcess } from 'os/process';
-import {MoveProcess} from '../../creepActions/move';
 import { HoldProcess } from 'processTypes/empireActions/creepActions/hold';
 
 interface HolderLifetimeProcessMetaData
@@ -32,12 +31,7 @@ export class HolderLifetimeProcess extends LifetimeProcess
 
     if(creep.pos.roomName != flag.pos.roomName)
     {
-        this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          pos: flag.pos,
-          range: 1
-        });
-
+      creep.travelTo(flag);
       return;
     }
 

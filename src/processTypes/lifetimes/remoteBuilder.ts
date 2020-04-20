@@ -1,5 +1,4 @@
 import {LifetimeProcess} from '../../os/process'
-import {HarvestProcess} from '../creepActions/harvest'
 
 export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
   type = 'rblf'
@@ -149,10 +148,11 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       {
         let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
 
-        this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          source: source.id
-        })
+        if(!creep.pos.isNearTo(source))
+          creep.moveTo(source);
+        else
+          creep.harvest(source);
+
 
         return
       }

@@ -1,5 +1,4 @@
 import { Process } from "os/process";
-import { MoveProcess } from "processTypes/creepActions/move";
 import { Utils } from "lib/utils";
 import { BounceAttackerLifetimeProcess } from "../lifetimes/bounceAttacker";
 

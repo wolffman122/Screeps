@@ -1,5 +1,4 @@
 import { LifetimeProcess } from "os/process";
-import { MoveProcess } from "../creepActions/move";
 
 export class BounceAttackerLifetimeProcess extends LifetimeProcess
 {
