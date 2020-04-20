@@ -60,56 +60,65 @@ export class TempleProcess extends Process
     else
       this.feedRoom = Game.rooms[this.metaData.feedRoom];
 
-      console.log(this.name, 'Claim', this.metaData.claimed)
     if(!this.metaData.claimed)
       this.metaData.claim = this.spawnCreeps(1, this.metaData.claim, 'claimer');
 
     this.metaData.upgraders = this.spawnCreeps(3, this.metaData.upgraders, 'upgrader');
 
-    this.TowerHeal();
-
     let upgraderAmount = 7;
     let haulerAmount = 2;
     let builderAmount = 0;
-    let distroAmount = 0;
+    let distroAmount = 1;
     const controller = this.templeRoom.controller;
     if(controller?.level < 3)
     {
+      if(this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) < 1000
+        && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 1000)
+        distroAmount = 0;
+
       haulerAmount = 3;
     }
-    else if(controller?.level === 3)
+    else if(controller?.level > 3)
     {
+
       const spawns = this.roomData().spawns;
       const towers = this.roomData().towers;
       if(spawns.length < 1 && towers.length < 1)
         builderAmount = 1;
-    }
-    else if(controller?.level === 4)
-    {
-      console.log(this.name, 'Build Storage')
-      if(!this.templeStorage)
-        builderAmount = 1;
-      else
+
+        this.TowerHeal();
+
+      if(controller?.level <= 5)
+      {
+        console.log(this.name, 'Build Storage')
+        if(!this.templeStorage)
+          builderAmount = 1;
+
+        if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 200000)
+          haulerAmount = 4;
+        else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 500000)
+          haulerAmount = 3;
+        else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 750000)
+          haulerAmount = 2;
+      }
+      else if(controller.level > 5)
+      {
+        if(!this.templeTerminal)
+          builderAmount = 1;
+
+        if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 500000)
+          haulerAmount = 2;
+        else
+          haulerAmount = 0;
+
         distroAmount = 1;
-
-        console.log(this.name, 'Build Storage', builderAmount)
-    }
-    else if(controller.level === 5)
-    {
-      haulerAmount = 2;
-      distroAmount = 1;
-    }
-    else if(controller.level > 5)
-    {
-      if(!this.templeTerminal)
-        builderAmount = 1;
-
-      if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 500000)
-        haulerAmount = 2;
-      else
-        haulerAmount = 0;
-
-      distroAmount = 1;
+      }
+      else if(controller.level === 8)
+      {
+        this.metaData.claimed = false;
+        controller.unclaim();
+        return;
+      }
     }
 
     console.log(this.name, 'Creep amounts', upgraderAmount, haulerAmount, builderAmount, distroAmount);
@@ -533,24 +542,25 @@ export class TempleProcess extends Process
         }
       }
 
-      // {
-      //   const pos = container.pos;
-      //   const diffX = pos.x - creep.pos.x;
-      //   const diffY = pos.y - creep.pos.y;
-      //   let dir: DirectionConstant;
-      //   let moveDir = this.GetMoveDirection(diffX, diffY)
-      //   let ret2;
-      //   if(moveDir === 10)
-      //   {
-      //     ret2 = creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
-      //     dir = 2;
-      //   }
-      //   else
-      //     dir = moveDir as DirectionConstant;
+      if(Game.time % 10 === 0)
+      {
+        const pos = container.pos;
+        const diffX = pos.x - creep.pos.x;
+        const diffY = pos.y - creep.pos.y;
+        let dir: DirectionConstant;
+        let moveDir = this.GetMoveDirection(diffX, diffY)
+        let ret2;
+        if(moveDir === 10)
+        {
+          ret2 = creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
+          dir = 2;
+        }
+        else
+          dir = moveDir as DirectionConstant;
 
-      //   const ret = creep.move(dir);
-      //   console.log(this.name, 'Upgrader diffs', creep.name, diffX, diffY, moveDir, ret, ret2);
-      // }
+        const ret = creep.move(dir);
+        console.log(this.name, 'Upgrader diffs', creep.name, diffX, diffY, moveDir, ret, ret2);
+      }
 
       creep.upgradeController(this.templeRoom.controller);
     }
