@@ -173,7 +173,6 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         return;
     }
 
-
     let amount = this.terminal.store[this.mineral.mineralType] - KEEP_AMOUNT
     if(amount > 0 && this.storage.store.getFreeCapacity() > 3000)
     {
@@ -184,7 +183,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     const bar = room.memory.barType
     if((this.terminal.store[bar] ?? 0) < FACTORY_KEEP_AMOUNT)
     {
-      if(this.creep.room.name === 'E36S33')
+      if(this.creep.room.name === 'E43S55')
         console.log(this.name, 'Check Bars', 1)
       if(this.CheckAndTransferBars(bar))
         return;
@@ -200,7 +199,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
           return;
       }
 
-      if(this.terminal?.store[skMineral] !== KEEP_AMOUNT)
+      if(this.terminal?.store[skMineral] !== KEEP_AMOUNT && this.storage?.store.getUsedCapacity(skMineral) >= this.creep.store.getCapacity())
       {
         this.TransferToStorage(skMineral, KEEP_AMOUNT);
         return;
@@ -228,7 +227,6 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         return;
       }
     }
-
 
     // Production list
     for(let i = 0; i < PRODUCT_LIST.length; i++)
@@ -283,13 +281,11 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       const cooldown = COMMODITIES[commodity].cooldown;
       const amount = COMMODITIES[commodity].amount;
       const totalMakes = Math.floor(POWER_INFO[PWR_OPERATE_FACTORY].duration / cooldown);
-      if(this.creep.room.name === 'E56S43')
-        this.CommodityChecking(commodity, totalMakes);
+      // if(this.creep.room.name === 'E56S43')
+      //   this.CommodityChecking(commodity, totalMakes);
     }
 
-
-
-    if(this.creep.name === 'em-s-E56S43-25377903')
+    if(this.creep.name === 'em-s-E43S55-25974542')
       console.log(this.name, 'Problem', 4)
     // commodities
     const commodities = Object.keys(COMMODITIES).filter(n => n !== RESOURCE_ENERGY && !REACTIONS[n]) as CommodityConstant[]
@@ -308,7 +304,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
       if((this.factory?.store[commodities[i]] ?? 0) >= 600)
       {
-        if(this.creep.room.name === 'E36S33')
+        if(this.creep.room.name === 'E43S55')
           console.log(this.name, 'Should be pulling from factory', commodities[i]);
         this.creep.withdraw(this.factory, commodities[i]);
         return;
@@ -466,7 +462,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     const resource = res as ResourceConstant;
     if(this.creep.store[resource] !== this.creep.store.getUsedCapacity())
     {
-      if(this.creep.room.name === 'E36S33')
+      if(this.creep.room.name === 'E43S55')
         console.log(this.name, 'Check Bars', 3);
       this.creep.transferEverything(this.storage);
       return false;
@@ -474,7 +470,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
     if(this.creep.store.getUsedCapacity() === 0)
     {
-      if(this.creep.room.name === 'E36S33')
+      if(this.creep.room.name === 'E43S55')
         console.log(this.name, 'Check Bars', 4);
       if(this.storage.store[resource] > this.creep.store.getCapacity())
         return (this.creep.withdraw(this.storage, resource) === OK);
@@ -483,13 +479,13 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     if(this.factory.store.getFreeCapacity() > this.creep.store.getUsedCapacity())
     {
       const ret = this.creep.transfer(this.factory, resource);
-      if(this.creep.room.name === 'E36S33')
+      if(this.creep.room.name === 'E43S55')
         console.log(this.name, 'Check Bars', 5, ret, resource);
 
       return (ret === OK);
     }
 
-    if(this.creep.room.name === 'E36S33')
+    if(this.creep.room.name === 'E43S55')
         console.log(this.name, 'Check Bars', 6);
     return false;
   }
@@ -515,9 +511,9 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     const componentNeeded = Math.ceil(barAmountNeeded / 100) * 500;
     let bothComponents = 0;
 
-    if(this.creep.room.name === 'E36S33')
+    if(this.creep.room.name === 'E43S55')
         console.log(this.name, 'Check Bars', 2, commodity);
-    // if(this.creep.room.name === 'E36S33' || this.creep.room.name === 'E48S56'
+    // if(this.creep.room.name === 'E43S55' || this.creep.room.name === 'E48S56'
     // || this.creep.room.name === 'E45S48'
     // || this.creep.room.name === 'E44S42'
     // || this.creep.room.name === 'E38S35')
