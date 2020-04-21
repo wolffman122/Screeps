@@ -322,9 +322,9 @@ export class EnergyManagementProcess extends Process{
         if(room?.controller?.my && room.controller.level === 8)
         {
           if(this.name === 'em-E36S38')
-            console.log(this.name, 'Pause Upgrading work', room.memory.pauseUpgrading, Game.time, room.memory.upgradingTick + 25000)
+            console.log(this.name, 'Pause Upgrading work', room.memory.pauseUpgrading, Game.time, room.memory.upgradingTick + 50000)
           if(!room.memory.pauseUpgrading
-            && Game.time > room.memory.upgradingTick + 25000
+            && Game.time > room.memory.upgradingTick + 50000
             && room.controller.ticksToDowngrade == 200000)
           {
             room.memory.pauseUpgrading = true;
