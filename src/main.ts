@@ -2,10 +2,11 @@ import { ErrorMapper } from "utils/ErrorMapper";
 import "./lib/Traveler"
 import {Kernel} from './os/kernel'
 import { Traveler } from "./lib/Traveler";
-import "creep.extensions";
+import "prototypes/creep";
 import "roomPosition.extensions";
 import "utils/constants";
 import { initRoomPrototype } from "prototypes/initRoomPrototype";
+import "prototypes/roomvisual";
 
 Creep.prototype.fixMyRoad = function()
 {
@@ -130,6 +131,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       }
     }
   }
+  let creep: Creep
 
   // Load Memory from the global object if it is there and up to date.
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){

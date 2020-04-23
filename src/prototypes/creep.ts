@@ -422,3 +422,12 @@ Creep.prototype.almostFull = function(): boolean
 {
   return (this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity() === this.store.getCapacity());
 }
+
+Creep.prototype.getCost = function(): number
+{
+  let cost = 0;
+  for(let i = 0; i < Object.keys(this.body).length; i++)
+    cost += BODYPART_COST[this.body[i].type];
+
+  return cost;
+}

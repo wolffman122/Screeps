@@ -14,7 +14,7 @@ export class TerminalManagementProcess extends Process
     if(!this.metaData.sendStrings)
       this.metaData.sendStrings = {};
 
-    
+
       for(const str in this.metaData.receiveStr)
       {
         const room = Game.rooms[str];
@@ -47,8 +47,12 @@ export class TerminalManagementProcess extends Process
 
           if(r.terminal && r.storage)
           {
-            return ((r.storage.store.energy < 200000 || r.storage.store === undefined) && r.controller && r.controller.my &&
-              r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
+            if(r.memory.templeRoom)
+              return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 700000) && r.controller?.my &&
+              r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
+            else
+              return ((r.storage.store.energy < 200000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+                r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
           }
           else
           {
