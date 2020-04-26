@@ -295,6 +295,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     let storage = creep.room.storage;
     if(storage && _.sum(creep.carry) != creep.carry.energy)
     {
+      creep.say('T🏟')
       if(creep.pos.isNearTo(storage))
       {
         creep.transferEverything(storage);
@@ -378,13 +379,15 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
       if(target.structureType == STRUCTURE_STORAGE)
       {
-        creep.memory.storageDelivery = true;
+        this.suspend = 5;
+        return;
       }
       else
       {
         creep.memory.storageDelivery = false;
       }
 
+      creep.say('T🏟2');
       if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
       {
         return;
