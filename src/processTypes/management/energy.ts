@@ -322,24 +322,22 @@ export class EnergyManagementProcess extends Process{
         if(room?.controller?.my && room.controller.level === 8)
         {
           if(this.name === 'em-E36S38')
-            console.log(this.name, 'Pause Upgrading work', room.memory.pauseUpgrading, Game.time, room.memory.upgradingTick + 50000)
+            console.log(this.name, 'Pause Upgrading work', room.memory.pauseUpgrading, Game.time, room.memory.upgradingTick + 25000)
           if(!room.memory.pauseUpgrading
-            && Game.time > room.memory.upgradingTick + 50000
+            && Game.time > room.memory.upgradingTick + 25000
             && room.controller.ticksToDowngrade == 200000)
           {
             room.memory.pauseUpgrading = true;
           }
 
           if((room.memory.pauseUpgrading
-            && room.controller.ticksToDowngrade < 175000)
+            && room.controller.ticksToDowngrade < 150000)
             ||
             (!room.memory.pauseUpgrading && room.storage.store.getFreeCapacity() < 30000))
           {
             room.memory.pauseUpgrading = false;
             room.memory.upgradingTick = Game.time;
           }
-
-          //room.memory.pauseUpgrading = true;
         }
 
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
