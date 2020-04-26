@@ -605,6 +605,7 @@ interface Flag {
     builders: string[];
     haulers: string[];
     upgraders: string[];
+    upgraders2: string[];
     distros: string[];
     openSpaces?: {x:number, y:number};
 

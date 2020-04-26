@@ -27,6 +27,9 @@ export class TempleProcess extends Process
     if(!this.metaData.upgraders)
       this.metaData.upgraders = [];
 
+    if(!this.metaData.upgraders2)
+      this.metaData.upgraders2 = [];
+
     if(!this.metaData.distros)
       this.metaData.distros = [];
   }
@@ -119,16 +122,20 @@ export class TempleProcess extends Process
 
         distroAmount = 1;
 
-        if(controller.level === 7
-          && (controller.progress / controller.progressTotal) > 0.75)
+        if(controller.level === 7)
         {
-          if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < this.templeStorage.store.getCapacity() * .90)
-            haulerAmount = 4;
+
+          if(distroAmount == 2)
+             this.metaData.upgraders2 = this.spawnCreeps(upgraderAmount, this.metaData.upgraders2, 'templeUpgrader');
+          else
+            this.metaData.upgraders2 = Utils.clearDeadCreeps(this.metaData.upgraders2)
+
+          //distroAmount = 2;
         }
         else if(controller.level === 8)
         {
-          this.metaData.claimed = false;
-          controller.unclaim();
+          // this.metaData.claimed = false;
+          // controller.unclaim();
           return;
         }
       }
@@ -163,10 +170,20 @@ export class TempleProcess extends Process
     {
       const creep = Game.creeps[this.metaData.upgraders[i]];
       if(creep)
-        this.UpgraderActions(creep);
+        this.UpgraderActions(creep, this.templeStorage);
     }
 
-    console.log(this.name, 'Action', 1)
+    const container = this.roomData().containers[0];
+    for(let i = 0; i < this.metaData.upgraders2.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.upgraders2[i]];
+      if(creep)
+      {
+        console.log(this.name, 'Run', 2.3)
+        this.UpgraderActions(creep, container);
+      }
+    }
+
     for(let i = 0; i < this.metaData.builders.length; i++)
     {
       const creep = Game.creeps[this.metaData.builders[i]];
@@ -174,12 +191,17 @@ export class TempleProcess extends Process
         this.BuilderActions(creep);
     }
 
-    console.log(this.name, 'Action', 2)
     for(let i = 0; i < this.metaData.distros.length; i++)
     {
       const creep = Game.creeps[this.metaData.distros[i]];
       if(creep)
-        this.DistroActions(creep);
+      {
+        let flagName = 'Distro-E37S45';
+        if(i === 1)
+          flagName = 'Distro-2-E37S45';
+
+        this.DistroActions(creep, flagName);
+      }
     }
   }
 
@@ -359,6 +381,7 @@ export class TempleProcess extends Process
       }
     }
 
+    console.log(this.name, 'HA',1)
     if(creep.room.name === this.feedRoom.name
       && creep.store.getUsedCapacity() === 0)
     {
@@ -370,12 +393,14 @@ export class TempleProcess extends Process
       return;
     }
 
+    console.log(this.name, 'HA',2)
     if(!this.templeRoom && creep.store.getFreeCapacity() === 0)
     {
       creep.travelTo(this.flag);
       return;
     }
 
+    console.log(this.name, 'HA',3)
     if(creep.store.getUsedCapacity() === 0)
     {
       if(!creep.memory.target)
@@ -409,6 +434,7 @@ export class TempleProcess extends Process
       return;
     }
 
+    console.log(this.name, 'HA',4)
     const containerFlag =  Game.flags['Test'];
     const container = this.roomData().containers[0];
     if(containerFlag)
@@ -419,6 +445,7 @@ export class TempleProcess extends Process
       return;
     }
 
+    console.log(this.name, 'HA',5)
     if(creep.name === 'shHauler-E37S45-25979880')
       console.log(this.name, 'Temple storage', !this.templeStorage, !this.templeStorage.isActive())
     if(!this.templeStorage || !this.templeStorage.isActive())
@@ -472,100 +499,98 @@ export class TempleProcess extends Process
       }
     }
 
+    console.log(this.name, 'Hauler end');
   }
 
-  private UpgraderActions(creep: Creep)
+  private UpgraderActions(creep: Creep, target: StructureContainer|StructureStorage)
   {
-    const haulerCreeps = Utils.inflateCreeps(this.metaData.haulers);
-    // if(!creep.memory.boost)
-    // {
-    //   creep.boostRequest([RESOURCE_CATALYZED_GHODIUM_ACID], false);
-    //   return;
-    // }
-
     if(!this.templeRoom)
     {
       creep.travelTo(this.flag);
       return;
     }
 
-    const containerFlag =  Game.flags['Test'];
-    const container = this.roomData().containers[0];
-    const target = containerFlag ? containerFlag : container;
-    const controller = this.templeRoom.controller;
-    if(controller?.level < 7)
+    if(!creep.pos.isNearTo(target))
     {
-      if(!creep.pos.isNearTo(this.templeStorage))
+      creep.travelTo(target);
+      return;
+    }
+
+    const oneAmount = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER;
+    if(creep.store.getUsedCapacity() <= oneAmount)
+      creep.withdraw(target, RESOURCE_ENERGY);
+
+
+    let xTarget = 0;
+    let yTarget = 0;
+    let spawn = this.roomData().spawns[0];
+    const pos = target.pos;
+    const diffX = pos.x - creep.pos.x;
+    const diffY = pos.y - creep.pos.y;
+    let moveDir = this.GetMoveDirection(diffX, diffY)
+    if(target instanceof StructureStorage)
+    {
+      xTarget = 0;
+      yTarget = 1;
+    }
+    else
+    {
+      moveDir = this.GetMoveDirection2(diffX, diffY);
+      console.log(this.name, creep.name, moveDir);
+      spawn = this.roomData().spawns[1];
+      xTarget = -1;
+      yTarget = 0;
+    }
+
+
+    const cost = creep.getCost();
+    const energyNeeded = Math.ceil(cost/2.5/creep.body.length)
+    const renewRate = Math.floor(600/creep.body.length);
+    let allFull = true;
+    if(creep.name === 'templeUpgrader-E37S45-26030765')
+      console.log(this.name, 'UA', diffX, diffY, xTarget, yTarget);
+    if(diffX === xTarget && diffY === yTarget
+      && (spawn.store[RESOURCE_ENERGY] ?? 0) > 63)
+    {
+      if(creep.ticksToLive < 1400)
+        allFull = false;
+
+      const ret = spawn.renewCreep(creep);
+      console.log(this.name, 'Renew', ret)
+    }
+
+    if(Game.time % 20 === 0)
+    {
+      const creeps = Utils.inflateCreeps(this.metaData.upgraders);
+      for(let i = 0; i < creeps.length; i++)
       {
-        creep.travelTo(this.templeStorage);
-        return;
+        console.log(this.name, 'Creep life', creeps[i].ticksToLive, creeps[i].spawning)
+        if(creeps[i].ticksToLive < 100 && !creeps[i].spawning)
+          allFull = false;
+      }
+
+      console.log(this.name, 'Creep move', allFull);
+      if(allFull)
+      {
+
+        const ret = creep.move(moveDir);
+        console.log(this.name, 'Creep move', 2, moveDir, ret);
+
       }
     }
 
-    // if(!creep.pos.isNearTo(target))
-    // {
-    //   creep.travelTo(target);
-    // }
-    // else
-    // {
-      const oneAmount = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER;
-      if(creep.store.getUsedCapacity() <= oneAmount)
-      {
-        if(this.templeStorage)
-          creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
-        else
-        {
-          const hauler = creep.pos.findClosestByRange(haulerCreeps);
-          if(creep.pos.isNearTo(hauler))
-            hauler.transfer(creep, RESOURCE_ENERGY);
-        }
-      }
-
-
-      const pos = this.templeStorage.pos;
-      const diffX = pos.x - creep.pos.x;
-      const diffY = pos.y - creep.pos.y;
-      const spawn = this.roomData().spawns[0];
-      const cost = creep.getCost();
-      const energyNeeded = Math.ceil(cost/2.5/creep.body.length)
-      const renewRate = Math.floor(600/creep.body.length);
-      let allFull = true;
-      if(diffX === 0 && diffY === 1
-        && (spawn.store[RESOURCE_ENERGY] ?? 0) > 63)
-      {
-        if(creep.ticksToLive < 1400)
-          allFull = false;
-          
-        const ret = spawn.renewCreep(creep);
-        console.log(this.name, 'Renew', ret)
-      }
-
-      if(Game.time % 10 === 0)
-      {
-        const creeps = Utils.inflateCreeps(this.metaData.upgraders);
-        for(let i = 0; i < creeps.length; i++)
-        {
-          console.log(this.name, 'Creep life', creeps[i].ticksToLive, creeps[i].spawning)
-          if(creeps[i].ticksToLive < 900 && !creeps[i].spawning)
-            allFull = false;
-        }
-
-        console.log(this.name, 'Creep move', allFull);
-        if(allFull)
-        {
-          const moveDir = this.GetMoveDirection(diffX, diffY)
-          const ret = creep.move(moveDir);
-          console.log(this.name, 'Creep move', 2, moveDir, ret);
-
-        }
-      }
-
+    if(this.templeRoom.controller.level === 8)
+    {
+      if(diffX === xTarget && diffY === yTarget)
+        creep.upgradeController(this.templeRoom.controller);
+    }
+    else
       creep.upgradeController(this.templeRoom.controller);
-
   }
 
-  private DistroActions(creep: Creep)
+  private DistroActions(creep: Creep, flagName: string)
   {
+    console.log(this.name, 'DA', 1, flagName)
     if(creep.room.name === this.feedRoom.name
       && creep.store.getUsedCapacity() === 0)
     {
@@ -579,6 +604,7 @@ export class TempleProcess extends Process
       return;
     }
 
+    console.log(this.name, 'DA', 1.1)
     if(creep.room.name !== this.templeRoom.name)
     {
       console.log(this.name, 'Distro', 2)
@@ -586,14 +612,29 @@ export class TempleProcess extends Process
       return;
     }
 
-    const distroFlag = Game.flags['Distro-E37S45'];
+    console.log(this.name, 'DA', 1.2)
+    let cPos = new RoomPosition(creep.pos.x-1, creep.pos.y, creep.pos.roomName);
+    if(flagName === 'Distro-2-E37S45')
+      cPos = new RoomPosition(creep.pos.x, creep.pos.y-1, creep.pos.roomName);
+    const lCreep = cPos.lookFor(LOOK_CREEPS)[0];
+    if(lCreep?.ticksToLive >= 1490)
+    {
+      const spawn = this.roomData().spawns[0];
+      spawn.renewCreep(creep);
+    }
+
+    console.log(this.name, 'DA', 1.3)
+    const distroFlag = Game.flags[flagName];
     if(creep.store.getUsedCapacity() !== creep.store.getCapacity())
     {
       if(!creep.pos.isEqualTo(distroFlag))
         creep.travelTo(distroFlag);
       else
       {
-        if(this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >=  creep.store.getCapacity())
+        if(flagName === 'Distro-2-E37S45'
+          && this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
+          creep.withdraw(this.templeTerminal, RESOURCE_ENERGY);
+        else if(this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >=  creep.store.getCapacity())
           creep.withdraw(this.templeTerminal, RESOURCE_ENERGY);
         else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getCapacity())
           creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
@@ -602,6 +643,7 @@ export class TempleProcess extends Process
       return;
     }
 
+    console.log(this.name, 'DA', 1.4)
     const tower = this.roomData().towers?.filter(t => (t.store[RESOURCE_ENERGY ?? 0]) <= 500)[0];
     if(tower && (creep.store[RESOURCE_ENERGY] ?? 0) >= 500)
     {
@@ -614,7 +656,32 @@ export class TempleProcess extends Process
       return;
     }
 
-    const spawn = this.roomData().spawns[0];
+    let spawn = this.roomData().spawns[0];
+    console.log(this.name, 'DA', 2, spawn)
+    if(flagName === 'Distro-2-E37S45')
+      {
+        spawn = this.roomData().spawns[1];
+        console.log(this.name, 'DA', 3, spawn)
+      }
+
+    if(flagName === 'Distro-2-E37S45')
+    {
+      console.log(this.name, 'DA', 7)
+      const container = this.roomData().containers[0];
+      if(container?.store.getUsedCapacity() <= 601)
+      {
+        console.log(this.name, 'Distro', 6)
+        //const pos = new RoomPosition(container.pos.x + 1, container.pos.y + 1, container.room.name);
+        if(!creep.pos.isNearTo(container))
+          creep.travelTo(container);
+        else if(container.store.getFreeCapacity() >= creep.store.getUsedCapacity())
+          creep.transfer(container, RESOURCE_ENERGY);
+
+        return;
+      }
+    }
+
+      console.log(this.name, 'DA', 4, spawn)
     if((spawn?.store[RESOURCE_ENERGY] ?? 0) < 63
         && creep.store.getUsedCapacity(RESOURCE_ENERGY) >= 300)
     {
@@ -628,6 +695,7 @@ export class TempleProcess extends Process
 
     }
 
+    console.log(this.name, 'DA', 5)
     if(creep.store.getUsedCapacity() === 0)
     {
       if(this.templeTerminal)
@@ -645,30 +713,27 @@ export class TempleProcess extends Process
         }
       }
 
-      console.log(this.name, 'Distro terminal', 3)
-      console.log(this.name, 'Distro', 3)
-      if(!creep.pos.isEqualTo(distroFlag))
-        creep.travelTo(distroFlag);
-      else
-        creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
+      if(flagName !== 'Distro-2-E37S45')
+      {
+        if(!creep.pos.isEqualTo(distroFlag))
+          creep.travelTo(distroFlag);
+        else
+          creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
 
-      return;
+        return;
+      }
+      else
+      {
+        if(!creep.pos.isEqualTo(distroFlag))
+          creep.travelTo(distroFlag);
+      }
     }
 
+    console.log(this.name, 'DA', 6)
 
-    // if(container?.store.getFreeCapacity() >= creep.store.getCapacity())
-    // {
-    //   console.log(this.name, 'Distro', 6)
-    //   //const pos = new RoomPosition(container.pos.x + 1, container.pos.y + 1, container.room.name);
-    //   if(!creep.pos.isNearTo(container))
-    //     creep.travelTo(container);
-    //   else if(container.store.getFreeCapacity() >= creep.store.getUsedCapacity())
-    //     creep.transfer(container, RESOURCE_ENERGY);
 
-    //   return;
-    // }
-
-    if(this.templeTerminal?.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
+    console.log(this.name, 'DA', 8)
+    if(this.templeTerminal?.store.getUsedCapacity(RESOURCE_ENERGY) > 0 && flagName !== 'Distro-2-E37S45')
     {
       if(!creep.pos.isEqualTo(distroFlag))
         creep.travelTo(distroFlag);
@@ -677,7 +742,7 @@ export class TempleProcess extends Process
     }
   }
 
-  private GetMoveDirection(diffX: number, diffY: number)
+  private GetMoveDirection(diffX: number, diffY: number) : DirectionConstant
   {
     if(diffX === 0)
     {
@@ -704,7 +769,35 @@ export class TempleProcess extends Process
       else if(diffY === -1)
         return 1;
     }
+  }
 
+  private GetMoveDirection2(diffX: number, diffY: number) : DirectionConstant
+  {
+    if(diffX === 0)
+    {
+      if(diffY === -1)
+        return 2;
+      else if(diffY === 1)
+        return 6;
+    }
+    else if(diffX === 1)
+    {
+      if(diffY === -1)
+        return 3;
+      else if(diffY === 0)
+        return 5;
+      else if(diffY === 1)
+        return 5;
+    }
+    else if (diffX === -1)
+    {
+      if(diffY === -1)
+        return 1;
+      else if(diffY === 0)
+        return 1;
+      else if(diffY === 1)
+        return 7;
+    }
   }
 
   TowerHeal()
