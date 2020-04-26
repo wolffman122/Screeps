@@ -41,7 +41,7 @@ export class RoomDataProcess extends Process{
     if(room === undefined)
     {
       if(Memory.rooms[this.metaData.roomName])
-        Memory.rooms[this.metaData.roomName].cache = undefined;
+        Memory.rooms[this.metaData.roomName].cache = {};
       this.completed;
       return;
     }
@@ -88,7 +88,7 @@ export class RoomDataProcess extends Process{
       console.log(this.name, 6)
     if(room)
     {
-      if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0
+      if(room.controller?.my && !room.memory.templeRoom && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0
         && this.roomData().extractor)
       {
         this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 40, {
@@ -750,7 +750,7 @@ export class RoomDataProcess extends Process{
   enemyDetection(room: Room)
   {
     let controller = Game.rooms[this.metaData.roomName].controller;
-    if(controller?.my && room.memory.hostileCreepIds.length)
+    if(controller?.my && room.memory.hostileCreepIds?.length)
     {
       this.kernel.addProcessIfNotExist(TowerDefenseProcess, 'td-' + this.metaData.roomName, 95, {
         roomName: this.metaData.roomName
