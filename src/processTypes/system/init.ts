@@ -53,6 +53,8 @@ export class InitProcess extends Process{
       })
     }
 
+    let rampartAverages: {roomName: string, average: number}[] = [];
+
     _.forEach(Game.rooms, function(room){
 
       const flags = room.find(FIND_FLAGS, {filter: f=> f.name === room.name + '-kill'});
@@ -68,7 +70,7 @@ export class InitProcess extends Process{
 
       if(room.memory.templeRoom)
         return;
-        
+
       if(room.controller && room.controller.my)
       {
         if(Game.time % 3000 === 0)
@@ -93,6 +95,23 @@ export class InitProcess extends Process{
           proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 50, {
             roomName: room.name
           })
+        }
+
+        if(Game.time % 1500 === 0)
+        {
+          const ramparts = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
+          if(ramparts?.length)
+          {
+
+            let total = 0;
+            for(let i = 0; i < ramparts.length; i++)
+            {
+              const rampart = ramparts[i];
+              total += rampart.hits;
+            }
+            const average = Math.floor(total / ramparts.length);
+            rampartAverages.push({roomName: room.name, average: average})
+          }
         }
 
         if(!proc.kernel.hasProcess('sm-' + room.name)){
@@ -152,6 +171,20 @@ export class InitProcess extends Process{
       }
     })
 
+    console.log(this.name, 'Rampart Average length', rampartAverages.length);
+    rampartAverages = rampartAverages.sort((a, b) => a.average - b.average);
+    const tenLowest = rampartAverages.slice(0, 10);
+    for(let i = 0; i < tenLowest.length; i++)
+    {
+      const low = tenLowest[i];
+      const process = this.kernel.getProcessByName('sm-' + low.roomName);
+      if(process instanceof StructureManagementProcess)
+      {
+        process.metaData.upgradeType = 1;
+      }
+
+      console.log(this.name, low.roomName, low.average);
+    }
 
     this.kernel.addProcessIfNotExist(PowerManagement, 'powerm', 50, {});
     this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});

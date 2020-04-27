@@ -357,6 +357,7 @@ interface Flag {
     repairCreeps: string[]
     dismantleCreeps: string[]
     shutDownRamparts?: boolean
+    upgradeType: number // -1 nothing, 0, maintain, 1 upgrade
   }
 
   interface HoldRoomManagementProcessMetaData
