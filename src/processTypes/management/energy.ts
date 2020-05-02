@@ -370,28 +370,26 @@ export class EnergyManagementProcess extends Process{
           {
             let creepName = 'em-u-' + proc.metaData.roomName + '-' + Game.time
             let spawned = false;
-            if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
+
+            if(Game.rooms[proc.metaData.roomName].controller!.level === 8)
             {
-              if(Game.rooms[proc.metaData.roomName].controller!.level === 8)
-              {
-                spawned = Utils.spawn(
-                  proc.kernel,
-                  proc.metaData.roomName,
-                  'upgrader1',
-                  creepName,
-                  {}
-                );
-              }
-              else
-              {
-                spawned = Utils.spawn(
-                  proc.kernel,
-                  proc.metaData.roomName,
-                  'upgrader',
-                  creepName,
-                  {}
-                );
-              }
+              spawned = Utils.spawn(
+                proc.kernel,
+                proc.metaData.roomName,
+                'upgrader1',
+                creepName,
+                {}
+              );
+            }
+            else if(this.kernel.data.roomData[this.metaData.roomName].controllerContainer)
+            {
+              spawned = Utils.spawn(
+                proc.kernel,
+                proc.metaData.roomName,
+                'upgrader',
+                creepName,
+                {}
+              );
             }
             else
             {
@@ -454,11 +452,13 @@ export class EnergyManagementProcess extends Process{
 
         if(this.name === 'em-E37S46')
           console.log(this.name, 'distro creeps', Object.keys(this.metaData.distroCreeps).length, this.metaData.distroCreeps[0], this.metaData.distroCreeps[1]);
-        if(this.kernel.data.roomData[this.metaData.roomName].storageLink
+        if((this.kernel.data.roomData[this.metaData.roomName].storageLink
             &&
           (this.metaData.upgradeCreeps.length > 0 || room.memory.pauseUpgrading)
             &&
           Object.keys(this.metaData.distroCreeps).length >= 2)
+          ||
+          room.controller.isPowerEnabled)
         {
           let storageLink = this.kernel.data.roomData[this.metaData.roomName].storageLink
 
