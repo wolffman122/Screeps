@@ -162,9 +162,7 @@ export const Stats = {
           Memory.stats['rooms.' + roomName + '.energy_available'] = room.energyAvailable
           Memory.stats['rooms.' + roomName + '.energy_capacity_available'] = room.energyCapacityAvailable
           //Memory.stats['rooms.' + roomName + '.ramparts.target'] = Utils.rampartHealth(kernel, roomName)
-          let creeps = <Creep[]>_.filter(Game.creeps, c => {
-            return (c.pos.roomName === room.name && c.my);
-          });
+          let creeps = room.find(FIND_MY_CREEPS);
           Memory.stats['rooms.' + roomName + '.num_creeps'] = creeps ? creeps.length : 0;
 
           Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = room.memory.hostileCreepIds ? room.memory.hostileCreepIds.length : 0;

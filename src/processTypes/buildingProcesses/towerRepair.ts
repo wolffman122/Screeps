@@ -18,19 +18,19 @@ export class TowerRepairProcess extends Process
       return;
     }
 
-    const ramparts = _.filter(this.roomData().ramparts, function(rampart){
+    const ramparts = this.roomData().ramparts.filter(rampart => {
       return (rampart.hits < 50000);
     });
 
-    const containers = _.filter(this.roomData().generalContainers, function(container){
+    const containers = this.roomData().generalContainers.filter(container => {
       return (container.hits < container.hitsMax);
     });
 
-    const sourceContainers = _.filter(this.roomData().sourceContainers, function(sourceContainer){
+    const sourceContainers = this.roomData().sourceContainers.filter(sourceContainer => {
       return (sourceContainer.hits < sourceContainer.hitsMax);
     });
 
-    const roads = _.filter(this.roomData().roads, function(road){
+    const roads = this.roomData().roads.filter(road =>{
       return (road.hits < road.hitsMax);
     })
 
@@ -54,7 +54,7 @@ export class TowerRepairProcess extends Process
 
     let proc = this;
     _.forEach(sortedRamparts, function(rampart){
-      let towers = _.filter(proc.roomData().towers, function(tower){
+      let towers = proc.roomData().towers.filter(tower => {
         return !usedTowers[tower.id];
       });
 

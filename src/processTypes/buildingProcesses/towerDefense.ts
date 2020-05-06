@@ -39,7 +39,7 @@ export class TowerDefenseProcess extends Process{
 
     let enemies = <Creep[]>this.room.find(FIND_HOSTILE_CREEPS);
 
-    enemies = _.filter(enemies, (e)=> {
+    enemies = enemies.filter( e=> {
       return !_.includes(WHITE_LIST, e.owner.username);
     })
 
@@ -55,7 +55,7 @@ export class TowerDefenseProcess extends Process{
           flag.memory.timeEnemies = Game.time;
         }
 
-        let invaders = _.filter(enemies, (e) => {
+        let invaders = enemies.filter(e => {
           return (e.owner.username === 'invader' || e.owner.username === 'Invader');
         });
 
@@ -67,41 +67,6 @@ export class TowerDefenseProcess extends Process{
             console.log(this.name, 'Problem', 3)
           this.towerDefense(enemies);
         }
-        // Before likeafox code
-        /*_.forEach(this.roomData().towers, (t) => {
-          let invaders = _.filter(enemies, (e) => {
-            return (e.owner.username === 'invader' || e.owner.username === 'Invader');
-          });
-
-
-          /*let target = Game.getObjectById(room.memory.enemyId) as Creep;
-          if(invaders.length === 0) // Enemy player code
-          {
-            if(target === undefined)
-            {
-              room.memory.enemyId = undefined;
-              // Players attack
-              let rangedEnemies;
-              rangedEnemies = flag.pos.findInRange(enemies, 10);
-              if(rangedEnemies.length > 0)
-              {
-                let targets = _.filter(rangedEnemies, (e: Creep) => {
-                  return (e.getActiveBodyparts(HEAL) > 0);
-                });
-
-                if(targets.length > 0)
-                {
-                  target = targets[0];
-                  room.memory.enemyId = target.id;
-                }
-                else
-                {
-                  target = rangedEnemies[0];
-                  room.memory.enemyId = target.id;
-                }
-              }
-            }
-          }*/
         else // Kill invaders
         {
           _.forEach(this.towers, (t) => {
@@ -114,11 +79,11 @@ export class TowerDefenseProcess extends Process{
             {
               this.log('Attacking invaders for ' + (flag.memory.timeEnemies! - Game.time + 400));
               // Invaders attack
-              let healTargets = _.filter(invaders, e => {
+              let healTargets = invaders.filter(e => {
                 return (e.getActiveBodyparts(HEAL) > 0);
               });
 
-              let regularTargets = _.filter(invaders, e => {
+              let regularTargets = invaders.filter(e => {
                 return (e.getActiveBodyparts(HEAL) === 0);
               })
 
@@ -192,7 +157,7 @@ export class TowerDefenseProcess extends Process{
           let rangedEnemies = tower.pos.findInRange(enemies,20)
           if(rangedEnemies.length > 0)
           {
-            let targets = _.filter(rangedEnemies, e => {
+            let targets = rangedEnemies.filter(e => {
               return (e.getActiveBodyparts(HEAL) > 0);
             });
 
@@ -348,122 +313,4 @@ export class TowerDefenseProcess extends Process{
         break;
     }
   }
-
-  /*function getCreepDamage(target, allies) {
-    var total = 0;
-    var damage;
-    var e;
-    _.forEach(allies, function(o) {
-        if (o.pos.isNearTo(target)) {
-            for (e in o.body) {
-                if (o.body[e].type === ATTACK) {
-                    damage = 30;
-                    if (o.body[e].boost !== undefined) {
-                        damage *= BOOSTS.attack[o.body[e].boost].attack;
-                    }
-                    total += damage;
-                }
-                if (o.body[e].type === RANGED_ATTACK) {
-                    damage = 10;
-                    if (o.body[e].boost !== undefined) {
-                        damage *= BOOSTS.ranged_attack[o.body[e].boost].rangedAttack;
-                    }
-                    total += damage;
-                }
-            }
-        } else if (o.pos.getRangeTo(target) <= 3) {
-            for (e in o.body) {
-                if (o.body[e].type === RANGED_ATTACK) {
-                    damage = 10;
-                    if (o.body[e].boost !== undefined) {
-                        damage *= BOOSTS.ranged_attack[o.body[e].boost].rangedAttack;
-                    }
-                    total += damage;
-                }
-            }
-        }
-    });
-    return total;
-}
-function getTowerDamage(target, towers) {
-    var totalDamage = 0;
-    for (var e in towers) {
-        var towerDamage = 0;
-        if (towers[e].energy > 10) {
-            var range = target.pos.getRangeTo(towers[e]);
-            if (range <= 5) {
-                towerDamage += 600;
-            } else if (range >= 20) {
-                towerDamage += 150;
-            } else {
-                towerDamage += 600 - (30 * (range-5));
-            }
-        }
-        let multipler = 1.00;
-        if (towers[e].effects) {
-            for (let i in towers[e].effects) {
-                console.log(towers[e].effects[i].power, towers[e].effects[i].level, "twer effects in effect");
-                if (towers[e].effects[i].power === PWR_DISRUPT_TOWER) {
-                    multipler -= 0.10 * towers[e].effects[i].level;
-                }
-                if (towers[e].effects[i].power === PWR_OPERATE_TOWER) {
-                    multipler += 0.10 * towers[e].effects[i].level;
-                }
-            }
-            towerDamage = towerDamage * multipler;
-            //            console.log(towerDamage, towerDamage * multipler, multipler);
-        }
-        totalDamage += towerDamage;
-    }
-    return totalDamage;
-}
-function calcuateDamage(body, amount) {
-    var toughType;
-    for (var a in body) {
-        if (body[a].boost !== undefined && body[a].type == TOUGH) {
-            return amount * BOOSTS.tough[body[a].boost].damage;
-        }
-    }
-    return amount;
-}
-function estimateDamageAndAttack(target, allies, towers) {
-    var totalDamage = 0;
-    totalDamage += getTowerDamage(target, towers);
-    totalDamage += getCreepDamage(target, allies);
-    var toughParts = getBoostTough(target.body);
-    var totalToughHp = toughParts * 100;
-    var damageTotal = calcuateDamage(target.body, totalDamage);
-    var currentLossHp = target.hitsMax - target.hits;
-    target.room.visual.text(damageTotal, target.pos, { color: 'green', font: 0.8 });
-    if (damageTotal + currentLossHp < totalToughHp && toughParts > 0) {
-        return false;
-    }
-    //    if (Game.shard.name == 'shard2')
-    //        console.log('est damage', toughParts, target, totalToughHp, damageTotal, damageTotal > totalToughHp);
-    target.room.visual.text(damageTotal, target.pos, { color: 'red', font: 0.8 });
-    //    console.log(damageTotal, target.pos);
-    var e;
-    for (e in towers) {
-        towers[e].attack(target);
-    }
-    for (e in allies) {
-        if (allies[e].getActiveBodyparts(ATTACK) > 0) {
-            allies[e].attack(target);
-        }
-        if (allies[e].getActiveBodyparts(RANGED_ATTACK) > 0) {
-            allies[e].rangedAttack(target);
-        }
-    }
-    return true;
-  }
-
-  function scanIfNoHealer(target) {
-    let zzz = _.filter(target.pos.findInRange(target.room.enemies, 3), function(o) {
-        return o.getActiveBodyparts(HEAL) > 0;
-    });
-    if (zzz > 0) {
-        return true;
-    }
-    return false;
-  }*/
 }
