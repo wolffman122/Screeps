@@ -286,6 +286,10 @@ interface Flag {
     hostileCreepIds?: string[];
     barType?: CommodityConstant;
     powerHarvesting?: boolean;
+    commands?: Command[];
+    commandIndex?: number;
+    componentsReady?: boolean;
+    factoryEmpty?: boolean;
   }
 
   interface SpawnMemory {}
@@ -899,7 +903,8 @@ interface PowerManagementProcessMetaData
 interface PowerCreepLifetimeProcessMetaData
 {
   powerCreep: string,
-  roomName: string
+  roomName: string,
+  turnOnFactory?: boolean,
 }
 
 interface AlleyObservationManagementProcessMetaData
@@ -930,9 +935,6 @@ interface Spinner2LifeTimeProcessMetaData
   numberOfFlags: number,
   skFeedRoom?: boolean,
   skMinerals?: string[],
-  commands?: Command[],
-  commandIndex?: number,
-  factoryEmpty?: boolean,
 }
 
 interface TransferManagementProcessMetaData

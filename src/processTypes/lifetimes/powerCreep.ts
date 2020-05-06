@@ -69,32 +69,17 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(powerCreep.memory.factoryRequest)
+    if(this.metaData.turnOnFactory && !powerCreep.powers[PWR_OPERATE_FACTORY].cooldown)
     {
-      const factoryEffects = factory.effects?.filter( e => e.effect === PWR_OPERATE_FACTORY && e.ticksRemaining > 0);
-      if(factoryEffects?.length)
+      if(!powerCreep.pos.inRangeTo(factory, 3))
+        powerCreep.moveTo(factory, {range: 3});
+      else
       {
-        const effect = factoryEffects[0];
-        if(effect.ticksRemaining < 20 && powerCreep.powers[PWR_OPERATE_FACTORY].cooldown === 0)
-        {
-          if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) < 300)
-          {
-            if(!powerCreep.pos.isNearTo(storage))
-              powerCreep.moveTo(storage);
-            else
-              powerCreep.withdraw(storage, RESOURCE_OPS, 300);
-
-            return;
-          }
-
-          if(!powerCreep.pos.inRangeTo(factory, 3))
-            powerCreep.moveTo(factory, {range: 3});
-          else
-            powerCreep.usePower(PWR_OPERATE_FACTORY, factory);
-
-          return;
-        }
+        powerCreep.usePower(PWR_OPERATE_FACTORY, factory);
+        this.metaData.turnOnFactory = false;
       }
+
+      return;
     }
 
     if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown < 10
