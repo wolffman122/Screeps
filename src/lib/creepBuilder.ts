@@ -11,9 +11,7 @@ export const CreepBuilder = {
   {
 
 
-    let creepCount = _.filter(Game.creeps, function(creep){
-      return creep.room.name === room.name
-    }).length
+    let creepCount = room.find(FIND_MY_CREEPS).length
 
     const containers = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTAINER});
 

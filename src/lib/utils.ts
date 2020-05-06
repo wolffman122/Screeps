@@ -98,13 +98,13 @@ export const Utils = {
 
     if(withdraws.length === 0){
       withdraws = <never[]>proc.kernel.data.roomData[creep.room.name].spawns
-      withdraws = <never[]>_.filter(withdraws, function(spawn: StructureSpawn){
+      withdraws = <never[]>withdraws.filter(function(spawn: StructureSpawn){
         let ret = (spawn.energy > 250 && spawn.room.energyAvailable > (spawn.room.energyCapacityAvailable - 50))
         return ret;
       })
     }
 
-    withdraws = _.filter(withdraws, (w) => {
+    withdraws = withdraws.filter((w) => {
       if(w.structureType === STRUCTURE_CONTAINER)
       {
         let container = <StructureContainer>w;
@@ -154,6 +154,35 @@ export const Utils = {
 
       return bestRoom
   },
+
+  /** Returns the room closest to the source room with the required spawn energy */
+  nearest2ndRoom(sourceRoom: string, minSpawnEnergy = 0){
+    let secondRoom = ''
+    let bestDistance, secondDistance: number;
+    bestDistance = secondDistance = 999;
+
+
+    _.forEach(Game.rooms, function(room){
+      if(room.controller && room.controller.my){
+        if(room.energyCapacityAvailable > minSpawnEnergy){
+          let path = new RoomPathFinder(sourceRoom, room.name).results()
+
+          if(path.length < bestDistance)
+          {
+            secondDistance = bestDistance;
+            bestDistance = path.length;
+          }
+          else if(path.length < secondDistance && path.length != bestDistance)
+          {
+            secondDistance = path.length;
+            secondRoom = room.name;
+          }
+        }
+      }
+    })
+
+    return secondRoom
+},
 
   pathFind(startPos: RoomPosition, targetPos: RoomPosition)
   {
