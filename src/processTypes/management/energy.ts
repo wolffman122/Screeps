@@ -331,7 +331,7 @@ export class EnergyManagementProcess extends Process{
           }
 
           if((room.memory.pauseUpgrading
-            && room.controller.ticksToDowngrade < 150000)
+            && room.controller.ticksToDowngrade < 100000)
             ||
             (!room.memory.pauseUpgrading && room.storage.store.getFreeCapacity() < 30000))
           {

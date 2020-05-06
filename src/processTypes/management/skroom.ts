@@ -276,10 +276,7 @@ export class skRoomManagementProcess extends Process
 
     let numberOfDevils = 1;
     if(count === 0 && this.invaders)
-      this.metaData.invaderFailCount++;
-
-    if(this.metaData.invaderFailCount)
-      numberOfDevils += this.metaData.invaderFailCount;
+      numberOfDevils = 2;
 
     if(count < numberOfDevils)
     {
@@ -627,69 +624,40 @@ export class skRoomManagementProcess extends Process
 
           if(target)
           {
+            let strSay = '';
             let numberInRange = devil.pos.findInRange(invaders, 3);
-            if(boostedHealers.length)
+            //if(boostedHealers.length)
             {
-              if(numberInRange.length > 1)
-                devil.rangedMassAttack();
-              else
-                devil.rangedAttack(target);
-
-              if(!devil.pos.inRangeTo(target, 3))
-                  devil.travelTo(target, {range: 3});
-
-              devil.heal(devil);
-              return;
-            }
-            else
-            {
-
-              if(numberInRange.length > 1)
+              if(!devil.pos.isNearTo(target))
               {
-                if(devil.pos.inRangeTo(target, 3) && !devil.pos.inRangeTo(target,1))
+                if(numberInRange.length > 1)
                 {
-                  if(healers.length)
-                  {
-                    strSay += 'Ma1';
-                    devil.rangedMassAttack();
-                  }
-                  else
-                  {
-                    strSay += 'Ra1';
-                    devil.rangedAttack(target);
-                  }
-                }
-                else if(devil.pos.inRangeTo(target, 1))
-                {
-                  strSay += 'Ma1A';
+                  strSay += 'MA';
                   devil.rangedMassAttack();
-                  devil.attack(target);
+                }
+                else
+                {
+                  strSay += 'RA';
+                  devil.rangedAttack(target);
                 }
 
+                  strSay += 'H';
+                  devil.heal(devil);
               }
-              else if(numberInRange.length == 1)
+              else
               {
-                strSay += 'Ra2';
+                strSay += 'ARA';
+                devil.attack(target);
                 devil.rangedAttack(target);
               }
 
-              if(devil.pos.isNearTo(target))
-              {
-                strSay += 'A2';
-                devil.attack(target);
-              }
-
-                devil.heal(devil);
-
-
-              devil.travelTo(target, {movingTarget: true});
               devil.say(strSay, true);
+              devil.travelTo(target, {movingTarget: true});
               return;
             }
           }
           return;
         }
-
       }
       else
       {
@@ -792,6 +760,7 @@ export class skRoomManagementProcess extends Process
                 }
               }
 
+              devil.say('RA+A', true);
               devil.rangedAttack(SkScreep);
               devil.attack(SkScreep);
             }
@@ -1000,7 +969,7 @@ export class skRoomManagementProcess extends Process
             {
               if(!builder.pos.isNearTo(container))
                 builder.travelTo(container);
-              else
+              else if(container.store.getUsedCapacity() === 0)
                 builder.dismantle(container);
 
               return;
@@ -2141,8 +2110,6 @@ export class skRoomManagementProcess extends Process
           }
           else
           {
-
-
             if(rangers.length)
             {
               target = creep.pos.findClosestByRange(rangers);
@@ -2156,57 +2123,39 @@ export class skRoomManagementProcess extends Process
           if(target)
           {
             creep.memory.target = target.id;
+            let strSay = '';
             let numberInRange = creep.pos.findInRange(invaders, 3);
-            if(numberInRange.length > 1)
+            //if(boostedHealers.length)
             {
-              if(creep.pos.inRangeTo(target, 3) && !creep.pos.inRangeTo(target,1))
+              if(!creep.pos.isNearTo(target))
               {
-                if(healers.length)
+                if(numberInRange.length > 1)
                 {
-                  strSay += 'Ma1';
+                  strSay += 'BMA';
                   creep.rangedMassAttack();
                 }
                 else
                 {
-                  strSay += 'Ra1';
+                  strSay += 'BRA';
                   creep.rangedAttack(target);
                 }
+
+                  strSay += 'BH';
+                  creep.heal(creep);
               }
-              else if(creep.pos.inRangeTo(target, 1))
+              else
               {
-                strSay += 'MaA2';
-                creep.rangedMassAttack();
+                strSay += 'BARA';
                 creep.attack(target);
+                creep.rangedAttack(target);
               }
-            }
-            else if(numberInRange.length == 1)
-            {
-              strSay += 'Ra2';
-              creep.rangedAttack(target);
-            }
 
-            if(creep.pos.isNearTo(target))
-            {
-              strSay += 'A2';
-              creep.attack(target);
+              creep.say(strSay, true);
+              creep.travelTo(target, {movingTarget: true});
+              return;
             }
-
-            if(creep.hits < creep.hitsMax)
-            {
-              strSay += '⛑L';
-              creep.heal(creep);
-            }
-            if(follower.hits < follower.hitsMax)
-            {
-              strSay += '⛑F';
-              creep.rangedHeal(follower)
-            }
-            creep.travelTo(target, {movingTarget: true});
-            creep.say(strSay, true);
-            return;
           }
-
-          return;
+//          return;
         }
         else
         {

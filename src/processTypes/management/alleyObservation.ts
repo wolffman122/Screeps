@@ -21,7 +21,10 @@ export class AlleyObservationManagementProcess extends Process
     if(termnial?.store.getFreeCapacity() > 50000 && (storage?.store[RESOURCE_ENERGY] > (KEEP_AMOUNT * 1.2) ?? false))
     {
       console.log(this.name, 'Checking room', this.metaData.checkRoom, checkRoom)
-      const results = this.checkTheRoom(checkRoom);
+
+      let results;
+      if(checkRoom)
+        results = this.checkTheRoom(checkRoom);
 
       if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
       {

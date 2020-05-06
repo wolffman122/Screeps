@@ -2,6 +2,7 @@ import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { AttackerLifetimeProcess } from "processTypes/lifetimes/attacker";
 import { HealerLifetimeProcess } from "processTypes/lifetimes/healer";
+import { CreepBuilder } from "lib/creepBuilder";
 
 export class StrongHoldDestructionProcess extends Process
 {
@@ -29,14 +30,9 @@ export class StrongHoldDestructionProcess extends Process
 
   run()
   {
-    this.completed = true;
-    return;
-  }
-
-  test()
-  {
     try
     {
+
       if(this.metaData.roomName === 'E44S55')
       {
         this.completed = true;
@@ -71,14 +67,6 @@ export class StrongHoldDestructionProcess extends Process
 
       if(!this.coreRoom && this.metaData.vision)
         this.metaData.vision = false;
-
-      // if(this.core?.level > 2)
-      // {
-      //   const flag = Game.flags[this.metaData.roomName + '-SK'];
-      //   flag.remove();
-      //   this.completed = true;
-      //   return;
-      // }
 
       if(this.metaData.haulerDone && this.metaData.dismantleDone)
       {
@@ -194,12 +182,14 @@ export class StrongHoldDestructionProcess extends Process
         if(this.metaData.haulers.length < numberOfHaulers && !this.metaData.haulerDone)
         {
           const creepName = 'haulers-' + this.metaData.spawnRoomName + '-' + Game.time;
+          console.log(this.name, 'Hualer', creepName);
           const spawned = Utils.spawn(this.kernel, this.metaData.spawnRoomName, 'shHauler', creepName, {});
-
+          console.log(this.name, 'Hualer spawned', spawned);
           if(spawned)
             this.metaData.haulers.push(creepName);
         }
 
+        console.log(this.name, 'Dismantler info', this.metaData.dismantlers.length, numberOfDistmantlers, !this.metaData.dismantleDone);
         if(this.metaData.dismantlers.length < numberOfDistmantlers && !this.metaData.dismantleDone)
         {
           let creepName = 'dismantler-' + this.metaData.spawnRoomName + '-' + Game.time;
@@ -357,6 +347,7 @@ export class StrongHoldDestructionProcess extends Process
 
       console.log(this.name, 'A', 9)
       const structures = creep.room.find(FIND_HOSTILE_STRUCTURES, {filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR});
+      console.log(this.name, 'A', 9, structures.length)
       if(structures.length)
       {
         const containers = this.roomInfo(this.metaData.roomName).containers.filter(c => c.effects.length);
@@ -1154,10 +1145,11 @@ export class StrongHoldDestructionProcess extends Process
     {
       let hauler: Creep;
 
-
       console.log(this.name, 'Dismantler', 1, creep.pos.roomName, this.metaData.roomName, !this.metaData.dismantleDone)
       // Move to the core room
-      if(creep.pos.roomName !== this.core.room.name && !this.metaData.dismantleDone)
+      let corePos = new RoomPosition(this.metaData.corePos.x, this.metaData.corePos.y, this.metaData.corePos.roomName);
+
+      if(creep.pos.roomName !== corePos.roomName && !this.metaData.dismantleDone)
       {
         console.log(this.name, 'Dismantler', 2)
         const cPos = this.metaData.corePos;
@@ -1303,23 +1295,53 @@ export class StrongHoldDestructionProcess extends Process
           }
         }
 
+        console.log(this.name, 'ha',0.3)
         creep.memory.full = true;
         let terminal = Game.rooms[this.metaData.spawnRoomName].terminal;
 
+        console.log(this.name, 'ha',0.4)
         // Might need to look at this code to avoid sk
         if(!creep.pos.isNearTo(terminal))
         {
-          const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 4, {filter: c => c.owner.username !== 'Invader'});
-          if(hostiles.length)
+          console.log(this.name, 'ha',0.5)
+          if(creep.room.name != this.spawnRoom.name)
           {
-            console.log(this.name, 'Found enemies');
-            this.PathSearch(creep, terminal);
-            return;
+            console.log(this.name, 'ha',0.6)
+            let ret = PathFinder.search(creep.pos, {pos: terminal.pos, range: 1},
+            {
+              // We need to set the defaults costs higher so that we
+              // can set the road cost lower in `roomCallback`
+              plainCost: 2,
+              swampCost: 10,
+
+              roomCallback: function(roomName) {
+                let room = Game.rooms[roomName];
+                if(!room) return;
+                let costs = new PathFinder.CostMatrix;
+                room.find(FIND_HOSTILE_CREEPS);
+                for(let x = -3; x <= 3; x++)
+                  for(let y = -3; y <= 3; y++)
+                    costs.set(x, y, 0xff);
+
+                return costs;
+              },
+            });
+
+            console.log(this.name, 'ha',0.7)
+            if(!ret.incomplete)
+            {
+              console.log(this.name, 'ha',0.8)
+              let pos = ret.path[0];
+              creep.move(creep.pos.getDirectionTo(pos));
+            }
+            else
+            {
+              console.log(this.name, 'ha',0.9)
+              creep.travelTo(terminal, {allowSK: true});
+            }
           }
           else
-          {
             creep.travelTo(terminal);
-          }
         }
         else
         {
@@ -1344,34 +1366,6 @@ export class StrongHoldDestructionProcess extends Process
       // IN the core room
       if(creep.room.name === this.metaData.roomName)
       {
-        console.log(this.name, 'ha',1)
-        const dropped = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 5);
-        if(dropped.length)
-        {
-          const tar = creep.pos.findClosestByPath(dropped);
-          if(tar)
-          {
-            if(!creep.pos.isNearTo(tar))
-            {
-              const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 4, {filter: c => c.owner.username !== 'Invader'});
-              if(hostiles.length)
-              {
-                console.log(this.name, 'Found enemies');
-                this.PathSearch(creep, tar);
-                return;
-              }
-              else
-              {
-                creep.travelTo(tar, {allowSK: true});
-              }
-            }
-            else
-              creep.pickup(tar);
-
-            return;
-          }
-        }
-
         console.log(this.name, 'haulers', 0.5)
         // Clean up the ruins first.
         let ruin = creep.pos.findClosestByPath(FIND_RUINS, {filter: r => r.structure.structureType === STRUCTURE_INVADER_CORE && r.store.getUsedCapacity() > 0});
@@ -1379,17 +1373,36 @@ export class StrongHoldDestructionProcess extends Process
         {
           if(!creep.pos.isNearTo(ruin))
           {
-            const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 4, {filter: c => c.owner.username !== 'Invader'});
-            if(hostiles.length)
+            if(creep.room.name != this.spawnRoom.name)
             {
-              console.log(this.name, 'Found enemies');
-              this.PathSearch(creep, ruin);
-              return;
+              let ret = PathFinder.search(creep.pos, {pos: ruin.pos, range: 1},
+              {
+                // We need to set the defaults costs higher so that we
+                // can set the road cost lower in `roomCallback`
+                plainCost: 2,
+                swampCost: 10,
+
+                roomCallback: function(roomName) {
+                  let room = Game.rooms[roomName];
+                  if(!room) return;
+                  let costs = new PathFinder.CostMatrix;
+                  room.find(FIND_HOSTILE_CREEPS);
+                  for(let x = -3; x <= 3; x++)
+                    for(let y = -3; y <= 3; y++)
+                      costs.set(x, y, 0xff);
+
+                  return costs;
+                },
+              });
+
+              if(!ret.incomplete)
+              {
+                let pos = ret.path[0];
+                creep.move(creep.pos.getDirectionTo(pos));
+              }
             }
             else
-            {
-              creep.travelTo(ruin, {allowSK: true});
-            }
+              creep.travelTo(ruin);
           }
           else
             creep.withdrawEverything(ruin);
@@ -1435,6 +1448,35 @@ export class StrongHoldDestructionProcess extends Process
               creep.withdrawEverything(container);
 
               return;
+          }
+        }
+
+        console.log(this.name, 'ha',1)
+        const dropped = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 5, {filter: d => d.amount > 500});
+        if(dropped.length)
+        {
+          console.log(this.name, 'ha',1.1)
+          const tar = creep.pos.findClosestByPath(dropped);
+          if(tar)
+          {
+            if(!creep.pos.isNearTo(tar))
+            {
+              const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 4, {filter: c => c.owner.username !== 'Invader'});
+              if(hostiles.length)
+              {
+                console.log(this.name, 'Found enemies');
+                this.PathSearch(creep, tar);
+                return;
+              }
+              else
+              {
+                creep.travelTo(tar, {allowSK: true});
+              }
+            }
+            else
+              creep.pickup(tar);
+
+            return;
           }
         }
 
@@ -1546,6 +1588,11 @@ export class StrongHoldDestructionProcess extends Process
         }
       }
     );
+
+    if(!ret.incomplete)
+      creep.memory.atPlace = true;
+    else
+      creep.memory.atPlace = undefined;
 
     let pos = ret.path[0];
     creep.move(creep.pos.getDirectionTo(pos));

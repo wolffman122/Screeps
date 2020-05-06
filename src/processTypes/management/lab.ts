@@ -44,7 +44,7 @@ export class LabManagementProcess extends Process
   if(Game.cpu.bucket < 7000)
       return;
     this.logOn = false;
-    this.logName = "labm-E43S52";
+    this.logName = "labm-E37S46";
 
     this.room = Game.rooms[this.metaData.roomName];
     if(this.room.memory.shutdown)
@@ -54,7 +54,7 @@ export class LabManagementProcess extends Process
     }
 
     if(this.name === this.logName && this.logOn)
-      console.log(this.name, 'Running')
+    console.log(this.name, 'Running')
     this.ensureMetaData();
 
     if(this.room)
@@ -216,6 +216,8 @@ export class LabManagementProcess extends Process
         else if(origin instanceof StructureLab)
           strSay = '🧺';
 
+        if(this.creep.name === 'lab-d-E35S51-25976505')
+          console.log(this.name, 'Annoying problem', command.amount, command.destination, command.origin, command.reduceLoad, command.resourceType)
         //console.log(this.name, 1, this.creep.name, command.resourceType);
         let retValue = this.creep.withdraw(origin!, command.resourceType, command.amount);
 
@@ -226,7 +228,7 @@ export class LabManagementProcess extends Process
         let destination = Game.getObjectById<Structure>(command.destination);
         if(!this.creep.pos.isNearTo(destination!))
         {
-          strSay = '🏦';
+          strSay = '🏦*';
           this.creep.say(strSay);
           this.creep.travelTo(destination!);
         }
@@ -253,7 +255,8 @@ export class LabManagementProcess extends Process
     }
     else
     {
-      this.creep.say('4');
+      strSay += '4';
+      this.creep.say(strSay);
       this.creep.travelTo(destination!);
     }
   }
@@ -521,14 +524,7 @@ export class LabManagementProcess extends Process
 
         if(this.name === this.logName && this.logOn)
         console.log(this.name, 'checkReagentLabs', 4, amountNeeded)
-        if(this.storage.room.name === 'E35S51'
-          && amountNeeded > 0 && this.storage!.store[mineralType]! >= amountNeeded
-          && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
-          {
-            amountNeeded = Math.max(amountNeeded, 5);
-            let command: Command = {origin: this.storage!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
-              return command;
-          }
+
 
         if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
           && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
@@ -551,6 +547,16 @@ export class LabManagementProcess extends Process
       return; // early
     }
 
+    const labNeeds: ResourceConstant[] = []
+    if(this.labProcess)
+    {
+      for(let i = 0; i < 2; i++)
+      {
+        const mineralType = (this.labProcess ? Object.keys(this.labProcess.reagentLoads)[i] : undefined) as ResourceConstant;
+        labNeeds.push(mineralType);
+      }
+    }
+
     for (let lab of this.productLabs) {
 
         if (this.terminal!.store.energy >= LABDISTROCAPACITY && lab.energy < LABDISTROCAPACITY)
@@ -569,6 +575,17 @@ export class LabManagementProcess extends Process
         else if (this.labProcess && lab.mineralAmount >= LABDISTROCAPACITY) {
             // store product in terminal
             return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
+        }
+        else
+        {
+          if(_.includes(labNeeds, lab.mineralType) && this.name === 'labm-E37S46')
+          {
+            const index = labNeeds.indexOf(lab.mineralType);
+            const pLab = this.productLabs[index];
+            if(pLab.mineralType === lab.mineralType
+              && pLab.store.getFreeCapacity() > lab.mineralAmount)
+              return {origin: lab.id, destination: pLab.id, resourceType: lab.mineralType };
+          }
         }
     }
     return;
@@ -770,10 +787,11 @@ export class LabManagementProcess extends Process
 
       if(process)
       {
-        this.room.visual.text(process.targetShortage.mineralType + ' ' + process.targetShortage.amount,
-          5,1, {color: 'yellow', align:'left'});
-        this.room.visual.text(process.currentShortage.mineralType + ' ' + process.currentShortage.amount,
-          5, 2, {color: 'yellow', align:'left'});
+        // process labm-E37S46 failed with error TypeError: this.room.visual.resource is not a function
+        const lab1 = this.reagentLabs[0];
+        const lab2 = this.reagentLabs[1];
+        this.room.visual.resource(process.currentShortage.mineralType, lab1.pos.x, lab1.pos.y, 0.25);
+        this.room.visual.resource(process.targetShortage.mineralType, lab2.pos.x, lab2.pos.y, 0.25);
       }
 
       return process;

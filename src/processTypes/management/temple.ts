@@ -68,7 +68,7 @@ export class TempleProcess extends Process
       this.metaData.claim = this.spawnCreeps(1, this.metaData.claim, 'claimer');
 
     let upgraderAmount = 6;
-    let haulerAmount = 2;
+    let haulerAmount = 0;
     let builderAmount = 0;
     let distroAmount = 1;
     const controller = this.templeRoom.controller;
@@ -79,7 +79,8 @@ export class TempleProcess extends Process
         && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 1000)
         distroAmount = 0;
 
-      haulerAmount = 3;
+      if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 200000)
+        haulerAmount = 3;
     }
     else if(controller?.level > 3)
     {
@@ -98,17 +99,14 @@ export class TempleProcess extends Process
           builderAmount = 1;
 
         if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 200000)
-        {
           haulerAmount = 7;
-          upgraderAmount = 4;
-        }
         else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 500000)
-        {
           haulerAmount = 5;
-          upgraderAmount = 3;
-        }
         else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 750000)
           haulerAmount = 3;
+
+          if(!this.templeTerminal || this.roomData().constructionSites.length)
+          builderAmount = 1;
       }
       else if(controller.level > 5)
       {
@@ -132,20 +130,23 @@ export class TempleProcess extends Process
 
           //distroAmount = 2;
         }
-        else if(controller.level === 8)
+        else if(controller.level === 8
+          && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeStorage.store.getCapacity() * .9
+          && this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeTerminal.store.getCapacity() * .9)
         {
-          // this.metaData.claimed = false;
-          // controller.unclaim();
+          this.metaData.claimed = false;
+          controller.unclaim();
           return;
         }
       }
     }
 
     console.log(this.name, 'Creep amounts', upgraderAmount, haulerAmount, builderAmount, distroAmount);
+
+    this.metaData.distros = this.spawnCreeps(distroAmount, this.metaData.distros, 'tempDistro')
     this.metaData.upgraders = this.spawnCreeps(upgraderAmount, this.metaData.upgraders, 'templeUpgrader');
     this.metaData.haulers = this.spawnCreeps(haulerAmount, this.metaData.haulers, 'shHauler');
     this.metaData.builders = this.spawnCreeps(builderAmount, this.metaData.builders, 'templeBuilder');
-    this.metaData.distros = this.spawnCreeps(distroAmount, this.metaData.distros, 'tempDistro')
 
     console.log(this.name, 'Actions')
 
@@ -262,7 +263,7 @@ export class TempleProcess extends Process
   private ClaimActions(creep: Creep)
   {
     const controller = this.templeRoom.controller;
-    if(controller?.owner)
+    if(controller?.owner.username === 'wolffman122')
     {
       const spawn = this.roomInfo(this.feedRoom.name).spawns[0];
       if(!creep.pos.isNearTo(spawn))
@@ -276,6 +277,7 @@ export class TempleProcess extends Process
       }
 
       this.metaData.claimed = true;
+      return;
     }
 
     if(!creep.pos.isNearTo(this.flag))
@@ -340,7 +342,7 @@ export class TempleProcess extends Process
     if(!creep.memory.boost)
     {
       const feedTerminal = this.feedRoom.terminal;
-      if(feedTerminal?.store.getUsedCapacity(RESOURCE_CATALYZED_KEANIUM_ACID) >= PRODUCTION_AMOUNT)
+      if(feedTerminal?.store.getUsedCapacity(RESOURCE_CATALYZED_KEANIUM_ACID) >= 100)
         creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_KEANIUM_ACID], false);
       else
         creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE/*, RESOURCE_CATALYZED_KEANIUM_ACID*/], false);
@@ -381,7 +383,6 @@ export class TempleProcess extends Process
       }
     }
 
-    console.log(this.name, 'HA',1)
     if(creep.room.name === this.feedRoom.name
       && creep.store.getUsedCapacity() === 0)
     {
@@ -393,14 +394,12 @@ export class TempleProcess extends Process
       return;
     }
 
-    console.log(this.name, 'HA',2)
     if(!this.templeRoom && creep.store.getFreeCapacity() === 0)
     {
       creep.travelTo(this.flag);
       return;
     }
 
-    console.log(this.name, 'HA',3)
     if(creep.store.getUsedCapacity() === 0)
     {
       if(!creep.memory.target)
@@ -434,7 +433,6 @@ export class TempleProcess extends Process
       return;
     }
 
-    console.log(this.name, 'HA',4)
     const containerFlag =  Game.flags['Test'];
     const container = this.roomData().containers[0];
     if(containerFlag)
@@ -445,7 +443,6 @@ export class TempleProcess extends Process
       return;
     }
 
-    console.log(this.name, 'HA',5)
     if(creep.name === 'shHauler-E37S45-25979880')
       console.log(this.name, 'Temple storage', !this.templeStorage, !this.templeStorage.isActive())
     if(!this.templeStorage || !this.templeStorage.isActive())
@@ -498,8 +495,6 @@ export class TempleProcess extends Process
         creep.memory.target = undefined;
       }
     }
-
-    console.log(this.name, 'Hauler end');
   }
 
   private UpgraderActions(creep: Creep, target: StructureContainer|StructureStorage)
@@ -559,7 +554,7 @@ export class TempleProcess extends Process
       console.log(this.name, 'Renew', ret)
     }
 
-    if(Game.time % 20 === 0)
+    if(Game.time % 40 === 0)
     {
       const creeps = Utils.inflateCreeps(this.metaData.upgraders);
       for(let i = 0; i < creeps.length; i++)

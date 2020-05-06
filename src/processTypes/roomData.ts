@@ -36,7 +36,8 @@ export class RoomDataProcess extends Process{
     'nuker', 'observer', 'powerBank', 'factory'
   ]
 
-  run(){
+  run()
+  {
     let room = Game.rooms[this.metaData.roomName]
     if(room === undefined)
     {
@@ -112,7 +113,7 @@ export class RoomDataProcess extends Process{
         if(!cpTop || !cpLeft || !cpBot || !cpRight)
         {
           if(this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E39S35' ||
-            this.metaData.roomName === 'E48S49')
+            this.metaData.roomName === 'E48S49' || this.metaData.roomName === 'E38S39')
           {
             this.kernel.addProcessIfNotExist(AlleyObservationManagementProcess, 'aomp' + this.metaData.roomName, 25, {
               roomName: this.metaData.roomName

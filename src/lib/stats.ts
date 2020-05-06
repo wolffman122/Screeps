@@ -116,11 +116,41 @@ export const Stats = {
     } = {}
 
 
+    // let roomNames = '';
+    // for(let roomName in Game.rooms)
+    // {
+    //   if(kernel.data.roomData[roomName] === undefined)
+    //     {
+    //       Memory.stats['rooms.' + roomName + '.rcl.level'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.rcl.progress'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.rcl.progressTotal'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.rcl.ticksToDowngrade'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.energy_available'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.energy_capacity_available'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.num_creeps'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.creep_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.creep_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.tower_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.construction_sites'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.spawns_spawning'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.source_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.link_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.terminal.energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.terminal.minerals'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.mineral_available'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = undefined;
+    //       Memory.stats['rooms.' + roomName + 'miningStopTime'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.structure_info'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.container_energy'] = undefined;
+    //     }
+    // }
+    // console.log(this.name, roomNames);
 
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
-
-      if(roomName)
       if(room)
       {
         if(room.controller && room.controller.my){
@@ -325,28 +355,6 @@ export const Stats = {
         }
         else if(room.controller && !room.controller.my)
         {
-          if(roomName === '32S51')
-            {
-              Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.level'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.progress'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.progressTotal'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.ticksToDowngrade'] = undefined
-
-              Memory.stats['rooms.' + roomName + '.energy_available'] = undefined
-              Memory.stats['rooms.' + roomName + '.energy_capacity_available'] = undefined
-              Memory.stats['rooms.' + roomName + '.num_creeps'] = undefined
-              Memory.stats['rooms.' + roomName + '.link_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.source_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.spawns_spawning'] = undefined
-              Memory.stats['rooms.' + roomName + '.construction_sites'] = undefined
-              Memory.stats['rooms.' + roomName + '.tower_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.container_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.creep_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = undefined
-            }
-
           if(room.controller.reservation)
           {
             Memory.stats['remote_rooms.' + roomName + '.reservation'] = room.controller.reservation.ticksToEnd
@@ -358,6 +366,8 @@ export const Stats = {
 
             remoteIndex++;
           }
+          else
+            Memory.stats['rooms.'+ roomName] = undefined;
         }
       }
     })

@@ -33,10 +33,16 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
           if(creep.getActiveBodyparts(WORK) >= 6)
           {
             targetPos = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id].pos
-            targetRange = 0
+            if(!creep.pos.isEqualTo(targetPos))
+            {
+              creep.travelTo(targetPos);
+              return;
+            }
           }
         }
 
+        if(creep.name === 'em-E43S55-26175039')
+          console.log(this.name, 'Source container map issue move to the container')
 
         if(!creep.pos.inRangeTo(targetPos, targetRange)){
           creep.travelTo(targetPos);
@@ -61,7 +67,7 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
       return
     }
 
-    if(creep.room.name === 'E32S44')
+    if(creep.name === 'em-E43S55-26175039')
       console.log(this.name, 1)
     // Creep has been harvesting and has energy put it in source links
     if(this.kernel.data.roomData[creep.room.name].sourceLinkMaps[this.metaData.source])

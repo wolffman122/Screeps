@@ -68,7 +68,8 @@ export class HoldRoomOptManagementProcess extends Process
     if(Game.cpu.bucket < 2000)
       return;
 
-
+      if(this.name === 'hrmOpt-E45S49')
+        console.log(this.name, '(((((((((((((((((Problem))))))))))))))))))))))))))))')
 
     this.ensureMetaData();
     let flag = Game.flags[this.metaData.flagName];
@@ -240,8 +241,10 @@ export class HoldRoomOptManagementProcess extends Process
       }
     }
 
-    if(!enemiesPresent && this.kernel.data.roomData[spawnRoomName].containers.length >= 3)
+    if(!enemiesPresent && (this.kernel.data.roomData[spawnRoomName].containers.length >= 3 || this.roomInfo(spawnRoomName).sourceLinks.length == 2))
     {
+      if(this.name === 'hrmOpt-E45S49')
+        console.log(this.name, 1)
       if(centerFlag)
       {
         let room = flag.room;
@@ -250,6 +253,7 @@ export class HoldRoomOptManagementProcess extends Process
 
         if(!room)
         {
+
           // No vision in room.
           if(this.metaData.holdCreeps.length < 1)
           {

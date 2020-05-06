@@ -98,6 +98,18 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           return;
         }
 
+        const ruins = creep.room.find(FIND_RUINS, {filter: d => (d?.store.getUsedCapacity() ?? 0) > 0});
+        if(ruins.length)
+        {
+          let target = creep.pos.findClosestByPath(ruins);
+          if(!creep.pos.isNearTo(target))
+            creep.travelTo(target);
+          else
+            creep.withdrawEverything(target);
+
+          return;
+        }
+        
         // With draw from dropped resources
         const dropped = creep.room.find(FIND_DROPPED_RESOURCES, {filter: d => d.amount >= creep.store.getCapacity()});
         if(dropped.length > 0)

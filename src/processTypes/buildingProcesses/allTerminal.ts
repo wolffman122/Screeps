@@ -47,7 +47,10 @@ export class AllTerminalManagementProcess extends Process
 
             let resources = _.union(MINERALS_RAW, regList);
             _.forEach(Game.rooms, (r) => {
-                if(r.controller?.my && r.controller.level >= 6)
+                if(r.memory.templeRoom)
+                    return;
+
+                if(r.controller?.my && r.controller?.level >= 6)
                 {
                     if(this.metaData.shutDownTransfers[r.name] ?? false)
                         return;
@@ -58,7 +61,9 @@ export class AllTerminalManagementProcess extends Process
                         _.forEach(resources, (s) => {
                             //console.log(this.name, s);
                             let amount = terminal.store[s] === undefined ? 0 : terminal.store[s];
-
+                            let amount2 = terminal.store.getUsedCapacity(s as ResourceConstant);
+                            if(r.name === 'E37S46' && s === RESOURCE_CATALYZED_KEANIUM_ACID)
+                                console.log(this.name, 'XK problem', amount, amount2)
                             if(this.metaData.resources[s] === undefined)
                             {
                                 this.metaData.resources[s] = [];
@@ -69,9 +74,13 @@ export class AllTerminalManagementProcess extends Process
                                             return (ra.roomName === r.name);
                                     });
 
+                                    if(r.name === 'E37S46' && s === RESOURCE_CATALYZED_KEANIUM_ACID)
+                                console.log(this.name, 'XK problem', 2, index)
                             if(index !== -1)
                             {
                                 let data = this.metaData.resources[s][index];
+                                if(r.name === 'E37S46' && s === RESOURCE_CATALYZED_KEANIUM_ACID)
+                                    console.log(this.name, 'XK problem', 3, data.roomName, data.amount, data.terminal)
                                 if(data.amount !== amount)
                                 {
                                     this.metaData.resources[s][index].amount = amount;
@@ -79,12 +88,23 @@ export class AllTerminalManagementProcess extends Process
                             }
                             else
                             {
-                                let info = {roomName: r.name, amount: terminal.store[s], terminal: terminal.id};
+                                const info = {roomName: r.name, amount: terminal.store[s], terminal: terminal.id};
                                 this.metaData.resources[s].push(info);
                             }
 
                         })
                     }
+                }
+                else
+                {
+                    _.forEach(resources, (s) => {
+                        let index = _.findIndex(this.metaData.resources[s], (ra) => {
+                            return (ra.roomName === r.name);
+                        });
+
+                        if(index !== -1)
+                            this.metaData.resources[s].splice(index, 1);
+                    })
                 }
             });
 
@@ -111,9 +131,6 @@ export class AllTerminalManagementProcess extends Process
                 let min = _.min(this.metaData.resources[r], 'amount')
 
                 let minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
-
-                if(RESOURCE_KEANIUM === r)
-                    console.log(this.name, min.terminal);
 
                 let minOk = false;
                 do
@@ -164,7 +181,7 @@ export class AllTerminalManagementProcess extends Process
                 }while(!minStorageOk);
 
                 // Hopefully remove any terminals that don't have room.
-                if(minTerminal?.store.getFreeCapacity() < 5000)
+                if(minTerminal?.store.getFreeCapacity() < 5000 || minTerminal.room.memory.templeRoom)
                 {
 
                     do
@@ -180,8 +197,11 @@ export class AllTerminalManagementProcess extends Process
                 }
 
                 let maxTerminal = <StructureTerminal>Game.getObjectById(max.terminal);
-                //console.log(this.name, r, max.roomName, max.amount);
-                //console.log(this.name, r, min.roomName, min.amount);
+                if(r === RESOURCE_CATALYZED_KEANIUM_ACID)
+                {
+                console.log(this.name, r, max.roomName, max.amount);
+                console.log(this.name, r, min.roomName, min.amount);
+                }
 
                 if(r === RESOURCE_ENERGY)
                 {
@@ -199,7 +219,7 @@ export class AllTerminalManagementProcess extends Process
                             this.metaData.sendStrings[maxRoom.name] = 'Send Information: To ' + minRoom.name + ' ' + r + ' ' + (5000 - min.amount) + ' : ' + Game.time;
                             this.metaData.receiveStr[minRoom.name] = 'Recieved Information: From ' + maxRoom.name + ' ' + r + ' ' + (5000 - min.amount) + ' : ' + Game.time;
                         }
-                        //console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
+                        console.log('Sending', r, maxTerminal.room.name, 'to', minTerminal.room.name, 5000 - min.amount, 'Return value', ret);
                     }
                 }
             })

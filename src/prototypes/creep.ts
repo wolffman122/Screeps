@@ -420,7 +420,11 @@ Creep.prototype.moveDir = function(dir: DirectionConstant): string
 
 Creep.prototype.almostFull = function(): boolean
 {
-  return (this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity() === this.store.getCapacity());
+  if(this.name === 'em-E56S43-26245732')
+  {
+    console.log(this.name, 'Harvest power', this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity(), 'Capacity', this.store.getCapacity())
+  }
+  return (this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity() >= this.store.getCapacity());
 }
 
 Creep.prototype.getCost = function(): number

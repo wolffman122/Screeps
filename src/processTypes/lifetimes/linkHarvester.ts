@@ -21,18 +21,18 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    if(creep.name === 'em-E56S43-25832677')
+    if(creep.name === 'em-E56S43-26263720')
       console.log(this.name, '88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888')
 
     const source = <Source>Game.getObjectById(this.metaData.source);
     if(this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id])
     {
       const link = this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id];
-      if(creep.name === 'em-E56S43-25832677')
+      if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 1, creep.carry, _.sum(creep.carry), creep.carryCapacity, _.sum(creep.carry) == creep.carryCapacity, _.sum(creep.carry) === creep.carryCapacity);
       if(_.sum(creep.carry) == creep.carryCapacity)
       {
-        if(creep.name === 'em-E56S43-25832677')
+        if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 2);
 
         if((link.store[RESOURCE_ENERGY] ?? 0) !== link.store.getCapacity(RESOURCE_ENERGY))
@@ -44,7 +44,7 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(creep.name === 'em-E56S43-25832677')
+          if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 3);
 
           if(link.cooldown === 0)
@@ -60,13 +60,13 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
             }
           }
         }
-        if(creep.name === 'em-E56S43-25832677')
+        if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 4);
 
         return;
       }
 
-      if(creep.name === 'em-E56S43-25832677')
+      if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 2.1);
       if(!creep.pos.isNearTo(source))
       {
@@ -74,16 +74,16 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
         return;
       }
 
-      if(creep.name === 'em-E56S43-25832677')
+      if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 3)
       if(creep.store.getFreeCapacity() > 0)
       {
         const ret = creep.harvest(source);
-        if(creep.name === 'em-E56S43-25832677')
+        if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 4, ret)
         if(ret === ERR_NOT_ENOUGH_RESOURCES)
         {
-          if(creep.name === 'em-E56S43-25832677')
+          if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 5)
           this.suspend = 5;
         }

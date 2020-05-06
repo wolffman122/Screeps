@@ -68,11 +68,10 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     {
       if(creep.store.getUsedCapacity() === 0 && creep.ticksToLive! > 100)
       {
-        const sources = this.kernel.data.roomData[flag.pos.roomName].sources;
         if(!creep.pos.inRangeTo(sourceContainer, 1))
         {
           // Test code
-          if(mineRoom.name === 'E44S49')
+          if(mineRoom.name === 'E44S49' || mineRoom.name === 'E49S49')
           {
             let holdData: HoldRoomData;
             if(!flag.memory.holdData)

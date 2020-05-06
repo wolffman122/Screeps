@@ -64,6 +64,9 @@ export class InitProcess extends Process{
         return;
       }
 
+      if(room.name === 'E38S46')
+        console.log(this.name, 'RoomData for ', this.metaData.roomName);
+
       proc.kernel.addProcessIfNotExist(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
       })
