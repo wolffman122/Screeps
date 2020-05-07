@@ -38,7 +38,11 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     }
 
     if(this.creep.room.name === 'E56S43')
+    {
       console.log(this.name, '################# Problem ####################', this.creep.pos)
+      console.log(this.name, 'Commodity level test');
+
+    }
 
     this.room = Game.rooms[this.creep.pos.roomName];
     this.djFlag = Game.flags['DJ-' + this.creep.pos.roomName];
@@ -113,28 +117,44 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     // 7. Deposit stuff, (Need to clarify more)
     // 8. Renew self
 
-    if(this.metaData.roomName === 'E56S43' && this.room.memory.commands?.length)
-    {
+    if(this.room.memory.commands?.length)
       console.log(this.name, 'Commands')
-      for(let i = 0; i < this.room.memory.commands.length; i++)
-      {
-        const command = this.room.memory.commands[i]
-        console.log(this.name, 'Res', command.resourceType, 'Amount', command.amount, 'origin', command.origin, 'desitination', command.destination);
-      }
-      console.log(this.name, 'Done Commands')
-    }
 
     // this.room.memory.commands = undefined;
     // this.room.memory.commandIndex = undefined;
     // this.room.memory.componentsReady = undefined;
     // this.room.memory.factoryEmpty = false;
+    // this.room.memory.commodityToMake = undefined;
 
     // if(this.room.memory.commandIndex === this.room.memory.commands?.length)
     //   this.room.memory.commandIndex = 0;
 
-    let commodity: CommodityConstant;
-    if(this.factory?.level === 1)
-      commodity = RESOURCE_CONCENTRATE;
+    let commoditiesForLevel: CommodityConstant[] = [];
+    if(this.factory?.level)
+    {
+      if(!this.room.memory.commoditiesForLevel)
+      {
+        for(const c of Object.keys(COMMODITIES))
+        {
+            const record = COMMODITIES[c];
+            if(record.level === this.factory.level)
+              commoditiesForLevel.push(<CommodityConstant>c);
+        }
+        this.room.memory.commoditiesForLevel = commoditiesForLevel;
+      }
+      else
+      {
+        console.log(this.name, 'Memory restoration');
+        commoditiesForLevel = this.room.memory.commoditiesForLevel;
+      }
+    }
+
+    if(commoditiesForLevel?.length)
+    {
+      for(let i = 0; i < commoditiesForLevel.length; i++)
+        console.log(this.name, 'Level', this.factory.level, 'commodity:', commoditiesForLevel[i]);
+    }
+
 
     if(this.room.memory.commands?.length && this.room.memory.commandIndex !== this.room.memory.commands.length)
     {
@@ -182,21 +202,21 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     {
       console.log(this.name, 'Factory loaded', this.room.memory.commands.length, this.room.memory.commandIndex)
 
-      const cooldown = COMMODITIES[commodity].cooldown;
+      const cooldown = COMMODITIES[this.room.memory.commodityToMake].cooldown;
       console.log(this.name, 'totalToMake ((', POWER_INFO[PWR_OPERATE_FACTORY].duration, '/', cooldown);
       const totalMakes = Math.floor(POWER_INFO[PWR_OPERATE_FACTORY].duration / cooldown);
       let componentsReady = true;
       console.log(this.name, 'Make components', 1)
-      for(let com in COMMODITIES[commodity].components)
+      for(let com in COMMODITIES[this.room.memory.commodityToMake].components)
       {
         if(com !== RESOURCE_ENERGY)
         {
           const resource = <CommodityConstant>com;
-          console.log(this.name, 'Make components', 2, resource, 'factory amount', this.factory.store.getUsedCapacity(resource), 'Amount looking for', COMMODITIES[commodity].components[com], totalMakes)
-          if(this.factory.store.getUsedCapacity(resource) < COMMODITIES[commodity].components[com] * totalMakes)
+          console.log(this.name, 'Make components', 2, resource, 'factory amount', this.factory.store.getUsedCapacity(resource), 'Amount looking for', COMMODITIES[this.room.memory.commodityToMake].components[com], totalMakes)
+          if(this.factory.store.getUsedCapacity(resource) < COMMODITIES[this.room.memory.commodityToMake].components[com] * totalMakes)
           {
             componentsReady = false;
-            console.log(this.name, 'Factory producing', resource, this.factory.store.getUsedCapacity(resource), COMMODITIES[commodity].components[com], totalMakes, this.factory.store.getUsedCapacity(resource) <= COMMODITIES[commodity].components[com] * totalMakes);
+            console.log(this.name, 'Factory producing', resource, this.factory.store.getUsedCapacity(resource), COMMODITIES[this.room.memory.commodityToMake].components[com], totalMakes, this.factory.store.getUsedCapacity(resource) <= COMMODITIES[this.room.memory.commodityToMake].components[com] * totalMakes);
             if(this.factory.produce(resource) === OK)
               break;
           }
@@ -209,7 +229,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     if(this.room.memory.componentsReady)
     {
       console.log(this.name, 'Components ready 1')
-      if(this.factory.store.getUsedCapacity() - this.factory.store.getUsedCapacity(commodity) > 0
+      if(this.factory.store.getUsedCapacity() - this.factory.store.getUsedCapacity(this.room.memory.commodityToMake) > 0
         && !this.factory.effects.filter(e => e.effect === PWR_OPERATE_FACTORY).length)
       {
         console.log(this.name, 'Components ready', 2)
@@ -223,12 +243,13 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         && !this.factory.cooldown)
       {
         console.log(this.name, 'Components ready', 3)
-        if(this.factory.produce(commodity) === ERR_NOT_ENOUGH_RESOURCES)
+        if(this.factory.produce(this.room.memory.commodityToMake) === ERR_NOT_ENOUGH_RESOURCES)
         {
           this.room.memory.commands = undefined;
           this.room.memory.commandIndex = undefined;
           this.room.memory.componentsReady = undefined;
           this.room.memory.factoryEmpty = false;
+          this.room.memory.commodityToMake = undefined;
         }
       }
     }
@@ -367,58 +388,66 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     //     return;
     // }
 
-    if(this.factory?.level === 1)
+    if(this.factory?.level && !this.room.memory.commodityToMake)
     {
       console.log(this.name, 'Factory Testing', this.room.memory.commands, this.room.memory.commandIndex, this.room.memory.factoryEmpty);
-      commodity = RESOURCE_CONCENTRATE;
-      if(this.terminal?.store.getUsedCapacity(RESOURCE_CONCENTRATE) < 2000)
+      for(let i = 0; i < commoditiesForLevel.length; i++)
       {
-        if(!this.room.memory.factoryEmpty)
+        const commodity = commoditiesForLevel[i];
+        if(this.terminal?.store.getUsedCapacity(commodity) < 1000)
         {
-          if(this.factory.store.getUsedCapacity() === 0)
-            this.room.memory.factoryEmpty = true;
-
-          if(this.factory.store.getUsedCapacity() > 0 && this.creep.store.getUsedCapacity() === 0)
+          console.log(this.name, 'Setup', commodity)
+          if(!this.room.memory.factoryEmpty)
           {
-            this.creep.withdrawEverything(this.factory);
-            return;
+            if(this.factory.store.getUsedCapacity() === 0)
+              this.room.memory.factoryEmpty = true;
+
+            if(this.factory.store.getUsedCapacity() > 0 && this.creep.store.getUsedCapacity() === 0)
+            {
+              this.creep.withdrawEverything(this.factory);
+              return;
+            }
+
+            if(this.creep.store.getUsedCapacity(commodity) > 0)
+            {
+              this.creep.transfer(this.terminal, commodity);
+              return;
+            }
+
+            if(this.creep.store.getUsedCapacity() > 0)
+            {
+              this.creep.transferEverything(this.storage);
+              return;
+            }
           }
 
-          if(this.creep.store.getUsedCapacity(commodity) > 0)
+          const cooldown = COMMODITIES[commodity].cooldown;
+          const amount = COMMODITIES[commodity].amount;
+          const totalMakes = Math.floor(POWER_INFO[PWR_OPERATE_FACTORY].duration / cooldown);
+          console.log(this.name, 'Numbers', cooldown, POWER_INFO[PWR_OPERATE_FACTORY].cooldown, POWER_INFO[PWR_OPERATE_FACTORY].duration, totalMakes)
+          if(this.room.memory.commands === undefined)
           {
-            this.creep.transfer(this.terminal, commodity);
-            return;
+            let rawCommands= this.CommodityChecking(commodity, totalMakes*amount)
+            if(rawCommands?.length)
+            {
+              rawCommands = rawCommands.reverse();
+              console.log(this.name, 'Raw command length', rawCommands.length);
+              let index = _.findIndex(rawCommands, rc => rc.resourceType === RESOURCE_ENERGY);
+              console.log(this.name, 'First find index', index);
+              let command: Command = {resourceType: RESOURCE_ENERGY, amount: 0, origin: this.storage.id, destination: this.factory.id};
+              while(index !== -1)
+              {
+                const tempCommand = rawCommands.splice(index, 1);
+                command.amount += tempCommand[0].amount;
+                index = _.findIndex(rawCommands, rc => rc.resourceType === RESOURCE_ENERGY)
+                console.log(this.name, 'Loop find index', index);
+              }
+              console.log(this.name, 'Energy command', command.resourceType, command.amount, rawCommands.length);
+              rawCommands.push(command);
+              this.room.memory.commands = rawCommands;
+              this.room.memory.commodityToMake = commodity;
+            }
           }
-
-          if(this.creep.store.getUsedCapacity() > 0)
-          {
-            this.creep.transferEverything(this.storage);
-            return;
-          }
-        }
-
-        const cooldown = COMMODITIES[commodity].cooldown;
-        const amount = COMMODITIES[commodity].amount;
-        const totalMakes = Math.floor(POWER_INFO[PWR_OPERATE_FACTORY].duration / cooldown);
-        console.log(this.name, 'Numbers', cooldown, POWER_INFO[PWR_OPERATE_FACTORY].cooldown, POWER_INFO[PWR_OPERATE_FACTORY].duration, totalMakes)
-        if(this.creep.room.name === 'E56S43' && this.room.memory.commands === undefined)
-        {
-          const rawCommands= this.CommodityChecking(commodity, totalMakes*amount).reverse();
-
-          console.log(this.name, 'Raw command length', rawCommands.length);
-          let index = _.findIndex(rawCommands, rc => rc.resourceType === RESOURCE_ENERGY);
-          console.log(this.name, 'First find index', index);
-          let command: Command = {resourceType: RESOURCE_ENERGY, amount: 0, origin: this.storage.id, destination: this.factory.id};
-          while(index !== -1)
-          {
-            const tempCommand = rawCommands.splice(index, 1);
-            command.amount += tempCommand[0].amount;
-            index = _.findIndex(rawCommands, rc => rc.resourceType === RESOURCE_ENERGY)
-            console.log(this.name, 'Loop find index', index);
-          }
-          console.log(this.name, 'Energy command', command.resourceType, command.amount, rawCommands.length);
-          rawCommands.push(command);
-          this.room.memory.commands = rawCommands;
         }
       }
     }
@@ -738,9 +767,20 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
             {
               console.log(this.name, 'Recursive call amount', amount);
               const recCommands = this.CommodityChecking(comp, amount);
-              console.log(this.name, 'Recursive commands length', recCommands.length);
-              for(let i = 0; i < recCommands.length; i++)
-                commands.push(recCommands[i]);
+              if(recCommands?.length)
+              {
+                console.log(this.name, 'Recursive commands length', recCommands.length);
+                for(let i = 0; i < recCommands.length; i++)
+                  commands.push(recCommands[i]);
+              }
+              else
+                return undefined;
+
+            }
+            else
+            {
+              console.log(this.name, "Didn't find anything need to return nothing");
+              return undefined;
             }
           }
         }
