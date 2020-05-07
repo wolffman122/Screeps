@@ -74,13 +74,15 @@ export class TempleProcess extends Process
     const controller = this.templeRoom.controller;
     if(controller?.level < 3)
     {
-      upgraderAmount = 5;
       if(this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) < 1000
         && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 1000)
         distroAmount = 0;
 
       if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 200000)
         haulerAmount = 3;
+
+        if(this.roomData().constructionSites.length)
+        builderAmount = 1;
     }
     else if(controller?.level > 3)
     {
@@ -263,7 +265,7 @@ export class TempleProcess extends Process
   private ClaimActions(creep: Creep)
   {
     const controller = this.templeRoom.controller;
-    if(controller?.owner.username === 'wolffman122')
+    if(controller?.owner?.username === 'wolffman122')
     {
       const spawn = this.roomInfo(this.feedRoom.name).spawns[0];
       if(!creep.pos.isNearTo(spawn))
