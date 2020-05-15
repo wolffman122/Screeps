@@ -15,7 +15,8 @@ export const CreepBuilder = {
 
     const containers = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTAINER});
 
-    let emergancy = ((creepType === 'harvester' || creepType === 'pHarvester') && creepCount < 2) || (creepType === 'mover' && creepCount < 4) || (room.storage && containers.length < 1);
+    let emergancy = ((creepType === 'harvester' || creepType === 'pHarvester' || creepType === 'pBigHarvester') && creepCount < 2)
+      || (creepType === 'mover' && creepCount < 4) || (room.storage && containers.length < 1);
 
 
     if(creepType === 'vision')
@@ -158,6 +159,16 @@ export const CreepBuilder = {
         return [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
                 MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY];
     }
+    else if(creepType === 'pBigHarvester')
+    {
+      if(emergancy)
+        creepType = 'harvester';
+      else
+        return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+                WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
+                WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
+                CARRY,CARRY,CARRY,CARRY];
+    }
     else if(creepType === 'templeBuilder')
     {
       return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,
@@ -186,6 +197,19 @@ export const CreepBuilder = {
               WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
               WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
               WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY];*/
+    }
+    else if(creepType === 'powerAttacker')
+    {
+      return [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
+    }
+    else if(creepType === 'powerHealer')
+    {
+      return [HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
+              MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
     }
     else if(creepType === 'custom')
     {

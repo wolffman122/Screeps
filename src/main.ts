@@ -57,6 +57,8 @@ global.conLog = (message: string) => {
 }
 
 global.test = "Is this global working";
+global.despositTypes = [RESOURCE_MIST, RESOURCE_BIOMASS, RESOURCE_METAL, RESOURCE_SILICON];
+global[1] = {commodity: RESOURCE_EXTRACT, rooms:['E56S43']};
 
 global.diagnoseMemory = function() {
   var stringified = JSON.stringify(Memory);

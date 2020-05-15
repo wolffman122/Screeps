@@ -43,6 +43,7 @@ interface Flag {
       gcl: number
       test: string;
       diagnoseMemory
+      despositTypes: DepositConstant[];
     }
   }
 
@@ -290,6 +291,11 @@ interface Flag {
     commandIndex?: number;
     componentsReady?: boolean;
     factoryEmpty?: boolean;
+    commoditiesForLevel?: CommodityConstant[];
+    commodityToMake?: CommodityConstant;
+    roads?: {
+      [sourceId: string]: boolean
+    };
   }
 
   interface SpawnMemory {}
@@ -659,6 +665,10 @@ interface Flag {
       [mineral: string]: roomAmounts[]
     }
 
+    commoditiesToMove: {
+      [commodity: string]: roomAmounts[];
+    }
+
     creeps: {
       [source: string]: string[]
     },
@@ -786,9 +796,12 @@ interface Flag {
   interface PowerHarvestingManagementProcessMetaData
   {
     roomName: string;
-    currentBank: BankData;
-    scanIndex: number;
-    scanData: {[roomName: string]: number}
+    powerBankId: string;
+    spawnRoomName: string;
+    attackers: string[];
+    healers: string[];
+    haulers: string[];
+    powerBankPos?: string;
   }
 
   interface TowerRepairProcessMetaData
@@ -926,6 +939,7 @@ interface DepositMiningManagementProcessMetaData
   harvesterDone: boolean,
   harvesterCount?: number,
   haulerDone: boolean,
+  avoidRooms: string[]
 }
 
 interface Spinner2LifeTimeProcessMetaData

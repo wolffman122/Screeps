@@ -131,9 +131,12 @@ export class StructureManagementProcess extends Process{
           else if(this.metaData.upgradeType === -1)
             count = 0;
 
-          if(!room.memory.pauseUpgrading && this.metaData.upgradeType >= 0)
+          if(!room.memory.pauseUpgrading && this.metaData.upgradeType >= 0
+            && room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < ENERGY_KEEP_AMOUNT)
             count = 0;
 
+          if(this.name === 'sm-E35S51')
+            console.log(this.name, 'Rampart count', count, this.metaData.upgradeType);
           let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
           let spawned = false;
           if(this.metaData.repairCreeps.length < count)

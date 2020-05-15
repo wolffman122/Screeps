@@ -76,7 +76,7 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
 
       if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 3)
-      if(creep.store.getFreeCapacity() > 0)
+      if(creep.store.getFreeCapacity() > 0 && link.store.getUsedCapacity(RESOURCE_ENERGY) || 0 < 800)
       {
         const ret = creep.harvest(source);
         if(creep.name === 'em-E56S43-26263720')

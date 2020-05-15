@@ -164,7 +164,7 @@ const processTypes = <{[type: string]: any}>{
   'skrmp': skRoomManagementProcess,
   'th': TowerHealProcess,
   'atmp': AllTerminalManagementProcess,
-  'powm': PowerHarvestingManagement,
+  'powhm': PowerHarvestingManagement,
   'deflf': DefenderLifetimeProcess,
   'defend': DefendProcess,
   'busterlf': BusterLifetimeProcess,

@@ -65,6 +65,7 @@ export class StrongHoldDestructionProcess extends Process
       if(!this.metaData.vision)
         observer.observeRoom(this.metaData.roomName);
 
+        console.log(this.name, 'Observation', observer.room.name);
       if(!this.coreRoom && this.metaData.vision)
         this.metaData.vision = false;
 

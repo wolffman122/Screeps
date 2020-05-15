@@ -112,8 +112,10 @@ export class RoomDataProcess extends Process{
         const cpRight = ((coord.y - (zoneY + 1)) * ((zoneX + 9) - (zoneX + 9)) - (coord.x - (zoneX + 9)) * ((zoneY + 9) - (zoneY + 1)));
         if(!cpTop || !cpLeft || !cpBot || !cpRight)
         {
-          if(this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E39S35' ||
-            this.metaData.roomName === 'E48S49' || this.metaData.roomName === 'E38S39')
+          if(this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E35S41'
+            || this.metaData.roomName === 'E46S51' || this.metaData.roomName === 'E51S49'
+            || this.metaData.roomName === 'E48S49' || this.metaData.roomName === 'E38S39'
+            || this.metaData.roomName === 'E41S49' || this.metaData.roomName === 'E41S32')
           {
             this.kernel.addProcessIfNotExist(AlleyObservationManagementProcess, 'aomp' + this.metaData.roomName, 25, {
               roomName: this.metaData.roomName

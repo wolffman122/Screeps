@@ -95,6 +95,14 @@ export const Stats = {
       [mineralType: string]: number
     } = {};
 
+    let totalCommoditiesAmount: {
+      [commodity: string]: number;
+    } = {};
+
+    let totalDepositsAmount: {
+      [desposit: string]: number;
+    } = {};
+
     Memory.stats['rooms.E44S51'] = undefined
 
     let storageEnergy = 0;
@@ -149,6 +157,10 @@ export const Stats = {
     // }
     // console.log(this.name, roomNames);
 
+    let storageRoomMost = '';
+    let terminalRoomMost = '';
+    let storageMost = 0;
+    let terminalMost = 0;
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
       if(room)
@@ -294,14 +306,74 @@ export const Stats = {
                 basicStorageMineralAmounts[type] += storage.store[type]!;
 
             }
+
+            for(let c of Object.keys(COMMODITIES))
+            {
+              let amount = 0;
+              if(MINERALS_RAW.indexOf(<MineralConstant>c) === -1
+                  && c !== RESOURCE_ENERGY
+                  && c !== RESOURCE_GHODIUM)
+              {
+                if(c === RESOURCE_BATTERY)
+                {
+                  if(room.storage?.store.getUsedCapacity(c) > storageMost)
+                  {
+                    storageMost = room.storage?.store.getUsedCapacity(c);
+                    storageRoomMost = room.name;
+                  }
+
+                  if(room.terminal?.store.getUsedCapacity(c) > terminalMost)
+                  {
+                    terminalMost = room.terminal?.store.getUsedCapacity(c);
+                    terminalRoomMost = room.name;
+                  }
+                }
+                
+                if(!totalCommoditiesAmount[c])
+                  totalCommoditiesAmount[c] = 0;
+
+                if(room.storage?.store.getUsedCapacity(<CommodityConstant>c) > 0)
+                  totalCommoditiesAmount[c] += room.storage?.store.getUsedCapacity(<CommodityConstant>c);
+
+                if(room.terminal?.store.getUsedCapacity(<CommodityConstant>c) > 0)
+                  totalCommoditiesAmount[c] += room.terminal?.store.getUsedCapacity(<CommodityConstant>c);
+
+              }
+            }
+
+            for(let i = 0; i < global.despositTypes.length; i++)
+            {
+              const depositType = global.despositTypes[i];
+              // if(depositType === RESOURCE_MIST)
+              // {
+              //   if(room.storage?.store.getUsedCapacity(depositType) > storageMost)
+              //   {
+              //     storageMost = room.storage?.store.getUsedCapacity(depositType);
+              //     storageRoomMost = room.name;
+              //   }
+
+              //   if(room.terminal?.store.getUsedCapacity(depositType) > terminalMost)
+              //   {
+              //     terminalMost = room.terminal?.store.getUsedCapacity(depositType);
+              //     terminalRoomMost = room.name;
+              //   }
+              // }
+
+              if(!totalDepositsAmount[depositType])
+                totalDepositsAmount[depositType] = 0;
+
+              if(room.storage?.store.getUsedCapacity(depositType) > 0)
+                  totalDepositsAmount[depositType] += room.storage?.store.getUsedCapacity(depositType);
+
+              if(room.terminal?.store.getUsedCapacity(depositType) > 0)
+                totalDepositsAmount[depositType] += room.terminal?.store.getUsedCapacity(depositType);
+            }
           }
           else
           {
             Memory.stats['rooms.' + roomName + '.terminal.energy'] = undefined
             Memory.stats['rooms.' + roomName + '.terminal.minerals'] = undefined
-
           }
-
 
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
           Memory.stats['rooms.' + roomName + '.mineral_available'] = mineral[0].mineralAmount
@@ -370,6 +442,9 @@ export const Stats = {
       }
     })
 
+    console.log('Stat storage', storageRoomMost, storageMost);
+    console.log('Stat terminal', terminalRoomMost, terminalMost);
+
     ///////////// Log minimum mineral regeneration tickst ///////////////////////
     _.forEach(Object.keys(mineralCountdown), (mc) => {
       Memory.stats['Resources.Regeneration.' + mc] = mineralCountdown[mc];
@@ -392,6 +467,12 @@ export const Stats = {
     _.forEach(Object.keys(basicStorageMineralAmounts), (bm) => {
       Memory.stats['storages.basic.' + bm + '.amount'] = basicStorageMineralAmounts[bm];
     })
+
+    for(let c in totalCommoditiesAmount)
+      Memory.stats['commodities.' + c] = totalCommoditiesAmount[c];
+
+    for(let d in totalDepositsAmount)
+      Memory.stats['deposits.' + d] = totalDepositsAmount[d];
 
     kernel.data.labProcesses[RESOURCE_CATALYZED_KEANIUM_ACID] = undefined;
     //kernel.data.labProcesses[RESOURCE_GHODIUM] = undefined;

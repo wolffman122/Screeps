@@ -41,17 +41,17 @@ export class InitProcess extends Process{
 
     let gRooms = Object.keys(Game.rooms);
     let mRooms: string[] = []
-    if(Memory.rooms)
-      mRooms = Object.keys(Memory.rooms);
+    // if(Memory.rooms)
+    //   mRooms = Object.keys(Memory.rooms);
 
-    let observedRooms = _.difference(mRooms, gRooms);
-    if(observedRooms.length)
-    {
-      _.forEach(observedRooms, (or) => {
-        if(!Game.rooms[or])
-          Memory.rooms[or] = undefined;
-      })
-    }
+    // let observedRooms = _.difference(mRooms, gRooms);
+    // if(observedRooms.length)
+    // {
+    //   _.forEach(observedRooms, (or) => {
+    //     if(!Game.rooms[or])
+    //       Memory.rooms[or] = undefined;
+    //   })
+    // }
 
     let rampartAverages: {roomName: string, average: number}[] = [];
 

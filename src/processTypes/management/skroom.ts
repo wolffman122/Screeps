@@ -84,7 +84,10 @@ export class skRoomManagementProcess extends Process
 
   run()
   {
-    if(Game.cpu.bucket < 8000)
+    if(this.name === 'skrmp-E36S34')
+      console.log(this.name, 'Problem', 10)
+
+    if(Game.cpu.bucket < 7000)
       return;
     this.centerFlag = Game.flags['Center-'+this.metaData.roomName];
 
@@ -105,13 +108,13 @@ export class skRoomManagementProcess extends Process
     this.ensureMetaData();
 
 
-    if(this.name === 'skrmp-E47S46')
+    if(this.name === 'skrmp-E36S34')
       console.log(this.name, 'Problem', 1)
 
     if(!this.skFlag.memory.attackingCore)
       this.coreSearching();
 
-      if(this.name === 'skrmp-E47S46')
+      if(this.name === 'skrmp-E36S34')
       console.log(this.name, 'Problem', 2)
     if(this.skRoom)
     {
@@ -166,6 +169,11 @@ export class skRoomManagementProcess extends Process
       }
     }
 
+    if(this.name === 'skrmp-E36S34')
+    {
+      this.metaData.coreInSK = false;
+      console.log(this.name, 'Problem', 3, this.metaData.coreInSK)
+    }
 
     if(!this.metaData.coreInSK)
     {
@@ -180,7 +188,7 @@ export class skRoomManagementProcess extends Process
 
       if(!this.invaders && this.metaData.mineralMining)
       {
-        if(this.name === 'skrmp-E47S46')
+        if(this.name === 'skrmp-E36S34')
       console.log(this.name, 'Problem', 5)
         this.MiningSpawn()
       }
@@ -452,53 +460,70 @@ export class skRoomManagementProcess extends Process
 
   MiningSpawn()
   {
-    this.mineral = this.roomInfo(this.skRoomName).mineral;
-    let storage = Game.rooms[this.metaData.roomName].storage;
-    if(this.mineral?.mineralAmount <= (storage?.store.getCapacity() - storage?.store.getUsedCapacity()))
+    if(this.name === 'skrmp-E36S34')
+        console.log(this.name, 'MiningSapwn', 1)
+    if(this.roomInfo(this.skRoomName))
     {
-      if(this.metaData.miningDistance === undefined)
+      this.mineral = this.roomInfo(this.skRoomName).mineral;
+      let storage = Game.rooms[this.metaData.roomName].storage;
+      if(this.name === 'skrmp-E36S34')
+          console.log(this.name, 'MiningSapwn', 2)
+      if(this.mineral?.mineralAmount <= (storage?.store.getCapacity() - storage?.store.getUsedCapacity()))
       {
-        const ret = PathFinder.search(this.centerFlag.pos, this.mineral.pos, {});
-        if(!ret.incomplete)
-          this.metaData.miningDistance = ret.path.length;
-      }
-
-      this.metaData.miner = Utils.clearDeadCreeps(this.metaData.miner);
-      const count = Utils.creepPreSpawnCount(this.metaData.miner, 20);
-      //console.log(this.name, 'Mineral', this.metaData.miner.length, this.mineral.mineralAmount, this.metaData.miner[0])
-      if(count < 1 && this.mineral.mineralAmount > 0)
-      {
-        let creepName = 'sk-miner-' + this.skRoomName + '-' + Game.time;
-        let spawned = Utils.spawn(
-          this.kernel,
-          this.metaData.roomName,
-          'skMiner',
-          creepName,
-          {}
-        );
-
-        if(spawned)
+        if(this.name === 'skrmp-E36S34')
+          console.log(this.name, 'MiningSapwn', 3)
+        if(this.metaData.miningDistance === undefined)
         {
-          this.metaData.miner.push(creepName);
+          if(this.name === 'skrmp-E36S34')
+          console.log(this.name, 'MiningSapwn', 4)
+          const ret = PathFinder.search(this.centerFlag.pos, this.mineral.pos, {});
+          if(!ret.incomplete)
+            this.metaData.miningDistance = ret.path.length;
         }
-      }
 
-      this.metaData.minerHauler = Utils.clearDeadCreeps(this.metaData.minerHauler);
-      const haulerCount = Utils.creepPreSpawnCount(this.metaData.minerHauler, 20);
-      if(haulerCount < 1)
-      {
-        let creepName = 'sk-mineHauler-' + this.skRoomName + '-' + Game.time;
-        let spawned = Utils.spawn(
-          this.kernel,
-          this.metaData.roomName,
-          'skMinerHauler',
-          creepName,
-          {}
-        );
-
-        if(spawned)
+        if(this.name === 'skrmp-E36S34')
+          console.log(this.name, 'MiningSapwn', 5)
+        this.metaData.miner = Utils.clearDeadCreeps(this.metaData.miner);
+        const count = Utils.creepPreSpawnCount(this.metaData.miner, 20);
+        //console.log(this.name, 'Mineral', this.metaData.miner.length, this.mineral.mineralAmount, this.metaData.miner[0])
+        if(count < 1 && this.mineral.mineralAmount > 0)
         {
-          this.metaData.minerHauler.push(creepName);
+          if(this.name === 'skrmp-E36S34')
+          console.log(this.name, 'MiningSapwn', 6)
+          let creepName = 'sk-miner-' + this.skRoomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            this.kernel,
+            this.metaData.roomName,
+            'skMiner',
+            creepName,
+            {}
+          );
+
+          if(spawned)
+          {
+            this.metaData.miner.push(creepName);
+          }
+        }
+
+        if(this.name === 'skrmp-E36S34')
+          console.log(this.name, 'MiningSapwn', 7)
+        this.metaData.minerHauler = Utils.clearDeadCreeps(this.metaData.minerHauler);
+        const haulerCount = Utils.creepPreSpawnCount(this.metaData.minerHauler, 20);
+        if(haulerCount < 1)
+        {
+          let creepName = 'sk-mineHauler-' + this.skRoomName + '-' + Game.time;
+          let spawned = Utils.spawn(
+            this.kernel,
+            this.metaData.roomName,
+            'skMinerHauler',
+            creepName,
+            {}
+          );
+
+          if(spawned)
+          {
+            this.metaData.minerHauler.push(creepName);
+          }
         }
       }
     }
@@ -514,11 +539,14 @@ export class skRoomManagementProcess extends Process
     let strSay = '';
     if(!devil.memory.boost)
     {
+      if(this.name === 'skrmp-E36S34')
+        console.log(this.name, 'DA', 1)
       devil.boostRequest([RESOURCE_LEMERGIUM_OXIDE, RESOURCE_KEANIUM_OXIDE], false);
       return;
     }
 
-
+    if(this.name === 'skrmp-E36S34')
+        console.log(this.name, 'DA', 2)
     if(!devil.memory.distance)
       devil.memory.distance = 0;
 
@@ -670,6 +698,10 @@ export class skRoomManagementProcess extends Process
               return (l.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length);
             });
           }
+          else if(!this.roomInfo(this.skRoomName)?.containers?.length)
+          {
+            sourceKeepers = this.lairs.filter(l => l.pos.findInRange(FIND_MY_CREEPS, 7).length);
+          }
           else
           {
             sourceKeepers = _.filter(this.lairs, (l) => {
@@ -801,9 +833,11 @@ export class skRoomManagementProcess extends Process
                   let damCreeps = devil.room.find(FIND_CREEPS, {filter: c => c.hits < c.hitsMax});
                   if(damCreeps.length)
                   {
-                    let healTarget = devil.pos.findInRange(damCreeps, 3)[0];
+                    let healTarget = devil.pos.findInRange(damCreeps, 4)[0];
                     if(healTarget)
                     {
+                      if(!devil.pos.inRangeTo(healTarget, 3))
+                        devil.travelTo(healTarget);
                       if(devil.pos.isNearTo(healTarget))
                         devil.heal(healTarget);
                       else
@@ -867,7 +901,7 @@ export class skRoomManagementProcess extends Process
     {
       builder.memory.atPlace = true;
       // Create constructions sites
-      if(this.roomInfo(this.skRoomName).containers.length <= 3)
+      if(this.roomInfo(this.skRoomName).containers.length <= 3 && this.roomInfo(this.skRoomName).constructionSites.length < 3)
       {
         this.sources.forEach(s => {
           const containers = s.pos.findInRange(FIND_STRUCTURES, 1, {filter: s => s.structureType === STRUCTURE_CONTAINER});
@@ -1327,8 +1361,12 @@ export class skRoomManagementProcess extends Process
       }
       else
       {
+        if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 1)
         if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id] && hauler.room.name === this.skRoomName)
         {
+          if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 2)
           let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
           let sks = hauler.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
           if(sks.length)
@@ -1364,6 +1402,8 @@ export class skRoomManagementProcess extends Process
             }
           }
 
+          if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 3)
           if(lair.ticksToSpawn < 10)
           {
             let ret = PathFinder.search(hauler.pos, {pos: lair.pos, range: 6},
@@ -1408,14 +1448,20 @@ export class skRoomManagementProcess extends Process
           // }
         }
 
+        if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 4)
         if(!hauler.memory.full && hauler.ticksToLive! > this.metaData.distroDistance[source.id])
         {
+          if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 5)
           if(_.sum(hauler.carry) === hauler.carryCapacity)
           {
             hauler.memory.full = true;
           }
           else
           {
+            if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 6)
             let tombstone = hauler.pos.findInRange(FIND_TOMBSTONES, 10)[0];
             if(tombstone && tombstone.store.energy > 600)
             {
@@ -1428,14 +1474,21 @@ export class skRoomManagementProcess extends Process
               return;
             }
 
+            if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 7)
+
             let SHContainer = this.roomInfo(hauler.pos.roomName).containers.filter(c => {
               (c.effects?.length ?? false)
                 && c.store.getUsedCapacity() > 0
                 && c.pos.lookForStructures(STRUCTURE_RAMPART) === undefined
             });
+
+            if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 8)
             if(SHContainer.length)
             {
-
+              if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 9)
               let container = hauler.pos.findClosestByPath(SHContainer);
               if(container)
               {
@@ -1447,9 +1500,13 @@ export class skRoomManagementProcess extends Process
               }
             }
 
+            if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 10)
             let sourceContainer = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
             if(sourceContainer)
             {
+              if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 11)
               let resource = <Resource[]>source.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {filter: r => r.amount > 200});
               if(resource.length > 0)
               {
@@ -1462,12 +1519,56 @@ export class skRoomManagementProcess extends Process
                 return;
               }
 
-              if(!hauler.pos.inRangeTo(sourceContainer, 1))
+              if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 12)
+              let roads: {
+                [sourceId: string]: boolean
+              };
+              if(!this.skRoom.memory.roads)
               {
-                  if(hauler.room.name === this.skRoomName && !this.metaData.roadsDone[source.id])
+                this.skRoom.memory.roads = {};
+                roads = this.skRoom.memory.roads;
+              }
+              else
+                roads = this.skRoom.memory.roads;
+
+                if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 13)
+              if(hauler.room.name === sourceContainer.room.name
+                && !hauler.pos.isNearTo(sourceContainer))
+              {
+                if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 14)
+                if(!roads[sourceContainer.id])
+                {
+                  if(hauler.name === 'sk-m-E36S34-26423368')
+                  console.log(hauler.name, 'ha', 14.1)
+                  const ret = PathFinder.search(hauler.pos, sourceContainer.pos);
+                  if(!ret.incomplete)
                   {
-                      hauler.room.createConstructionSite(hauler.pos, STRUCTURE_ROAD);
+                    if(Object.keys(Game.constructionSites).length + ret.path.length <= 100)
+                    {
+                      let allCreated = true;
+                      for(let i = 0; i < ret.path.length; i++)
+                        allCreated = allCreated && (this.skRoom.createConstructionSite(ret.path[i], STRUCTURE_ROAD) == OK);
+
+                      if(allCreated)
+                        roads[sourceContainer.id] = true;
+                    }
                   }
+                }
+                else if(!hauler.pos.inRangeTo(sourceContainer, 1))
+                {
+                  if(hauler.name === 'sk-m-E36S34-26423368')
+                  console.log(hauler.name, 'ha', 14.2)
+                  hauler.travelTo(sourceContainer);
+                  return;
+                }
+              }
+              else if(!hauler.pos.inRangeTo(sourceContainer, 1))
+              {
+                if(hauler.name === 'sk-m-E36S34-26423368')
+            console.log(hauler.name, 'ha', 15)
                   hauler.travelTo(sourceContainer);
                   return;
               }
@@ -1490,6 +1591,8 @@ export class skRoomManagementProcess extends Process
                 hauler.say('waiting');
                 return;
               }
+
+              this.skRoom.memory.roads = roads;
             }
           }
         }
@@ -1610,7 +1713,7 @@ export class skRoomManagementProcess extends Process
       return;
     }
 
-    if(miner.name === 'sk-miner-E47S46-25852157')
+    if(miner.name === 'sk-miner-E36S34-25852157')
       console.log(this.name, 'MinerActions', 1, this.metaData.minerHauler.length, this.metaData.minerHauler[0])
     const mineHauler = Game.creeps[this.metaData.minerHauler[0]];
     const mineral = this.roomInfo(this.skRoomName).mineral;
@@ -1643,11 +1746,11 @@ export class skRoomManagementProcess extends Process
         }
       }
 
-      if(miner.name === 'sk-miner-E47S46-25852157')
+      if(miner.name === 'sk-miner-E36S34-25852157')
       console.log(this.name, 'MinerActions', 2)
       console.log(this.name, 'Miner numbers', (miner.store.getUsedCapacity()), mineHauler?.store.getFreeCapacity(), miner.store.getUsedCapacity() > mineHauler?.store.getFreeCapacity())
 
-      if(miner.name === 'sk-miner-E47S46-25852157')
+      if(miner.name === 'sk-miner-E36S34-25852157')
       console.log(this.name, 'MinerActions', 3)
 
       if(_.sum(miner.carry) < miner.carryCapacity && mineral.mineralAmount > 0)
@@ -1814,7 +1917,7 @@ export class skRoomManagementProcess extends Process
         }
 
         let tombStone = hauler.pos.findInRange(FIND_TOMBSTONES, 4, {filter: t => (t.store[this.mineral.mineralType] ?? 0) > 0 })[0]
-        console.log(this.name, 'Min hauler tombstones', tombStone, this.mineral.mineralType)
+        console.log(this.name, 'Min hauler tombstones', tombStone, this.mineral.mineralType, hauler.pos)
         if(tombStone)
         {
           if(hauler.pos.isNearTo(tombStone))
@@ -1973,6 +2076,7 @@ export class skRoomManagementProcess extends Process
             if(this.metaData.scanIndex === roomNames.length)
               this.metaData.scanIndex = 0;
             observer.observeRoom(roomNames[this.metaData.scanIndex]);
+            console.log(this.name, 'Observation', observer.room.name);
 
             let prevIndex = this.metaData.scanIndex - 1;
             if(prevIndex < 0)

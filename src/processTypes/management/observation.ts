@@ -31,6 +31,7 @@ export class ObservationManagementProcess extends Process
         let index = this.metaData.scanIndex++;
         //console.log(this.name, 'Observing a room');
         this.observer.observeRoom(observingRooms[index]);
+        console.log(this.name, 'Observation', this.observer.room.name);
         if(index >= observingRooms.length - 1)
         {
           this.metaData.scanIndex = 0;

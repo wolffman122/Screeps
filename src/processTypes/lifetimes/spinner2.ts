@@ -457,6 +457,24 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       }
     }
 
+    for(let i = 0; i < global.despositTypes.length; i++)
+    {
+      const deposit = global.despositTypes[i];
+      if(this.terminal?.store.getUsedCapacity(deposit) < MINERAL_KEEP_AMOUNT)
+      {
+        if(this.TransferToTerminal(deposit))
+          return;
+        else
+          continue;
+      }
+
+      if(this.terminal?.store.getUsedCapacity(deposit) !== MINERAL_KEEP_AMOUNT)
+      {
+        this.TransferToStorage(deposit, MINERAL_KEEP_AMOUNT);
+        return;
+      }
+    }
+
     // if((this.storage.store[this.mineral.mineralType] ?? 0) > 10000 &&
     //   this.factory.store.getFreeCapacity() > this.creep.store.getCapacity() * 2)
     // {

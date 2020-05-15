@@ -71,7 +71,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         if(!creep.pos.inRangeTo(sourceContainer, 1))
         {
           // Test code
-          if(mineRoom.name === 'E44S49' || mineRoom.name === 'E49S49')
+          if(mineRoom.name === 'E44S49' || mineRoom.name === 'E49S49' || mineRoom.name === 'E36S41'
+          || mineRoom.name === 'E41S33')
           {
             let holdData: HoldRoomData;
             if(!flag.memory.holdData)

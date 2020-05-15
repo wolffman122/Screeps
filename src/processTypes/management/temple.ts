@@ -37,6 +37,14 @@ export class TempleProcess extends Process
   run()
   {
     this.ensureMetaData();
+    this.flag = Game.flags[this.metaData.flagName];
+    if(!this.flag)
+    {
+      delete this.flag.memory;
+      this.templeRoom.memory.templeRoom = false;
+      this.completed = true;
+      return;
+    }
 
     console.log(this.name, 'Temple Running');
 
@@ -44,14 +52,8 @@ export class TempleProcess extends Process
     if(process)
       console.log(this.name, 'Found process');
 
-    this.flag = Game.flags[this.metaData.flagName];
-    this.templeRoom = Game.rooms[this.metaData.roomName];
-    if(!this.flag)
-    {
-      delete this.flag.memory;
-      this.completed = true;
-      return;
-    }
+
+
 
     if(this.templeRoom)
       this.templeRoom.memory.templeRoom = true;
@@ -74,8 +76,9 @@ export class TempleProcess extends Process
     const controller = this.templeRoom.controller;
     if(controller?.level < 3)
     {
-      if(this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) < 1000
+      if((this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) < 1000
         && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 1000)
+        || this.feedRoom.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 100000)
         distroAmount = 0;
 
       if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 200000)
@@ -120,7 +123,8 @@ export class TempleProcess extends Process
         else
           haulerAmount = 0;
 
-        distroAmount = 1;
+        if(this.feedRoom.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 100000)
+          distroAmount = 0;
 
         if(controller.level === 7)
         {
@@ -133,8 +137,8 @@ export class TempleProcess extends Process
           //distroAmount = 2;
         }
         else if(controller.level === 8
-          && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeStorage.store.getCapacity() * .9
-          && this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeTerminal.store.getCapacity() * .9)
+          && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeStorage.store.getCapacity() * .9)
+          // && this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeTerminal.store.getCapacity() * .9)
         {
           this.metaData.claimed = false;
           controller.unclaim();

@@ -3,6 +3,8 @@ import { WorldMap } from "lib/WorldMap";
 import { DepositMiningManagementProcess } from "./depositMining";
 import { TerminalManagementProcess } from "processTypes/buildingProcesses/terminal";
 import { KEEP_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { Utils } from "lib/utils";
+import { PowerHarvestingManagement } from "./powerHarvesting";
 
 enum ReturnEnum {Deposits = 1, Power = 2}
 
@@ -20,25 +22,52 @@ export class AlleyObservationManagementProcess extends Process
     const checkRoom = Game.rooms[this.metaData.checkRoom];
     if(termnial?.store.getFreeCapacity() > 50000 && (storage?.store[RESOURCE_ENERGY] > (KEEP_AMOUNT * 1.2) ?? false))
     {
-      console.log(this.name, 'Checking room', this.metaData.checkRoom, checkRoom)
-
       let results;
+      if(room.name === 'E41S32')
+        console.log(this.name, 'Check Room', checkRoom);
+
       if(checkRoom)
         results = this.checkTheRoom(checkRoom);
 
       if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
       {
-        console.log('Spawn Deposit retrieval');
-        this.fork(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
-          roomName: this.metaData.roomName,
-          targetRoomName: checkRoom.name
-        });
+        if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
+        {
+          const spawnRoomName = Utils.nearestRoom(checkRoom.name)
+          if(spawnRoomName !== '')
+          {
+            Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
+            this.fork(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
+              roomName: spawnRoomName,
+              targetRoomName: checkRoom.name
+            });
+          }
 
-        return;
+          return;
+        }
       }
       else if((results & ReturnEnum.Power) === ReturnEnum.Power)
       {
-        console.log('Spawn power retrieval');
+        const powerBank = <StructurePowerBank>checkRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
+        if(powerBank?.ticksToDecay > 3500)
+        {
+          if(!this.kernel.hasProcess('powhm-' + checkRoom.name))
+          {
+            console.log('Spawn power retrieval', checkRoom.name);
+            const spawnRoomName = Utils.nearestRoom(checkRoom.name);
+            if(spawnRoomName !== '')
+            {
+              Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
+              this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
+                roomName: checkRoom.name,
+                spawnRoomName: spawnRoomName,
+                powerBankId: powerBank.id
+              })
+            }
+
+            return;
+          }
+        }
       }
       else if(results === (ReturnEnum.Deposits & ReturnEnum.Power))
       {
@@ -49,28 +78,36 @@ export class AlleyObservationManagementProcess extends Process
       const coord = WorldMap.getRoomCoordinates(this.metaData.roomName);
       let horizontalScan = false;
       let verticalScan = false;
-      if(coord.x % 10 === 1 || coord.x % 10 === 9)
-        verticalScan = true;
+      // if(this.metaData.roomName === 'E41S32')
+      // {
+      //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
+      //     verticalScan = true;
 
-      if(coord.y % 10 === 1 || coord.y % 10 === 9)
-        horizontalScan = true;
+      //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
+      //     horizontalScan = true;
+      // }
+      // else
+      {
+        if(coord.x % 10 === 1 || coord.x % 10 === 9)
+          verticalScan = true;
 
-      console.log(this.name, 'vert', verticalScan, 'hor', horizontalScan)
+        if(coord.y % 10 === 1 || coord.y % 10 === 9)
+          horizontalScan = true;
+      }
 
-      this.metaData.scanRooms === undefined;
       if(this.metaData.scanRooms === undefined)
         this.metaData.scanRooms = this.generateRoomList(coord, horizontalScan, verticalScan);
-
-      console.log(this.name, 'ScanRooms', this.metaData.scanRooms.length)
 
       this.metaData.lastCanTick = Game.time;
       const scanRoom = this.metaData.scanRooms[this.metaData.scanIndex++];
       if(this.metaData.scanIndex >= this.metaData.scanRooms.length)
         this.metaData.scanIndex = 0;
 
-      console.log(this.name, 'Should be scanning room', scanRoom, 'index', this.metaData.scanIndex);
       if(observer.observeRoom(scanRoom) === OK)
         this.metaData.checkRoom = scanRoom;
+
+      console.log(this.name, 'Observation', observer.room.name);
+
     }
   }
 
@@ -80,7 +117,7 @@ export class AlleyObservationManagementProcess extends Process
 
     const deposits = room.find(FIND_DEPOSITS);
     if(deposits.length)
-    {
+    {8
       if(deposits[0].lastCooldown < 20)
         retValue = ReturnEnum.Deposits;
     }
@@ -104,7 +141,7 @@ export class AlleyObservationManagementProcess extends Process
       else if(coord.y % 10 === 9)
         yCord += 1;
 
-        for(let i = (xCord - 2); i < (xCord + 3); i++)
+        for(let i = (xCord - 4); i < (xCord + 5); i++)
         {
           const name = coord.xDir + i + coord.yDir + yCord;
           roomNames.push(name);
@@ -123,7 +160,7 @@ export class AlleyObservationManagementProcess extends Process
       else if(coord.x % 10 === 9)
         xCord += 1;
 
-      for(let i = (yCord - 2); i < (yCord + 3); i++)
+      for(let i = (yCord - 4); i < (yCord + 5); i++)
       {
         const name = coord.xDir + xCord + coord.yDir + i;
         roomNames.push(name);

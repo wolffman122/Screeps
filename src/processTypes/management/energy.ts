@@ -157,6 +157,10 @@ export class EnergyManagementProcess extends Process{
           if(room.memory.powerHarvesting)
             creepType = 'pHarvester';
 
+          const operator = Game.powerCreeps[proc.metaData.roomName + '-Operator'];
+          if(operator?.powers[PWR_REGEN_SOURCE]?.level >= 4)
+            creepType = 'pBigHarvester';
+
           if(count < numberOfHarvesters) //300
           {
             if(proc.metaData.roomName === 'E36S38')
@@ -167,25 +171,14 @@ export class EnergyManagementProcess extends Process{
             if(room)
             {
               let controller = room.controller;
-              if(proc.metaData.roomName === 'E36S38')
-                console.log(proc.name, 4, spawned, controller)
               if(controller && controller.level >= 8)
               {
-
-                if(proc.metaData.roomName === 'E36S38')
-                console.log(proc.name, 5, spawned)
                 spawned = Utils.spawn(
                   proc.kernel,
                   proc.metaData.roomName,
                   creepType,
                   creepName,
-                  {}
-
-
-                )
-
-                if(proc.metaData.roomName === 'E36S38')
-                console.log(proc.name, 6, spawned)
+                  {})
               }
               else
               {
