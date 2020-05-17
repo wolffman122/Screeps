@@ -18,6 +18,7 @@ import { StrongHoldDestructionProcess } from './management/strongHoldDestruction
 import { StripManagementProcess } from './management/strip';
 import { Utils } from 'lib/utils';
 import { TestProcessManagement } from './management/test';
+import { TempleProcess } from './management/temple';
 
 export class FlagWatcherProcess extends Process
 {
@@ -59,6 +60,13 @@ export class FlagWatcherProcess extends Process
   {
     console.log('Blue 2', flag.pos.roomName, flag.name);
     this.kernel.addProcessIfNotExist(ClaimProcess, 'claim-' + flag.name, 20, { targetRoom: flag.pos.roomName, flagName: flag.name});
+  }
+
+  // blue yellow
+  TempleRoom(flag: Flag)
+  {
+    console.log('Flagwatcher Temple');
+    this.kernel.addProcessIfNotExist(TempleProcess, 'temple-' + flag.pos.roomName, 60, { roomName: flag.pos.roomName, flagName: flag.name});
   }
 
   /*holdFlag(flag: Flag)
@@ -145,6 +153,9 @@ export class FlagWatcherProcess extends Process
               console.log('Claim blue');
               proc.claimFlag(flag);
               break;
+            case COLOR_YELLOW:
+              console.log('Temple Room');
+              proc.TempleRoom(flag);
             case COLOR_RED:
               proc.helpRoom(flag);
               break;

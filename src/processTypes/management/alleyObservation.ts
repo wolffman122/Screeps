@@ -3,6 +3,8 @@ import { WorldMap } from "lib/WorldMap";
 import { DepositMiningManagementProcess } from "./depositMining";
 import { TerminalManagementProcess } from "processTypes/buildingProcesses/terminal";
 import { KEEP_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { Utils } from "lib/utils";
+import { PowerHarvestingManagement } from "./powerHarvesting";
 
 enum ReturnEnum {Deposits = 1, Power = 2}
 
@@ -13,95 +15,118 @@ export class AlleyObservationManagementProcess extends Process
 
   run()
   {
-    try
+    console.log(this.name, 'Running');
+    const room = Game.rooms[this.metaData.roomName];
+    const termnial = room.terminal;
+    const storage = room.storage;
+    const checkRoom = Game.rooms[this.metaData.checkRoom];
+    if(termnial?.store.getFreeCapacity() > 50000 && (storage?.store[RESOURCE_ENERGY] > (KEEP_AMOUNT * 1.2) ?? false))
     {
-      console.log(this.name, 'Running');
-      const room = Game.rooms[this.metaData.roomName];
-      const termnial = room.terminal;
-      const storage = room.storage;
-      const checkRoom = Game.rooms[this.metaData.checkRoom];
-      if(termnial?.store.getFreeCapacity() > 50000 && (storage?.store[RESOURCE_ENERGY] > (KEEP_AMOUNT * 1.2) ?? false))
-      {
-        console.log(this.name, 'Checking room', this.metaData.checkRoom, checkRoom)
-        const results = this.checkTheRoom(checkRoom);
+      let results;
+      if(room.name === 'E41S32')
+        console.log(this.name, 'Check Room', checkRoom);
 
-        if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
+      if(checkRoom)
+        results = this.checkTheRoom(checkRoom);
+
+      if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
+      {
+        if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
         {
-          console.log('Spawn Deposit retrieval');
-          this.fork(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
-            roomName: this.metaData.roomName,
-            targetRoomName: checkRoom.name
-          });
+          const spawnRoomName = Utils.nearestRoom(checkRoom.name)
+          if(spawnRoomName !== '')
+          {
+            Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
+            this.fork(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
+              roomName: spawnRoomName,
+              targetRoomName: checkRoom.name
+            });
+          }
 
           return;
         }
-        else if((results & ReturnEnum.Power) === ReturnEnum.Power)
+      }
+      else if((results & ReturnEnum.Power) === ReturnEnum.Power)
+      {
+        const powerBank = <StructurePowerBank>checkRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
+        if(powerBank?.ticksToDecay > 3500)
         {
-          console.log('Spawn power retrieval');
-        }
-        else if(results === (ReturnEnum.Deposits & ReturnEnum.Power))
-        {
-          console.log('Spawn both');
-        }
+          if(!this.kernel.hasProcess('powhm-' + checkRoom.name))
+          {
+            console.log('Spawn power retrieval', checkRoom.name);
+            // const spawnRoomName = Utils.nearestRoom(checkRoom.name);
+            // if(spawnRoomName !== '')
+            // {
+            //   Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
+            //   this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
+            //     roomName: checkRoom.name,
+            //     spawnRoomName: spawnRoomName,
+            //     powerBankId: powerBank.id
+            //   })
+            // }
 
-        const observer = this.roomData().observer;
-        const coord = WorldMap.getRoomCoordinates(this.metaData.roomName);
-        let horizontalScan = false;
-        let verticalScan = false;
+            return;
+          }
+        }
+      }
+      else if(results === (ReturnEnum.Deposits & ReturnEnum.Power))
+      {
+        console.log('Spawn both');
+      }
+
+      const observer = this.roomData().observer;
+      const coord = WorldMap.getRoomCoordinates(this.metaData.roomName);
+      let horizontalScan = false;
+      let verticalScan = false;
+      // if(this.metaData.roomName === 'E41S32')
+      // {
+      //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
+      //     verticalScan = true;
+
+      //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
+      //     horizontalScan = true;
+      // }
+      // else
+      {
         if(coord.x % 10 === 1 || coord.x % 10 === 9)
           verticalScan = true;
 
         if(coord.y % 10 === 1 || coord.y % 10 === 9)
           horizontalScan = true;
-
-        console.log(this.name, 'vert', verticalScan, 'hor', horizontalScan)
-
-        this.metaData.scanRooms === undefined;
-        if(this.metaData.scanRooms === undefined)
-          this.metaData.scanRooms = this.generateRoomList(coord, horizontalScan, verticalScan);
-
-        console.log(this.name, 'ScanRooms', this.metaData.scanRooms.length)
-
-        this.metaData.lastCanTick = Game.time;
-        const scanRoom = this.metaData.scanRooms[this.metaData.scanIndex++];
-        if(this.metaData.scanIndex >= this.metaData.scanRooms.length)
-          this.metaData.scanIndex = 0;
-
-        console.log(this.name, 'Should be scanning room', scanRoom, 'index', this.metaData.scanIndex);
-        if(observer.observeRoom(scanRoom) === OK)
-          this.metaData.checkRoom = scanRoom;
       }
-    }
-    catch(error)
-    {
-      console.log(this.name, 'run', error);
+
+      if(this.metaData.scanRooms === undefined)
+        this.metaData.scanRooms = this.generateRoomList(coord, horizontalScan, verticalScan);
+
+      this.metaData.lastCanTick = Game.time;
+      const scanRoom = this.metaData.scanRooms[this.metaData.scanIndex++];
+      if(this.metaData.scanIndex >= this.metaData.scanRooms.length)
+        this.metaData.scanIndex = 0;
+
+      if(observer.observeRoom(scanRoom) === OK)
+        this.metaData.checkRoom = scanRoom;
+
+      console.log(this.name, 'Observation', observer.room.name);
 
     }
   }
 
   checkTheRoom(room: Room)
   {
-    try
-    {
-      let retValue: ReturnEnum;
+    let retValue: ReturnEnum;
 
-      const deposits = room.find(FIND_DEPOSITS);
-      if(deposits.length)
-      {
-        if(deposits[0].lastCooldown < 20)
-          retValue = ReturnEnum.Deposits;
-      }
-
-      let powerBanks = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK});
-      if(powerBanks.length)
-        retValue |= ReturnEnum.Power;
-
-      return retValue;
+    const deposits = room.find(FIND_DEPOSITS);
+    if(deposits.length)
+    {8
+      if(deposits[0].lastCooldown < 20)
+        retValue = ReturnEnum.Deposits;
     }
-    catch(error)
-    {
-      console.log(this.name, 'checkTheRoom', error);
-    }
+
+    let powerBanks = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK});
+    if(powerBanks.length)
+      retValue |= ReturnEnum.Power;
+
+    return retValue;
   }
 
   generateRoomList(coord: RoomCoord, horizontal: boolean, vertical: boolean) : string[]
@@ -116,7 +141,7 @@ export class AlleyObservationManagementProcess extends Process
       else if(coord.y % 10 === 9)
         yCord += 1;
 
-        for(let i = (xCord - 2); i < (xCord + 3); i++)
+        for(let i = (xCord - 4); i < (xCord + 5); i++)
         {
           const name = coord.xDir + i + coord.yDir + yCord;
           roomNames.push(name);
@@ -135,7 +160,7 @@ export class AlleyObservationManagementProcess extends Process
       else if(coord.x % 10 === 9)
         xCord += 1;
 
-      for(let i = (yCord - 2); i < (yCord + 3); i++)
+      for(let i = (yCord - 4); i < (yCord + 5); i++)
       {
         const name = coord.xDir + xCord + coord.yDir + i;
         roomNames.push(name);
@@ -143,39 +168,5 @@ export class AlleyObservationManagementProcess extends Process
 
       return roomNames;
     }
-
-    // let xStart: number;
-    // if(horizontal < 0)
-    //   xStart = Math.floor(coord.x / 10) * 10;
-    // else if(horizontal > 0)
-    //   xStart = Math.ceil(coord.x / 10) * 10;
-    // else
-    //   {
-    //     // Middle case
-    //   }
-
-    // let yStart: number
-    // if(vertical < 0)
-    //   yStart = Math.floor(coord.y / 10) * 10;
-    // else if(vertical > 0)
-    //   yStart = Math.ceil(coord.y / 10) * 10;
-    // else
-    // {
-    //   // Middle case
-    // }
-
-
-
-    // for(let i = (yStart - 2); i < (yStart + 3); i++)
-    // {
-    //   const name = coord.xDir + xStart + coord.yDir + i;
-    //   roomNames.push(name);
-    // }
-
-    // // Eliminate Duplicates
-    // roomNames.filter((item, index) => roomNames.indexOf(item) === index);
-
-    // return roomNames
-
   }
 }

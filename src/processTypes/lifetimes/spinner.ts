@@ -114,104 +114,104 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
           return;
       }
 
-      if(room.memory.depositMining)
-      {
-        if(factory?.store[room.memory.depositType] > 100)
-        {
-          if(room.memory.instruct === undefined)
-          {
-            room.memory.instruct = {};
-          }
+      // if(room.memory.depositMining)
+      // {
+      //   if(factory?.store[room.memory.depositType] > 100)
+      //   {
+      //     if(room.memory.instruct === undefined)
+      //     {
+      //       room.memory.instruct = {};
+      //     }
 
-          if(factory.level === undefined)
-          {
-            room.memory.instruct[RESOURCE_CONDENSATE] = 100;
-          }
+      //     if(factory.level === undefined)
+      //     {
+      //       room.memory.instruct[RESOURCE_CONDENSATE] = 100;
+      //     }
 
-          console.log(this.name, 'Problem')
+      //     console.log(this.name, 'Problem')
 
-          let recipe: Recipe;
-          if(room.memory.componentInstruct && Object.keys(room.memory.componentInstruct).length > 0)
-          {
-            console.log(this.name, 'Component Lookup', room.memory.resourceToProduce);
-            recipe = this.factoryRecipe(room);
-          }
-          else if(Object.keys(room.memory.instruct).length > 0)
-          {
-            console.log(this.name, 'Main Lookup')
-            recipe = this.factoryRecipe(room);
-          }
+      //     let recipe: Recipe;
+      //     if(room.memory.componentInstruct && Object.keys(room.memory.componentInstruct).length > 0)
+      //     {
+      //       console.log(this.name, 'Component Lookup', room.memory.resourceToProduce);
+      //       recipe = this.factoryRecipe(room);
+      //     }
+      //     else if(Object.keys(room.memory.instruct).length > 0)
+      //     {
+      //       console.log(this.name, 'Main Lookup')
+      //       recipe = this.factoryRecipe(room);
+      //     }
 
-          let numberOfComponents = Object.keys(recipe).length;
+      //     let numberOfComponents = Object.keys(recipe).length;
 
-          for(let i in recipe)
-          {
-            const resource = i as CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
-            if(factory?.store[i] < recipe[i])
-            {
-              if(terminal?.store[i] < recipe[i])
-              {
-                if(storage?.store[i] < recipe[i])
-                {
-                  console.log('Nothing in storage');
-                  // Don't have the resource need to construct it
-                  if(room.memory.componentInstruct === undefined)
-                    room.memory.componentInstruct = {};
+      //     for(let i in recipe)
+      //     {
+      //       const resource = i as CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
+      //       if(factory?.store[i] < recipe[i])
+      //       {
+      //         if(terminal?.store[i] < recipe[i])
+      //         {
+      //           if(storage?.store[i] < recipe[i])
+      //           {
+      //             console.log('Nothing in storage');
+      //             // Don't have the resource need to construct it
+      //             if(room.memory.componentInstruct === undefined)
+      //               room.memory.componentInstruct = {};
 
-                  room.memory.resourceToProduce = resource;
-                  room.memory.amoutToProduce = recipe[i];
-                  room.memory.componentInstruct[i] = recipe[i];
-                }
-                else
-                {
-                  const ret = creep.withdraw(storage, resource, recipe[i]);
-                  console.log(this.name, 'Taking out of storage', i, ret)
-                  creep.memory.target = factory.id;
-                }
-              }
-              else
-              {
-                const ret = creep.withdraw(terminal, resource, recipe[i])
-                console.log(this.name, 'Taking out of terminal', i, ret)
-                creep.memory.target = factory.id;
-              }
-            }
-            else
-            {
-              numberOfComponents--;
-              console.log(this.name, 'Number of components', numberOfComponents);
-              if(factory.store[room.memory.resourceToProduce] >= room.memory.amoutToProduce)
-              {
-                console.log(this.name, 'Resetting up one level');
-                room.memory.resourceToProduce = undefined;
-                room.memory.amoutToProduce = undefined;
-                room.memory.componentInstruct = undefined;
-              }
+      //             room.memory.resourceToProduce = resource;
+      //             room.memory.amoutToProduce = recipe[i];
+      //             room.memory.componentInstruct[i] = recipe[i];
+      //           }
+      //           else
+      //           {
+      //             const ret = creep.withdraw(storage, resource, recipe[i]);
+      //             console.log(this.name, 'Taking out of storage', i, ret)
+      //             creep.memory.target = factory.id;
+      //           }
+      //         }
+      //         else
+      //         {
+      //           const ret = creep.withdraw(terminal, resource, recipe[i])
+      //           console.log(this.name, 'Taking out of terminal', i, ret)
+      //           creep.memory.target = factory.id;
+      //         }
+      //       }
+      //       else
+      //       {
+      //         numberOfComponents--;
+      //         console.log(this.name, 'Number of components', numberOfComponents);
+      //         if(factory.store[room.memory.resourceToProduce] >= room.memory.amoutToProduce)
+      //         {
+      //           console.log(this.name, 'Resetting up one level');
+      //           room.memory.resourceToProduce = undefined;
+      //           room.memory.amoutToProduce = undefined;
+      //           room.memory.componentInstruct = undefined;
+      //         }
 
-              if(numberOfComponents == 0)
-              {
-                if(factory.cooldown === 0)
-                {
-                  if(room.memory.componentInstruct !== undefined)
-                  {
-                    const ret = factory.produce(room.memory.resourceToProduce);
-                    console.log(this.name, 'Factory produce', ret, room.memory.resourceToProduce)
-                  }
-                  else
-                  {
-                    let resource = Object.keys(room.memory.instruct)[0] as CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
-                    factory.produce(resource)
-                  }
-                }
-              }
-            }
-          }
-        }
-        else
-        {
-          room.memory.depositMining = false;
-        }
-      }
+      //         if(numberOfComponents == 0)
+      //         {
+      //           if(factory.cooldown === 0)
+      //           {
+      //             if(room.memory.componentInstruct !== undefined)
+      //             {
+      //               const ret = factory.produce(room.memory.resourceToProduce);
+      //               console.log(this.name, 'Factory produce', ret, room.memory.resourceToProduce)
+      //             }
+      //             else
+      //             {
+      //               let resource = Object.keys(room.memory.instruct)[0] as CommodityConstant | MineralConstant | RESOURCE_GHODIUM;
+      //               factory.produce(resource)
+      //             }
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      //   else
+      //   {
+      //     room.memory.depositMining = false;
+      //   }
+      // }
 
       // Full storage
       if(storage.store.getUsedCapacity() >= storage.store.getCapacity() * .99)

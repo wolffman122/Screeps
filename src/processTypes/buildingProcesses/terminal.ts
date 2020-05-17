@@ -14,8 +14,7 @@ export class TerminalManagementProcess extends Process
     if(!this.metaData.sendStrings)
       this.metaData.sendStrings = {};
 
-    if(Game.cpu.bucket > 9000)
-    {
+
       for(const str in this.metaData.receiveStr)
       {
         const room = Game.rooms[str];
@@ -35,7 +34,7 @@ export class TerminalManagementProcess extends Process
       }
 
       console.log(this.name, Game.cpu.getUsed(), Game.cpu.bucket);
-      if(Game.time % 50 === 1)
+      if(Game.time % 10 === 1)
       {
         //let start = Game.cpu.getUsed();
         console.log(this.name)
@@ -48,8 +47,19 @@ export class TerminalManagementProcess extends Process
 
           if(r.terminal && r.storage)
           {
-            return ((r.storage.store.energy < 210000 || r.storage.store === undefined) && r.controller && r.controller.my &&
-              r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
+
+            if(r.memory.templeRoom && r.terminal?.store.getUsedCapacity(RESOURCE_ENERGY) < r.terminal?.store.getCapacity() * .9)
+            {
+              if(r.controller?.level === 8)
+                return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 900000) && r.controller?.my &&
+                  r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
+              else if(r.controller?.level >= 6)
+                return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 600000) && r.controller?.my &&
+                  r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
+            }
+            else
+              return ((r.storage.store.energy < 190000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+                r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
           }
           else
           {
@@ -57,24 +67,35 @@ export class TerminalManagementProcess extends Process
           }
         });
 
+        console.log(this.name, 'low rooms', lowRooms.length);
+
         _.forEach(Game.rooms, (r) =>{
           if(r.controller && r.controller.my && r.storage && r.terminal && r.terminal.my)
           {
-            let storage = r.storage;
-            if(storage.store.getUsedCapacity() < minimum)
+            if(r.memory.templeRoom && r.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < 100000)
             {
-              minimum = _.sum(storage.store);
-              console.log(this.name, 1, r.name)
+              minimum = 10;
               minimumRoom = r.name;
+            }
+            else
+            {
+              let storage = r.storage;
+              if(storage.store.getUsedCapacity() < minimum)
+              {
+                minimum = storage.store.getUsedCapacity(RESOURCE_ENERGY);
+                console.log(this.name, 1, r.name, minimum)
+                minimumRoom = r.name;
+              }
             }
           }
         })
 
-        console.log(this.name, Game.cpu.getUsed())
-        console.log(this.name, 1.5)
-        //console.log('Final min', minimum, minimumRoom)
+        console.log(this.name, 'Final min', minimum, minimumRoom)
 
         let fullRooms = _.filter(Game.rooms, (r) => {
+          if(r.memory.templeRoom)
+            return false;
+
           if(r.controller && r.controller.my && r.terminal && r.storage)
           {
             return (r.controller.level >= 7 && r.storage.store.energy > ENERGY_KEEP_AMOUNT &&
@@ -105,6 +126,9 @@ export class TerminalManagementProcess extends Process
         console.log(this.name, "Fullest room", fRooms.length);
 
         let maxFull = _.filter(Game.rooms, (r) => {
+          if(r.memory.templeRoom)
+            return false;
+
           if(r.controller && r.controller.my && r.terminal && r.storage)
           {
             return (_.sum(r.storage.store) === r.storage.storeCapacity);
@@ -150,7 +174,11 @@ export class TerminalManagementProcess extends Process
           console.log(this.name, fullRooms.length, lowRooms.length);
           let lRooms: {name: string, amount: number, storeAmount: number}[] = [];
           _.forEach(lowRooms, (f) => {
-            if(f.storage)
+            if(f.memory.templeRoom)
+            {
+              lRooms.push({name: f.name, amount: 0, storeAmount: 0});
+            }
+            else if(f.storage)
             {
               lRooms.push({name: f.name, amount: _.sum(f.terminal!.store), storeAmount: f.storage.store.energy});
             }
@@ -198,7 +226,7 @@ export class TerminalManagementProcess extends Process
                   {
                     retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
                     console.log(this.name, room.name, "to", lRooms[0].name, retVal);
-                    if(retVal ==- OK)
+                    if(retVal === OK)
                     {
                       const minRoom = Game.rooms[lRooms[0].name];
                       this.metaData.sendStrings[room.name] = 'Send Information: To ' + minRoom.name + ' Energy ' + amount + ' : ' + Game.time;
@@ -220,6 +248,6 @@ export class TerminalManagementProcess extends Process
       }
 
       console.log(this.name, Game.cpu.getUsed(), Game.cpu.bucket);
-    }
+
   }
 }

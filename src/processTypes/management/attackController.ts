@@ -34,11 +34,6 @@ export class  AttackControllerManagementProcess extends Process
 
     //this.log('Attack 1 ' + this.metaData.creeps.length + ' ' + flag.room!.controller!.upgradeBlocked);
 
-    if(this.metaData.creeps.length == 0 && !flag.memory.rollCall)
-    {
-      flag.memory.rollCall = 0;
-    }
-
     if(flag.room)
     {
       if(this.metaData.creeps.length < numberAttack && flag.room!.controller && !flag.room!.controller!.upgradeBlocked)
@@ -55,11 +50,11 @@ export class  AttackControllerManagementProcess extends Process
         if(spawned)
         {
           this.metaData.creeps.push(creepName);
-          flag.memory.rollCall == this.metaData.creeps.length;
           this.kernel.addProcessIfNotExist(ControllerAttackLifetimeProcess, 'calf-' + creepName, 29, {
             creep: creepName,
             flagName: flag.name,
-            numberAttack: numberAttack
+            numberAttack: numberAttack,
+            rollCall: this.metaData.creeps.length
           });
         }
       }
@@ -80,11 +75,11 @@ export class  AttackControllerManagementProcess extends Process
         if(spawned)
         {
           this.metaData.creeps.push(creepName);
-          flag.memory.rollCall == this.metaData.creeps.length;
           this.kernel.addProcessIfNotExist(ControllerAttackLifetimeProcess, 'calf-' + creepName, 29, {
             creep: creepName,
             flagName: flag.name,
-            numberAttack: numberAttack
+            numberAttack: numberAttack,
+            rollCall: this.metaData.creeps.length
           });
         }
       }

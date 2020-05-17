@@ -6,8 +6,10 @@ export class TowerHealProcess extends Process
 
     run()
     {
-        if(this.name === 'th-E56S43')
-            console.log(this.name, 1);
+        //if(this.name === 'th-E35S41')
+        //if(this.name === 'th-E42S48' || this.name === 'th-E36S38' || this.name === 'th-E41S41')
+        
+
         let room = Game.rooms[this.metaData.roomName];
 
         if(room.controller && !room.controller.my)

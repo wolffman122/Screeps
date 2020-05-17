@@ -17,56 +17,78 @@ export class LinkHarvesterLifetimeProcess extends LifetimeProcess
 
     if(creep.room.memory.shutdown)
     {
-      this.completed = true;
+      //this.completed = true;
       return;
     }
 
-    let source = <Source>Game.getObjectById(this.metaData.source);
+    if(creep.name === 'em-E56S43-26263720')
+      console.log(this.name, '88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888')
 
-    if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id]
-      &&
-       this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id])
+    const source = <Source>Game.getObjectById(this.metaData.source);
+    if(this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id])
     {
-      let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
-      let link = this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id];
-
-      if(creep.store.getFreeCapacity() === 0 && link.energy === link.energyCapacity
-        && container.store[RESOURCE_ENERGY] > container.store.getCapacity() * .75)
+      const link = this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id];
+      if(creep.name === 'em-E56S43-26263720')
+        console.log(this.name, 1, creep.carry, _.sum(creep.carry), creep.carryCapacity, _.sum(creep.carry) == creep.carryCapacity, _.sum(creep.carry) === creep.carryCapacity);
+      if(_.sum(creep.carry) == creep.carryCapacity)
       {
-        let extensions = this.roomInfo(creep.room.name).extensions;
-        extensions = extensions.filter(e => (e.store[RESOURCE_ENERGY] ?? 0) === 0);
-        const extension = creep.pos.findClosestByPath(extensions);
-        if(!creep.pos.isNearTo(extension))
-          creep.moveTo(extension);
-        else
-          creep.transfer(extension, RESOURCE_ENERGY);
-
-        return;
-      }
-
-      if(!creep.pos.inRangeTo(container, 0))
-      {
-        creep.moveTo(container);
-        return;
-      }
-
-      if(creep.name === 'em-E35S41-20892253')
-        console.log(this.name, 1);
-      if(_.sum(creep.carry) == creep.carryCapacity && link.energy < link.energyCapacity)
-      {
-        if(creep.name === 'em-E35S41-20892253')
+        if(creep.name === 'em-E56S43-26263720')
         console.log(this.name, 2);
 
-        creep.transfer(link, RESOURCE_ENERGY);
+        if((link.store[RESOURCE_ENERGY] ?? 0) !== link.store.getCapacity(RESOURCE_ENERGY))
+        {
+          if(!creep.pos.isNearTo(link))
+            creep.travelTo(link);
+          else
+            creep.transfer(link, RESOURCE_ENERGY);
+        }
+        else
+        {
+          if(creep.name === 'em-E56S43-26263720')
+        console.log(this.name, 3);
+
+          if(link.cooldown === 0)
+          {
+            const extensions = this.kernel.data.roomData[creep.room.name].extensions.filter(e => (e.store[RESOURCE_ENERGY] ?? 0) !== e.store.getCapacity(RESOURCE_ENERGY));
+            if(extensions.length)
+            {
+              const extension = creep.pos.findClosestByPath(extensions);
+              if(!creep.pos.isNearTo(extension))
+                creep.travelTo(extension);
+              else
+                creep.transfer(extension, RESOURCE_ENERGY);
+            }
+          }
+        }
+        if(creep.name === 'em-E56S43-26263720')
+        console.log(this.name, 4);
+
         return;
       }
 
-      if(creep.name === 'em-E35S41-20892253')
-        console.log(this.name, 3);
-      if(creep.harvest(source) === ERR_NOT_ENOUGH_RESOURCES)
+      if(creep.name === 'em-E56S43-26263720')
+        console.log(this.name, 2.1);
+      if(!creep.pos.isNearTo(source))
       {
-        this.suspend = source.ticksToRegeneration;
+        creep.travelTo(source);
+        return;
       }
+
+      if(creep.name === 'em-E56S43-26263720')
+        console.log(this.name, 3)
+      if(creep.store.getFreeCapacity() > 0 && link.store.getUsedCapacity(RESOURCE_ENERGY) || 0 < 800)
+      {
+        const ret = creep.harvest(source);
+        if(creep.name === 'em-E56S43-26263720')
+        console.log(this.name, 4, ret)
+        if(ret === ERR_NOT_ENOUGH_RESOURCES)
+        {
+          if(creep.name === 'em-E56S43-26263720')
+        console.log(this.name, 5)
+          this.suspend = 5;
+        }
+      }
+
     }
     else
     {

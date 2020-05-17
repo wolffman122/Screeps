@@ -32,6 +32,16 @@ export class AllTerminalManagementProcess extends Process
                 delete this.metaData.sendStrings[str];
         }
 
+        // for(let c of Object.keys(COMMODITIES))
+        // {
+        //     const test = COMMODITIES[c];
+        //     console.log(this.name, test, c);
+        //     if(MINERALS_RAW.indexOf(<MineralConstant>c) === -1
+        //         && c !== RESOURCE_ENERGY
+        //         && c !== RESOURCE_GHODIUM)
+        //         console.log(this.name, c, 'level', COMMODITIES[c].level);
+        // }
+
         // Gathering Process
         if(Game.time % 20 === 5)
         {
@@ -40,6 +50,9 @@ export class AllTerminalManagementProcess extends Process
                 this.metaData.resources = {};
             }
 
+            if(this.metaData.commoditiesToMove === undefined)
+                this.metaData.commoditiesToMove = {};
+
             let regList: string[] = []
             _.forEach(Object.keys(REAGENT_LIST), (r) => {
                 regList.push(r);
@@ -47,7 +60,10 @@ export class AllTerminalManagementProcess extends Process
 
             let resources = _.union(MINERALS_RAW, regList);
             _.forEach(Game.rooms, (r) => {
-                if(r.controller?.my && r.controller.level >= 6)
+                if(r.memory.templeRoom)
+                    return;
+
+                if(r.controller?.my && r.controller?.level >= 6)
                 {
                     if(this.metaData.shutDownTransfers[r.name] ?? false)
                         return;
@@ -55,10 +71,49 @@ export class AllTerminalManagementProcess extends Process
                     let terminal = r.terminal;
                     if(terminal?.my)
                     {
+                        // Factory stuff
+                        // const factory = this.roomInfo(r.name).factory;
+                        // if(factory?.level)
+                        // {
+                        //     console.log(this.name, 'Factory level', factory.level, 'room', r.name);
+                        // }
+                        // else if(factory)
+                        // {
+                        //     for(let c of Object.keys(COMMODITIES))
+                        //     {
+                        //         if(MINERALS_RAW.indexOf(<MineralConstant>c) === -1
+                        //             && c !== RESOURCE_ENERGY
+                        //             && c !== RESOURCE_GHODIUM)
+                        //         {
+                        //             console.log(this.name, c, 'level', COMMODITIES[c].level);
+                        //             if(terminal.store.getUsedCapacity(<CommodityConstant>c) >= 1000
+                        //             && factory.level === COMMODITIES[c].level)
+                        //             {
+                        //                 if(this.metaData.commoditiesToMove[c] === undefined)
+                        //                     this.metaData.commoditiesToMove[c] = [];
+
+                        //                 const index = _.findIndex(this.metaData.commoditiesToMove[c], (ra) => {
+                        //                     ra.roomName === r.name
+                        //                 });
+
+                        //                 if(index !== -1)
+                        //                 {
+                        //                     let data = this.metaData.commoditiesToMove[c][index];
+                        //                     if(data.amount !== amount)
+                        //                     {}
+                        //                 }
+                        //             }
+                        //         }
+
+                        //     }
+                        // }
+
                         _.forEach(resources, (s) => {
                             //console.log(this.name, s);
                             let amount = terminal.store[s] === undefined ? 0 : terminal.store[s];
-
+                            let amount2 = terminal.store.getUsedCapacity(s as ResourceConstant);
+                            if(r.name === 'E37S46' && s === RESOURCE_CATALYZED_KEANIUM_ACID)
+                                console.log(this.name, 'XK problem', amount, amount2)
                             if(this.metaData.resources[s] === undefined)
                             {
                                 this.metaData.resources[s] = [];
@@ -69,9 +124,13 @@ export class AllTerminalManagementProcess extends Process
                                             return (ra.roomName === r.name);
                                     });
 
+                                    if(r.name === 'E37S46' && s === RESOURCE_CATALYZED_KEANIUM_ACID)
+                                console.log(this.name, 'XK problem', 2, index)
                             if(index !== -1)
                             {
                                 let data = this.metaData.resources[s][index];
+                                if(r.name === 'E37S46' && s === RESOURCE_CATALYZED_KEANIUM_ACID)
+                                    console.log(this.name, 'XK problem', 3, data.roomName, data.amount, data.terminal)
                                 if(data.amount !== amount)
                                 {
                                     this.metaData.resources[s][index].amount = amount;
@@ -79,12 +138,23 @@ export class AllTerminalManagementProcess extends Process
                             }
                             else
                             {
-                                let info = {roomName: r.name, amount: terminal.store[s], terminal: terminal.id};
+                                const info = {roomName: r.name, amount: terminal.store[s], terminal: terminal.id};
                                 this.metaData.resources[s].push(info);
                             }
 
                         })
                     }
+                }
+                else
+                {
+                    _.forEach(resources, (s) => {
+                        let index = _.findIndex(this.metaData.resources[s], (ra) => {
+                            return (ra.roomName === r.name);
+                        });
+
+                        if(index !== -1)
+                            this.metaData.resources[s].splice(index, 1);
+                    })
                 }
             });
 
@@ -111,9 +181,6 @@ export class AllTerminalManagementProcess extends Process
                 let min = _.min(this.metaData.resources[r], 'amount')
 
                 let minTerminal = <StructureTerminal>Game.getObjectById(min.terminal);
-
-                if(RESOURCE_KEANIUM === r)
-                    console.log(this.name, min.terminal);
 
                 let minOk = false;
                 do
@@ -160,11 +227,11 @@ export class AllTerminalManagementProcess extends Process
                     }
                     else
                     minStorageOk = true;
-                    
+
                 }while(!minStorageOk);
 
                 // Hopefully remove any terminals that don't have room.
-                if(minTerminal?.store.getFreeCapacity() < 5000)
+                if(minTerminal?.store.getFreeCapacity() < 5000 || minTerminal.room.memory.templeRoom)
                 {
 
                     do
@@ -180,8 +247,11 @@ export class AllTerminalManagementProcess extends Process
                 }
 
                 let maxTerminal = <StructureTerminal>Game.getObjectById(max.terminal);
+                if(r === RESOURCE_CATALYZED_KEANIUM_ACID)
+                {
                 console.log(this.name, r, max.roomName, max.amount);
                 console.log(this.name, r, min.roomName, min.amount);
+                }
 
                 if(r === RESOURCE_ENERGY)
                 {

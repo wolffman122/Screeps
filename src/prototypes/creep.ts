@@ -350,6 +350,29 @@ Creep.prototype.getBodyParts = function(): BodyPartConstant[]
   return retValue;
 }
 
+Creep.prototype.getBodyPartBoosted = function(type: BodyPartConstant): boolean
+{
+  console.log('GetBodyPartsBoosted', type);
+
+  let foundBoosted = false;
+  for(let i = 0; i < this.body.length && !foundBoosted; i++)
+  {
+    const part = this.body[i];
+    if(part.type === type && part.boost && part.hits > 0)
+      foundBoosted = true;
+  }
+
+  // Use string lenght of boost to determin tier level
+//   part.boost.length === 2 tier 2
+// 4:24
+// part.boost.length === 4 tier 3
+// 4:25
+// oh, I mean tier 1 and 2,
+  console.log(foundBoosted);
+
+  return foundBoosted;
+}
+
 Creep.prototype.partCount = function(partType: string): number
 {
   let count = 0;
@@ -397,5 +420,18 @@ Creep.prototype.moveDir = function(dir: DirectionConstant): string
 
 Creep.prototype.almostFull = function(): boolean
 {
-  return (this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity() === this.store.getCapacity());
+  if(this.name === 'em-E56S43-26245732')
+  {
+    console.log(this.name, 'Harvest power', this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity(), 'Capacity', this.store.getCapacity())
+  }
+  return (this.getActiveBodyparts(WORK) * HARVEST_POWER + this.store.getUsedCapacity() >= this.store.getCapacity());
+}
+
+Creep.prototype.getCost = function(): number
+{
+  let cost = 0;
+  for(let i = 0; i < Object.keys(this.body).length; i++)
+    cost += BODYPART_COST[this.body[i].type];
+
+  return cost;
 }

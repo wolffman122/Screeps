@@ -95,6 +95,14 @@ export const Stats = {
       [mineralType: string]: number
     } = {};
 
+    let totalCommoditiesAmount: {
+      [commodity: string]: number;
+    } = {};
+
+    let totalDepositsAmount: {
+      [desposit: string]: number;
+    } = {};
+
     Memory.stats['rooms.E44S51'] = undefined
 
     let storageEnergy = 0;
@@ -116,10 +124,45 @@ export const Stats = {
     } = {}
 
 
+    // let roomNames = '';
+    // for(let roomName in Game.rooms)
+    // {
+    //   if(kernel.data.roomData[roomName] === undefined)
+    //     {
+    //       Memory.stats['rooms.' + roomName + '.rcl.level'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.rcl.progress'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.rcl.progressTotal'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.rcl.ticksToDowngrade'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.energy_available'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.energy_capacity_available'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.num_creeps'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.creep_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.creep_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.tower_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.construction_sites'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.spawns_spawning'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.source_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.link_energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.terminal.energy'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.terminal.minerals'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.mineral_available'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.tickets_to_regeneration'] = undefined;
+    //       Memory.stats['rooms.' + roomName + 'miningStopTime'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.structure_info'] = undefined;
+    //       Memory.stats['rooms.' + roomName + '.container_energy'] = undefined;
+    //     }
+    // }
+    // console.log(this.name, roomNames);
 
+    let storageRoomMost = '';
+    let terminalRoomMost = '';
+    let storageMost = 0;
+    let terminalMost = 0;
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]
-
       if(room)
       {
         if(room.controller && room.controller.my){
@@ -131,9 +174,7 @@ export const Stats = {
           Memory.stats['rooms.' + roomName + '.energy_available'] = room.energyAvailable
           Memory.stats['rooms.' + roomName + '.energy_capacity_available'] = room.energyCapacityAvailable
           //Memory.stats['rooms.' + roomName + '.ramparts.target'] = Utils.rampartHealth(kernel, roomName)
-          let creeps = <Creep[]>_.filter(Game.creeps, c => {
-            return (c.pos.roomName === room.name && c.my);
-          });
+          let creeps = room.find(FIND_MY_CREEPS);
           Memory.stats['rooms.' + roomName + '.num_creeps'] = creeps ? creeps.length : 0;
 
           Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = room.memory.hostileCreepIds ? room.memory.hostileCreepIds.length : 0;
@@ -265,14 +306,74 @@ export const Stats = {
                 basicStorageMineralAmounts[type] += storage.store[type]!;
 
             }
+
+            for(let c of Object.keys(COMMODITIES))
+            {
+              let amount = 0;
+              if(MINERALS_RAW.indexOf(<MineralConstant>c) === -1
+                  && c !== RESOURCE_ENERGY
+                  && c !== RESOURCE_GHODIUM)
+              {
+                if(c === RESOURCE_BATTERY)
+                {
+                  if(room.storage?.store.getUsedCapacity(c) > storageMost)
+                  {
+                    storageMost = room.storage?.store.getUsedCapacity(c);
+                    storageRoomMost = room.name;
+                  }
+
+                  if(room.terminal?.store.getUsedCapacity(c) > terminalMost)
+                  {
+                    terminalMost = room.terminal?.store.getUsedCapacity(c);
+                    terminalRoomMost = room.name;
+                  }
+                }
+                
+                if(!totalCommoditiesAmount[c])
+                  totalCommoditiesAmount[c] = 0;
+
+                if(room.storage?.store.getUsedCapacity(<CommodityConstant>c) > 0)
+                  totalCommoditiesAmount[c] += room.storage?.store.getUsedCapacity(<CommodityConstant>c);
+
+                if(room.terminal?.store.getUsedCapacity(<CommodityConstant>c) > 0)
+                  totalCommoditiesAmount[c] += room.terminal?.store.getUsedCapacity(<CommodityConstant>c);
+
+              }
+            }
+
+            for(let i = 0; i < global.despositTypes.length; i++)
+            {
+              const depositType = global.despositTypes[i];
+              // if(depositType === RESOURCE_MIST)
+              // {
+              //   if(room.storage?.store.getUsedCapacity(depositType) > storageMost)
+              //   {
+              //     storageMost = room.storage?.store.getUsedCapacity(depositType);
+              //     storageRoomMost = room.name;
+              //   }
+
+              //   if(room.terminal?.store.getUsedCapacity(depositType) > terminalMost)
+              //   {
+              //     terminalMost = room.terminal?.store.getUsedCapacity(depositType);
+              //     terminalRoomMost = room.name;
+              //   }
+              // }
+
+              if(!totalDepositsAmount[depositType])
+                totalDepositsAmount[depositType] = 0;
+
+              if(room.storage?.store.getUsedCapacity(depositType) > 0)
+                  totalDepositsAmount[depositType] += room.storage?.store.getUsedCapacity(depositType);
+
+              if(room.terminal?.store.getUsedCapacity(depositType) > 0)
+                totalDepositsAmount[depositType] += room.terminal?.store.getUsedCapacity(depositType);
+            }
           }
           else
           {
             Memory.stats['rooms.' + roomName + '.terminal.energy'] = undefined
             Memory.stats['rooms.' + roomName + '.terminal.minerals'] = undefined
-
           }
-
 
           const mineral = <Mineral[]>room.find(FIND_MINERALS);
           Memory.stats['rooms.' + roomName + '.mineral_available'] = mineral[0].mineralAmount
@@ -324,28 +425,6 @@ export const Stats = {
         }
         else if(room.controller && !room.controller.my)
         {
-          if(roomName === 'E43S58')
-            {
-              Memory.stats['rooms.' + roomName + '.storage.energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.storage.minerals'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.level'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.progress'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.progressTotal'] = undefined
-              Memory.stats['rooms.' + roomName + '.rcl.ticksToDowngrade'] = undefined
-
-              Memory.stats['rooms.' + roomName + '.energy_available'] = undefined
-              Memory.stats['rooms.' + roomName + '.energy_capacity_available'] = undefined
-              Memory.stats['rooms.' + roomName + '.num_creeps'] = undefined
-              Memory.stats['rooms.' + roomName + '.link_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.source_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.spawns_spawning'] = undefined
-              Memory.stats['rooms.' + roomName + '.construction_sites'] = undefined
-              Memory.stats['rooms.' + roomName + '.tower_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.container_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.creep_energy'] = undefined
-              Memory.stats['rooms.' + roomName + '.num_enemy_creeps'] = undefined
-            }
-
           if(room.controller.reservation)
           {
             Memory.stats['remote_rooms.' + roomName + '.reservation'] = room.controller.reservation.ticksToEnd
@@ -357,9 +436,14 @@ export const Stats = {
 
             remoteIndex++;
           }
+          else
+            Memory.stats['rooms.'+ roomName] = undefined;
         }
       }
     })
+
+    console.log('Stat storage', storageRoomMost, storageMost);
+    console.log('Stat terminal', terminalRoomMost, terminalMost);
 
     ///////////// Log minimum mineral regeneration tickst ///////////////////////
     _.forEach(Object.keys(mineralCountdown), (mc) => {
@@ -383,6 +467,12 @@ export const Stats = {
     _.forEach(Object.keys(basicStorageMineralAmounts), (bm) => {
       Memory.stats['storages.basic.' + bm + '.amount'] = basicStorageMineralAmounts[bm];
     })
+
+    for(let c in totalCommoditiesAmount)
+      Memory.stats['commodities.' + c] = totalCommoditiesAmount[c];
+
+    for(let d in totalDepositsAmount)
+      Memory.stats['deposits.' + d] = totalDepositsAmount[d];
 
     kernel.data.labProcesses[RESOURCE_CATALYZED_KEANIUM_ACID] = undefined;
     //kernel.data.labProcesses[RESOURCE_GHODIUM] = undefined;

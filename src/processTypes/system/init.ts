@@ -33,33 +33,28 @@ export class InitProcess extends Process{
       this.kernel.limit = (Game.cpu.limit + 500) - 20
     }
 
-    console.log(this.name, 1)
-
     for(var name in Memory.creeps){
       if(!Game.creeps[name]){
         delete Memory.creeps[name]
       }
     }
 
-    console.log(this.name, 2)
     let gRooms = Object.keys(Game.rooms);
     let mRooms: string[] = []
-    if(Memory.rooms)
-      mRooms = Object.keys(Memory.rooms);
+    // if(Memory.rooms)
+    //   mRooms = Object.keys(Memory.rooms);
 
-    let observedRooms = _.difference(mRooms, gRooms);
-    if(observedRooms.length)
-    {
-      console.log(this.name, 2, observedRooms.length)
-      _.forEach(observedRooms, (or) => {
-        //console.log('Hoping observed rooms ', or );
-        if(!Game.rooms[or])
-          Memory.rooms[or] = undefined;
-      })
-    }
-    console.log(this.name, 3)
-    _
-    //console.log('Observer', 0)
+    // let observedRooms = _.difference(mRooms, gRooms);
+    // if(observedRooms.length)
+    // {
+    //   _.forEach(observedRooms, (or) => {
+    //     if(!Game.rooms[or])
+    //       Memory.rooms[or] = undefined;
+    //   })
+    // }
+
+    let rampartAverages: {roomName: string, average: number}[] = [];
+
     _.forEach(Game.rooms, function(room){
 
       const flags = room.find(FIND_FLAGS, {filter: f=> f.name === room.name + '-kill'});
@@ -69,9 +64,15 @@ export class InitProcess extends Process{
         return;
       }
 
+      if(room.name === 'E38S46')
+        console.log(this.name, 'RoomData for ', this.metaData.roomName);
+
       proc.kernel.addProcessIfNotExist(RoomDataProcess, 'roomData-' + room.name, 99, {
         roomName: room.name
       })
+
+      if(room.memory.templeRoom)
+        return;
 
       if(room.controller && room.controller.my)
       {
@@ -97,6 +98,23 @@ export class InitProcess extends Process{
           proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 50, {
             roomName: room.name
           })
+        }
+
+        if(Game.time % 1500 === 0)
+        {
+          const ramparts = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
+          if(ramparts?.length)
+          {
+
+            let total = 0;
+            for(let i = 0; i < ramparts.length; i++)
+            {
+              const rampart = ramparts[i];
+              total += rampart.hits;
+            }
+            const average = Math.floor(total / ramparts.length);
+            rampartAverages.push({roomName: room.name, average: average})
+          }
         }
 
         if(!proc.kernel.hasProcess('sm-' + room.name)){
@@ -138,7 +156,7 @@ export class InitProcess extends Process{
           {
             if(!proc.kernel.hasProcess('labm-' + room.name))
             {
-              proc.kernel.addProcess(LabManagementProcess, 'labm-' + room.name, 30, {
+              proc.kernel.addProcess(LabManagementProcess, 'labm-' + room.name, 33, {
                 roomName: room.name
               });
             }
@@ -148,7 +166,7 @@ export class InitProcess extends Process{
           {
             const labs = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB});
             if(room.controller && room.controller.my && room.controller.level >= 6 && labs.length > 0)
-              proc.kernel.addProcessIfNotExist(LabManagementProcess, 'labm-' + room.name, 30, {
+              proc.kernel.addProcessIfNotExist(LabManagementProcess, 'labm-' + room.name, 33, {
                 roomName: room.name
               });
           }
@@ -156,6 +174,20 @@ export class InitProcess extends Process{
       }
     })
 
+    console.log(this.name, 'Rampart Average length', rampartAverages.length);
+    rampartAverages = rampartAverages.sort((a, b) => a.average - b.average);
+    const tenLowest = rampartAverages.slice(0, 10);
+    for(let i = 0; i < tenLowest.length; i++)
+    {
+      const low = tenLowest[i];
+      const process = this.kernel.getProcessByName('sm-' + low.roomName);
+      if(process instanceof StructureManagementProcess)
+      {
+        process.metaData.upgradeType = 1;
+      }
+
+      console.log(this.name, low.roomName, low.average);
+    }
 
     this.kernel.addProcessIfNotExist(PowerManagement, 'powerm', 50, {});
     this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});

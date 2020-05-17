@@ -20,6 +20,13 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       return;
     }
 
+    if(creep.ticksToLive < 2)
+    {
+      const process = this.kernel.getProcessByName('sm-' + this.metaData.roomName);
+      if(process instanceof StructureManagementProcess)
+        process.metaData.upgradeType = 0;
+    }
+
     if(creep.room.name === 'E41S32')
     {
         console.log(this.name, 0.1, this.metaData.boosts, creep.memory.boost)
@@ -180,7 +187,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         }
       }
       if(creep.name === 'sm-E41S32-25419534')
-        console.log(this.name, 'Should be finding a rampart', creep.memory.target, this.metaData.upgrading)
+        console.log(this.name, 'Should be finding a rampart', creep.memory.target)
 
 
 

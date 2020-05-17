@@ -54,7 +54,6 @@ export class GeneralAttackManagementProcess extends Process
 
             if(spawned)
             {
-                flag.memory.attacker = creepName;
                 this.metaData.attackers.push(creepName);
                 this.kernel.addProcessIfNotExist(AttackerLifetimeProcess, 'attacklf-' + creepName, this.priority-1, {
                     creep: creepName,
@@ -76,7 +75,6 @@ export class GeneralAttackManagementProcess extends Process
 
             if(spawned)
             {
-                flag.memory.healer = creepName;
                 this.metaData.healers.push(creepName);
                 this.kernel.addProcessIfNotExist(HealerLifetimeProcess, 'healerlf-' + creepName, this.priority-1, {
                     creep: creepName,

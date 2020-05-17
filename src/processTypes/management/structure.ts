@@ -26,6 +26,12 @@ export class StructureManagementProcess extends Process{
 
   run()
   {
+    if(this.metaData.roomName === 'E37S45')
+      console.log(this.name, '??????????????????????????????????????????????????????????????????????????');
+
+    if(this.metaData.upgradeType === 1)
+      console.log(this.name, 'Should be doing upgrades nows');
+
     this.ensureMetaData()
 
     if(!this.kernel.data.roomData[this.metaData.roomName]){
@@ -117,25 +123,39 @@ export class StructureManagementProcess extends Process{
       {
         if(!this.metaData.shutDownRamparts)
         {
-          const upgrading = this.CheckRamparts(room);
+          let count: number;
+          if(this.metaData.upgradeType === 0)
+            count = 1;
+          else if(this.metaData.upgradeType === 1)
+            count = 2;
+          else if(this.metaData.upgradeType === -1)
+            count = 0;
+
+          if(!room.memory.pauseUpgrading && this.metaData.upgradeType >= 0
+            && room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < ENERGY_KEEP_AMOUNT)
+            count = 0;
+
+          if(this.name === 'sm-E35S51')
+            console.log(this.name, 'Rampart count', count, this.metaData.upgradeType);
           let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
           let spawned = false;
-          if(upgrading && this.metaData.repairCreeps.length < 2)
+          if(this.metaData.repairCreeps.length < count)
             spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
           // else if(this.metaData.repairCreeps.length < 1)
           //   spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {});
 
           if(spawned)
           {
-            let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
-            //let boosts = [RESOURCE_LEMERGIUM_HYDRIDE];
+            //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
+            let boosts: string[] = [];
+            if(count === 2)
+              boosts.push(RESOURCE_LEMERGIUM_HYDRIDE)
             this.metaData.repairCreeps.push(creepName);
 
             this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
               creep: creepName,
               roomName: this.metaData.roomName,
               boosts: boosts,
-              upgrading: upgrading
             });
           }
         }
@@ -145,43 +165,6 @@ export class StructureManagementProcess extends Process{
 
   CheckRamparts(room: Room)
   {
-    let retValue = false;
-    const rsites = this.kernel.data.roomData[this.metaData.roomName].constructionSites.filter(cs => cs.structureType === STRUCTURE_RAMPART);
-    if(rsites.length)
-      return true;
 
-    const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
-
-
-      let min: number = WALL_HITS_MAX;
-      let total = 0;
-      for(let i = 0; i < ramparts.length; i++)
-      {
-        const rampart = ramparts[i];
-        if(rampart.hits < min)
-          min = rampart.hits;
-        total += rampart.hits;
-      }
-
-      const average = total / ramparts.length;
-
-      //////////// This should probably be toggled depending on energy reserves ///////////////////////
-      const storage = room.storage;
-      // if((storage?.store[RESOURCE_ENERGY] ?? 0) > ENERGY_KEEP_AMOUNT * 2.5)
-      //   return true;
-
-      if(average > 30000000)
-      {
-        return false;
-      }
-      //console.log(this.name, 'Average ramparts', average, 'minimum rampart amount', min);
-      if(min < (average - 500000))
-        return true;
-
-    const minRampart = _.min(ramparts, r => r.hits);
-    if(minRampart.hits < 5500000)
-      return true
-
-    return retValue;
   }
 }

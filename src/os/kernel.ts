@@ -90,6 +90,7 @@ import { AlleyObservationManagementProcess } from 'processTypes/management/alley
 import { DepositMiningManagementProcess } from 'processTypes/management/depositMining'
 import { Spinner2LifeTimeProcess } from 'processTypes/lifetimes/spinner2'
 import { TransferManagementProcess } from 'processTypes/management/transfer'
+import { TempleProcess } from 'processTypes/management/temple'
 
 
 
@@ -161,9 +162,9 @@ const processTypes = <{[type: string]: any}>{
   'salf': SquadAttackerLifetimeProcess,
   'report': ReportProcess,
   'skrmp': skRoomManagementProcess,
-  'lh': TowerHealProcess,
+  'th': TowerHealProcess,
   'atmp': AllTerminalManagementProcess,
-  'powm': PowerHarvestingManagement,
+  'powhm': PowerHarvestingManagement,
   'deflf': DefenderLifetimeProcess,
   'defend': DefendProcess,
   'busterlf': BusterLifetimeProcess,
@@ -177,7 +178,8 @@ const processTypes = <{[type: string]: any}>{
   'pclf': PowerCreepLifetimeProcess, // 49
   'aomp': AlleyObservationManagementProcess, // 25
   'dmmp': DepositMiningManagementProcess, // 24
-  'tmp': TransferManagementProcess // 20
+  'tmp': TransferManagementProcess, // 20
+  'temple': TempleProcess // 60
 }
 
 interface KernelData{
@@ -364,10 +366,6 @@ export class Kernel{
     let process = this.getHighestProcess()
     let cpuUsed = Game.cpu.getUsed()
     let faulted = false
-
-
-
-
     try{
       process.init(this);
       process.run(this)

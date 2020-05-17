@@ -3,20 +3,7 @@
 declare const require: (module: string) => any;
 
 // add your custom typings here
-interface Creep extends RoomObject {
-    fixMyRoad(): boolean;
-    transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|StructureFactory): number;
-    withdrawEverything(target: any): number;
-    withdrawEverythingBut(target: any, res: ResourceConstant): number;
-    yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
-    idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
-    getFlags(identifier: string, max: Number): Flag[]
-    boostRequest(boosts: string[], allowUnboosted: boolean): any
-    getBodyPart(type: BodyPartConstant): boolean;
-    getBodyParts(): BodyPartConstant[];
-    moveDir(dir: DirectionConstant): string;
-    almostFull(): boolean;
-  }
+
 
 interface RoomPosition {
   lookForStructures(structureType: string): Structure;
@@ -55,6 +42,8 @@ interface Flag {
       conLog: (message: string) => void;
       gcl: number
       test: string;
+      diagnoseMemory
+      despositTypes: DepositConstant[];
     }
   }
 
@@ -212,27 +201,20 @@ interface Flag {
 
   interface CreepMemory
   {
-      _trav: {};
-      _travel: {};
-      storageDelivery: boolean;
-      atPlace: boolean;
-      currentRoom: string;
-      roomPath: -2 | { exit: ExitConstant, room: string}[],
-      flagIndex: number;
-      dieing: boolean;
-      boost: boolean;
-      boosts: string[];
+      _trav?: {};
+      _travel?: {};
+      storageDelivery?: boolean;
+      atPlace?: boolean;
+      flagIndex?: number;
+      boost?: boolean;
+      boosts?: string[];
       distance?: number;
-      reachedDest?: boolean;
-      devilName: string;
+      devilName?: string;
       target?: string;
-      filling: boolean;
-      pickup: boolean;
+      filling?: boolean;
+      pickup?: boolean;
       fleePath?: RoomPosition[];
-      full: boolean;
-      sleep?: number;
-      stuck?: number;
-      swap?: RoomPosition;
+      full?: boolean;
       standPos?: RoomPosition;
   }
 
@@ -246,18 +228,9 @@ interface Flag {
   interface FlagMemory
   {
     timeEnemies?: number;
-    source: string;
-    droppedResource: boolean;
-    rollCall: number;
-    follower: string;
-    skMineral?: string;
-    centerSKMineral?: string;
-    healer?: string;
-    attacker?: string;
+    follower?: string;
     attackingCore?: boolean;
-    nuker?: boolean;
     holdData?: HoldRoomData;
-    roadComplete?: number;
     enemies?: boolean;
     cores?: boolean;
   }
@@ -265,21 +238,11 @@ interface Flag {
   interface RoomMemory
   {
     shutdown?: boolean;
-    completed?: boolean;
     seigeDetected?: boolean;
     avoid: number;
     cache: {[key: string]: any};
-    numSites: number;
-    boostRequests: BoostRequests;
-    observeTarget: string;
-    randomN: number;
-    Information: {
-      owner: string,
-      level: number
-    };
-    assisted: boolean;
-    rampartTarget?: number;
-    invadersPresent?: boolean;
+    boostRequests?: BoostRequests;
+    assisted?: boolean;
     skSourceRoom?: boolean;
     lastVision: number;
     enemyId?: string;
@@ -289,6 +252,7 @@ interface Flag {
     skCostMatrix?: number[];
     miningStopTime?: number;
     pauseUpgrading?: boolean;
+    upgradingTick?: number;
     fullEnergyCount?: number;
     specialMining?: boolean;
     depositMining?: boolean;
@@ -297,8 +261,9 @@ interface Flag {
         sourceNumbers: number
         controllerPos: RoomPosition
         harvesting: boolean
-      }
+      };
     };
+    templeRoom: boolean;
     remoteHarvesting?: boolean;
     enemies?: boolean;
     roadComplete?: number;
@@ -321,6 +286,16 @@ interface Flag {
     spinnerDump?: boolean;
     hostileCreepIds?: string[];
     barType?: CommodityConstant;
+    powerHarvesting?: boolean;
+    commands?: Command[];
+    commandIndex?: number;
+    componentsReady?: boolean;
+    factoryEmpty?: boolean;
+    commoditiesForLevel?: CommodityConstant[];
+    commodityToMake?: CommodityConstant;
+    roads?: {
+      [sourceId: string]: boolean
+    };
   }
 
   interface SpawnMemory {}
@@ -392,6 +367,7 @@ interface Flag {
     repairCreeps: string[]
     dismantleCreeps: string[]
     shutDownRamparts?: boolean
+    upgradeType: number // -1 nothing, 0, maintain, 1 upgrade
   }
 
   interface HoldRoomManagementProcessMetaData
@@ -630,6 +606,22 @@ interface Flag {
     fillTowers?: boolean;
   }
 
+  interface TempleProcessMetaData
+  {
+    roomName: string;
+    flagName: string;
+    feedRoom: string;
+    claimed?: boolean;
+    claim?: string[];
+    builders: string[];
+    haulers: string[];
+    upgraders: string[];
+    upgraders2: string[];
+    distros: string[];
+    openSpaces?: {x:number, y:number};
+
+  }
+
   interface LabMemory
   {
     idlePosition: RoomPosition;
@@ -671,6 +663,10 @@ interface Flag {
   {
     resources: {
       [mineral: string]: roomAmounts[]
+    }
+
+    commoditiesToMove: {
+      [commodity: string]: roomAmounts[];
     }
 
     creeps: {
@@ -800,9 +796,12 @@ interface Flag {
   interface PowerHarvestingManagementProcessMetaData
   {
     roomName: string;
-    currentBank: BankData;
-    scanIndex: number;
-    scanData: {[roomName: string]: number}
+    powerBankId: string;
+    spawnRoomName: string;
+    attackers: string[];
+    healers: string[];
+    haulers: string[];
+    powerBankPos?: string;
   }
 
   interface TowerRepairProcessMetaData
@@ -917,7 +916,8 @@ interface PowerManagementProcessMetaData
 interface PowerCreepLifetimeProcessMetaData
 {
   powerCreep: string,
-  roomName: string
+  roomName: string,
+  turnOnFactory?: boolean,
 }
 
 interface AlleyObservationManagementProcessMetaData
@@ -939,6 +939,7 @@ interface DepositMiningManagementProcessMetaData
   harvesterDone: boolean,
   harvesterCount?: number,
   haulerDone: boolean,
+  avoidRooms: string[]
 }
 
 interface Spinner2LifeTimeProcessMetaData

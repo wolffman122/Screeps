@@ -2,234 +2,313 @@ import { Process } from "os/process";
 import { WorldMap } from "lib/WorldMap";
 import { helper } from "lib/helper";
 import { Traveler } from "lib/Traveler";
+import { Utils } from "lib/utils";
 
 export class PowerHarvestingManagement extends Process
 {
-    type = 'powm';
-    room: Room;
-    clydes: Creep[];
-    bonnies: Creep[];
-    carts: Creep[];
-    metaData: PowerHarvestingManagementProcessMetaData
+  type = 'powhm';
+  bankRoom: Room;
+  spawnRoom: Room;
+  powerBank: StructurePowerBank;
+  attacks: Creep[];
+  healers: Creep[];
+  carts: Creep[];
+  metaData: PowerHarvestingManagementProcessMetaData
 
-    run()
+  // https://screeps.admon.dev/creep-designer/?share=5-10-0-0-35-0-0-0
+  // https://screeps.admon.dev/creep-designer/?share=0-11-0-0-0-0-11-0
+
+  ensureMetaData()
+  {
+    if(!this.metaData.attackers)
+      this.metaData.attackers = [];
+
+    if(!this.metaData.healers)
+      this.metaData.healers = [];
+
+    if(!this.metaData.haulers)
+      this.metaData.haulers = [];
+  }
+
+  run()
+  {
+    this.completed = true
+    return;
+  }
+  test()
+  {
+    this.ensureMetaData();
+
+    if(this.name === 'powhm-E34S40')
+      return;
+
+    console.log(this.name, 'Power harvesting', this.metaData.spawnRoomName, this.metaData.powerBankId);
+    this.spawnRoom = Game.rooms[this.metaData.spawnRoomName];
+    this.bankRoom = Game.rooms[this.metaData.roomName];
+    this.powerBank = <StructurePowerBank>Game.getObjectById('5ebd42ba884109219783ce3b');
+    const observer = this.roomInfo(this.spawnRoom.name).observer;
+    if(observer)
     {
+      const ret = observer.observeRoom(this.metaData.roomName);
+      console.log(this.name, observer, ret, this.powerBank);
+    }
+
+    // if(this.bankRoom && this.powerBank)
+    // {
+    //   Game.notify(this.name + 'Bank info ticks to decay: ' + this.powerBank.ticksToDecay + ' power: ' + this.powerBank.power);
+    // }
+
+    const attackerAmount = 1;
+    const healerAmount = 1;
+
+    let numberOfHaulers = 0;
+
+    if(this.powerBank?.power && this.powerBank.hits < 200000)
+    {
+      console.log(this.name, this.powerBank?.power, this.powerBank.hits)
+      if(!this.metaData.powerBankPos)
+        this.metaData.powerBankPos = this.powerBank.pos.x + ',' + this.powerBank.pos.y;
+
+        console.log(this.name, 'haul' ,1)
+      const amount = this.powerBank.power;
+
+      numberOfHaulers = 1;
+      let boostLevel = 0;
+      const unBoostedCarryParts =  Math.ceil(amount / CARRY_CAPACITY);
+      const level1BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH.capacity));
+      const level3BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity));
+      const level2BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH2O.capacity));
+      if(level3BoostedCarryParts > 40)
+      {
+         numberOfHaulers = 2;
+         boostLevel = 3;
+      }
+      else if(level2BoostedCarryParts > 40)
+        boostLevel = 3;
+      else if(level1BoostedCarryParts > 40)
+        boostLevel = 2;
+      else if(unBoostedCarryParts > 40)
+        boostLevel = 1;
+      else
+        boostLevel = 0;
+
+        console.log(this.name, 'haul' ,2, numberOfHaulers, boostLevel);
+      for(let i = 0; i < this.metaData.haulers.length; i++)
+      {
+        const creep = Game.creeps[this.metaData.haulers[i]];
+        if(creep)
+          this.HaulerActions(creep, boostLevel);
+      }
+    }
+
+    this.metaData.haulers = this.SpawnCreeps(numberOfHaulers, this.metaData.haulers, 'shHauler');
+    this.metaData.attackers = this.SpawnCreeps(attackerAmount, this.metaData.attackers, 'powerAttacker');
+    this.metaData.healers = this.SpawnCreeps(healerAmount, this.metaData.healers, 'powerHealer');
+
+    for(let i = 0; i < this.metaData.attackers.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.attackers[i]];
+      if(creep)
+        this.AttackerActions(creep);
+    }
+
+    console.log(this.name, 5)
+    for(let i = 0; i < this.metaData.healers.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.healers[i]];
+      if(creep)
+        this.HealerActions(creep);
+    }
+  }
+
+  private SpawnCreeps(amount: number, creeps: string[], type: string): string[]
+  {
+    creeps = Utils.clearDeadCreeps(creeps);
+    const count = Utils.creepPreSpawnCount(creeps, 100);
+    if(count < amount)
+    {
+      const creepName = type + '-' + this.metaData.roomName + '-' + Game.time;
+      const spawned = Utils.spawn(this.kernel, this.spawnRoom.name, type, creepName, {});
+
+      if(spawned)
+        creeps.push(creepName);
+    }
+
+    return creeps;
+
+  }
+
+  private AttackerActions(creep: Creep)
+  {
+    console.log(this.name, 'AA', 1, creep.memory.boost, creep.name)
+    if(!creep.memory.boost)
+    {
+      console.log(this.name, 'AA', 2)
+      creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+        RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
+        RESOURCE_UTRIUM_HYDRIDE], false);
+      return;
+    }
+
+    console.log(this.name, 'AA', 3)
+    const healer = Game.creeps[this.metaData.healers[0]];
+
+    if(creep.pos.roomName !== healer?.pos.roomName)
+    {
+      let dir = creep.pos.getDirectionTo(healer);
+      dir += 4;
+      if(dir > 8)
+      {
+        const temp = dir % 8;
+        dir = temp as DirectionConstant;
+      }
+
+      creep.move(dir);
+
+      return;
+    }
+
+    if(!creep.pos.isNearTo(healer))
+      creep.travelTo(healer);
+    else
+    {
+      console.log(this.name, 'AA', this.powerBank);
+      this.powerBank = <StructurePowerBank>creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
+      if(this.powerBank?.hits > 0)
+      {
+        if(!creep.pos.isNearTo(this.powerBank))
+          creep.travelTo(this.powerBank);
+        else
+          creep.attack(this.powerBank);
+
         return;
-        /*
-        this.room = Game.rooms[this.metaData.roomName];
-        if(this.room)
-        {
-            let observer = this.roomData().observer;
-            if(!observer)
-                return;
-            //console.log(this.name, observer.observation.purpose, observer.observation.room, observer.observation.roomName);
-            if(Memory.powerObservers === undefined)
-            {
-                Memory.powerObservers = {};
-            }
-
-            if(Memory.playerConfig === undefined)
-            {
-                Memory.playerConfig = {powerMinimum: 9000};
-
-            }
-
-            if(!Memory.powerObservers[this.room.name])
-            {
-                Memory.powerObservers[this.room.name] = this.generateScanData();
-                return;
-            }
-
-            if(this.metaData.currentBank)
-            {
-                console.log(this.name, 'monitoring');
-                this.monitorBank(this.metaData.currentBank);
-            }
-            else
-            {
-                this.scanForBanks(observer);
-            }
-
-            //this.roleCall()
-           //this.missitonActions();
-        }*/
+      }
+      else
+      {
+        const pos = new RoomPosition(25, 25, this.bankRoom.name);
+        creep.travelTo(pos);
+      }
     }
+  }
 
-    roleCall()
+  private HealerActions(creep: Creep)
+  {
+    console.log(this.name, 'healA', 1, creep.pos, creep.name)
+    if(!creep.memory.boost)
     {
-        /*let max = 0;
-        let distance;
-        if(this.metaData.currentBank && !this.metaData.currentBank.finishing && !this.metaData.currentBank.assisting)
-        {
-            max = 1;
-            distance = this.metaData.currentBank.distance;
-        }
-
-        this.bonnies = this.headCount("bonnie", () => this.configBody({ move: 25, heal; 25}), () => max, {
-            prespawn: distance,
-            reservation: { spawns: 2, currentEnergy 8000 }
-        });
-
-        this.clydes = this.headCount("clyde", () => this.configBody({ move: 20, attack: 20}), () => this.bonnies.length);
-
-        let unitsPerCart = 1;
-        let maxCarts = 0;
-        if(this.metaData.currentBank && this.metaData.currentBank.finishing && !this.metaData.currentBank.assisting)
-        {
-            let unitsNeeded = Math.ceil(this.metaData.currentBank.power / 100);
-            maxCarts = Math.ceil(unitsNeeded / 16);
-            unitsPerCart = Math.ceil(unitsNeeded / maxCarts);
-        }
-
-        this.carts = this.headCount("powerCart", () => this.workerBody(0, unitsPerCart * 2, unitsPerCart), () => maxCarts);*/
+      creep.boostRequest([RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE], false);
+      return;
     }
 
-    private generateScanData(): {[roomName: string]: number}
+    const attacker = Game.creeps[this.metaData.attackers[0]]
+    console.log(this.name, 'healA', 2, attacker?.name);
+    if(attacker)
     {
-        try
-        {
-            if(Game.cpu.bucket < 9900)
-                return;
+      if(attacker.ticksToLive === 1)
+      {
+        creep.suicide();
+        return;
+      }
 
-            let scanData: {[roomName: string]: number} = {};
-            const spawns = this.roomData().spawns;
-            let spawn: StructureSpawn;
-            _.forEach(spawns, (s) => {
-                if(!_.includes(this.kernel.data.usedSpawns, s.id) && !s.spawning)
-                    spawn = s;
-            })
+      console.log(this.name, 'healA', 3)
+      if(!creep.pos.isNearTo(attacker))
+      {
+        const ret = creep.travelTo(attacker);
+        console.log(this.name, 'healA', 4, ret)
+      }
+      else
+      {
+        const dir = creep.pos.getDirectionTo(attacker);
+        console.log(this.name, 'healA', 5, dir)
+        const ret = creep.move(dir);
+        console.log(this.name, 'healA', 6, ret)
 
-            let possibleRoomNames = this.findAlleysInRange(5);
-            for(let roomName of possibleRoomNames)
-            {
-                let position = helper.pathablePosition(roomName);
-                let ret = Traveler.findTravelPath(spawn, {pos: position});
-                if(ret.incomplete)
-                {
-                    console.log(this.name, "POWER: incomplete path generating scadata");
-                    continue;
-                }
+        if(creep.hits < creep.hitsMax)
+          creep.heal(creep);
 
-                let currentObserver = _.find(Memory.powerObservers, (value) => value[roomName]);
-                let distance = ret.path.length;
-                if(distance > 250) continue;
+        if(creep.room.name === this.bankRoom.name)
+          creep.heal(attacker);
 
-                if(currentObserver)
-                {
-                    if(currentObserver[roomName] > distance)
-                    {
-                        console.log('POWER: found better distance for power bank');
-                        delete currentObserver[roomName];
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                scanData[roomName] = distance;
-            }
-            return scanData;
-        }
-        catch(error)
-        {
-            console.log(this.name, error);
-        }
+        console.log(this.name, 'healA', 7)
+      }
     }
-
-    private monitorBank(currentBank: BankData)
+    else
     {
-        let room = Game.rooms[currentBank.pos.roomName];
-        if(room)
-        {
-            let bank = room.findStructures<StructurePowerBank>(STRUCTURE_POWER_BANK)[0];
-            if(bank)
-            {
-                currentBank.hits = bank.hits;
-                if(!currentBank.finishing && bank.hits < 500000)
-                {
-                    let clyde = bank.pos.findInRange<Creep>(
-                        _.filter(room.find(FIND_MY_CREEPS), (c: Creep) => c. partCount(ATTACK) === 20), 1)[0];
-                    if(clyde && bank.hits < clyde.ticksToLive * 600)
-                    {
-                        console.log(`POWER: last wave needed for bank has arrived, ${this.name}`);
-                        currentBank.finishing = true;
-                    }
-                }
-            }
-            else
-            {
-                this.metaData.currentBank = undefined;
-            }
-        }
-        if(Game.time > currentBank.timeout)
-        {
-            console.log(`POWER: bank timed out ${JSON.stringify(currentBank)}, removing room from powerObservers`);
-            delete Memory.powerObservers[this.room.name];
-            this.metaData.currentBank = undefined;
-        }
+      if(!creep.pos.isNearTo(this.spawnRoom.storage))
+        creep.travelTo(this.spawnRoom.storage);
     }
+  }
 
-    private scanForBanks(observer: StructureObserver)
+  private HaulerActions(creep: Creep, boostLevel: number)
+  {
+    if(!creep.memory.boost)
     {
-        if(observer.observation && observer.observation.purpose === this.name)
-        {
-            let room = observer.observation.room;
-            let bank = room.findStructures<StructurePowerBank>(STRUCTURE_POWER_BANK)[0];
-            if(bank && bank.ticksToDecay > 4500 && room.findStructures(STRUCTURE_WALL).length === 0
-                && bank.power >= Memory.playerConfig.powerMinimum)
-            {
-                Game.notify('Found power at ' + bank.room.name + ' Game time ' + Game.time);
-                console.log("\\o/ \\o/ \\o/", bank.power, "power found at", room, "\\o/ \\o/ \\o/");
-                this.metaData.currentBank = {
-                    pos: bank.pos,
-                    hits: bank.hits,
-                    power: bank.power,
-                    distance: Memory.powerObservers[this.room.name][room.name],
-                    timeout: Game.time + bank.ticksToDecay,
-                };
-                return;
-            }
-        }
+      let boosts: string[] = [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE];
+      if(boostLevel === 1)
+        boosts.push(RESOURCE_KEANIUM_HYDRIDE);
+      else if(boostLevel === 2)
+        boosts.push(RESOURCE_KEANIUM_ACID);
+      else if(boostLevel === 3)
+        boosts.push(RESOURCE_CATALYZED_KEANIUM_ACID);
 
-        let scanData = Memory.powerObservers[this.room.name];
-        if(this.metaData.scanIndex >= Object.keys(scanData).length)
-            this.metaData.scanIndex = 0;
-
-        let roomName = Object.keys(scanData)[this.metaData.scanIndex++];
-        let ret = observer.observeRoom(roomName, this.name);
+      creep.boostRequest(boosts, false);
+      return;
     }
 
-    findAlleysInRange(range: number)
+    if(creep.room.name === this.metaData.roomName)
     {
-        let roomNames = [];
+      const room = Game.rooms[this.metaData.roomName];
+      const ruins = room.find(FIND_RUINS).filter((r) => r.store.getUsedCapacity() > 0);
+      if(ruins.length)
+      {
+        const ruin = creep.pos.findClosestByPath(ruins);
+        if(!creep.pos.isNearTo(ruin))
+          creep.travelTo(ruin);
+        else
+          creep.withdrawEverything(ruin);
 
-        for(let i = this.room.coords.x - range; i <= this.room.coords.x + range; i++)
+        return;
+      }
+
+      const resources = room.find(FIND_DROPPED_RESOURCES).filter((d) => d.amount > 0);
+      if(resources.length)
+      {
+        const resource = creep.pos.findClosestByPath(resources);
+        if(!creep.pos.isNearTo(resource))
+          creep.travelTo(resource);
+        else
+          creep.withdrawEverything(Resource);
+
+        return;
+      }
+
+      if(creep.store.getUsedCapacity() === creep.store.getCapacity() ||
+        (resources.length === 0 && ruins.length === 0))
         {
-            for(let j = this.room.coords.y - range; j <= this.room.coords.y + range; j++)
-            {
-                let x = i;
-                let xDir = this.room.coords.xDir;
-                let y = j;
-                let yDir = this.room.coords.yDir;
-                if(x < 0)
-                {
-                    x = Math.abs(x) - 1;
-                    xDir = WorldMap.negaDirection(xDir);
-                }
+          const terminal = this.spawnRoom.terminal;
+          if(!creep.pos.isNearTo(terminal))
+            creep.travelTo(terminal, {allowHostile: false});
+          else
+            creep.transferEverything(terminal);
 
-                if(y < 0)
-                {
-                    y = Math.abs(y) - 1;
-                    yDir = WorldMap.negaDirection(yDir);
-                }
-
-                let roomName = xDir + x + yDir + y;
-                if((x % 10 === 0) || (y % 10 === 0) && Game.map.isRoomAvailable(roomName))
-                {
-                    roomNames.push(roomName);
-                }
-            }
+          return;
         }
-        return roomNames;
     }
+
+    let pos: RoomPosition;
+    if(this.powerBank)
+      pos = this.powerBank.pos;
+    else
+    {
+      const x = +this.metaData.powerBankPos.split(',')[0];
+      const y = +this.metaData.powerBankPos.split(',')[1];
+      pos = new RoomPosition(x, y, this.metaData.roomName);
+    }
+
+    if(!creep.pos.isNearTo(pos))
+      creep.travelTo(pos, {allowHostile: false});
+
+
+
+  }
 }

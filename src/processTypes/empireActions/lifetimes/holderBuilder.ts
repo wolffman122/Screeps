@@ -53,7 +53,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
           {
             if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2.1);
-            let targets = _.filter(structures, (s) => {
+            let targets = structures.filter(s => {
               return ((s.structureType === STRUCTURE_LINK || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_LAB) && s.energy > 50);
             });
 
@@ -78,7 +78,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
             {
               if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 2.3);
-              let targets = _.filter(structures, (s)=>{
+              let targets = structures.filter( s => {
                 return ((s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_TERMINAL) && s.store.energy > 0);
               })
 
@@ -142,7 +142,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
           {
             if(creep.name === 'hrm-build-E34S51-25539475')
               console.log(this.name, "In the ROOM", 13);
-            let targets = _.filter(this.kernel.data.roomData[flag.room.name].containers, (c: StructureContainer) => {
+            let targets = this.kernel.data.roomData[flag.room.name].containers.filter(c => {
               return (c.store.energy > 0);
             })
 
@@ -184,7 +184,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
                   let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
                   if(sites.length > 0)
                   {
-                    let site = _.filter(sites, (s) => {
+                    let site = sites.filter(s => {
                       if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
                       {
                         return s;
@@ -212,7 +212,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
           let structures = creep.room!.find(FIND_HOSTILE_STRUCTURES);
           if(structures)
           {
-            let targets = _.filter(structures, (s) => {
+            let targets = structures.filter(s => {
               return ((s.structureType === STRUCTURE_LINK || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_LAB) && s.energy > 50);
             });
 
@@ -233,7 +233,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
             }
             else
             {
-              let targets = _.filter(structures, (s)=>{
+              let targets = structures.filter(s=>{
                 return ((s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_TERMINAL) && s.store.energy > 0);
               })
 
@@ -271,7 +271,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
                       let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
                       if(sites.length > 0)
                       {
-                        let site = _.filter(sites, (s) => {
+                        let site = sites.filter(s => {
                           if(s.structureType == STRUCTURE_CONTAINER && s.pos.inRangeTo(source, 1))
                           {
                             return s;
@@ -310,7 +310,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
       {
         if(creep.name === 'hrm-build-E34S51-25539475')
           console.log(this.name, 'Problem', 4);
-        let sites = _.filter(this.kernel.data.roomData[flag.room.name].constructionSites, (cs) => {
+        let sites = this.kernel.data.roomData[flag.room.name].constructionSites.filter(cs => {
           return (cs.my);
         })
         let target = creep.pos.findClosestByPath(sites);
@@ -354,7 +354,7 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
           if(sources.length)
           {
-            let missingConatiners = _.filter(sources, (s) => {
+            let missingConatiners = sources.filter(s => {
               return (!sourceContainersMaps[s.id])
             });
 

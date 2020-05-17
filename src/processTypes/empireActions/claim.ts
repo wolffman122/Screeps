@@ -11,14 +11,22 @@ export class ClaimProcess extends Process{
     let baseFlagName;
     let numberOfFlags;
     let spawnRoom;
+    let throughPortal = false;
 
+    if(this.metaData.flagName.split('-').length === 4)
+    {
+      baseFlagName = this.metaData.flagName.split('-')[0];
+      numberOfFlags = +this.metaData.flagName.split('-')[1];
+      spawnRoom = this.metaData.flagName.split('-')[2];
+      throughPortal = true;
+    }
     if(this.metaData.flagName.split('-').length === 3)
     {
       baseFlagName = this.metaData.flagName.split('-')[0];
       numberOfFlags = +this.metaData.flagName.split('-')[1];
       spawnRoom = this.metaData.flagName.split('-')[2];
     }
-    if(this.metaData.flagName.split('-').length > 1)
+    else if(this.metaData.flagName.split('-').length > 1)
     {
       baseFlagName = this.metaData.flagName.split('-')[0];
       numberOfFlags = +this.metaData.flagName.split('-')[1];
@@ -65,28 +73,62 @@ export class ClaimProcess extends Process{
     let room = flag.room;
     if(!room)
     {
-      console.log(this.name, 2)
-      if(numberOfFlags !== undefined && baseFlagName !== undefined)
+      if(throughPortal)
       {
-        this.log('Here now');
-        if(creep.memory.flagIndex === undefined)
+        if(numberOfFlags && baseFlagName)
         {
-          creep.memory.flagIndex = 1;
-        }
+          if(!creep.memory.flagIndex)
+            creep.memory.flagIndex = 1;
 
-        if(creep.memory.flagIndex <= numberOfFlags)
-        {
-          let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
-          if(tFlag)
+          if(creep.memory.flagIndex <= numberOfFlags)
           {
-            this.log('Here now 2 ' + tFlag.name);
-            if(creep.pos.isNearTo(tFlag))
+            let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
+            if(tFlag)
             {
-              //tFlag.remove();
-              creep.memory.flagIndex++;
-            }
+              if(creep.pos.isNearTo)
+                creep.memory.flagIndex++;
 
-            creep.travelTo(tFlag);
+              creep.travelTo(tFlag);
+              return;
+            }
+          }
+          else
+          {
+            creep.travelTo(flag);
+            return;
+          }
+        }
+      }
+      else
+      {
+        console.log(this.name, 2)
+        if(numberOfFlags !== undefined && baseFlagName !== undefined)
+        {
+          this.log('Here now');
+          if(creep.memory.flagIndex === undefined)
+          {
+            creep.memory.flagIndex = 1;
+          }
+
+          if(creep.memory.flagIndex <= numberOfFlags)
+          {
+            let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
+            if(tFlag)
+            {
+              this.log('Here now 2 ' + tFlag.name);
+              if(creep.pos.isNearTo(tFlag))
+              {
+                //tFlag.remove();
+                creep.memory.flagIndex++;
+              }
+
+              creep.travelTo(tFlag);
+              return;
+            }
+          }
+          else
+          {
+            creep.travelTo(flag);
             return;
           }
         }
@@ -95,11 +137,6 @@ export class ClaimProcess extends Process{
           creep.travelTo(flag);
           return;
         }
-      }
-      else
-      {
-        creep.travelTo(flag);
-        return;
       }
     }
     else

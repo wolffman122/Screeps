@@ -23,25 +23,6 @@ export class HoldProcess extends Process
       return;
     }
 
-    if(Game.time % 10 == 0)
-    {
-      let dropped = flag.room!.find(FIND_DROPPED_RESOURCES);
-
-      let droppedEnergy = <Resource[]>_.filter(dropped, (d: Resource) => {
-        return (d.resourceType == RESOURCE_ENERGY && d.amount > 500);
-      })
-
-      let totalEnergy = _.sum(droppedEnergy, (de)=> {
-        return de.amount;
-      });
-
-      if(totalEnergy > 1000)
-      {
-        flag.memory.droppedResource = true;
-      }
-
-    }
-
     if(!creep.pos.inRangeTo(creep.room.controller!, 1))
     {
       creep.travelTo(creep.room.controller!)

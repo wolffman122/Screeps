@@ -7,134 +7,127 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 
   run()
   {
-    try
+    this.logName = 'em-ud-E45S53-20766714';
+    this.logging = true;
+    let creep = this.getCreep();
+
+    if(!creep)
     {
-      this.logName = 'em-ud-E45S53-20766714';
-      this.logging = true;
-      let creep = this.getCreep();
+      return
+    }
 
-      if(!creep)
+    if(creep.room.memory.shutdown)
+    {
+      this.completed = true;
+      return;
+    }
+
+    creep.say("P " + this.metaData.numberOfDropPickups, true);
+
+    if(creep.ticksToLive < 50 && _.sum(creep.carry) > 0)
+    {
+      let storage = creep.room.storage;
+      if(storage)
       {
-        return
+        if(creep.pos.inRangeTo(storage, 1))
+          creep.transferEverything(storage);
+        else
+          creep.travelTo(storage);
       }
+    }
 
-      if(creep.room.memory.shutdown)
+    const target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
+    if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
+    {
+      if(!creep.room.storage?.my && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
       {
-        this.completed = true;
+        if(!creep.pos.isNearTo(creep.room.storage))
+          creep.travelTo(creep.room.storage);
+        else
+          if(creep.withdraw(creep.room.storage, RESOURCE_ENERGY) === OK)
+            this.metaData.numberOfDropPickups++;
         return;
       }
-
-      creep.say("P " + this.metaData.numberOfDropPickups, true);
-
-      if(creep.ticksToLive < 50 && _.sum(creep.carry) > 0)
+      else if(creep.room.storage?.my)
       {
         let storage = creep.room.storage;
-        if(storage)
+
+        if(storage.store.energy > 0)
         {
-          if(creep.pos.inRangeTo(storage, 1))
-            creep.transferEverything(storage);
-          else
+          if(!creep.pos.isNearTo(storage))
             creep.travelTo(storage);
-        }
-      }
-
-      const target = this.kernel.data.roomData[creep.room.name].controllerContainer;
-
-      if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
-      {
-        if(!creep.room.storage?.my && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
-        {
-          if(!creep.pos.isNearTo(creep.room.storage))
-            creep.travelTo(creep.room.storage);
           else
-            if(creep.withdraw(creep.room.storage, RESOURCE_ENERGY) === OK)
+            if(creep.withdraw(storage, RESOURCE_ENERGY) === OK)
               this.metaData.numberOfDropPickups++;
+
           return;
         }
-        else if(creep.room.storage?.my)
+      }
+      else if (creep.room.terminal?.my)
+      {
+        let terminal = creep.room.terminal;
+
+        if(terminal.store.energy > 0)
         {
-          let storage = creep.room.storage;
-
-          if(storage.store.energy > 0)
-          {
-            if(!creep.pos.isNearTo(storage))
-              creep.travelTo(storage);
-            else
-              if(creep.withdraw(storage, RESOURCE_ENERGY) === OK)
-                this.metaData.numberOfDropPickups++;
-
-            return;
-          }
-        }
-        else if (creep.room.terminal?.my)
-        {
-          let terminal = creep.room.terminal;
-
-          if(terminal.store.energy > 0)
-          {
-            if(!creep.pos.isNearTo(terminal))
-              creep.travelTo(terminal);
-            else
-              if(creep.withdraw(terminal, RESOURCE_ENERGY) === OK)
-                this.metaData.numberOfDropPickups++;
-          }
-        }
-        else if(this.kernel.data.roomData[creep.pos.roomName].generalContainers.length > 0)
-        {
-          let containers = _.filter(this.kernel.data.roomData[creep.pos.roomName].generalContainers, (gc) => {
-            return (gc.store.energy > 0);
-          });
-
-          if(containers.length > 0)
-          {
-            let container = creep.pos.findClosestByPath(containers);
-
-            if(!creep.pos.isNearTo(container))
-              creep.travelTo(container);
-            else
-              if(creep.withdraw(container, RESOURCE_ENERGY) === OK)
-                this.metaData.numberOfDropPickups++;
-
-            return;
-          }
+          if(!creep.pos.isNearTo(terminal))
+            creep.travelTo(terminal);
+          else
+            if(creep.withdraw(terminal, RESOURCE_ENERGY) === OK)
+              this.metaData.numberOfDropPickups++;
         }
       }
-
-
-      if(this.kernel.data.roomData[creep.room.name])
+      else if(this.kernel.data.roomData[creep.pos.roomName].generalContainers.length > 0)
       {
-        let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+        let containers = _.filter(this.kernel.data.roomData[creep.pos.roomName].generalContainers, (gc) => {
+          return (gc.store.energy > 0);
+        });
 
-        if(target && _.sum(target.store) < target.storeCapacity)
+        if(containers.length > 0)
         {
-          if(!creep.pos.inRangeTo(target, 1))
-          {
-            if(!creep.fixMyRoad())
-            {
-              creep.travelTo(target);
-            }
-          }
-          else
-          {
-            if(creep.transfer(target, RESOURCE_ENERGY) === OK)
-            {
-              if(creep.store.getUsedCapacity() === 0 && target.store[RESOURCE_ENERGY] < target.store.getUsedCapacity())
-              {
-                creep.withdrawEverythingBut(target, RESOURCE_ENERGY);
-              }
-            }
+          let container = creep.pos.findClosestByPath(containers);
 
+          if(!creep.pos.isNearTo(container))
+            creep.travelTo(container);
+          else
+            if(creep.withdraw(container, RESOURCE_ENERGY) === OK)
+              this.metaData.numberOfDropPickups++;
+
+          return;
+        }
+      }
+    }
+
+
+    if(this.kernel.data.roomData[creep.room.name])
+    {
+      let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+
+      if(target && _.sum(target.store) < target.storeCapacity)
+      {
+        if(!creep.pos.inRangeTo(target, 1))
+        {
+          if(!creep.fixMyRoad())
+          {
+            creep.travelTo(target);
           }
         }
         else
         {
-          this.suspend = 5;
+          if(creep.transfer(target, RESOURCE_ENERGY) === OK)
+          {
+            if(creep.store.getUsedCapacity() === 0 && target.store[RESOURCE_ENERGY] < target.store.getUsedCapacity())
+            {
+              creep.withdrawEverythingBut(target, RESOURCE_ENERGY);
+            }
+          }
+
         }
       }
-    }
-    catch(error)
-    {
-      console.log(this.name, error);
+      else
+      {
+        this.suspend = 5;
+      }
     }
   }
 }

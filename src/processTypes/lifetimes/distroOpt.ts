@@ -1,4 +1,5 @@
 import {LifetimeProcess} from '../../os/process'
+import { ENERGY_KEEP_AMOUNT } from 'processTypes/buildingProcesses/mineralTerminal';
 
 export class DistroLifetimeOptProcess extends LifetimeProcess{
   type = 'dlfOpt';
@@ -23,11 +24,11 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     //   return;
     // }
 
-    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
+    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer) as StructureContainer;
 
     // Room energy full parts
     if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable &&
-      sourceContainer && _.sum(sourceContainer.store) <= creep.carryCapacity * .85)
+      _.sum(sourceContainer?.store) <= creep.carryCapacity * .85)
     {
 
       const minContainer = this.kernel.data.roomData[creep.room.name].mineralContainer;
@@ -69,9 +70,6 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       // Source Link routine
       if(this.kernel.data.roomData[creep.pos.roomName].sourceLinks.length == 2)
       {
-        if(!sourceContainer)
-          return;
-
         const storage = creep.room.storage;
 
         // With draw form storage because source containers are not full yet
@@ -100,6 +98,18 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           return;
         }
 
+        const ruins = creep.room.find(FIND_RUINS, {filter: d => (d?.store.getUsedCapacity() ?? 0) > 0});
+        if(ruins.length)
+        {
+          let target = creep.pos.findClosestByPath(ruins);
+          if(!creep.pos.isNearTo(target))
+            creep.travelTo(target);
+          else
+            creep.withdrawEverything(target);
+
+          return;
+        }
+        
         // With draw from dropped resources
         const dropped = creep.room.find(FIND_DROPPED_RESOURCES, {filter: d => d.amount >= creep.store.getCapacity()});
         if(dropped.length > 0)
@@ -107,7 +117,9 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           creep.say('🌎');
           let target = creep.pos.findClosestByPath(dropped);
 
-          if(!creep.pos.inRangeTo(target, 5))
+          if(creep.name === 'em-m-E36S33-25790836')
+            console.log(this.name, 'Dropped problem', target.id);
+          if(!creep.pos.isNearTo(target))
             creep.pushyTravelTo(target);
           else
             creep.pickup(target);
@@ -133,12 +145,22 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         }
 
         const terminal = creep.room.terminal;
-        // Enemy terminal
-        if(creep.room.storage?.my && terminal?.my)
+        if(storage?.my && terminal?.my)
         {
+          if((storage.store[RESOURCE_ENERGY] ?? 0) > ENERGY_KEEP_AMOUNT)
+          {
+            creep.say('🏟');
+            if(!creep.pos.isNearTo(storage))
+              creep.travelTo(storage);
+            else
+              creep.withdraw(storage, RESOURCE_ENERGY);
+
+            return;
+          }
+
           if(terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
           {
-            creep.say('👹🏦');
+            creep.say('🏦');
             if(creep.pos.isNearTo(terminal))
               creep.withdrawEverything(terminal);
             else
@@ -285,6 +307,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     let storage = creep.room.storage;
     if(storage && _.sum(creep.carry) != creep.carry.energy)
     {
+      creep.say('T🏟')
       if(creep.pos.isNearTo(storage))
       {
         creep.transferEverything(storage);
@@ -313,11 +336,14 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
 
       deliverTargets = _.filter(targets, function(target: DeliveryTarget){
-        if(target && target.store){
+        if(target?.store)
+        {
           return (_.sum(target.store) < target.storeCapacity)
-        }else{
-          return (target.energy < target.energyCapacity)
         }
+        // else
+        // {
+        //   return (target.energy < target.energyCapacity)
+        // }
       })
     }
 
@@ -365,13 +391,15 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
       if(target.structureType == STRUCTURE_STORAGE)
       {
-        creep.memory.storageDelivery = true;
+        this.suspend = 5;
+        return;
       }
       else
       {
         creep.memory.storageDelivery = false;
       }
 
+      creep.say('T🏟2');
       if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
       {
         return;

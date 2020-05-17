@@ -2,10 +2,11 @@ import { ErrorMapper } from "utils/ErrorMapper";
 import "./lib/Traveler"
 import {Kernel} from './os/kernel'
 import { Traveler } from "./lib/Traveler";
-import "creep.extensions";
+import "prototypes/creep";
 import "roomPosition.extensions";
 import "utils/constants";
 import { initRoomPrototype } from "prototypes/initRoomPrototype";
+import "prototypes/roomvisual";
 
 Creep.prototype.fixMyRoad = function()
 {
@@ -22,7 +23,7 @@ Creep.prototype.fixMyRoad = function()
   }
   let terrain = this.pos.lookFor(LOOK_TERRAIN);
   let found = this.pos.lookFor(LOOK_STRUCTURES);
-  var road = _.filter(found, (f: Structure) => {
+  var road = found.filter((f: Structure) => {
               if(f.structureType === STRUCTURE_ROAD)
               {
                 if(terrain)
@@ -55,7 +56,60 @@ global.conLog = (message: string) => {
   global.displayOldProcesses = true;
 }
 
-global.test = "Is this global working"; 
+global.test = "Is this global working";
+global.despositTypes = [RESOURCE_MIST, RESOURCE_BIOMASS, RESOURCE_METAL, RESOURCE_SILICON];
+global[1] = {commodity: RESOURCE_EXTRACT, rooms:['E56S43']};
+
+global.diagnoseMemory = function() {
+  var stringified = JSON.stringify(Memory);
+  var startCpu = Game.cpu.getUsed();
+  JSON.parse(stringified);
+  var endCpu = Game.cpu.getUsed();
+  console.log('============================================================');
+  console.log('CPU spent on Memory parsing: ' + (endCpu - startCpu));
+  var toLog = {};
+  var cpuSpend = {};
+  var length = 20;
+  for (var property in Memory) {
+      var amount = recursiveIteration(Memory[property]);
+      if (amount == 0)
+          continue;
+      if (property.length > length) {
+          length = property.length;
+      }
+      stringified = JSON.stringify(Memory[property]);
+      startCpu = Game.cpu.getUsed();
+      JSON.parse(stringified);
+      endCpu = Game.cpu.getUsed();
+      toLog[property] = amount;
+      cpuSpend[property] = (endCpu - startCpu);
+  }
+  for (var prop in toLog) {
+      console.log('Amount of objects stored in Memory.' + /*prop.padRight(length, ' ')*/ prop.slice() + '  : ' + toLog[prop] + '     -   ' + cpuSpend[prop].toFixed(2));
+  }
+  console.log('============================================================');
+​
+}
+
+function recursiveIteration(object) {
+  var objectCount = 0;
+  for (var property in object) {
+      if (object.hasOwnProperty(property)) {
+          if (typeof object[property] == "object") {
+              objectCount++;
+              if (Array.isArray(object[property])) {
+                  objectCount += object[property].length;
+              } else {
+                  objectCount += recursiveIteration(object[property]);
+              }
+          } else {
+              objectCount++;
+          }
+      }
+  }
+  return objectCount;
+}
+
 
 initRoomPrototype();
 
@@ -64,7 +118,11 @@ initRoomPrototype();
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
-  if(Game.time % 20001 === 0)
+  if(Game.time === 25852130)
+    global.diagnoseMemory();
+  else
+  {
+  if(Game.time % 2000 === 0)
   {
     for(var name in Memory.creeps)
     {
@@ -75,6 +133,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       }
     }
   }
+  let creep: Creep
 
   // Load Memory from the global object if it is there and up to date.
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){
@@ -113,6 +172,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
   Traveler.activeStructureMatrixCache = undefined;
   Traveler.creepMatrixCache = undefined;
   //Traveler.resetStructureMatrix();
-
+  }
 
 });

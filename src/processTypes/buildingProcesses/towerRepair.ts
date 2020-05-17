@@ -7,68 +7,65 @@ export class TowerRepairProcess extends Process
 
   run()
   {
-    try
+    if(!Game.rooms[this.metaData.roomName])
     {
-      if(!Game.rooms[this.metaData.roomName])
-      {
-        this.completed = true;
-        return;
-      }
-
-      if(Game.rooms[this.metaData.roomName].find(FIND_HOSTILE_CREEPS).length > 0)
-      {
-        return;
-      }
-
-      let ramparts = _.filter(this.roomData().ramparts, function(rampart){
-        return (rampart.hits < 50000);
-      });
-
-      let containers = _.filter(this.roomData().generalContainers, function(container){
-        return (container.hits < container.hitsMax);
-      });
-
-      let sourceContainers = _.filter(this.roomData().sourceContainers, function(sourceContainer){
-        return (sourceContainer.hits < sourceContainer.hitsMax);
-      });
-
-      let roads = _.filter(this.roomData().roads, function(road){
-        return (road.hits < road.hitsMax);
-      })
-
-      let sortedRamparts = _.sortBy(<Structure[]>[].concat(
-        <never[]>ramparts,
-        <never[]>containers,
-        <never[]>sourceContainers,
-        <never[]>[this.roomData().controllerContainer],
-        <never[]>[this.roomData().mineralContainer],
-        <never[]>roads
-      ), 'hits')
-      let usedTowers = <{[towerId: string]: boolean}>{}
-
-      _.forEach(this.roomData().towers, function(tower){
-        usedTowers[tower.id] = (tower.energy < 500)
-      });
-
-      let proc = this;
-      _.forEach(sortedRamparts, function(rampart){
-        let towers = _.filter(proc.roomData().towers, function(tower){
-          return !usedTowers[tower.id];
-        });
-
-        if(towers.length > 0 && rampart)
-        {
-          let tower = rampart.pos.findClosestByRange(towers);
-
-          tower.repair(rampart);
-
-          usedTowers[tower.id] = true;
-        }
-      });
+      this.completed = true;
+      return;
     }
-    catch (error)
+
+    if(Game.rooms[this.metaData.roomName].find(FIND_HOSTILE_CREEPS).length > 0)
     {
-      console.log(this.name, error);
+      return;
     }
+
+    const ramparts = this.roomData().ramparts.filter(rampart => {
+      return (rampart.hits < 50000);
+    });
+
+    const containers = this.roomData().generalContainers.filter(container => {
+      return (container.hits < container.hitsMax);
+    });
+
+    const sourceContainers = this.roomData().sourceContainers.filter(sourceContainer => {
+      return (sourceContainer.hits < sourceContainer.hitsMax);
+    });
+
+    const roads = this.roomData().roads.filter(road =>{
+      return (road.hits < road.hitsMax);
+    })
+
+    const spawns = this.roomData().spawns.filter(s => s.hits < s.hitsMax);
+
+    let sortedRamparts = _.sortBy(<Structure[]>[].concat(
+      <never[]>spawns,
+      <never[]>ramparts,
+      <never[]>containers,
+      <never[]>sourceContainers,
+      <never[]>[this.roomData().controllerContainer],
+      <never[]>[this.roomData().mineralContainer],
+      <never[]>[this.roomData().extractor],
+      <never[]>roads
+    ), 'hits')
+    let usedTowers = <{[towerId: string]: boolean}>{}
+
+    _.forEach(this.roomData().towers, function(tower){
+      usedTowers[tower.id] = (tower.energy < 500)
+    });
+
+    let proc = this;
+    _.forEach(sortedRamparts, function(rampart){
+      let towers = proc.roomData().towers.filter(tower => {
+        return !usedTowers[tower.id];
+      });
+
+      if(towers.length > 0 && rampart)
+      {
+        let tower = rampart.pos.findClosestByRange(towers);
+
+        tower.repair(rampart);
+
+        usedTowers[tower.id] = true;
+      }
+    });
   }
 }

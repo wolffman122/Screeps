@@ -1,7 +1,7 @@
 import { Utils } from "lib/utils";
 import { LabDistroLifetimeProcess } from "../lifetimes/labDistro";
 import { Process } from "os/process";
-import { REAGENT_LIST, PRODUCT_LIST, PRODUCTION_AMOUNT, MINERALS_RAW } from "processTypes/buildingProcesses/mineralTerminal";
+import { REAGENT_LIST, PRODUCT_LIST, PRODUCTION_AMOUNT, MINERALS_RAW, PRODUCTION_STORAGE_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 import { LoDashImplicitNumberArrayWrapper } from "lodash";
 
 export class LabManagementProcess extends Process
@@ -38,16 +38,13 @@ export class LabManagementProcess extends Process
 
   run()
   {
-
-  if(this.name === 'labm-E41S32')
-    console.log(this.name, 101, this.metaData.shutdownLabs);
   if(this.metaData.shutdownLabs)
     return;
 
   if(Game.cpu.bucket < 7000)
       return;
     this.logOn = false;
-    this.logName = "labm-E41S32";
+    this.logName = "labm-E37S46";
 
     this.room = Game.rooms[this.metaData.roomName];
     if(this.room.memory.shutdown)
@@ -57,7 +54,7 @@ export class LabManagementProcess extends Process
     }
 
     if(this.name === this.logName && this.logOn)
-      console.log(this.name, 'Running')
+    console.log(this.name, 'Running')
     this.ensureMetaData();
 
     if(this.room)
@@ -83,50 +80,23 @@ export class LabManagementProcess extends Process
         }
       }
 
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 2)
       if(!this.productLabs || !this.reagentLabs)
       {
-        if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 2.1)
         this.reagentLabs = this.findReagentLabs();
         this.productLabs = this.findProductLabs();
       }
 
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 2.2)
       this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
-        /*if(this.metaData.processFlag === undefined)
-        {
-          if(this.processFlag === undefined &&
-            this.reagentLabs[0].room.createFlag(this.reagentLabs[0].pos, this.room.name + '-' + this.labProcess.currentShortage.mineralType, COLOR_GREY, COLOR_GREY) === OK)
-          {
-            this.processFlag = Game.flags[this.room.name + '-' + this.labProcess.currentShortage.mineralType];
-            this.metaData.processFlag = this.processFlag.name;
-          }
-
-        }*/
-
-        if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 4)
         let target = this.labProcess.targetShortage.mineralType;
         if(!this.kernel.data.labProcesses[target])
           this.kernel.data.labProcesses[target] = 0;
 
         this.kernel.data.labProcesses[target]++;
-        //console.log(this.name, "Found a Process Current Shortage", this.labProcess.currentShortage.mineralType, this.labProcess.currentShortage.amount,
-        //  "Load Porgress", this.labProcess.loadProgress, "Target Shortage", this.labProcess.targetShortage.mineralType, this.labProcess.targetShortage.amount)
       }
 
-      if(this.name === this.logName && this.logOn)
-      console.log(this.name, 'Running', 5)
-
       this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
-
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 6)
       if(this.metaData.labDistros.length === 0)
       {
         if(this.metaData)
@@ -135,49 +105,30 @@ export class LabManagementProcess extends Process
         }
       }
 
-      try
+      if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
       {
-
-        if(this.name === this.logName && this.logOn)
+        this.metaData.command = undefined;
+        let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
+        let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
+        if(spawned)
         {
-          if(this.metaData.labDistros[0] === 'lab-d-E58S52-25536331')
-          {
-            this.metaData.labDistros = [];
-            this.metaData.roomName = 'E41S32';
-          }
-          console.log(this.name, 17, this.metaData.roomName, this.metaData.labDistros.length, this.metaData.labDistros[0], this.labProcess, Object.keys(this.room.memory.boostRequests).length);
-        }
-        if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
-        {
-          let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
-          let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
-          if(spawned)
-          {
-            this.metaData.labDistros.push(creepName);
-          }
-        }
-        else if(this.metaData.labDistros.length > 0)
-        {
-          this.creep = Game.creeps[this.metaData.labDistros[0]];
-
-          if(this.creep)
-          {
-            if(this.creep.room.name !== this.metaData.roomName)
-            {
-              this.creep.travelTo(new RoomPosition(25, 25, this.metaData.roomName));
-              return;
-            }
-
-            if(this.name === this.logName && this.logOn)
-              console.log(this.name, 'Running', 7, this.creep.pos)
-            //console.log(this.name, 1, this.creep.name);
-            this.missionActions();
-          }
+          this.metaData.labDistros.push(creepName);
         }
       }
-      catch (error)
+      else if(this.metaData.labDistros.length > 0)
       {
-        console.log(this.name, 'Run', error);
+        this.creep = Game.creeps[this.metaData.labDistros[0]];
+
+        if(this.creep)
+        {
+          if(this.creep.room.name !== this.metaData.roomName)
+          {
+            this.creep.travelTo(new RoomPosition(25, 25, this.metaData.roomName));
+            return;
+          }
+
+          this.missionActions();
+        }
       }
 
       if(this.labProcess)
@@ -185,744 +136,677 @@ export class LabManagementProcess extends Process
         this.doSynthesis();
       }
 
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 8)
       this.checkBoostRequests();
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'Running', 9)
     }
-  }
-
-  initialization()
-  {
-    /*(this.room = Game.rooms[this.metaData.roomName];
-    if(this.room)
-    {
-      this.labs = this.roomData().labs;
-      this.terminal = this.room.terminal;
-      this.storage = this.room.storage;
-      this.nuker = this.roomData().nuker;
-
-      console.log(this.name, 1);
-      this.reagentLabs = this.findReagentLabs();
-      console.log(this.name, 2);
-      this.productLabs = this.findProductLabs();
-
-      console.log(this.name, this.reagentLabs!.length, this.productLabs!.length);
-      /*this.labProcess = this.findLabProcess();
-      if(this.labProcess)
-      {
-        let target = this.labProcess.targetShortage.mineralType;
-        if(Memory.labProcesses[target])
-        {
-          Memory.labProcesses[target] = 0;
-        }
-        Memory.labProcesses[target]++;
-      }
-    //}
-    }*/
   }
 
   private missionActions()
   {
-    try
+    let command = this.accessCommand();
+
+
+    //////////// Could not find a command do some other stuff. ///////////////////////
+    if(!command)
     {
-      let command = this.accessCommand();
 
-      //////////// Could not find a command do some other stuff. ///////////////////////
-      if(!command)
+      //////////// Empty creep ///////////////////////
+      if(this.creep.store.getUsedCapacity() > 0)
       {
-        if(this.creep.store.getUsedCapacity(RESOURCE_POWER) > 0)
+        this.creep.say('😴🤖');
+        //console.log(this.name, "is holding resources without a command, putting them in terminal");
+        if(this.creep.pos.isNearTo(this.terminal!))
         {
-          this.creep.say('😴-🔴');
-          if(!this.creep.pos.isNearTo(this.powerSpawn))
-            this.creep.travelTo(this.powerSpawn);
-          else
-            this.creep.transfer(this.powerSpawn, RESOURCE_POWER);
-
-          return;
-        }
-
-        //////////// Empty creep ///////////////////////
-        if(this.creep.store.getUsedCapacity() > 0)
-        {
-          this.creep.say('😴🤖');
-          //console.log(this.name, "is holding resources without a command, putting them in terminal");
-          if(this.creep.pos.isNearTo(this.terminal!))
-          {
-            this.creep.transferEverything(this.terminal!);
-          }
-          else
-          {
-            this.creep.say('🏦1');
-            this.creep.travelTo(this.terminal!);
-          }
-          return;
-        }
-
-        let resources = this.creep.room.find(FIND_DROPPED_RESOURCES);
-        if(resources.length)
-        {
-          resources = _.filter(resources, (r)=>{
-            if(this.creep.pos.inRangeTo(r, 5))
-              return r;
-          });
-
-          let target = this.creep.pos.findClosestByPath(resources);
-          if(target)
-          {
-            if(this.creep.pos.isNearTo(target))
-            {
-              this.creep.pickup(target);
-            }
-            this.creep.say('2');
-            this.creep.travelTo(target, {range: 1});
-            return;
-          }
-        }
-
-        let enemies = this.creep.room.find(FIND_HOSTILE_CREEPS);
-        let flag = Game.flags['Center-'+this.metaData.roomName];
-        let tombstones = this.creep.room.find(FIND_TOMBSTONES);
-        if(tombstones.length && enemies.length === 0)
-        {
-          tombstones = _.filter(tombstones, (t) => {
-            if(flag.pos.inRangeTo(t, 15) && _.sum(t.store) > 0)
-              return t;
-          });
-
-          let target = this.creep.pos.findClosestByPath(tombstones);
-          if(target)
-          {
-            if(this.creep.pos.isNearTo(target))
-            {
-              this.creep.withdrawEverything(target);
-            }
-            this.creep.say('3');
-            this.creep.travelTo(target);
-            return;
-          }
-        }
-
-        const generalContainer = this.roomData().generalContainers[0];
-        if(generalContainer && _.sum(generalContainer.store) > 0)
-        {
-          if(this.creep.pos.isNearTo(generalContainer) && _.sum(this.creep.carry) < this.creep.carryCapacity)
-            this.creep.withdrawEverything(generalContainer);
-          else
-            this.creep.travelTo(generalContainer);
-
-          return;
-        }
-
-        const powerAmount = this.powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) ? this.powerSpawn.store.getUsedCapacity(RESOURCE_POWER) : 0;
-        const energyAmount = this.powerSpawn?.store.getUsedCapacity(RESOURCE_ENERGY) ? this.powerSpawn.store.getUsedCapacity(RESOURCE_ENERGY) : 0;
-        if(powerAmount < 20 && this.terminal?.store.getUsedCapacity(RESOURCE_POWER) >= 100
-          && energyAmount > 1000)
-        {
-          this.creep.say('😴🔴');
-          if(!this.creep.pos.isNearTo(this.terminal))
-            this.creep.travelTo(this.terminal);
-          else
-            this.creep.withdraw(this.terminal, RESOURCE_POWER, 100);
-
-          return;
-        }
-
-        // const powerCreeps = this.creep.room.find(FIND_POWER_CREEPS).filter(pc => pc.my && pc.powers[PWR_OPERATE_EXTENSION]);
-        // if(powerCreeps.length)
-        // {
-        //   const spawns = this.roomData().spawns.filter(s => (s.store[RESOURCE_ENERGY] ?? 0) < (s.store.getCapacity() ?? 0));
-        //   if(spawns.length)
-        //   {
-        //     if(this.terminal.store[RESOURCE_ENERGY] >= this.creep.store.getCapacity())
-        //     {
-        //       if(!this.creep.pos.isNearTo(this.terminal))
-        //         this.creep.travelTo(this.terminal);
-        //       else
-        //         this.creep.withdraw(this.terminal, RESOURCE_ENERGY);
-
-        //       return;
-        //     }
-        //   }
-
-        // }
-
-
-        this.creep.say('😴');
-        this.creep.idleOffRoad(this.reagentLabs![0], true);
-        return;
-      }
-
-      ////////////// Do the command actions ///////////////////////
-      let strSay: string;
-      if(_.sum(this.creep.carry) === 0)
-      {
-        if(!command.origin)
-        {
-          command = undefined;
-        }
-
-        let origin = Game.getObjectById<Structure>(command.origin);
-        if(this.creep.pos.isNearTo(origin!))
-        {
-          if(origin instanceof StructureTerminal)
-          {
-            strSay = '🤖';
-            if(!origin.store[command.resourceType])
-            {
-              this.metaData.command = undefined;
-            }
-          }
-          else if(origin instanceof StructureLab)
-            strSay = '🧺';
-
-          //console.log(this.name, 1, this.creep.name, command.resourceType);
-          let retValue = this.creep.withdraw(origin!, command.resourceType, command.amount);
-
-          if(retValue === ERR_NOT_ENOUGH_RESOURCES || retValue === ERR_INVALID_ARGS)
-          {
-            this.metaData.command = undefined;
-          }
-          let destination = Game.getObjectById<Structure>(command.destination);
-          if(!this.creep.pos.isNearTo(destination!))
-          {
-            strSay = '🏦';
-            this.creep.say(strSay);
-            this.creep.travelTo(destination!);
-          }
+          this.creep.transferEverything(this.terminal!);
         }
         else
         {
-          this.creep.say('3');
-          this.creep.travelTo(origin!);
+          this.creep.say('🏦1');
+          this.creep.travelTo(this.terminal!);
         }
-        return; // early
+        return;
       }
 
-      let destination = Game.getObjectById<Structure>(command.destination);
-      if(this.creep.pos.isNearTo(destination!))
+      const generalContainer = this.roomData().generalContainers[0];
+      if(generalContainer && _.sum(generalContainer.store) > 0)
       {
-        this.creep.say(strSay);
-        let outcome = this.creep.transfer(destination!, command.resourceType!, command.amount);
-        if(outcome === OK && command.reduceLoad && this.labProcess)
-        {
-          this.labProcess.reagentLoads[command.resourceType] -= command.amount!;
-        }
+        if(this.creep.pos.isNearTo(generalContainer) && _.sum(this.creep.carry) < this.creep.carryCapacity)
+          this.creep.withdrawEverything(generalContainer);
+        else
+          this.creep.travelTo(generalContainer);
 
-        this.metaData.command = undefined;
+        return;
+      }
+
+      this.creep.say('😴');
+      this.creep.idleOffRoad(this.reagentLabs![0], true);
+      return;
+    }
+
+    // if(this.name === this.logName && this.logOn)
+    //   console.log(this.name, 1, command.origin, command.resourceType, command.destination, command.amount);
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 2)
+    ////////////// Do the command actions ///////////////////////
+    let strSay: string;
+    if(_.sum(this.creep.carry) === 0)
+    {
+      if(this.name === this.logName && this.logOn)
+      console.log(this.name, 3)
+      if(!command.origin)
+      {
+        if(this.name === this.logName && this.logOn)
+      console.log(this.name, 4, 'command undefined');
+        command = undefined;
+      }
+
+      if(this.name === this.logName && this.logOn)
+      console.log(this.name, 5)
+      let origin = Game.getObjectById<Structure>(command.origin);
+      if(this.creep.pos.isNearTo(origin!))
+      {
+        if(origin instanceof StructureTerminal)
+        {
+          strSay = '🤖';
+          if(!origin.store[command.resourceType])
+          {
+            this.metaData.command = undefined;
+          }
+        }
+        else if(origin instanceof StructureLab)
+          strSay = '🧺';
+
+        if(this.creep.name === 'lab-d-E35S51-25976505')
+          console.log(this.name, 'Annoying problem', command.amount, command.destination, command.origin, command.reduceLoad, command.resourceType)
+        //console.log(this.name, 1, this.creep.name, command.resourceType);
+        let retValue = this.creep.withdraw(origin!, command.resourceType, command.amount);
+
+        if(retValue === ERR_NOT_ENOUGH_RESOURCES || retValue === ERR_INVALID_ARGS)
+        {
+          this.metaData.command = undefined;
+        }
+        let destination = Game.getObjectById<Structure>(command.destination);
+        if(!this.creep.pos.isNearTo(destination!))
+        {
+          strSay = '🏦*';
+          this.creep.say(strSay);
+          this.creep.travelTo(destination!);
+        }
       }
       else
       {
-        this.creep.say('4');
-        this.creep.travelTo(destination!);
+        this.creep.say('3');
+        this.creep.travelTo(origin!);
       }
+      return; // early
     }
-    catch (error)
+
+    let destination = Game.getObjectById<Structure>(command.destination);
+    if(this.creep.pos.isNearTo(destination!))
     {
-      console.log(this.name, 'MisstionActions', error)
+      this.creep.say(strSay);
+      let outcome = this.creep.transfer(destination!, command.resourceType!, command.amount);
+      if(outcome === OK && command.reduceLoad && this.labProcess)
+      {
+        this.labProcess.reagentLoads[command.resourceType] -= command.amount!;
+      }
+
+      this.metaData.command = undefined;
+    }
+    else
+    {
+      strSay += '4';
+      this.creep.say(strSay);
+      this.creep.travelTo(destination!);
     }
   }
 
   private findCommand(): Command|undefined
   {
-    try
+    let terminal = this.room.terminal;
+    let storage = this.room.storage;
+    let energyInTerminal = 0;
+    let energyInStorage = 0;
+
+    if(terminal && storage)
     {
-      let terminal = this.room.terminal;
-      let storage = this.room.storage;
-      let energyInTerminal = 0;
-      let energyInStorage = 0;
+      energyInTerminal = terminal.store.energy;
+      energyInStorage = storage.store.energy;
+    }
 
-      if(terminal && storage)
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 1, this.labProcess)
+
+    let command = this.checkPullFlags();
+
+    if(command)
+      return command;
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 2)
+
+    command = this.checkReagentLabs();
+    if(command)
+      return command;
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 3)
+
+    command = this.checkProductLabs();
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 3, command)
+
+    if(command) return command;
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 4)
+
+
+    // Load the towers
+    const towers = this.roomData().towers;
+    if(towers.length)
+    {
+      const tower = _.min(towers, t => (t.store[RESOURCE_ENERGY] ?? 0));
+      if((tower.store[RESOURCE_ENERGY] ?? 0) < tower.energyCapacity * .5)
       {
-        energyInTerminal = terminal.store.energy;
-        energyInStorage = storage.store.energy;
-      }
-
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 1)
-
-      let command = this.checkPullFlags();
-
-      if(command)
-        return command;
-
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 2)
-
-      command = this.checkReagentLabs();
-      if(command)
-        return command;
-
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 3)
-
-      command = this.checkProductLabs();
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 3, command.origin)
-
-      if(command) return command;
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 4)
-
-      // load nukers
-      let nuker = this.roomData().nuker;
-      if(nuker)
-      {
-        if(nuker.energy < nuker.energyCapacity && storage!.store.energy > 100000)
+        if((this.terminal.store[RESOURCE_ENERGY] ?? 0) >= this.creep.store.getCapacity())
         {
-          let command: Command = {origin: storage!.id, destination: nuker.id, resourceType: RESOURCE_ENERGY };
+          let command: Command = {origin: this.terminal.id, destination: tower.id, resourceType: RESOURCE_ENERGY};
           return command;
         }
-        else if(nuker.ghodium < nuker.ghodiumCapacity && terminal!.store[RESOURCE_GHODIUM])
+        else if((this.storage.store[RESOURCE_ENERGY] ?? 0) >= this.creep.store.getCapacity())
         {
-          let command: Command = {origin: terminal!.id, destination: nuker.id, resourceType: RESOURCE_GHODIUM};
+          let command: Command = {origin: this.storage.id, destination: tower.id, resourceType: RESOURCE_ENERGY};
           return command;
         }
       }
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'FindCommand', 5)
-      return;
     }
-    catch(error)
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 5)
+
+    // load nukers
+    let nuker = this.roomData().nuker;
+    if(nuker)
     {
-      console.log(this.name, error);
+      if(nuker.energy < nuker.energyCapacity && storage!.store.energy > 100000)
+      {
+        let command: Command = {origin: storage!.id, destination: nuker.id, resourceType: RESOURCE_ENERGY };
+        return command;
+      }
+      else if(nuker.ghodium < nuker.ghodiumCapacity && terminal!.store[RESOURCE_GHODIUM])
+      {
+        let command: Command = {origin: terminal!.id, destination: nuker.id, resourceType: RESOURCE_GHODIUM};
+        return command;
+      }
     }
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 6)
+
+    if((this.powerSpawn?.store[RESOURCE_POWER] ?? 0)  < 20)
+    {
+      if((this.terminal?.store[RESOURCE_POWER] ?? 0) >= 100)
+      {
+        const amount = this.powerSpawn.store.getFreeCapacity(RESOURCE_POWER);
+        let command: Command = {origin: this.terminal.id, destination: this.powerSpawn.id, resourceType: RESOURCE_POWER, amount: amount};
+        return command;
+      }
+      else if((this.storage?.store[RESOURCE_POWER] ?? 0) >= 100)
+      {
+        const amount = this.powerSpawn.store.getFreeCapacity(RESOURCE_POWER);
+        let command: Command = {origin: this.storage.id, destination: this.powerSpawn.id, resourceType: RESOURCE_POWER, amount: amount};
+        return command;
+      }
+    }
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 7)
+
+    if((this.powerSpawn?.store[RESOURCE_ENERGY] ?? 0)  < 4000)
+    {
+      if((this.terminal?.store[RESOURCE_ENERGY] ?? 0) >= 100)
+      {
+        let command: Command = {origin: this.terminal.id, destination: this.powerSpawn.id, resourceType: RESOURCE_ENERGY};
+        return command;
+      }
+      else if((this.storage?.store[RESOURCE_POWER] ?? 0) >= 100)
+      {
+        let command: Command = {origin: this.storage.id, destination: this.powerSpawn.id, resourceType: RESOURCE_ENERGY};
+        return command;
+      }
+    }
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 8)
+
+    // Load the spawns
+    const spawns = this.roomData().spawns;
+    if(spawns.length)
+    {
+      const spawn = _.min(spawns, s => (s.store[RESOURCE_ENERGY] ?? 0));
+      if((spawn.store[RESOURCE_ENERGY] ?? 0) === 0)
+      {
+        const command: Command = {origin: this.terminal.id, destination: spawn.id, resourceType: RESOURCE_ENERGY};
+        return command;
+      }
+    }
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 8)
+
+    const enemies = this.creep.room.find(FIND_HOSTILE_CREEPS);
+    if(!enemies.length)
+    {
+      const flag = Game.flags['Center-'+this.metaData.roomName];
+      const tombstones = flag.pos.findInRange(FIND_TOMBSTONES, 5, {filter: t => t.store.getUsedCapacity() > 0});
+      if(tombstones.length)
+      {
+        const tombstone = tombstones[0];
+        const res = Object.keys(tombstone.store)[0] as ResourceConstant;
+        let command: Command = {origin: tombstone.id, destination: this.storage.id, resourceType: res};
+        return command;
+      }
+
+    }
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'FindCommand', 5)
+    return;
   }
 
   private accessCommand(): Command|undefined
   {
-    try
+    if(this.name === this.logName && this.logOn)
     {
-      if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'AccessCommand', 1)
+      //if(this.metaData.command && this.metaData.command.origin === undefined)
+        //this.metaData.command.origin = '5d96be2db5fc2a000165d044';
+
+    }
+
+    // Suicide
+    if(!this.metaData.command && this.creep.ticksToLive! < 40)
+    {
+      this.creep.say('☠');
+      this.creep.suicide();
+      return;
+    }
+
+    // Delay
+    if(!this.metaData.lastCommandTick)
+    {
+      this.metaData.lastCommandTick = Game.time - 10;
+    }
+
+    if(this.name === this.logName && this.logOn)
+    {
+        console.log(this.name, 'AccessCommand', 1.1, Game.time, this.metaData.lastCommandTick + 10)
+
+    }
+
+    if(!this.metaData.command && Game.time > this.metaData.lastCommandTick + 10)
+    {
+
+      if(_.sum(this.creep.carry) === 0)
       {
-        console.log(this.name, 'AccessCommand', 1)
-        //if(this.metaData.command && this.metaData.command.origin === undefined)
-          //this.metaData.command.origin = '5d96be2db5fc2a000165d044';
-
-      }
-
-      // Suicide
-      if(!this.metaData.command && this.creep.ticksToLive! < 40)
-      {
-        this.creep.say('☠');
-        this.creep.suicide();
-        return;
-      }
-
-      // Delay
-      if(!this.metaData.lastCommandTick)
-      {
-        this.metaData.lastCommandTick = Game.time - 10;
-      }
-
-      if(this.metaData.command && this.creep.name === 'lab-d-E55S47-22668482')
-
-      //if(this.name === this.logName && this.logOn)
-       // console.log(this.name, 'AccessCommand', this.metaData.command.origin, this.metaData.lastCommandTick+10)
-
-      if(this.name === this.logName && this.logOn)
-      {
-          console.log(this.name, 'AccessCommand', 1.1, Game.time, this.metaData.lastCommandTick + 10)
-
-      }
-
-      if(!this.metaData.command && Game.time > this.metaData.lastCommandTick + 10)
-      {
-
-        if(_.sum(this.creep.carry) === 0)
-        {
-          if(this.name === this.logName && this.logOn)
-            console.log(this.name, 'AccessCommand', 2)
-          this.metaData.command = this.findCommand();
-        }
-        else
-        {
-          console.log("Creep: can't take new command in:", this.name, "because I'm holding something");
-        }
-
-        if(!this.metaData.command)
-        {
-          this.metaData.lastCommandTick = Game.time;
-        }
+        if(this.name === this.logName && this.logOn)
+          console.log(this.name, 'AccessCommand', 2)
+        this.metaData.command = this.findCommand();
       }
       else
       {
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'AccessCommand', 3)
+        console.log("Creep: can't take new command in:", this.name, "because I'm holding something");
+      }
 
-        if(this.metaData.command)
+      if(!this.metaData.command)
+      {
+        this.metaData.lastCommandTick = Game.time;
+      }
+    }
+    else
+    {
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'AccessCommand', 3)
+
+      if(this.metaData.command)
+      {
+        if(this.name === this.logName && this.logOn)
         {
-          if(this.name === this.logName && this.logOn)
-          {
-            console.log(this.name, 'AccessCommand', 4, this.metaData.command.destination)
-          }
-          let lab = Game.getObjectById(this.metaData.command.destination) as StructureLab;
-          if(lab && !lab.isActive())
-            this.metaData.command = undefined;
+          console.log(this.name, 'AccessCommand', 4, this.metaData.command.destination)
         }
-
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'AccessCommand', 5)
+        let lab = Game.getObjectById(this.metaData.command.destination) as StructureLab;
+        if(lab && !lab.isActive())
+          this.metaData.command = undefined;
       }
 
       if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'AccessCommand', 6, this.metaData.command)
+        console.log(this.name, 'AccessCommand', 5)
+    }
 
-      return this.metaData.command;
-    }
-    catch(error)
-    {
-      console.log(this.name, 'accesscommand', error);
-    }
+    if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'AccessCommand', 6, this.metaData.command)
+
+    return this.metaData.command;
   }
 
   private checkReagentLabs(): Command|undefined
   {
-    try
+    if(!this.reagentLabs || this.reagentLabs.length < 2)
     {
-      if(!this.reagentLabs || this.reagentLabs.length < 2)
-      {
-        return; //early
-      }
+      return; //early
+    }
 
-      for(let i = 0; i < 2; i++)
+    for(let i = 0; i < 2; i++)
+    {
+      let lab = this.reagentLabs[i];
+      let mineralType = (this.labProcess ? Object.keys(this.labProcess.reagentLoads)[i] : undefined) as ResourceConstant;
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'checkReagentLabs', 1, mineralType, lab.mineralType, lab.mineralAmount)
+      if(!mineralType && lab.mineralAmount > 0)
       {
-        let lab = this.reagentLabs[i];
-        let mineralType = (this.labProcess ? Object.keys(this.labProcess.reagentLoads)[i] : undefined) as ResourceConstant;
-        if(!mineralType && lab.mineralAmount > 0)
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'checkReagentLabs', 2)
+        // clear labs when there is no current process
+        let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType!};
+        return command;
+      }
+      else if(mineralType && lab.mineralType && lab.mineralType !== mineralType)
+      {
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'checkReagentLabs', 3)
+        let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType};
+        return command;
+      }
+      else if(mineralType)
+      {
+
+        let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], LABDISTROCAPACITY);
+
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'checkReagentLabs', 4, amountNeeded)
+
+
+        if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
+          && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
         {
-          // clear labs when there is no current process
-          let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType!};
+          amountNeeded = Math.max(amountNeeded, 5);
+          // bring minerals to lab when amount drops below amount needed
+          let command: Command = {origin: this.terminal!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
           return command;
         }
-        else if(mineralType && lab.mineralType && lab.mineralType !== mineralType)
-        {
-          let command: Command = {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType};
-          return command;
-        }
-        else if(mineralType)
-        {
-
-          let amountNeeded = Math.min(this.labProcess!.reagentLoads[mineralType], LABDISTROCAPACITY);
-
-          if(this.storage.room.name === 'E35S51'
-            && amountNeeded > 0 && this.storage!.store[mineralType]! >= amountNeeded
-            && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
-            {
-              amountNeeded = Math.max(amountNeeded, 5);
-              let command: Command = {origin: this.storage!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
-                return command;
-            }
-
-          if(amountNeeded > 0 && this.terminal!.store[mineralType]! >= amountNeeded
-            && lab.mineralAmount <= lab.mineralCapacity - LABDISTROCAPACITY)
-          {
-            amountNeeded = Math.max(amountNeeded, 5);
-            // bring minerals to lab when amount drops below amount needed
-            let command: Command = {origin: this.terminal!.id, destination: lab.id, resourceType: mineralType, amount: amountNeeded, reduceLoad: true};
-            return command;
-          }
-        }
       }
+    }
 
-      return;
-    }
-    catch(error)
-    {
-      console.log(this.name, 'checkreagents', error);
-    }
+    return;
   }
 
   private checkProductLabs(): Command|undefined
   {
-    try
+    if (!this.productLabs)
     {
-      if (!this.productLabs)
+      return; // early
+    }
+
+    const labNeeds: ResourceConstant[] = []
+    if(this.labProcess)
+    {
+      for(let i = 0; i < 2; i++)
       {
-        return; // early
+        const mineralType = (this.labProcess ? Object.keys(this.labProcess.reagentLoads)[i] : undefined) as ResourceConstant;
+        labNeeds.push(mineralType);
       }
+    }
 
-      for (let lab of this.productLabs) {
+    for (let lab of this.productLabs) {
 
-          if (this.terminal!.store.energy >= LABDISTROCAPACITY && lab.energy < LABDISTROCAPACITY)
+        if (this.terminal!.store.energy >= LABDISTROCAPACITY && lab.energy < LABDISTROCAPACITY)
+        {
+            // restore boosting energy to lab
+            return { origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
+        }
+
+        let flag = lab.pos.lookFor(LOOK_FLAGS)[0];
+        if (flag) continue;
+
+        if (lab.mineralAmount > 0 && (!this.labProcess || lab.mineralType !== this.labProcess.currentShortage.mineralType)) {
+            // empty wrong mineral type or clear lab when no process
+            return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
+        }
+        else if (this.labProcess && lab.mineralAmount >= LABDISTROCAPACITY) {
+            // store product in terminal
+            return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
+        }
+        else
+        {
+          if(_.includes(labNeeds, lab.mineralType) && this.name === 'labm-E37S46')
           {
-              // restore boosting energy to lab
-              return { origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
+            const index = labNeeds.indexOf(lab.mineralType);
+            const pLab = this.productLabs[index];
+            if(pLab.mineralType === lab.mineralType
+              && pLab.store.getFreeCapacity() > lab.mineralAmount)
+              return {origin: lab.id, destination: pLab.id, resourceType: lab.mineralType };
           }
-
-          let flag = lab.pos.lookFor(LOOK_FLAGS)[0];
-          if (flag) continue;
-
-          if (lab.mineralAmount > 0 && (!this.labProcess || lab.mineralType !== this.labProcess.currentShortage.mineralType)) {
-              // empty wrong mineral type or clear lab when no process
-              return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
-          }
-          else if (this.labProcess && lab.mineralAmount >= LABDISTROCAPACITY) {
-              // store product in terminal
-              return { origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType! };
-          }
-      }
-      return;
+        }
     }
-    catch(error)
-    {
-      console.log(this.name, 'checkProductLabs', error);
-    }
-}
+    return;
+  }
 
   private findReagentLabs(): StructureLab[] | undefined
   {
-    try
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'findReagentLabs', 1, this.metaData.reagentLabIds);
+
+    if(this.metaData.reagentLabIds)
     {
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'findReagentLabs', 1, this.metaData.reagentLabIds);
-
-      if(this.metaData.reagentLabIds)
-      {
-        let labs = _.map(this.metaData.reagentLabIds, (id: string) => {
-          let lab = Game.getObjectById(id);
-          if(lab)
-          {
-            return lab;
-          }
-          else
-          {
-            this.metaData.reagentLabIds = undefined;
-            return;
-          }
-        }) as StructureLab[];
-
-        if(labs.length === 2)
+      let labs = _.map(this.metaData.reagentLabIds, (id: string) => {
+        let lab = Game.getObjectById(id);
+        if(lab)
         {
-          return labs;
+          return lab;
         }
         else
         {
           this.metaData.reagentLabIds = undefined;
+          return;
         }
-      }
-
-      if(Game.time % 1000 !== 3)
-      {
-        return; // early
-      }
-
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'findReagentLabs', 2)
-
-      let structures = this.room.find(FIND_STRUCTURES);
-      let labs = _.filter(structures, (s) => {
-        return (s.structureType === STRUCTURE_LAB);
       }) as StructureLab[];
 
-
-      if(labs.length < 3)
+      if(labs.length === 2)
       {
-        return; //early
+        return labs;
       }
-
-      let reagentLabs = [];
-      for(let lab of labs)
+      else
       {
-        if(reagentLabs.length === 2)
-        {
-          break;
-        }
-
-        let outOfRange = false;
-        for(let otherLab of labs)
-        {
-          if(lab.pos.inRangeTo(otherLab, 2))
-          {
-            continue;
-          }
-          outOfRange = true;
-          break;
-        }
-
-        if(!outOfRange)
-        {
-          reagentLabs.push(lab);
-        }
+        this.metaData.reagentLabIds = undefined;
       }
+    }
 
+    if(Game.time % 1000 !== 3)
+    {
+      return; // early
+    }
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'findReagentLabs', 2)
+
+    let structures = this.room.find(FIND_STRUCTURES);
+    let labs = _.filter(structures, (s) => {
+      return (s.structureType === STRUCTURE_LAB);
+    }) as StructureLab[];
+
+
+    if(labs.length < 3)
+    {
+      return; //early
+    }
+
+    let reagentLabs = [];
+    for(let lab of labs)
+    {
       if(reagentLabs.length === 2)
       {
-        this.metaData.reagentLabIds = _.map(reagentLabs, (lab: StructureLab) => lab.id);
-        this.metaData.productLabIds = undefined;
-        return reagentLabs;
+        break;
       }
-      return;
+
+      let outOfRange = false;
+      for(let otherLab of labs)
+      {
+        if(lab.pos.inRangeTo(otherLab, 2))
+        {
+          continue;
+        }
+        outOfRange = true;
+        break;
+      }
+
+      if(!outOfRange)
+      {
+        reagentLabs.push(lab);
+      }
     }
-    catch(error)
+
+    if(reagentLabs.length === 2)
     {
-      console.log(this.name, 'findReagentLabs', error);
+      this.metaData.reagentLabIds = _.map(reagentLabs, (lab: StructureLab) => lab.id);
+      this.metaData.productLabIds = undefined;
+      return reagentLabs;
     }
+    return;
   }
 
   private findProductLabs(): StructureLab[] | undefined
   {
-    try
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'findProductLabs', 1, this.metaData.productLabIds);
+
+    if(this.metaData.productLabIds)
     {
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'findProductLabs', 1, this.metaData.productLabIds);
-
-      if(this.metaData.productLabIds)
-      {
-        let labs = _.map(this.metaData.productLabIds, (id: string) => {
-          let lab = Game.getObjectById(id);
-          if(lab)
-          {
-            return lab;
-          }
-          else
-          {
-            this.metaData.productLabIds = undefined;
-            return;
-          }
-
-        }) as StructureLab[];
-
-        if(labs.length > 0)
+      let labs = _.map(this.metaData.productLabIds, (id: string) => {
+        let lab = Game.getObjectById(id);
+        if(lab)
         {
-          return labs;
+          return lab;
         }
         else
         {
-          return this.metaData.productLabIds = undefined;
+          this.metaData.productLabIds = undefined;
+          return;
         }
-      }
 
-      if(this.name === this.logName && this.logOn)
-        console.log(this.name, 'findProductLabs', 2)
-
-      let structures = this.room.find(FIND_STRUCTURES);
-      let labs = _.filter(structures, (s) => {
-        return (s.structureType === STRUCTURE_LAB);
       }) as StructureLab[];
 
-      if(labs.length === 0)
+      if(labs.length > 0)
       {
-        return; // early
+        return labs;
       }
-
-      if(this.reagentLabs)
+      else
       {
-        for(let reagentLab of this.reagentLabs)
-        {
-          labs = _.pull(labs, reagentLab);
-        }
+        return this.metaData.productLabIds = undefined;
       }
-
-      this.metaData.productLabIds = _.map(labs, (lab: StructureLab) => lab.id);
-      return labs;
     }
-    catch(error)
+
+    if(this.name === this.logName && this.logOn)
+      console.log(this.name, 'findProductLabs', 2)
+
+    let structures = this.room.find(FIND_STRUCTURES);
+    let labs = _.filter(structures, (s) => {
+      return (s.structureType === STRUCTURE_LAB);
+    }) as StructureLab[];
+
+    if(labs.length === 0)
     {
-      console.log(this.name, 'findProductLabs', error)
+      return; // early
     }
+
+    if(this.reagentLabs)
+    {
+      for(let reagentLab of this.reagentLabs)
+      {
+        labs = _.pull(labs, reagentLab);
+      }
+    }
+
+    this.metaData.productLabIds = _.map(labs, (lab: StructureLab) => lab.id);
+    return labs;
   }
 
   private doSynthesis()
   {
-    try
+    for(let i = 0; i < this.productLabs!.length; i++)
     {
-      for(let i = 0; i < this.productLabs!.length; i++)
+      // So that they don't all activate on the same tick and make bucket sad
+      if(Game.time % 10 !== i)
       {
-        // So that they don't all activate on the same tick and make bucket sad
-        if(Game.time % 10 !== i)
-        {
-          continue;
-        }
-        let lab = this.productLabs![i];
-
-        if(lab.pos.lookFor(LOOK_FLAGS).length > 0)
-        {
-          continue;
-        }
-
-        if(!lab.mineralType || lab.mineralType === this.labProcess!.currentShortage.mineralType)
-        {
-          let outcome = lab.runReaction(this.reagentLabs![0], this.reagentLabs![1]);
-          if(outcome === OK)
-          {
-            this.kernel.data.activeLabCount++;
-          }
-        }
-
+        continue;
       }
-    }
-    catch(error)
-    {
-      console.log(this.name, 'doSynthesis', error)
+      let lab = this.productLabs![i];
+
+      if(lab.pos.lookFor(LOOK_FLAGS).length > 0)
+      {
+        continue;
+      }
+
+      if(!lab.mineralType || lab.mineralType === this.labProcess!.currentShortage.mineralType)
+      {
+        let outcome = lab.runReaction(this.reagentLabs![0], this.reagentLabs![1]);
+        if(outcome === OK)
+        {
+          this.kernel.data.activeLabCount++;
+        }
+      }
     }
   }
 
   private findLabProcess(): LabProcess | undefined
   {
-    try
-    {
-      if(!this.reagentLabs)
-      {
-        return;
-      }
-
-      if(this.metaData.labProcess)
-      {
-        let process = this.metaData.labProcess;
-
-        if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findlabprocess', 2)
-
-        let processFinished = this.checkProcessFinished(process);
-        if(processFinished)
-        {
-          //Game.notify(this.name + " has finished with " + process.currentShortage.mineralType);
-          console.log(this.name, "has finished with", process.currentShortage.mineralType);
-          this.metaData.labProcess = undefined;
-          return this.findLabProcess();
-        }
-
-        if(this.logName === this.name && this.logOn)
-          console.log(this.name, 'findlabprocess', 3)
-
-        let progress = this.checkProgress(process);
-        if(!progress)
-        {
-          //Game.notify(this.name + " made no progress with " + process.currentShortage.mineralType);
-          console.log(this.name, "made no progress with", process.currentShortage.mineralType, 1111);
-          this.metaData.labProcess = undefined;
-          return this.findLabProcess();
-        }
-
-        if(process)
-        {
-          this.room.visual.text(process.targetShortage.mineralType + ' ' + process.targetShortage.amount,
-            5,1, {color: 'yellow', align:'left'});
-          this.room.visual.text(process.currentShortage.mineralType + ' ' + process.currentShortage.amount,
-            5, 2, {color: 'yellow', align:'left'});
-        }
-
-        return process;
-      }
-
-      // avoid checking for a new process every tick
-      if(!this.metaData.checkProcessTick)
-      {
-        this.metaData.checkProcessTick = Game.time - 100;
-      }
-
-      if(Game.time < this.metaData.checkProcessTick+100)
-        return; // early
-
-      this.metaData.labProcess = this.findNewProcess();
+    if(!this.reagentLabs)
       return;
-    }
-    catch(error)
+
+    if(this.metaData.labProcess)
     {
-      console.log(this.name, 'findLabProcess', error)
+      let process = this.metaData.labProcess;
+
+      let processFinished = this.checkProcessFinished(process);
+      if(processFinished)
+      {
+        //Game.notify(this.name + " has finished with " + process.currentShortage.mineralType);
+        //console.log(this.name, "has finished with", process.currentShortage.mineralType);
+        this.metaData.labProcess = undefined;
+        return this.findLabProcess();
+      }
+
+
+      let progress = this.checkProgress(process);
+      if(!progress)
+      {
+          //Game.notify(this.name + " made no progress with " + process.currentShortage.mineralType);
+        console.log(this.name, "made no progress with", process.currentShortage.mineralType, 1111);
+ //       this.metaData.labProcess = undefined;
+ //       return this.findLabProcess();
+      }
+
+      if(process)
+      {
+        // process labm-E37S46 failed with error TypeError: this.room.visual.resource is not a function
+        const lab1 = this.reagentLabs[0];
+        const lab2 = this.reagentLabs[1];
+        this.room.visual.resource(process.currentShortage.mineralType, lab1.pos.x, lab1.pos.y, 0.25);
+        this.room.visual.resource(process.targetShortage.mineralType, lab2.pos.x, lab2.pos.y, 0.25);
+      }
+
+      return process;
     }
+
+    // avoid checking for a new process every tick
+    if(!this.metaData.checkProcessTick)
+      this.metaData.checkProcessTick = Game.time - 100;
+
+    if(Game.time < this.metaData.checkProcessTick+100)
+      return; // early
+
+    this.metaData.labProcess = this.findNewProcess();
+    //console.log(this.name, 'Found process', this.metaData.labProcess.currentShortage.mineralType, this.metaData.labProcess.currentShortage.amount, this.metaData.labProcess.targetShortage.mineralType, this.metaData.labProcess.currentShortage.amount)
+    return;
   }
 
   private checkProcessFinished(process: LabProcess)
@@ -931,7 +815,7 @@ export class LabManagementProcess extends Process
     {
       let amountInLab = this.reagentLabs![i].mineralAmount;
       let load = process.reagentLoads[Object.keys(process.reagentLoads)[i]];
-      if(amountInLab === 0 && load === 0)
+      if(amountInLab < 5 && load <= 0)
       {
         return true;
       }
@@ -969,36 +853,42 @@ export class LabManagementProcess extends Process
 
   private findNewProcess(): LabProcess|undefined
   {
-    let store = this.gatherInventory();
+    let  store = this.gatherTerminalInventory();
 
     for (let compound of PRODUCT_LIST)
     {
+      if(this.storage.store[compound] >= PRODUCTION_STORAGE_AMOUNT)
+        continue;
+
       if(store[compound] >= PRODUCTION_AMOUNT)
       {
-        if(this.logName === this.name && this.logOn)
-        console.log(this.name, 'findnewprocess', 2)
         continue;
       }
 
-      if(this.storage.store[compound] >= PRODUCTION_AMOUNT)
+
+
+      return this.generateProcess({mineralType: compound,
+        amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (store[compound] || 0) });
+    }
+
+    store = this.gatherStorageInventory();
+
+    for (let compound of PRODUCT_LIST)
+    {
+      if(store[compound] >= PRODUCTION_STORAGE_AMOUNT)
         continue;
 
       return this.generateProcess({mineralType: compound,
-        amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (this.terminal!.store[compound] || 0) });
+        amount: PRODUCTION_STORAGE_AMOUNT + LABDISTROCAPACITY - (store[compound] || 0) });
     }
-
-  /*  if(store[RESOURCE_CATALYZED_GHODIUM_ACID] < PRODUCTION_AMOUNT + 5000)
-    {
-      return this.generateProcess({mineralType: RESOURCE_CATALYZED_GHODIUM_ACID, amount: 5000});
-    }*/
 
     return;
   }
 
-  private recursiveShortageCheck(shortage: Shortage, fullAmount = false): Shortage|undefined
+  private recursiveShortageCheck(shortage: Shortage, fullAmount = false, terminalSource = true): Shortage|undefined
   {
     // gather amounts of compounds in terminal and labs
-    let store = this.gatherInventory();
+    let store = this.gatherTerminalInventory();
     if(store[shortage.mineralType] === undefined)
     {
       store[shortage.mineralType] = 0;
@@ -1020,19 +910,16 @@ export class LabManagementProcess extends Process
         if(shortageFound)
           break;
       }
+
       if(shortageFound)
-      {
         return shortageFound;
-      }
       else
-      {
         return { mineralType: shortage.mineralType, amount: amountNeeded };
-      }
     }
     return;
   }
 
-  private gatherInventory(): {[key: string]: number}
+  private gatherTerminalInventory(): {[key: string]: number}
   {
     let inventory: {[key: string]: number} = {};
     for(let mineralType in this.terminal!.store)
@@ -1062,14 +949,46 @@ export class LabManagementProcess extends Process
     return inventory;
   }
 
-  private generateProcess(targetShortage: Shortage): LabProcess|undefined
+  private gatherStorageInventory(): {[key: string]: number}
   {
-    let currentShortage = this.recursiveShortageCheck(targetShortage, true);
+    let inventory: {[key: string]: number} = {};
+    for(let mineralType in this.storage?.store)
+    {
+      if(!this.storage?.store.hasOwnProperty(mineralType)) continue;
+      if(inventory[mineralType] === undefined)
+      {
+        inventory[mineralType] = 0;
+      }
+
+      inventory[mineralType] += this.storage?.store[mineralType];
+    }
+
+    for(let lab of this.productLabs!)
+    {
+      if(lab.mineralAmount > 0)
+      {
+        if(inventory[lab.mineralType!] === undefined)
+        {
+          inventory[lab.mineralType!] = 0;
+        }
+
+        inventory[lab.mineralType!] += lab.mineralAmount;
+      }
+    }
+
+    return inventory;
+  }
+
+  private generateProcess(targetShortage: Shortage, terminalSource = true): LabProcess|undefined
+  {
+    let currentShortage = this.recursiveShortageCheck(targetShortage, true, terminalSource);
+
     if(currentShortage === undefined)
     {
       console.log(this.name, "Lab Distro: error finding current shortage");
       return;
     }
+
     let reagentLoads = {};
     for(let mineralType of REAGENT_LIST[currentShortage.mineralType])
     {
@@ -1176,8 +1095,6 @@ export class LabManagementProcess extends Process
     if(!this.productLabs)
       return;
 
-    if(this.name === this.logName && this.logOn)
-      console.log(this.name, 'CheckPullFlags', 1)
     for(let lab of this.productLabs)
     {
       if(this.terminal!.store.energy >= CARRY_CAPACITY && lab.energy < CARRY_CAPACITY)
@@ -1186,15 +1103,9 @@ export class LabManagementProcess extends Process
         return { Origin: this.terminal!.id, destination: lab.id, resourceType: RESOURCE_ENERGY };
       }
 
-      if(this.name === this.logName && this.logOn)
-      console.log(this.name, 'CheckPullFlags', 2)
-
       let flag = lab.pos.lookFor(LOOK_FLAGS)[0];
       if(!flag)
         continue;
-
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'CheckPullFlags', 3)
 
       let mineralType = flag.name.substring(flag.name.indexOf("_") + 1);
       if(!_.include(PRODUCT_LIST, mineralType))
@@ -1203,23 +1114,13 @@ export class LabManagementProcess extends Process
         return; // early
       }
 
-      if(this.name == 'labm-E45S48')
-          {
-            //console.log(this.name, 5);
-          }
       if(lab.mineralType && lab.mineralType !== mineralType)
       {
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'CheckPullFlags', 4, mineralType)
-
         // empty wrong mineral type
         return {origin: lab.id, destination: this.terminal!.id, resourceType: lab.mineralType };
       }
       else if(lab.mineralCapacity - lab.mineralAmount >= CARRY_CAPACITY && this.terminal!.store[mineralType] >= CARRY_CAPACITY)
       {
-        if(this.name === this.logName && this.logOn)
-          console.log(this.name, 'CheckPullFlags', 5, mineralType)
-
         // bring mineral to lab when amount is below carry capacity
         return { origin: this.terminal!.id, destination: lab.id, resourceType: mineralType};
       }
@@ -1228,41 +1129,3 @@ export class LabManagementProcess extends Process
 }
 
 export const LABDISTROCAPACITY = 1000;
-const COMPOUND_LIST: {[type: string]: ResourceConstant[]} =
-{
-  KO: ["K", "O"],
-};
-/*
-  UH: ["U", "H"],
-  UO: ["U", "O"],
-  OH: ["O", "H"],
-  LO: ["L", "O"],
-  LH: ["L", "H"],
-  ZO: ["Z", "O"],
-  ZH: ["Z", "H"],
-  ZK: ["Z", "K"],
-  UL: ["U", "L"],
-  G: ["ZK", "UL"],
-  GH: ["G", "H"],
-  GO: ["G", "O"],
-  UH2O: ["UH", "OH"],
-  UHO2: ["UO", "OH"],
-  GH2O: ["GH", "OH"],
-  GHO2: ["GO", "OH"],
-  LHO2: ["LO", "OH"],
-  LH2O: ["LH", "OH"],
-  ZHO2: ["ZO", "OH"],
-  ZH2O: ["ZH", "OH"],
-  KHO2: ["KO", "OH"],
-  XUH2O: ["X", "UH2O"],
-  XUHO2: ["X", "UHO2"],
-  XGH2O: ["X", "GH2O"],
-  XGHO2: ["X", "GHO2"],
-  XLHO2: ["X", "LHO2"],
-  XLH2O: ["X", "LH2O"],
-  XZHO2: ["ZHO2", "X"],
-  XZH2O: ["ZH2O", "X"],
-  XKHO2: ["KHO2", "X"]
-};
-
-*/

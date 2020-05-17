@@ -13,7 +13,6 @@ export class HealerLifetimeProcess extends LifetimeProcess
         if(!creep || !flag)
         {
             this.completed = true;
-            flag.memory.healer = undefined;
             return;
         }
     }
