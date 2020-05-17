@@ -54,16 +54,16 @@ export class AlleyObservationManagementProcess extends Process
           if(!this.kernel.hasProcess('powhm-' + checkRoom.name))
           {
             console.log('Spawn power retrieval', checkRoom.name);
-            const spawnRoomName = Utils.nearestRoom(checkRoom.name);
-            if(spawnRoomName !== '')
-            {
-              Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
-              this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
-                roomName: checkRoom.name,
-                spawnRoomName: spawnRoomName,
-                powerBankId: powerBank.id
-              })
-            }
+            // const spawnRoomName = Utils.nearestRoom(checkRoom.name);
+            // if(spawnRoomName !== '')
+            // {
+            //   Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
+            //   this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
+            //     roomName: checkRoom.name,
+            //     spawnRoomName: spawnRoomName,
+            //     powerBankId: powerBank.id
+            //   })
+            // }
 
             return;
           }
