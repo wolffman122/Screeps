@@ -384,26 +384,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         {
           if(!this.room.memory.factoryEmpty)
           {
-            if(this.factory.store.getUsedCapacity() === 0)
-              this.room.memory.factoryEmpty = true;
-
-            if(this.factory.store.getUsedCapacity() > 0 && this.creep.store.getUsedCapacity() === 0)
-            {
-              this.creep.withdrawEverything(this.factory);
-              return;
-            }
-
-            if(this.creep.store.getUsedCapacity(commodity) > 0)
-            {
-              this.creep.transfer(this.terminal, commodity);
-              return;
-            }
-
-            if(this.creep.store.getUsedCapacity() > 0)
-            {
-              this.creep.transferEverything(this.storage);
-              return;
-            }
+            this.FactoryEmpty(commodity);
           }
 
           const cooldown = COMMODITIES[commodity].cooldown;
@@ -473,6 +454,14 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         this.TransferToStorage(deposit, MINERAL_KEEP_AMOUNT);
         return;
       }
+    }
+
+    if(this.factory.store.getUsedCapacity() > 0
+    && this.creep.store.getUsedCapacity() === 0
+    && !this.room.memory.commands)
+    {
+      this.creep.withdrawEverything(this.factory);
+      return;
     }
 
     // if((this.storage.store[this.mineral.mineralType] ?? 0) > 10000 &&
@@ -677,7 +666,8 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
           bothComponents++;
 
         if(comp === RESOURCE_ENERGY &&
-          (this.factory.store[comp] ?? 0) < energyNeeded)
+          (this.factory.store.getUsedCapacity(comp) < energyNeeded
+          && this.storage.store.getUsedCapacity(this.mineral.mineralType) + this.creep.store.getUsedCapacity(this.mineral.mineralType) >= 100600))
         {
           if(this.TransferToFactory(comp))
           {
@@ -687,7 +677,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         }
         else if(comp !== RESOURCE_ENERGY
           && ((this.factory?.store[comp] ?? 0) < componentNeeded)
-          && ((this.storage.store[this.mineral.mineralType] ?? 0) + this.creep.store.getUsedCapacity() >= 100600))
+          && ((this.storage.store[this.mineral.mineralType] ?? 0) + this.creep.store.getUsedCapacity(this.mineral.mineralType) >= 100600))
         {
           if(this.TransferToFactory(comp))
           {
@@ -760,5 +750,29 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
           return commands;
         }
       }
+  }
+
+  private FactoryEmpty(commodity: ResourceConstant)
+  {
+    if(this.factory.store.getUsedCapacity() === 0)
+      this.room.memory.factoryEmpty = true;
+
+    if(this.factory.store.getUsedCapacity() > 0 && this.creep.store.getUsedCapacity() === 0)
+    {
+      this.creep.withdrawEverything(this.factory);
+      return;
+    }
+
+    if(this.creep.store.getUsedCapacity(commodity) > 0)
+    {
+      this.creep.transfer(this.terminal, commodity);
+      return;
+    }
+
+    if(this.creep.store.getUsedCapacity() > 0)
+    {
+      this.creep.transferEverything(this.storage);
+      return;
+    }
   }
 }
