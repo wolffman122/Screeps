@@ -42,7 +42,7 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
 
     if(creep.room.storage && creep.room.terminal)
     {
-      if(creep.room.storage.store[this.metaData.mineralType]! > 20000 && (_.sum(creep.room.terminal!.store) !== creep.room.terminal!.storeCapacity))
+      if(creep.room.terminal.store.getUsedCapacity(this.metaData.mineralType) < 10000 && (_.sum(creep.room.terminal!.store) !== creep.room.terminal!.storeCapacity))
       {
         if(creep.pos.inRangeTo(creep.room.terminal,1))
         {
