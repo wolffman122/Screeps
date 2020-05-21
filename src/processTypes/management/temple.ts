@@ -54,12 +54,15 @@ export class TempleProcess extends Process
 
 
 
-
+    this.templeRoom = Game.rooms[this.flag.room.name];
+    let controller: StructureController;
     if(this.templeRoom)
+    {
       this.templeRoom.memory.templeRoom = true;
-
-    this.templeStorage = this.templeRoom.storage;
-    this.templeTerminal = this.templeRoom.terminal;
+      this.templeStorage = this.templeRoom.storage;
+      this.templeTerminal = this.templeRoom.terminal;
+      controller = this.templeRoom.controller;
+    }
 
     if(!this.metaData.feedRoom)
       this.SetupFeedRoom();
@@ -73,7 +76,7 @@ export class TempleProcess extends Process
     let haulerAmount = 0;
     let builderAmount = 0;
     let distroAmount = 1;
-    const controller = this.templeRoom.controller;
+
     if(controller?.level < 3)
     {
       if((this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) < 1000
@@ -591,8 +594,7 @@ export class TempleProcess extends Process
 
   private DistroActions(creep: Creep, flagName: string)
   {
-    console.log(this.name, 'DA', 1, flagName)
-    if(creep.room.name === this.feedRoom.name
+    if(creep.room.name === this.feedRoom?.name
       && creep.store.getUsedCapacity() === 0)
     {
       console.log(this.name, 'Distro', 1)
@@ -605,15 +607,13 @@ export class TempleProcess extends Process
       return;
     }
 
-    console.log(this.name, 'DA', 1.1)
-    if(creep.room.name !== this.templeRoom.name)
+    if(creep.room.name !== this.templeRoom?.name)
     {
       console.log(this.name, 'Distro', 2)
       creep.travelTo(this.templeRoom.controller);
       return;
     }
 
-    console.log(this.name, 'DA', 1.2)
     let cPos = new RoomPosition(creep.pos.x-1, creep.pos.y, creep.pos.roomName);
     if(flagName === 'Distro-2-E37S45')
       cPos = new RoomPosition(creep.pos.x, creep.pos.y-1, creep.pos.roomName);
@@ -624,7 +624,6 @@ export class TempleProcess extends Process
       spawn.renewCreep(creep);
     }
 
-    console.log(this.name, 'DA', 1.3)
     const distroFlag = Game.flags[flagName];
     if(creep.store.getUsedCapacity() !== creep.store.getCapacity())
     {
@@ -644,7 +643,6 @@ export class TempleProcess extends Process
       return;
     }
 
-    console.log(this.name, 'DA', 1.4)
     const tower = this.roomData().towers?.filter(t => (t.store[RESOURCE_ENERGY ?? 0]) <= 500)[0];
     if(tower && (creep.store[RESOURCE_ENERGY] ?? 0) >= 500)
     {
@@ -658,7 +656,6 @@ export class TempleProcess extends Process
     }
 
     let spawn = this.roomData().spawns[0];
-    console.log(this.name, 'DA', 2, spawn)
     if(flagName === 'Distro-2-E37S45')
       {
         spawn = this.roomData().spawns[1];
@@ -667,11 +664,9 @@ export class TempleProcess extends Process
 
     if(flagName === 'Distro-2-E37S45')
     {
-      console.log(this.name, 'DA', 7)
       const container = this.roomData().containers[0];
       if(container?.store.getUsedCapacity() <= 601)
       {
-        console.log(this.name, 'Distro', 6)
         //const pos = new RoomPosition(container.pos.x + 1, container.pos.y + 1, container.room.name);
         if(!creep.pos.isNearTo(container))
           creep.travelTo(container);
@@ -682,11 +677,9 @@ export class TempleProcess extends Process
       }
     }
 
-      console.log(this.name, 'DA', 4, spawn)
     if((spawn?.store[RESOURCE_ENERGY] ?? 0) < 63
         && creep.store.getUsedCapacity(RESOURCE_ENERGY) >= 300)
     {
-      console.log(this.name, 'Distro', 5)
       if(!creep.pos.isNearTo(spawn))
         creep.travelTo(spawn);
       else
@@ -696,7 +689,6 @@ export class TempleProcess extends Process
 
     }
 
-    console.log(this.name, 'DA', 5)
     if(creep.store.getUsedCapacity() === 0)
     {
       if(this.templeTerminal)
@@ -730,10 +722,6 @@ export class TempleProcess extends Process
       }
     }
 
-    console.log(this.name, 'DA', 6)
-
-
-    console.log(this.name, 'DA', 8)
     if(this.templeTerminal?.store.getUsedCapacity(RESOURCE_ENERGY) > 0 && flagName !== 'Distro-2-E37S45')
     {
       if(!creep.pos.isEqualTo(distroFlag))
