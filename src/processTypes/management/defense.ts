@@ -32,7 +32,7 @@ export class DefenseManagementProcess extends Process
       this.completed = true;
       return;
     }
-    
+
     let flagName = 'Center-' + this.metaData.roomName;
     let flag = Game.flags[flagName];
 
@@ -71,11 +71,12 @@ export class DefenseManagementProcess extends Process
       });
 
 
-      let numberDefenders = 1;
-      if(dangerEnemies.length >= 4)
-      {
+      let numberDefenders = 0;
+      if(dangerEnemies.length)
+        numberDefenders = 1;
+      else if(dangerEnemies.length >= 4)
         numberDefenders = 2;
-      }
+      
 
       if(this.metaData.defenderCreeps.length < numberDefenders)
       {
