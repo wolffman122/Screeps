@@ -3,6 +3,7 @@ import { WorldMap } from "lib/WorldMap";
 import { helper } from "lib/helper";
 import { Traveler } from "lib/Traveler";
 import { Utils } from "lib/utils";
+import { AlleyObservationManagementProcess } from "./alleyObservation";
 
 export class PowerHarvestingManagement extends Process
 {
@@ -28,29 +29,42 @@ export class PowerHarvestingManagement extends Process
 
     if(!this.metaData.haulers)
       this.metaData.haulers = [];
+
+    if(!this.metaData.startTime)
+      this.metaData.startTime = Game.time;
   }
 
   run()
   {
-    this.completed = true
-    return;
-  }
-  test()
-  {
+    if(this.name === 'powhm-E46S50')
+      console.log(this.name, 'where is this process');
     this.ensureMetaData();
 
-    if(this.name === 'powhm-E34S40')
+    if((this.metaData.suicideSequence && Game.time > this.metaData.decayTime)
+     /*|| this.name === 'powhm-E38S50' */)
+    {
+      this.completed = true;
       return;
+    }
 
-    console.log(this.name, 'Power harvesting', this.metaData.spawnRoomName, this.metaData.powerBankId);
+    console.log(this.name, 'Power harvesting', this.metaData.startTime, this.metaData.spawnRoomName, this.metaData.powerBankId);
+    if(this.metaData.startTime + 6000 < Game.time)
+    {
+      this.completed = true;
+      return;
+    }
+
     this.spawnRoom = Game.rooms[this.metaData.spawnRoomName];
     this.bankRoom = Game.rooms[this.metaData.roomName];
-    this.powerBank = <StructurePowerBank>Game.getObjectById('5ebd42ba884109219783ce3b');
-    const observer = this.roomInfo(this.spawnRoom.name).observer;
-    if(observer)
+    this.powerBank = <StructurePowerBank>Game.getObjectById(this.metaData.powerBankId);
+
+    if(this.name === 'powhm-54S50')
+      this.metaData.haulerDone = true;
+    console.log(this.name, 'should be done', this.metaData.haulers.length, this.metaData.haulerDone)
+    if(this.metaData.haulers.length === 0 && this.metaData.haulerDone)
     {
-      const ret = observer.observeRoom(this.metaData.roomName);
-      console.log(this.name, observer, ret, this.powerBank);
+      this.completed = true;
+      return;
     }
 
     // if(this.bankRoom && this.powerBank)
@@ -62,22 +76,37 @@ export class PowerHarvestingManagement extends Process
     const healerAmount = 1;
 
     let numberOfHaulers = 0;
+    let boostLevel = 0;
 
-    if(this.powerBank?.power && this.powerBank.hits < 200000)
+    // Calculate drop in power hits to account for double attack
+    let spawnHaulers = false;
+    if(this.powerBank)
     {
+      if(this.metaData.previousPowerBankHits)
+      {
+        const diff = this.metaData.previousPowerBankHits - this.powerBank.hits;
+        const hitsToSpawnHaulers = this.powerBank.hits / diff;
+        if(hitsToSpawnHaulers <= 240)
+          spawnHaulers = true;
+      }
+      this.metaData.previousPowerBankHits = this.powerBank.hits;
+    }
+
+    console.log(this.name, 'SPAWN HAULERS', spawnHaulers);
+    if(this.powerBank?.power && spawnHaulers)
+    {
+      numberOfHaulers = 1;
       console.log(this.name, this.powerBank?.power, this.powerBank.hits)
       if(!this.metaData.powerBankPos)
         this.metaData.powerBankPos = this.powerBank.pos.x + ',' + this.powerBank.pos.y;
 
         console.log(this.name, 'haul' ,1)
-      const amount = this.powerBank.power;
+      let amount = this.powerBank.power;
 
-      numberOfHaulers = 1;
-      let boostLevel = 0;
       const unBoostedCarryParts =  Math.ceil(amount / CARRY_CAPACITY);
       const level1BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH.capacity));
-      const level3BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity));
       const level2BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH2O.capacity));
+      const level3BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity));
       if(level3BoostedCarryParts > 40)
       {
          numberOfHaulers = 2;
@@ -92,18 +121,48 @@ export class PowerHarvestingManagement extends Process
       else
         boostLevel = 0;
 
-        console.log(this.name, 'haul' ,2, numberOfHaulers, boostLevel);
-      for(let i = 0; i < this.metaData.haulers.length; i++)
-      {
-        const creep = Game.creeps[this.metaData.haulers[i]];
-        if(creep)
-          this.HaulerActions(creep, boostLevel);
-      }
+      // Test code for more dynamic haulers
+
+      // const level3Carry = (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity) * 40;
+      // const level2Carry = (CARRY_CAPACITY * BOOSTS.carry.KH2O.capacity) * 40;
+      // const level1Carry = (CARRY_CAPACITY * BOOSTS.carry.KH.capacity) * 40;
+      // const level0Carry = CARRY_CAPACITY * 40;
+
+      // if(!this.metaData.haulerMakeUp)
+      //   this.metaData.haulerMakeUp = [];
+
+      // do
+      // {
+      //   let totalCarry = 0;
+      //   if(this.metaData.haulerMakeUp?.length)
+      //     {
+      //       for(let i = 0; i < this.metaData.haulerMakeUp.length; i++)
+      //       {
+      //         totalCarry += this.metaData.haulerMakeUp[i].amount;
+      //         console.log(this.name,)
+      //       }
+      //     }
+      //   amount -= totalCarry;
+
+      //   if((amount - level3Carry) >= 0)
+      //     this.metaData.haulerMakeUp.push({boostLevel: 3, amount: level3Carry});
+      //   else if((amount - level2Carry) >= 0)
+      //     this.metaData.haulerMakeUp.push({boostLevel: 2, amount: level2Carry});
+      //   else if((amount - level1Carry) >= 0)
+      //     this.metaData.haulerMakeUp.push({boostLevel: 1, amount: level1Carry});
+      //   else if((amount - level0Carry) >= 0)
+      //     this.metaData.haulerMakeUp.push({boostLevel: 0, amount: level0Carry});
+
+      // } while (amount > 0);
+
     }
 
-    this.metaData.haulers = this.SpawnCreeps(numberOfHaulers, this.metaData.haulers, 'shHauler');
-    this.metaData.attackers = this.SpawnCreeps(attackerAmount, this.metaData.attackers, 'powerAttacker');
-    this.metaData.healers = this.SpawnCreeps(healerAmount, this.metaData.healers, 'powerHealer');
+    if(!this.metaData.suicideSequence)
+    {
+      this.metaData.haulers = this.SpawnCreeps(numberOfHaulers, this.metaData.haulers, 'shHauler');
+      this.metaData.attackers = this.SpawnCreeps(attackerAmount, this.metaData.attackers, 'powerAttacker');
+      this.metaData.healers = this.SpawnCreeps(healerAmount, this.metaData.healers, 'powerHealer');
+    }
 
     for(let i = 0; i < this.metaData.attackers.length; i++)
     {
@@ -119,13 +178,21 @@ export class PowerHarvestingManagement extends Process
       if(creep)
         this.HealerActions(creep);
     }
+
+    console.log(this.name, 'haul' ,2, numberOfHaulers, boostLevel);
+      for(let i = 0; i < this.metaData.haulers.length; i++)
+      {
+        const creep = Game.creeps[this.metaData.haulers[i]];
+        if(creep)
+          this.HaulerActions(creep, boostLevel);
+      }
   }
 
   private SpawnCreeps(amount: number, creeps: string[], type: string): string[]
   {
     creeps = Utils.clearDeadCreeps(creeps);
     const count = Utils.creepPreSpawnCount(creeps, 100);
-    if(count < amount)
+    if(count < amount && !this.metaData.haulerDone)
     {
       const creepName = type + '-' + this.metaData.roomName + '-' + Game.time;
       const spawned = Utils.spawn(this.kernel, this.spawnRoom.name, type, creepName, {});
@@ -140,7 +207,28 @@ export class PowerHarvestingManagement extends Process
 
   private AttackerActions(creep: Creep)
   {
-    console.log(this.name, 'AA', 1, creep.memory.boost, creep.name)
+    if(this.metaData.suicideSequence)
+    {
+      const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+      if(!creep.pos.isNearTo(spawn))
+        creep.travelTo(spawn, {preferHighway: true, allowHostile: false});
+      else
+      {
+        if(!spawn.spawning)
+        {
+          if(spawn.recycleCreep(creep) === OK)
+            this.completed = true;
+        }
+        else
+        {
+          if(creep.suicide() === OK)
+            this.completed = true;
+        }
+      }
+
+      return;
+    }
+    console.log(this.name, 'AA', 1, creep.memory.boost, creep.name, creep.pos, this.metaData.suicideSequence)
     if(!creep.memory.boost)
     {
       console.log(this.name, 'AA', 2)
@@ -173,11 +261,20 @@ export class PowerHarvestingManagement extends Process
     else
     {
       console.log(this.name, 'AA', this.powerBank);
-      this.powerBank = <StructurePowerBank>creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
+      if(this.powerBank?.pos.findInRange(FIND_HOSTILE_CREEPS, 1).length && !creep.pos.isNearTo(this.powerBank))
+      {
+        console.log(this.name, 'AA', 4)
+        this.metaData.suicideSequence = true;
+        this.metaData.decayTime = Game.time + this.powerBank.ticksToDecay;
+      }
+
+      console.log(this.name, 'AA', 5)
+
       if(this.powerBank?.hits > 0)
       {
+        console.log(this.name, 'AA', 6)
         if(!creep.pos.isNearTo(this.powerBank))
-          creep.travelTo(this.powerBank);
+          creep.travelTo(this.powerBank, {preferHighway: true, allowHostile: false});
         else
           creep.attack(this.powerBank);
 
@@ -185,8 +282,32 @@ export class PowerHarvestingManagement extends Process
       }
       else
       {
-        const pos = new RoomPosition(25, 25, this.bankRoom.name);
-        creep.travelTo(pos);
+        console.log(this.name, 'AA', 7)
+        const ruins = creep.room.find(FIND_RUINS);
+        const deposits = creep.room.find(FIND_DEPOSITS);
+        if(ruins.length || deposits.length)
+        {
+          const ruin = ruins[0];
+          const ruinSpots = ruin.pos.openAdjacentSpots(false);
+          const deposit = deposits[0];
+          const depositSpots = deposit.pos.openAdjacentSpots(false);
+          if(!ruinSpots.length || !depositSpots.length)
+          {
+            const haulers = Utils.inflateCreeps(this.metaData.haulers);
+            if(creep.pos.findInRange(haulers, 1).length)
+            {
+              const hauler = creep.pos.findClosestByRange(haulers);
+              const dir = creep.pos.getDirectionTo(hauler);
+              creep.move(dir);
+              return;
+            }
+          }
+        }
+        else
+        {
+          const pos = new RoomPosition(25, 25, this.metaData.roomName);
+          creep.travelTo(pos, {preferHighway: true, allowHostile: false});
+        }
       }
     }
   }
@@ -210,7 +331,8 @@ export class PowerHarvestingManagement extends Process
         return;
       }
 
-      console.log(this.name, 'healA', 3)
+      const dir = creep.pos.getDirectionTo(attacker);
+      console.log(this.name, 'healA', 3, creep.pos.isNearExit(0), attacker.pos.roomName === creep.pos.roomName, creep.pos, dir)
       if(!creep.pos.isNearTo(attacker))
       {
         const ret = creep.travelTo(attacker);
@@ -218,7 +340,7 @@ export class PowerHarvestingManagement extends Process
       }
       else
       {
-        const dir = creep.pos.getDirectionTo(attacker);
+
         console.log(this.name, 'healA', 5, dir)
         const ret = creep.move(dir);
         console.log(this.name, 'healA', 6, ret)
@@ -226,7 +348,7 @@ export class PowerHarvestingManagement extends Process
         if(creep.hits < creep.hitsMax)
           creep.heal(creep);
 
-        if(creep.room.name === this.bankRoom.name)
+        if(creep.room.name === this.bankRoom?.name)
           creep.heal(attacker);
 
         console.log(this.name, 'healA', 7)
@@ -241,6 +363,7 @@ export class PowerHarvestingManagement extends Process
 
   private HaulerActions(creep: Creep, boostLevel: number)
   {
+    console.log(this.name, 'haul', 0.1, creep.pos)
     if(!creep.memory.boost)
     {
       let boosts: string[] = [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE];
@@ -255,8 +378,46 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
+    if(creep.memory.full && creep.store.getUsedCapacity() === 0
+      && creep.room.name === this.metaData.spawnRoomName)
+    {
+      const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
+      if(!creep.pos.isNearTo(spawn))
+        creep.travelTo(spawn);
+      else
+      {
+        if(!spawn.spawning)
+          spawn.recycleCreep(creep);
+        else
+          creep.suicide();
+      }
+      return;
+    }
+
+    if(creep.store.getUsedCapacity() > 0 || creep.memory.full)
+    {
+      this.metaData.haulerDone = true;
+      const terminal = Game.rooms[this.metaData.spawnRoomName].terminal;
+      if(!creep.pos.isNearTo(terminal))
+        creep.travelTo(terminal, {preferHighway: true, allowHostile: false});
+      else
+      {
+        creep.transferEverything(terminal);
+        creep.memory.full;
+      }
+
+      return;
+    }
+
     if(creep.room.name === this.metaData.roomName)
     {
+      if(this.powerBank)
+      {
+        if(!creep.pos.inRangeTo(this.powerBank, 2))
+          creep.travelTo(this.powerBank, {range: 2});
+
+        return;
+      }
       const room = Game.rooms[this.metaData.roomName];
       const ruins = room.find(FIND_RUINS).filter((r) => r.store.getUsedCapacity() > 0);
       if(ruins.length)
@@ -270,36 +431,31 @@ export class PowerHarvestingManagement extends Process
         return;
       }
 
+      console.log(this.name, 'haul res', 1)
       const resources = room.find(FIND_DROPPED_RESOURCES).filter((d) => d.amount > 0);
+      console.log(this.name, 'haul res', 1, resources.length)
       if(resources.length)
       {
+        console.log(this.name, 'haul res', 1)
         const resource = creep.pos.findClosestByPath(resources);
         if(!creep.pos.isNearTo(resource))
           creep.travelTo(resource);
         else
-          creep.withdrawEverything(Resource);
+          creep.pickup(resource);
 
         return;
       }
 
-      if(creep.store.getUsedCapacity() === creep.store.getCapacity() ||
-        (resources.length === 0 && ruins.length === 0))
-        {
-          const terminal = this.spawnRoom.terminal;
-          if(!creep.pos.isNearTo(terminal))
-            creep.travelTo(terminal, {allowHostile: false});
-          else
-            creep.transferEverything(terminal);
-
-          return;
-        }
+      creep.memory.full = true;
     }
 
+    console.log(this.name, 'haul', 1)
     let pos: RoomPosition;
     if(this.powerBank)
       pos = this.powerBank.pos;
     else
     {
+      console.log(this.name, 'haul', 2)
       const x = +this.metaData.powerBankPos.split(',')[0];
       const y = +this.metaData.powerBankPos.split(',')[1];
       pos = new RoomPosition(x, y, this.metaData.roomName);
