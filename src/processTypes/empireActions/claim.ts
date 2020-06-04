@@ -39,7 +39,7 @@ export class ClaimProcess extends Process{
       return
     }
 
-
+    console.log('Claim Process', 1)
     let creep = Game.creeps[this.metaData.creep]
 
 
@@ -49,6 +49,7 @@ export class ClaimProcess extends Process{
       let spawned = false;
       if(spawnRoom === undefined)
       {
+        console.log('Claim Process', 2)
         spawnRoom = Utils.nearestRoom(this.metaData.targetRoom, 600);
       }
 
@@ -128,13 +129,13 @@ export class ClaimProcess extends Process{
           }
           else
           {
-            creep.travelTo(flag);
+            creep.travelTo(flag, {preferHighway: true, allowHostile: false});
             return;
           }
         }
         else
         {
-          creep.travelTo(flag);
+          creep.travelTo(flag, {preferHighway: true});
           return;
         }
       }

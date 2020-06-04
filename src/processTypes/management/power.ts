@@ -15,12 +15,15 @@ export class PowerManagement extends Process
         const powerSpawn = this.roomInfo(roomName).powerSpawn;
         if(powerSpawn)
         {
-          if(p.spawn(powerSpawn) === OK)
+          //if(roomName !== 'E37S46')
           {
-            this.kernel.addProcess(PowerCreepLifetimeProcess, 'pclf-' + p.name, this.priority - 1, {
-              powerCreep: p.name,
-              roomName: roomName
-            });
+            if(p.spawn(powerSpawn) === OK)
+            {
+              this.kernel.addProcess(PowerCreepLifetimeProcess, 'pclf-' + p.name, this.priority - 1, {
+                powerCreep: p.name,
+                roomName: roomName
+              });
+            }
           }
         }
       }

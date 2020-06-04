@@ -82,11 +82,13 @@ export class PowerHarvestingManagement extends Process
     let spawnHaulers = false;
     if(this.powerBank)
     {
+      const roomDistance = Game.map.getRoomLinearDistance(this.metaData.spawnRoomName, this.metaData.roomName);
+      console.log(this.name, 'Room distance', roomDistance)
       if(this.metaData.previousPowerBankHits)
       {
         const diff = this.metaData.previousPowerBankHits - this.powerBank.hits;
         const hitsToSpawnHaulers = this.powerBank.hits / diff;
-        if(hitsToSpawnHaulers <= 240)
+        if(hitsToSpawnHaulers <= (240 + roomDistance * 50))
           spawnHaulers = true;
       }
       this.metaData.previousPowerBankHits = this.powerBank.hits;
@@ -103,10 +105,10 @@ export class PowerHarvestingManagement extends Process
         console.log(this.name, 'haul' ,1)
       let amount = this.powerBank.power;
 
-      const unBoostedCarryParts =  Math.ceil(amount / CARRY_CAPACITY);
-      const level1BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH.capacity));
-      const level2BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH2O.capacity));
-      const level3BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity));
+      const unBoostedCarryParts =  Math.ceil(amount / CARRY_CAPACITY); // 2000
+      const level1BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH.capacity)); // 4000
+      const level2BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.KH2O.capacity)); // 6000
+      const level3BoostedCarryParts = Math.ceil(amount / (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity)); // 8000
       if(level3BoostedCarryParts > 40)
       {
          numberOfHaulers = 2;
@@ -123,38 +125,37 @@ export class PowerHarvestingManagement extends Process
 
       // Test code for more dynamic haulers
 
-      // const level3Carry = (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity) * 40;
-      // const level2Carry = (CARRY_CAPACITY * BOOSTS.carry.KH2O.capacity) * 40;
-      // const level1Carry = (CARRY_CAPACITY * BOOSTS.carry.KH.capacity) * 40;
-      // const level0Carry = CARRY_CAPACITY * 40;
+      const level3Carry = (CARRY_CAPACITY * BOOSTS.carry.XKH2O.capacity) * 40;
+      const level2Carry = (CARRY_CAPACITY * BOOSTS.carry.KH2O.capacity) * 40;
+      const level1Carry = (CARRY_CAPACITY * BOOSTS.carry.KH.capacity) * 40;
+      const level0Carry = CARRY_CAPACITY * 40;
 
-      // if(!this.metaData.haulerMakeUp)
-      //   this.metaData.haulerMakeUp = [];
+      if(!this.metaData.haulerMakeUp)
+         this.metaData.haulerMakeUp = [];
 
-      // do
-      // {
-      //   let totalCarry = 0;
-      //   if(this.metaData.haulerMakeUp?.length)
-      //     {
-      //       for(let i = 0; i < this.metaData.haulerMakeUp.length; i++)
-      //       {
-      //         totalCarry += this.metaData.haulerMakeUp[i].amount;
-      //         console.log(this.name,)
-      //       }
-      //     }
-      //   amount -= totalCarry;
+      do
+      {
+        let totalCarry = 0;
+        if(this.metaData.haulerMakeUp?.length)
+          {
+            for(let i = 0; i < this.metaData.haulerMakeUp.length; i++)
+            {
+              totalCarry += this.metaData.haulerMakeUp[i].amount;
+              console.log(this.name,)
+            }
+          }
+        amount -= totalCarry;
 
-      //   if((amount - level3Carry) >= 0)
-      //     this.metaData.haulerMakeUp.push({boostLevel: 3, amount: level3Carry});
-      //   else if((amount - level2Carry) >= 0)
-      //     this.metaData.haulerMakeUp.push({boostLevel: 2, amount: level2Carry});
-      //   else if((amount - level1Carry) >= 0)
-      //     this.metaData.haulerMakeUp.push({boostLevel: 1, amount: level1Carry});
-      //   else if((amount - level0Carry) >= 0)
-      //     this.metaData.haulerMakeUp.push({boostLevel: 0, amount: level0Carry});
+        if((amount - level3Carry) >= 0)
+          this.metaData.haulerMakeUp.push({boostLevel: 3, amount: level3Carry});
+        else if((amount - level2Carry) >= 0)
+          this.metaData.haulerMakeUp.push({boostLevel: 2, amount: level2Carry});
+        else if((amount - level1Carry) >= 0)
+          this.metaData.haulerMakeUp.push({boostLevel: 1, amount: level1Carry});
+        else if((amount - level0Carry) >= 0)
+          this.metaData.haulerMakeUp.push({boostLevel: 0, amount: level0Carry});
 
-      // } while (amount > 0);
-
+      } while (amount > 0);
     }
 
     if(!this.metaData.suicideSequence)
@@ -413,8 +414,8 @@ export class PowerHarvestingManagement extends Process
     {
       if(this.powerBank)
       {
-        if(!creep.pos.inRangeTo(this.powerBank, 2))
-          creep.travelTo(this.powerBank, {range: 2});
+        if(!creep.pos.inRangeTo(this.powerBank, 1))
+          creep.travelTo(this.powerBank, {range: 1});
 
         return;
       }

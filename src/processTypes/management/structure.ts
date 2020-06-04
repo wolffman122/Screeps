@@ -29,8 +29,8 @@ export class StructureManagementProcess extends Process{
     if(this.metaData.roomName === 'E37S45')
       console.log(this.name, '??????????????????????????????????????????????????????????????????????????');
 
-    if(this.metaData.upgradeType === 1)
-      console.log(this.name, 'Should be doing upgrades nows');
+    // if(this.metaData.upgradeType === 1)
+    //   console.log(this.name, 'Should be doing upgrades nows');
 
     this.ensureMetaData()
 
@@ -135,6 +135,9 @@ export class StructureManagementProcess extends Process{
             && room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < ENERGY_KEEP_AMOUNT)
             count = 0;
 
+          if(room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9)
+            count = 1;
+
           if(this.name === 'sm-E35S51')
             console.log(this.name, 'Rampart count', count, this.metaData.upgradeType);
           let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
@@ -148,8 +151,8 @@ export class StructureManagementProcess extends Process{
           {
             //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
             let boosts: string[] = [];
-            if(count === 2)
-              boosts.push(RESOURCE_LEMERGIUM_HYDRIDE)
+            //if(count === 2 || (room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9))
+              //boosts.push(RESOURCE_LEMERGIUM_HYDRIDE)
             this.metaData.repairCreeps.push(creepName);
 
             this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {

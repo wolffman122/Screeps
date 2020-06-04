@@ -59,7 +59,7 @@ export const Utils = {
 
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
-
+    
     let spawns = kernel.data.roomData[roomName].spawns
     let outcome = false
 

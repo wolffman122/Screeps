@@ -7,7 +7,7 @@ export class SpawnRemoteBuilderProcess extends Process{
 
   run(){
     let site = this.metaData.site
-    console.log(this.name, 'Remote life time');
+    console.log(this.name, 'Remote life time111111111111111111111111111111111111111111111111111111111111111111111111111111');
     let flag;
     let spawnRoom;
     let controller = Game.rooms[this.metaData.roomName].controller;
@@ -21,8 +21,9 @@ export class SpawnRemoteBuilderProcess extends Process{
       }
     }
 
-    if(spawnRoom === undefined)
-      spawnRoom = Utils.nearestRoom(this.metaData.roomName, 500);
+    // if(spawnRoom === undefined)
+    //   spawnRoom = Utils.nearestRoom(this.metaData.roomName, 500);
+    spawnRoom = 'E22S52';
 
     if(!this.kernel.hasProcess('rblf-rb-' + site)){
       let spawned = Utils.spawn(
@@ -36,6 +37,7 @@ export class SpawnRemoteBuilderProcess extends Process{
       if(spawned){
         this.kernel.addProcess(RemoteBuilderLifetimeProcess, 'rblf-rb-' + site, 70, {
           creep: 'rb-' + Game.time,
+          roomName: spawnRoom,
           site: site
         })
       }

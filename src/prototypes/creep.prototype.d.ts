@@ -14,4 +14,5 @@ interface Creep
   moveDir(dir: DirectionConstant): string;
   almostFull(): boolean;
   getCost(): number;
+  findIdlePosition (place: {pos: RoomPosition}, acceptableRange: number): RoomPosition;
 }

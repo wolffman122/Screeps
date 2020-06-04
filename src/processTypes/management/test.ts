@@ -30,50 +30,58 @@ export class TestProcessManagement extends Process
       return;
     }
 
-
-
-    const spawn = <StructureSpawn>Game.getObjectById('5e0d941dc1f3bdb34a810743')
-    const observer = this.roomData().observer;
-    if(observer)
-    {
-      const ret = observer.observeRoom('E40S36');
-      console.log(this.name, 'observe', ret);
-    }
+    this.target = flag;
+    const spawn = this.roomData().spawns.filter(s => !s.spawning)[0];
 
     this.metaData.leaders = Utils.clearDeadCreeps(this.metaData.leaders);
-    if(this.metaData.leaders.length < 1)
-    {
-      if(spawn.spawnCreep([MOVE], 'test' + Game.time) === OK)
-        this.metaData.leaders.push('test' + Game.time);
-    }
+    this.metaData.followers = Utils.clearDeadCreeps(this.metaData.followers);
 
-    console.log(this.name, 'test', 1)
-    if(this.metaData.leaders.length === 1)
+    if(spawn)
     {
-      console.log(this.name, 'test', 2)
-      const creep = Game.creeps[this.metaData.leaders[0]];
-      if(creep)
+      if(this.metaData.leaders.length < 1)
       {
-        console.log(this.name, 'test', 3)
-        const room = Game.rooms['E40S36'];
-        if(room)
+        if(spawn.spawnCreep([MOVE], 'test-' + Game.time) === OK)
         {
-          const deposits = room.find(FIND_DEPOSITS);
-          if(deposits.length)
-          {
-            const deposit = deposits[0];
-            if(!creep.pos.isNearTo(deposit))
-            {
-              if(Game.time % 5 === 0)
-              {
-              const ret = creep.travelTo(deposit, {allowHostile: false});
-              console.log(this.name, 'test', 4, deposit, ret);
-              }
-            }
-          }
+          this.metaData.leaders.push('test-' + Game.time);
+          return;
+        }
+      }
 
+      if(this.metaData.followers.length < 1)
+      {
+        if(spawn.spawnCreep([MOVE], 'test2-' + Game.time) === OK)
+        {
+          this.metaData.followers.push('test2-' + Game.time);
+          return;
         }
       }
     }
+
+    for(let i = 0; i < this.metaData.leaders.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.leaders[i]];
+      if(creep)
+        this.LeaderActions(creep);
+    }
+
+    for(let i = 0; i < this.metaData.followers.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.followers[i]];
+      if(creep)
+        this.FollowerActions(creep);
+    }
+
+  }
+
+  private LeaderActions(creep: Creep)
+  {
+    if(!creep.pos.isEqualTo(this.target))
+      creep.travelTo(this.target);
+  }
+
+  private FollowerActions(creep: Creep)
+  {
+    if(!creep.pos.isEqualTo(this.target))
+      creep.pushyTravelTo(this.target);
   }
 }

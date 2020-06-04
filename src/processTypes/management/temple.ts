@@ -98,8 +98,6 @@ export class TempleProcess extends Process
       if(spawns.length < 1 && towers.length < 1)
         builderAmount = 1;
 
-        this.TowerHeal();
-
       if(controller?.level <= 5)
       {
         console.log(this.name, 'Build Storage')
@@ -149,6 +147,9 @@ export class TempleProcess extends Process
         }
       }
     }
+
+    if(controller?.level >= 3)
+      this.TowerHeal();
 
     console.log(this.name, 'Creep amounts', upgraderAmount, haulerAmount, builderAmount, distroAmount);
 
@@ -810,6 +811,32 @@ export class TempleProcess extends Process
           const upgrader = upgraders[0];
           tower.heal(upgrader);
           return;
+        }
+
+        const roads = this.roomData().roads.filter(r => r.hits < r.hitsMax);
+        if(roads.length)
+        {
+          const road = _.min(roads, 'hits');
+          if(road)
+          {
+            tower.repair(road);
+            return;
+          }
+        }
+
+        if(Game.time % 1000 >= 555 && Game.time % 1000 <= 575)
+        {
+          const structures = this.templeRoom.find(FIND_MY_STRUCTURES, {filter: s => s.hits < s.hitsMax});
+          if(structures.length)
+          {
+            const structure = _.min(structures, 'hits');
+            if(structure)
+            {
+              tower.repair(structure)
+              return;
+            }
+          }
+
         }
       }
     }

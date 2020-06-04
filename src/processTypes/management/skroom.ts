@@ -84,8 +84,8 @@ export class skRoomManagementProcess extends Process
 
   run()
   {
-    if(this.name === 'skrmp-E36S34')
-      console.log(this.name, 'Problem', 10)
+    if(this.name === 'skrmp-E45S54')
+      console.log(this.name, 'Problem', 1, this.metaData.coreInSK)
 
     if(Game.cpu.bucket < 7000)
       return;
@@ -108,8 +108,10 @@ export class skRoomManagementProcess extends Process
     this.ensureMetaData();
 
 
-    if(this.name === 'skrmp-E36S34')
-      console.log(this.name, 'Problem', 1)
+    if(this.name === 'skrmp-E45S56')
+    {
+        console.log(this.name, 'Run', 1, this.skFlag.memory.attackingCore);
+    }
 
     if(!this.skFlag.memory.attackingCore)
       this.coreSearching();
@@ -169,11 +171,6 @@ export class skRoomManagementProcess extends Process
       }
     }
 
-    if(this.name === 'skrmp-E36S34')
-    {
-      this.metaData.coreInSK = false;
-      console.log(this.name, 'Problem', 3, this.metaData.coreInSK)
-    }
 
     if(!this.metaData.coreInSK)
     {
@@ -556,7 +553,6 @@ export class skRoomManagementProcess extends Process
     const skRoom = Game.rooms[this.skRoomName];
     if(skRoom?.memory.SKInfo === undefined && devil.pos.roomName === this.skRoomName)
       skRoom.memory.SKInfo = {devilDistance: (devil.memory.distance + 10), sourceDistances: {}};
-
 
     if(this.metaData.coreInSK)
     {
@@ -1353,19 +1349,24 @@ export class skRoomManagementProcess extends Process
         this.metaData.roadsDone[source.id] = false;
       }
 
+      if(hauler.name === 'sk-m-E45S54-26905280')
+        console.log(this.name, 'ha', 0.1)
+
       if(hauler.pos.roomName !== this.skRoomName && _.sum(hauler.carry) === 0 &&
         hauler.ticksToLive > this.metaData.distroDistance[source.id] * 2)
       {
+        if(hauler.name === 'sk-m-E45S54-26905280')
+        console.log(this.name, 'ha', 0.2)
         hauler.travelTo(source);
         return;
       }
       else
       {
-        if(hauler.name === 'sk-m-E36S34-26423368')
+        if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 1)
         if(this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id] && hauler.room.name === this.skRoomName)
         {
-          if(hauler.name === 'sk-m-E36S34-26423368')
+          if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 2)
           let lair = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].lair
           let sks = hauler.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
@@ -1402,7 +1403,7 @@ export class skRoomManagementProcess extends Process
             }
           }
 
-          if(hauler.name === 'sk-m-E36S34-26423368')
+          if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 3)
           if(lair.ticksToSpawn < 10)
           {
@@ -1448,11 +1449,11 @@ export class skRoomManagementProcess extends Process
           // }
         }
 
-        if(hauler.name === 'sk-m-E36S34-26423368')
+        if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 4)
         if(!hauler.memory.full && hauler.ticksToLive! > this.metaData.distroDistance[source.id])
         {
-          if(hauler.name === 'sk-m-E36S34-26423368')
+          if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 5)
           if(_.sum(hauler.carry) === hauler.carryCapacity)
           {
@@ -1460,7 +1461,7 @@ export class skRoomManagementProcess extends Process
           }
           else
           {
-            if(hauler.name === 'sk-m-E36S34-26423368')
+            if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 6)
             let tombstone = hauler.pos.findInRange(FIND_TOMBSTONES, 10)[0];
             if(tombstone && tombstone.store.energy > 600)
@@ -1474,7 +1475,7 @@ export class skRoomManagementProcess extends Process
               return;
             }
 
-            if(hauler.name === 'sk-m-E36S34-26423368')
+            if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 7)
 
             let SHContainer = this.roomInfo(hauler.pos.roomName).containers.filter(c => {
@@ -1483,11 +1484,11 @@ export class skRoomManagementProcess extends Process
                 && c.pos.lookForStructures(STRUCTURE_RAMPART) === undefined
             });
 
-            if(hauler.name === 'sk-m-E36S34-26423368')
+            if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 8)
             if(SHContainer.length)
             {
-              if(hauler.name === 'sk-m-E36S34-26423368')
+              if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 9)
               let container = hauler.pos.findClosestByPath(SHContainer);
               if(container)
@@ -1500,12 +1501,12 @@ export class skRoomManagementProcess extends Process
               }
             }
 
-            if(hauler.name === 'sk-m-E36S34-26423368')
+            if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 10)
             let sourceContainer = this.roomInfo(this.skRoomName).skSourceContainerMaps[source.id].container;
             if(sourceContainer)
             {
-              if(hauler.name === 'sk-m-E36S34-26423368')
+              if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 11)
               let resource = <Resource[]>source.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {filter: r => r.amount > 200});
               if(resource.length > 0)
@@ -1519,47 +1520,71 @@ export class skRoomManagementProcess extends Process
                 return;
               }
 
-              if(hauler.name === 'sk-m-E36S34-26423368')
+              if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 12)
               let roads: {
                 [sourceId: string]: boolean
               };
+
+              // if(hauler.name === 'sk-m-E45S54-26905280')
+              // {
+              //   for(const id in this.skRoom.memory.roads)
+              //   {
+              //     if(!Game.getObjectById(id))
+              //     {
+              //       console.log(this.name, 'Roads reset', id);
+              //       this.skRoom.memory.roads = undefined;
+              //       break;
+              //     }
+              //   }
+              // }
+
               if(!this.skRoom.memory.roads)
               {
                 this.skRoom.memory.roads = {};
                 roads = this.skRoom.memory.roads;
               }
               else
+              {
                 roads = this.skRoom.memory.roads;
+              }
 
-                if(hauler.name === 'sk-m-E36S34-26423368')
+                if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 13)
               if(hauler.room.name === sourceContainer.room.name
                 && !hauler.pos.isNearTo(sourceContainer))
               {
-                if(hauler.name === 'sk-m-E36S34-26423368')
-            console.log(hauler.name, 'ha', 14)
+                if(hauler.name === 'sk-m-E45S54-26905280')
+            console.log(hauler.name, 'ha', 14, sourceContainer.id, roads[sourceContainer.id])
                 if(!roads[sourceContainer.id])
                 {
-                  if(hauler.name === 'sk-m-E36S34-26423368')
+                  if(hauler.name === 'sk-m-E45S54-26905280')
                   console.log(hauler.name, 'ha', 14.1)
                   const ret = PathFinder.search(hauler.pos, sourceContainer.pos);
                   if(!ret.incomplete)
                   {
+                    if(hauler.name === 'sk-m-E45S54-26905280')
+                  console.log(hauler.name, 'ha', 14.2)
                     if(Object.keys(Game.constructionSites).length + ret.path.length <= 100)
                     {
+                      if(hauler.name === 'sk-m-E45S54-26905280')
+                  console.log(hauler.name, 'ha', 14.3)
                       let allCreated = true;
                       for(let i = 0; i < ret.path.length; i++)
                         allCreated = allCreated && (this.skRoom.createConstructionSite(ret.path[i], STRUCTURE_ROAD) == OK);
 
-                      if(allCreated)
+                        if(hauler.name === 'sk-m-E45S54-26905280')
+                  console.log(hauler.name, 'ha', 14.4)
+
                         roads[sourceContainer.id] = true;
+
+                      
                     }
                   }
                 }
                 else if(!hauler.pos.inRangeTo(sourceContainer, 1))
                 {
-                  if(hauler.name === 'sk-m-E36S34-26423368')
+                  if(hauler.name === 'sk-m-E45S54-26905280')
                   console.log(hauler.name, 'ha', 14.2)
                   hauler.travelTo(sourceContainer);
                   return;
@@ -1567,7 +1592,7 @@ export class skRoomManagementProcess extends Process
               }
               else if(!hauler.pos.inRangeTo(sourceContainer, 1))
               {
-                if(hauler.name === 'sk-m-E36S34-26423368')
+                if(hauler.name === 'sk-m-E45S54-26905280')
             console.log(hauler.name, 'ha', 15)
                   hauler.travelTo(sourceContainer);
                   return;
@@ -2028,15 +2053,22 @@ export class skRoomManagementProcess extends Process
   {
     try
     {
+      if(this.name === 'skrmp-E45S56')
+        console.log(this.name, 'coresearching', 1)
       if(this.skRoom)
       {
+        if(this.name === 'skrmp-E45S56')
+        console.log(this.name, 'coresearching', 2)
         const cores = this.skRoom.find(FIND_HOSTILE_STRUCTURES, {filter: s=> s.structureType === STRUCTURE_INVADER_CORE});
         if(cores.length)
         {
-          const core = cores[0] as StructureInvaderCore;
 
-          if(core.ticksToDeploy < 300)
+          const core = cores[0] as StructureInvaderCore;
+          if(this.name === 'skrmp-E45S56')
+          console.log(this.name, 'coresearching', 3, core.ticksToDeploy)
+          if(core?.ticksToDeploy < 300)
           {
+            console.log(this.name, 'Core WTF');
             this.metaData.coreInSK = true;
             Game.notify("Found Core in skroom " + this.skRoomName + " going active in " + 300 + " " + Game.time);
             if(core.level <= 3)
@@ -2050,8 +2082,9 @@ export class skRoomManagementProcess extends Process
             }
           }
 
-          if(core.level <= 3)
+          if(core?.level <= 3 && !core?.ticksToDeploy)
           {
+            console.log(this.name, 'Core WTF 1');
             this.metaData.coreInSK = true;
             this.kernel.addProcessIfNotExist(StrongHoldDestructionProcess, 'shdp' + this.skRoomName, 35,
               {
@@ -2061,7 +2094,7 @@ export class skRoomManagementProcess extends Process
               });
             Game.notify("Found core in skroom" + this.skRoomName + " Time to kill it");
           }
-          console.log(this.name, 'Found a core', core.id, core.effects, (core.effects[EFFECT_COLLAPSE_TIMER]?.ticksRemaining ?? 0));
+          console.log(this.name, 'Found a core', core.id, core.ticksToDeploy, !core.ticksToDeploy, core.effects, (core.effects[EFFECT_COLLAPSE_TIMER]?.ticksRemaining ?? 0));
         }
         else
           this.metaData.coreInSK = false;

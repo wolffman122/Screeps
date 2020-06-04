@@ -328,7 +328,7 @@ export const Stats = {
                     terminalRoomMost = room.name;
                   }
                 }
-                
+
                 if(!totalCommoditiesAmount[c])
                   totalCommoditiesAmount[c] = 0;
 
@@ -474,7 +474,6 @@ export const Stats = {
     for(let d in totalDepositsAmount)
       Memory.stats['deposits.' + d] = totalDepositsAmount[d];
 
-    kernel.data.labProcesses[RESOURCE_CATALYZED_KEANIUM_ACID] = undefined;
     //kernel.data.labProcesses[RESOURCE_GHODIUM] = undefined;
     Memory.stats["lab.processCount." + RESOURCE_GHODIUM] = undefined;
     for(let resourceType of PRODUCT_LIST)

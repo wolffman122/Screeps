@@ -47,9 +47,11 @@ export class TerminalManagementProcess extends Process
 
           if(r.terminal && r.storage)
           {
-
+            if(r.name === 'E37S45')
+              console.log(this.name, 'TEMPLE ROOM', r.memory.templeRoom, r.terminal?.store.getUsedCapacity(RESOURCE_ENERGY), r.terminal?.store.getCapacity() * .9)
             if(r.memory.templeRoom && r.terminal?.store.getUsedCapacity(RESOURCE_ENERGY) < r.terminal?.store.getCapacity() * .9)
             {
+              console.log(this.name, 'TEMPLE ROOM')
               if(r.controller?.level === 8)
                 return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 900000) && r.controller?.my &&
                   r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
@@ -58,8 +60,14 @@ export class TerminalManagementProcess extends Process
                   r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
             }
             else
-              return ((r.storage.store.energy < 190000 || r.storage.store === undefined) && r.controller && r.controller.my &&
-                r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity);
+            {
+              if(r.name === 'E37S45')
+                console.log(this.name, 'TEMPLE ROOM', ((r.storage.store.energy < 100000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+                  r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity && !r.memory.templeRoom));
+
+              return ((r.storage.store.energy < 290000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+                r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity && !r.memory.templeRoom);
+            }
           }
           else
           {
@@ -77,7 +85,7 @@ export class TerminalManagementProcess extends Process
               minimum = 10;
               minimumRoom = r.name;
             }
-            else
+            else if(!r.memory.templeRoom)
             {
               let storage = r.storage;
               if(storage.store.getUsedCapacity() < minimum)

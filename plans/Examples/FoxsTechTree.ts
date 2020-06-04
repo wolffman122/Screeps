@@ -229,3 +229,27 @@ Include move to all actions. You can always move regardless of your attack/range
     });
 
     Chasing by ID means that you are storing the target, and still using room.find - if you don't find anything in the room, go chase the target to the next room
+
+Power harvesting talks
+
+    yyes
+12:46
+but, depends have you math it out?
+12:46
+how many ticks? and damage?
+12:47
+2100 damage / 952 ticks
+12:48
+315 damage reflected back
+12:48
+528 healed per tick
+12:48
+so overkill by 185 tough hits and 213 healing
+12:50
+If you reduce the attack by 1 part, you do 2040 damage that gets reduced to 306(2040*.5*0.3). 306/12 = 25.5 heal parts needed
+12:50
+reduce it by 2 attack parts, you get to my numbers
+12:50
+which is 1980 damage, 297 reflected back, 25 heal parts needed.
+12:51
+1011 ticks needed to kill powerbank, gives you 400~ticks to get there after boosting and other stuff

@@ -23,47 +23,49 @@ export class AlleyObservationManagementProcess extends Process
     if(termnial?.store.getFreeCapacity() > 50000 && (storage?.store[RESOURCE_ENERGY] > (KEEP_AMOUNT * 1.2) ?? false))
     {
       let results;
-      if(room.name === 'E41S32')
-        console.log(this.name, 'Check Room', checkRoom);
 
       if(checkRoom)
         results = this.checkTheRoom(checkRoom);
 
       if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
       {
-        if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
-        {
-          const spawnRoomName = Utils.nearestRoom(checkRoom.name)
-          if(spawnRoomName !== '')
-          {
-            Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
-            this.fork(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
-              roomName: spawnRoomName,
-              targetRoomName: checkRoom.name
-            });
-          }
+        // if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
+        // {
+        //   const spawnRoomName = Utils.nearestRoom(checkRoom.name)
+        //   if(spawnRoomName !== '')
+        //   {
+        //     Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
+        //     this.kernel.addProcessIfNotExist(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
+        //       roomName: spawnRoomName,
+        //       targetRoomName: checkRoom.name
+        //     });
+        //   }
 
-          return;
-        }
+        //   return;
+        // }
       }
       else if((results & ReturnEnum.Power) === ReturnEnum.Power)
       {
         const powerBank = <StructurePowerBank>checkRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
-        if(powerBank?.ticksToDecay > 3500)
+
+        if(powerBank?.ticksToDecay > 3500 && powerBank?.power > 1500)
         {
           if(!this.kernel.hasProcess('powhm-' + checkRoom.name))
           {
-            console.log('Spawn power retrieval', checkRoom.name);
-            // const spawnRoomName = Utils.nearestRoom(checkRoom.name);
-            // if(spawnRoomName !== '')
-            // {
-            //   Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
-            //   this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
-            //     roomName: checkRoom.name,
-            //     spawnRoomName: spawnRoomName,
-            //     powerBankId: powerBank.id
-            //   })
-            // }
+            console.log('Spawn power retrieval', checkRoom.name, powerBank.ticksToDecay);
+            //if(checkRoom.name === 'E3740')
+            {
+              const spawnRoomName = Utils.nearestRoom(checkRoom.name);
+              if(spawnRoomName !== '')
+              {
+                Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
+                this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
+                  roomName: checkRoom.name,
+                  spawnRoomName: spawnRoomName,
+                  powerBankId: powerBank.id
+                })
+              }
+            }
 
             return;
           }
@@ -105,9 +107,6 @@ export class AlleyObservationManagementProcess extends Process
 
       if(observer.observeRoom(scanRoom) === OK)
         this.metaData.checkRoom = scanRoom;
-
-      console.log(this.name, 'Observation', observer.room.name);
-
     }
   }
 
@@ -115,9 +114,12 @@ export class AlleyObservationManagementProcess extends Process
   {
     let retValue: ReturnEnum;
 
-    const deposits = room.find(FIND_DEPOSITS);
+
+    const deposits = room.find(FIND_DEPOSITS).filter(d => !d.lastCooldown);
+    if(this.metaData.roomName === 'E35S51')
+      console.log(this.name, room.name, 'Double deposit', deposits)
     if(deposits.length)
-    {8
+    {
       if(deposits[0].lastCooldown < 20)
         retValue = ReturnEnum.Deposits;
     }

@@ -78,6 +78,7 @@ export class RoomDataProcess extends Process{
     {
       if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN)
       {
+        console.log(this.name, 'spawn remote builder');
         this.kernel.addProcess(SpawnRemoteBuilderProcess, 'srm-' + this.metaData.roomName, 90, {
           site: this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].id,
           roomName: this.metaData.roomName

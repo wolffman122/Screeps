@@ -3,17 +3,24 @@ import {HarvestProcess} from '../creepActions/harvest'
 
 export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
   type = 'rblf'
+  metaData: RemoteBuilderLifetimeProcessMetaData
 
   run(){
-    console.log(this.name, 'Life time remote')
+    console.log(this.name, 'Life time remote22222222222222222222222222222222222222222222222222222222222222222222222')
     const cpu = Game.cpu.getUsed();
     let creep = this.getCreep()
     let site = <ConstructionSite>Game.getObjectById(this.metaData.site)
 
-    if(!creep){ return }
-    if(!site){
-      this.completed = true
+    if(!creep)
+    {
+      this.completed = true;
       return
+    }
+
+    if(!creep.memory.boost)
+    {
+      creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_LEMERGIUM_ACID], false);
+      return;
     }
 
     let flag = Game.flags['Claim-10-E39S35'];
@@ -129,7 +136,15 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
             }
             else
             {
-              let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
+              let source: Source;
+
+              if(!this.metaData.target)
+              {
+                source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources.filter(s => s.energy >= creep.store.getCapacity()))
+                this.metaData.target = source.id;
+              }
+              else
+                source = Game.getObjectById(this.metaData.target);
 
               if(!creep.pos.isNearTo(source))
                 creep.travelTo(source);
@@ -137,7 +152,10 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
                 creep.harvest(source);
 
                 if(_.sum(creep.carry) === creep.carryCapacity)
+                {
+                  this.metaData.target = undefined;
                   creep.memory.filling = false;
+                }
 
                   console.log(this.name, 'CPU usage', Game.cpu.getUsed() - cpu);
               return
@@ -147,21 +165,43 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       }
       else
       {
-        let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
-
-        this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          source: source.id
-        })
-
+        const pos = new RoomPosition(25, 25, site.pos.roomName);
+        if(!creep.pos.isNearTo(pos))
+          creep.travelTo(pos, {preferHighway: true, allowHostile: false});
         return
       }
     }
 
+    const spawn = this.roomInfo(creep.room.name).spawns[0];
+    if(spawn?.store.getUsedCapacity(RESOURCE_ENERGY) === 0)
+    {
+      if(!creep.pos.isNearTo(spawn))
+        creep.travelTo(spawn);
+      else
+        creep.transfer(spawn, RESOURCE_ENERGY);
+
+      return;
+    }
+
+
+    if(site)
+    {
     if(!creep.pos.inRangeTo(site, 3))
         creep.travelTo(site, {range: 3});
       else
         creep.build(site);
+    }
+    else
+    {
+      let target = this.roomInfo(creep.room.name).constructionSites[0];
+      if(target)
+      {
+        if(!creep.pos.inRangeTo(target, 3))
+          creep.travelTo(target, {range: 3})
+        else
+          creep.build(target);
+      }
+    }
 
     console.log(this.name, 'CPU usage', Game.cpu.getUsed() - cpu);
     return;

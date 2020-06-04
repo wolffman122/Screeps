@@ -11,7 +11,7 @@ export class MinetalTerminalManagementProcess extends Process
     return;
       }
 }
-export const ENERGY_KEEP_AMOUNT = 300000;
+export const ENERGY_KEEP_AMOUNT = 360000;
 export const KEEP_AMOUNT = 10000;
 export const FACTORY_KEEP_AMOUNT = 6000;
 export const MINERAL_KEEP_AMOUNT = 5000;
@@ -20,8 +20,10 @@ export const MINERALS_RAW = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_ZYNTHI
 export const PRODUCT_LIST = [RESOURCE_UTRIUM_OXIDE,
                              RESOURCE_UTRIUM_HYDRIDE,
                              RESOURCE_ZYNTHIUM_HYDRIDE,
+                             RESOURCE_KEANIUM_HYDRIDE,
                              RESOURCE_LEMERGIUM_OXIDE,
                              RESOURCE_KEANIUM_OXIDE,
+                             RESOURCE_KEANIUM_ACID,
                              RESOURCE_GHODIUM_ACID,
                              RESOURCE_GHODIUM_ACID,
                              RESOURCE_GHODIUM,
@@ -39,6 +41,7 @@ export const PRODUCT_LIST = [RESOURCE_UTRIUM_OXIDE,
                              RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE];
 export const PRODUCTION_TERMINAL_AMOUNT = 6000;
 export const PRODUCTION_STORAGE_AMOUNT = 2000;
+export const COMMODITY_TERMINAL_AMOUNT = 1000;
 export const PRODUCTION_AMOUNT = 6000;
 
 export const REAGENT_LIST = {

@@ -40,7 +40,7 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
 
     if(_.sum(creep.carry) === 0 && creep.ticksToLive! > 100)
     {
-      if(!creep.room.storage?.my && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
+      if(!creep.room.storage?.my && creep.room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
       {
         if(!creep.pos.isNearTo(creep.room.storage))
           creep.travelTo(creep.room.storage);
@@ -77,8 +77,9 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess
               this.metaData.numberOfDropPickups++;
         }
       }
-      else if(this.kernel.data.roomData[creep.pos.roomName].generalContainers.length > 0)
+      else if(this.kernel.data.roomData[creep.pos.roomName].generalContainers?.length > 0)
       {
+        console.log(this.name, 'upgrade distro', 1);
         let containers = _.filter(this.kernel.data.roomData[creep.pos.roomName].generalContainers, (gc) => {
           return (gc.store.energy > 0);
         });

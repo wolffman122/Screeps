@@ -216,6 +216,7 @@ interface Flag {
       fleePath?: RoomPosition[];
       full?: boolean;
       standPos?: RoomPosition;
+      idlePos?: string;
   }
 
   interface PowerCreepMemory
@@ -795,6 +796,7 @@ interface Flag {
 
   interface PowerHarvestingManagementProcessMetaData
   {
+    startTime?: number;
     roomName: string;
     powerBankId: string;
     spawnRoomName: string;
@@ -802,6 +804,14 @@ interface Flag {
     healers: string[];
     haulers: string[];
     powerBankPos?: string;
+    suicideSequence?: boolean;
+    decayTime?: number;
+    haulerDone?: boolean;
+    previousPowerBankHits?: number
+    haulerMakeUp?: {
+      boostLevel: number;
+      amount: number;
+    }[]
   }
 
   interface TowerRepairProcessMetaData
@@ -927,6 +937,7 @@ interface AlleyObservationManagementProcessMetaData
   scanIndex: number,
   scanRooms: string[],
   checkRoom: string,
+  occupiedPowerBanks: string[]
 }
 
 interface DepositMiningManagementProcessMetaData
@@ -962,6 +973,14 @@ interface TransferManagementProcessMetaData
   clearStorage: boolean;
   lvl4Complete?: boolean;
   lvl5Complete?: boolean;
+}
+
+interface RemoteBuilderLifetimeProcessMetaData
+{
+  roomName: string,
+  site: string,
+  target?: string,
+
 }
 //// Minerals
 

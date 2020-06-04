@@ -7,16 +7,15 @@ This can be setup by adding setMyPublicSegment([99]); This doesn't have to be 99
 ​
 */
 ​
-function setYPCommunicationSegment(array) {
-    if (!_.isArray(array)) {
-        array = [array];
-    }
+function setYPCommunicationSegment(array)
+{
+  if (!_.isArray(array))
+    array = [array];
+
+  RawMemory.setPublicSegments(array);
 ​
-    RawMemory.setPublicSegments(array);
-​
-    for (var e in array) {
-        RawMemory.segments[array[e]] = makeRequestString();
-    }
+  for (var e in array)
+    RawMemory.segments[array[e]] = makeRequestString();
 }
 ​
 function makeRequestString() {

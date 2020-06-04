@@ -205,17 +205,17 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
   if(Game.cpu.bucket < 6900)
     this.memory.boost = true;
 
-  if(this.name === 'em-u-E38S39-22618434')
+  if(this.name === 'em-u-E22S52-26927368')
         console.log('Defense', 1);
   let totalBoosts = boosts.length;
   let boosted = true;
   for(let boost of boosts)
   {
-    if(this.name === 'em-u-E38S39-22618434')
+    if(this.name === 'em-u-E22S52-26927368')
         console.log('Defense', 2, totalBoosts);
     if(this.memory[boost])
     {
-      if(this.name === 'em-u-E38S39-22618434')
+      if(this.name === 'em-u-E22S52-26927368')
         console.log('Defense', 3);
       totalBoosts--;
       continue;
@@ -225,52 +225,64 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
     if(room)
     {
-      if(this.name === 'em-u-E38S39-22618434')
-        console.log('Defense', 4);
+      if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4), room.memory.boostRequests;
       let requests = room.memory.boostRequests;
       if(!requests)
       {
-        if(this.name === 'em-u-E38S39-22618434')
+        if(this.name === 'em-u-E22S52-26927368')
         console.log('Defense', 5);
         this.memory[boost] = true;
         continue;
       }
 
+      if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4.1)
       if(!requests[boost])
       {
-        if(this.name === 'em-u-E38S39-22618434')
+        if(this.name === 'em-u-E22S52-26927368')
         console.log('Defense', 6);
         requests[boost] = { flagName: undefined, requesterIds: [] };
       }
 
+      if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4.2)
       // check if already boosted
       let boostedPart = _.find(this.body, {boost: boost});
       if(boostedPart)
       {
-        if(this.name === 'em-u-E38S39-22618434')
+        if(this.name === 'em-u-E22S52-26927368')
         console.log('Defense', 7);
         this.memory[boost] = true;
         requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, this.id);
         continue;
       }
 
+      if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4.3)
       boosted = false;
       if(!_.include(requests[boost].requesterIds, this.id))
       {
-        if(this.name === 'em-u-E38S39-22618434')
+        if(this.name === 'em-u-E22S52-26927368')
         console.log('Defense', 8);
         requests[boost].requesterIds.push(this.id);
       }
 
+      if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4.4)
       if(this.spawning)
         continue;
 
+        if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4.5, requests[boost].flagName)
       let flag = Game.flags[requests[boost].flagName!];
+      if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4.51, flag)
       if(!flag)
       {
-        if(this.name === 'em-u-E38S39-22618434')
+        if(this.name === 'em-u-E22S52-26927368')
         {
-          console.log('Defense', 9, boost, requests[boost].flagName, requests[boost].flagName.length);
+          console.log('Defense', 9, boost, requests[boost].flagName, requests[boost].flagName?.length);
           requests[boost].requesterIds = _.pull(requests[boost].requesterIds, this.id);
           this.memory[boost] = true;
           return;
@@ -278,26 +290,28 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
         continue;
       }
 
+      if(this.name === 'em-u-E22S52-26927368')
+        console.log('Defense', 4.6)
       let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
 
       if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
       {
-        if(this.name === 'em-u-E38S39-22618434')
+        if(this.name === 'em-u-E22S52-26927368')
           console.log('Defense', 10);
 
         if(this.pos.isNearTo(lab))
         {
-          if(this.name === 'em-u-E38S39-22618434')
+          if(this.name === 'em-u-E22S52-26927368')
             console.log('Defense', 101);
           let ret = lab.boostCreep(this);
-          if(this.name === 'em-u-E38S39-22618434')
+          if(this.name === 'em-u-E22S52-26927368')
             console.log('Defense', 101, ret);
           return OK;
         }
         else
         {
           let ret = this.travelTo(lab);
-          if(this.name === 'em-u-E38S39-22618434')
+          if(this.name === 'em-u-E22S52-26927368')
             console.log('Defense', 102, ret, lab.pos, lab.id);
           return ERR_BUSY;
         }
@@ -434,4 +448,27 @@ Creep.prototype.getCost = function(): number
     cost += BODYPART_COST[this.body[i].type];
 
   return cost;
+
+}
+
+Creep.prototype.findIdlePosition = function(place: {pos: RoomPosition}, acceptableRange: number): RoomPosition
+{
+  let radius = 0;
+  let validPositions = [];
+  while (radius <= acceptableRange) {
+      for (let xDelta = -radius; xDelta <= radius; xDelta++) {
+          for (let yDelta = -radius; yDelta <= radius; yDelta++) {
+              if (Math.abs(xDelta) < radius && Math.abs(yDelta) < radius) { continue; }
+              let x = place.pos.x + xDelta;
+              let y = place.pos.y + yDelta;
+              let position = new RoomPosition(x, y, place.pos.roomName);
+              if (!position.isPassible()) { continue; }
+              if (position.isNearExit(0)) { continue; }
+              if (position.lookForStructures(STRUCTURE_ROAD)) { continue; }
+              validPositions.push(position);
+          }
+      }
+      radius++;
+  }
+  return this.pos.findClosestByRange(validPositions);
 }

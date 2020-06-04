@@ -16,19 +16,21 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
       return;
     }
 
-    if(creep.name === 'em-u-E45S57-25129892')
+    creep.room.memory.pauseUpgrading = true;
+
+    if(creep.name === 'em-u-E22S52-26910075')
       console.log(this.name, 'Problem upgrader');
 
     if(!creep.memory.boost && this.metaData.boosts)
     {
-      if(creep.room.name === 'E41S32' || creep.room.name === 'E45S57')
-      {
-        console.log(this.name, 2, this.metaData.allowUnboosted)
-        creep.memory.boost = true;
-      }
+      if(creep.name === 'em-u-E22S52-26910075')
+      console.log(this.name, 'Problem upgrader', 1)
       creep.boostRequest(this.metaData.boosts, this.metaData.allowUnboosted);
       return;
     }
+
+    if(creep.name === 'em-u-E22S52-26910075')
+      console.log(this.name, 'Problem upgrader', 2)
 
     if(_.sum(creep.carry) === 0)
     {

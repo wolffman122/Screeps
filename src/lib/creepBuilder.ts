@@ -18,7 +18,6 @@ export const CreepBuilder = {
     let emergancy = ((creepType === 'harvester' || creepType === 'pHarvester' || creepType === 'pBigHarvester') && creepCount < 2)
       || (creepType === 'mover' && creepCount < 4) || (room.storage && containers.length < 1);
 
-
     if(creepType === 'vision')
     {
       console.log('Vision problems 1')
@@ -169,9 +168,9 @@ export const CreepBuilder = {
                 WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
                 CARRY,CARRY,CARRY,CARRY];
     }
-    else if(creepType === 'templeBuilder')
+    else if(creepType === 'templeBuilder' || creepType === 'remoteWorker')
     {
-      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,
+      return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
               WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
               WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,
               CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
@@ -215,9 +214,6 @@ export const CreepBuilder = {
     {
       return memory.body;
     }
-
-    if(room.name === 'E36S38' && creepType === 'harvester')
-      console.log('Creep design', 1, creepType)
 
       let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap

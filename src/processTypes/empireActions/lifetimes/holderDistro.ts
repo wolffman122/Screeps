@@ -11,6 +11,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
   {
     const creep = this.getCreep();
 
+    if(creep.name === 'hrm-m-E23S52-26692640')
+      console.log(this.name, 1)
     const flag = Game.flags[this.metaData.flagName];
     if(!flag)
     {
@@ -72,7 +74,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         {
           // Test code
           if(mineRoom.name === 'E44S49' || mineRoom.name === 'E49S49' || mineRoom.name === 'E36S41'
-          || mineRoom.name === 'E41S33')
+          || mineRoom.name === 'E41S33' || mineRoom.name === 'E23S52' || mineRoom.name === 'E22S53')
           {
             let holdData: HoldRoomData;
             if(!flag.memory.holdData)

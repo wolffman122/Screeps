@@ -44,7 +44,7 @@ export class LabManagementProcess extends Process
   if(Game.cpu.bucket < 7000)
       return;
     this.logOn = false;
-    this.logName = "labm-E37S46";
+    this.logName = "labm-E22S52";
 
     this.room = Game.rooms[this.metaData.roomName];
     if(this.room.memory.shutdown)
@@ -360,9 +360,9 @@ export class LabManagementProcess extends Process
     }
 
     if(this.name === this.logName && this.logOn)
-      console.log(this.name, 'FindCommand', 7)
+      console.log(this.name, 'FindCommand', 7, (this.powerSpawn?.store[RESOURCE_ENERGY] ?? 0)  < 4000)
 
-    if((this.powerSpawn?.store[RESOURCE_ENERGY] ?? 0)  < 4000)
+    if(this.powerSpawn && (this.powerSpawn?.store[RESOURCE_ENERGY] ?? 0)  < 4000)
     {
       if((this.terminal?.store[RESOURCE_ENERGY] ?? 0) >= 100)
       {
