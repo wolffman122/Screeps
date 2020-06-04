@@ -74,7 +74,8 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         {
           // Test code
           if(mineRoom.name === 'E44S49' || mineRoom.name === 'E49S49' || mineRoom.name === 'E36S41'
-          || mineRoom.name === 'E41S33' || mineRoom.name === 'E23S52' || mineRoom.name === 'E22S53')
+          || mineRoom.name === 'E41S33' || mineRoom.name === 'E23S52' || mineRoom.name === 'E22S53'
+          || mineRoom.name === 'E34S51')
           {
             let holdData: HoldRoomData;
             if(!flag.memory.holdData)
