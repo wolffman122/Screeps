@@ -61,10 +61,6 @@ export class TerminalManagementProcess extends Process
             }
             else
             {
-              if(r.name === 'E37S45')
-                console.log(this.name, 'TEMPLE ROOM', ((r.storage.store.energy < 100000 || r.storage.store === undefined) && r.controller && r.controller.my &&
-                  r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity && !r.memory.templeRoom));
-
               return ((r.storage.store.energy < 290000 || r.storage.store === undefined) && r.controller && r.controller.my &&
                 r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity && !r.memory.templeRoom);
             }

@@ -11,7 +11,7 @@ export class MinetalTerminalManagementProcess extends Process
     return;
       }
 }
-export const ENERGY_KEEP_AMOUNT = 360000;
+export const ENERGY_KEEP_AMOUNT = 400000;
 export const KEEP_AMOUNT = 10000;
 export const FACTORY_KEEP_AMOUNT = 6000;
 export const MINERAL_KEEP_AMOUNT = 5000;
