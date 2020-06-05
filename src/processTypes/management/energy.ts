@@ -343,7 +343,7 @@ export class EnergyManagementProcess extends Process{
           switch(this.metaData.roomName)
           {
             case 'E22S52':
-              upgraders = 2;
+              upgraders = 3;
               break;
             default:
               upgraders = 1;
