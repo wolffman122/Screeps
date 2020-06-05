@@ -51,7 +51,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       {
         if(!creep.pos.inRangeTo(storage, 1))
         {
-          creep.travelTo(storage);
+          creep.moveTo(storage);
           return;
         }
 
@@ -80,7 +80,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         if(creep.name === 'sm-E41S32-25419534')
         console.log(this.name, 'filling', 2)
       if(!creep.pos.isNearTo(target))
-        creep.pushyTravelTo(target);
+        creep.moveTo(target);
       else
         creep.withdraw(target, RESOURCE_ENERGY);
 
@@ -140,7 +140,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
           {
             if(!creep.pos.inRangeTo(repairTarget, 3))
             {
-              creep.travelTo(repairTarget, {range: 3});
+              creep.moveTo(repairTarget, {range: 3});
             }
             else
             {
@@ -165,7 +165,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         {
           const site = creep.pos.findClosestByPath(constructionSites);
           if(!creep.pos.inRangeTo(site, 3))
-            creep.travelTo(site, {range: 3});
+            creep.moveTo(site, {range: 3});
           else
             creep.build(site);
 
@@ -213,7 +213,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
         if(target)
         {
           if(!creep.pos.inRangeTo(target, 3))
-            creep.travelTo(target, {range: 3});
+            creep.moveTo(target, {range: 3});
           else
           {
             let outcome: number;
