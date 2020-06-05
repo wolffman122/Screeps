@@ -71,6 +71,15 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
 
     if(this.metaData.turnOnFactory && !powerCreep.powers[PWR_OPERATE_FACTORY].cooldown)
     {
+      if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) < 100 && storage.store.getUsedCapacity(RESOURCE_OPS) >= 100)
+      {
+        if(!powerCreep.pos.isNearTo(storage))
+          powerCreep.moveTo(storage);
+        else
+          powerCreep.withdraw(storage, RESOURCE_OPS, 100);
+        return;
+      }
+
       if(!powerCreep.pos.inRangeTo(factory, 3))
         powerCreep.moveTo(factory, {range: 3});
       else
