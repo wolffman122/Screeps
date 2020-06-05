@@ -11,6 +11,7 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
 
     if(!creep)
     {
+      this.completed = true;
       return;
     }
 
@@ -23,11 +24,13 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
 
     if(!extractor || !mineral || !container)
     {
+      this.completed = true;
       return;
     }
 
-    if(creep.ticksToLive === 1)
+    if((creep.ticksToLive ?? 0) < 4)
     {
+      creep.say('TC', true);
       creep.transfer(container, mineral.mineralType);
       return;
     }
