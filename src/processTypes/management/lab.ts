@@ -1,7 +1,7 @@
 import { Utils } from "lib/utils";
 import { LabDistroLifetimeProcess } from "../lifetimes/labDistro";
 import { Process } from "os/process";
-import { REAGENT_LIST, PRODUCT_LIST, PRODUCTION_AMOUNT, MINERALS_RAW, PRODUCTION_STORAGE_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { REAGENT_LIST, PRODUCT_LIST_WITH_AMOUNTS, PRODUCTION_AMOUNT, MINERALS_RAW, PRODUCTION_STORAGE_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 import { LoDashImplicitNumberArrayWrapper } from "lodash";
 
 export class LabManagementProcess extends Process
@@ -855,31 +855,31 @@ export class LabManagementProcess extends Process
   {
     let  store = this.gatherTerminalInventory();
 
-    for (let compound of PRODUCT_LIST)
+    for (let productInfo of PRODUCT_LIST_WITH_AMOUNTS)
     {
-      if(this.storage.store[compound] >= PRODUCTION_STORAGE_AMOUNT)
+      if(this.storage.store[productInfo.res] >= PRODUCTION_STORAGE_AMOUNT)
         continue;
 
-      if(store[compound] >= PRODUCTION_AMOUNT)
+      if(store[productInfo.res] >= PRODUCTION_AMOUNT)
       {
         continue;
       }
 
 
 
-      return this.generateProcess({mineralType: compound,
-        amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (store[compound] || 0) });
+      return this.generateProcess({mineralType: productInfo.res,
+        amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (store[productInfo.res] || 0) });
     }
 
     store = this.gatherStorageInventory();
 
-    for (let compound of PRODUCT_LIST)
+    for (let productInfo of PRODUCT_LIST_WITH_AMOUNTS)
     {
-      if(store[compound] >= PRODUCTION_STORAGE_AMOUNT)
+      if(store[productInfo.res] >= PRODUCTION_STORAGE_AMOUNT)
         continue;
 
-      return this.generateProcess({mineralType: compound,
-        amount: PRODUCTION_STORAGE_AMOUNT + LABDISTROCAPACITY - (store[compound] || 0) });
+      return this.generateProcess({mineralType: productInfo.res,
+        amount: PRODUCTION_STORAGE_AMOUNT + LABDISTROCAPACITY - (store[productInfo.res] || 0) });
     }
 
     return;
@@ -1108,7 +1108,7 @@ export class LabManagementProcess extends Process
         continue;
 
       let mineralType = flag.name.substring(flag.name.indexOf("_") + 1);
-      if(!_.include(PRODUCT_LIST, mineralType))
+      if(!_.find(PRODUCT_LIST_WITH_AMOUNTS, (x) => x.res === mineralType))
       {
         console.log("ERROR: invalid lab request:", flag.name);
         return; // early

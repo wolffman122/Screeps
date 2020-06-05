@@ -1,4 +1,3 @@
-import { MINERALS_RAW, PRODUCT_LIST, REAGENT_LIST, PRODUCTION_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal"
 import { LifetimeProcess } from "os/process";
 
 

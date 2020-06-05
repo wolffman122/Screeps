@@ -1,5 +1,5 @@
 import { LifetimeProcess } from "os/process";
-import { KEEP_AMOUNT, MINERALS_RAW, MINERAL_KEEP_AMOUNT, PRODUCT_LIST, PRODUCTION_TERMINAL_AMOUNT, FACTORY_KEEP_AMOUNT, ENERGY_KEEP_AMOUNT, COMMODITY_TERMINAL_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { KEEP_AMOUNT, MINERALS_RAW, MINERAL_KEEP_AMOUNT, PRODUCT_LIST_WITH_AMOUNTS, PRODUCTION_TERMINAL_AMOUNT, FACTORY_KEEP_AMOUNT, ENERGY_KEEP_AMOUNT, COMMODITY_TERMINAL_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 import { PowerCreepLifetimeProcess } from "./powerCreep";
 
 export class Spinner2LifeTimeProcess extends LifetimeProcess
@@ -332,9 +332,9 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     }
 
     // Production list
-    for(let i = 0; i < PRODUCT_LIST.length; i++)
+    for(let i = 0; i < PRODUCT_LIST_WITH_AMOUNTS.length; i++)
     {
-      const prod = PRODUCT_LIST[i];
+      const prod = PRODUCT_LIST_WITH_AMOUNTS[i].res;
       if((this.terminal?.store[prod] ?? 0) < PRODUCTION_TERMINAL_AMOUNT)
       {
         if(this.TransferToTerminal(prod))

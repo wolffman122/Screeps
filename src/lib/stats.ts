@@ -1,5 +1,5 @@
 import {Kernel} from '../os/kernel'
-import { PRODUCT_LIST, MINERALS_RAW } from 'processTypes/buildingProcesses/mineralTerminal';
+import { PRODUCT_LIST_WITH_AMOUNTS, MINERALS_RAW } from 'processTypes/buildingProcesses/mineralTerminal';
 //import {Utils} from '../lib/utils'
 
 
@@ -230,27 +230,27 @@ export const Stats = {
             // Total Production boost amounts in terminals.
             let terminal = room.terminal;
             let storage = room.storage;
-            for(let mineral in PRODUCT_LIST)
+            for(let mineral in PRODUCT_LIST_WITH_AMOUNTS)
             {
-              let type = PRODUCT_LIST[mineral];
-              if(terminal.store.hasOwnProperty(type))
+              let type = PRODUCT_LIST_WITH_AMOUNTS[mineral];
+              if(terminal.store.hasOwnProperty(type.res))
               {
-                if(!boostTerminalAmounts[type])
+                if(!boostTerminalAmounts[type.res])
                 {
-                  boostTerminalAmounts[type] = 0;
+                  boostTerminalAmounts[type.res] = 0;
                 }
 
-                boostTerminalAmounts[type] += terminal.store[type]!;
+                boostTerminalAmounts[type.res] += terminal.store[type.res]!;
               }
 
-              if(storage.store.hasOwnProperty(type))
+              if(storage.store.hasOwnProperty(type.res))
               {
-                if(!boostStorageAmounts[type])
+                if(!boostStorageAmounts[type.res])
                 {
-                  boostStorageAmounts[type] = 0;
+                  boostStorageAmounts[type.res] = 0;
                 }
 
-                boostStorageAmounts[type] += storage.store[type];
+                boostStorageAmounts[type.res] += storage.store[type.res];
               }
             }
 
@@ -277,9 +277,9 @@ export const Stats = {
                 }
               }
 
-              for(let boost in PRODUCT_LIST)
+              for(let boost in PRODUCT_LIST_WITH_AMOUNTS)
               {
-                let type = PRODUCT_LIST[boost];
+                let type = PRODUCT_LIST_WITH_AMOUNTS[boost].res;
                 if(!lowBoostRooms[type])
                   lowBoostRooms[type] = [];
 
@@ -476,9 +476,10 @@ export const Stats = {
 
     //kernel.data.labProcesses[RESOURCE_GHODIUM] = undefined;
     Memory.stats["lab.processCount." + RESOURCE_GHODIUM] = undefined;
-    for(let resourceType of PRODUCT_LIST)
+    for(let resourceType in PRODUCT_LIST_WITH_AMOUNTS)
     {
-      Memory.stats["lab.processCount." + resourceType] = kernel.data.labProcesses[resourceType] || undefined;
+      const res = PRODUCT_LIST_WITH_AMOUNTS[resourceType].res
+      Memory.stats["lab.processCount." + resourceType] = kernel.data.labProcesses[res] || undefined;
     }
 
 

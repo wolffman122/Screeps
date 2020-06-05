@@ -1,5 +1,5 @@
 import { LifetimeProcess } from "os/process";
-import { KEEP_AMOUNT, ENERGY_KEEP_AMOUNT, MINERALS_RAW, REAGENT_LIST, PRODUCT_LIST, PRODUCTION_AMOUNT, MINERAL_KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal";
+import { KEEP_AMOUNT, ENERGY_KEEP_AMOUNT, MINERALS_RAW, REAGENT_LIST, PRODUCT_LIST_WITH_AMOUNTS, MINERAL_KEEP_AMOUNT } from "../buildingProcesses/mineralTerminal";
 
 export class  SpinnerLifetimeProcess extends LifetimeProcess
 {
@@ -292,7 +292,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
               max = terminal.store[r];
               retValue = r;
             }
-            else if(_.includes(PRODUCT_LIST, r))
+            else if(_.find(PRODUCT_LIST_WITH_AMOUNTS, (x) => x.res === r))
             {
               let amount = storage.store[r] ? storage.store[r] : 0;
               if(amount < 1000)
@@ -326,7 +326,7 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
         else
         {
           // Mineral and production decision
-          if(_.includes(PRODUCT_LIST, target))
+          if(_.find(PRODUCT_LIST_WITH_AMOUNTS, (r) => r.res === target))
           {
             let amount = terminal.store[target] - 1000 < creep.carryCapacity ? terminal.store[target] - 1000 : creep.carryCapacity;
             const ret = creep.withdraw(terminal, <ResourceConstant>target, amount);
@@ -402,9 +402,9 @@ export class  SpinnerLifetimeProcess extends LifetimeProcess
             console.log(this.name, 6.5)
 
           let ret = -1;
-          for(let resource of Object.keys(PRODUCT_LIST))
+          for(let productInfo of PRODUCT_LIST_WITH_AMOUNTS)
           {
-            let res = PRODUCT_LIST[resource];
+            let res = productInfo.res;
             if(terminal.store[res] < MINERAL_KEEP_AMOUNT
               && storage.store[res] > 0)
               {
