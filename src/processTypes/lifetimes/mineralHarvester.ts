@@ -26,6 +26,12 @@ export class MineralHarvesterLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(creep.ticksToLive === 1)
+    {
+      creep.transfer(container, mineral.mineralType);
+      return;
+    }
+
     let roomInContainer = container.storeCapacity - _.sum(container.store);
 
     if(mineral.mineralAmount !== 0)

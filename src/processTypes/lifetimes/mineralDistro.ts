@@ -28,11 +28,17 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
             return;
           }
 
-          creep.travelTo(container);
+          creep.moveTo(container);
           return;
         }
         else
         {
+          if(!creep.pos.isNearTo(container))
+          {
+            creep.moveTo(container);
+            return;
+          }
+
           creep.idleOffRoad(container, true);
           this.suspend = 10;
           return;
@@ -50,7 +56,7 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
           return;
         }
 
-        creep.travelTo(creep.room.terminal);
+        creep.moveTo(creep.room.terminal);
         return;
       }
       else
@@ -61,7 +67,7 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess
           return;
         }
 
-        creep.travelTo(creep.room.storage);
+        creep.moveTo(creep.room.storage);
         return;
       }
     }
