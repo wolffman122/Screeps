@@ -15,7 +15,6 @@ export class AlleyObservationManagementProcess extends Process
 
   run()
   {
-    console.log(this.name, 'Running');
     const room = Game.rooms[this.metaData.roomName];
     const termnial = room.terminal;
     const storage = room.storage;
