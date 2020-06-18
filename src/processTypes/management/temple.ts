@@ -77,17 +77,15 @@ export class TempleProcess extends Process
     let builderAmount = 0;
     let distroAmount = 1;
 
-    if(controller?.level < 3)
+    if(controller?.level <= 3)
     {
-      if((this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) < 1000
-        && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 1000)
-        || this.feedRoom.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 100000)
-        distroAmount = 0;
+      // if(this.feedRoom.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 100000)
+      //   distroAmount = 0;
 
       if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) < 200000)
         haulerAmount = 3;
 
-        if(this.roomData().constructionSites.length)
+      if(this.roomData().constructionSites.length)
         builderAmount = 1;
     }
     else if(controller?.level > 3)
@@ -335,12 +333,21 @@ export class TempleProcess extends Process
     const container = this.roomData().containers[0];
     if(creep.store.getUsedCapacity() === 0)
     {
-      if(this.templeStorage)
+      if(this.templeStorage?.store.getUsedCapacity() > 0)
       {
         if(!creep.pos.isNearTo(this.templeStorage))
           creep.travelTo(this.templeStorage);
         else
           creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
+
+          return;
+      }
+      else if(this.templeTerminal?.store.getUsedCapacity() > 0)
+      {
+        if(!creep.pos.isNearTo(this.templeTerminal))
+          creep.travelTo(this.templeTerminal);
+        else
+          creep.withdraw(this.templeTerminal, RESOURCE_ENERGY);
 
           return;
       }
@@ -520,6 +527,14 @@ export class TempleProcess extends Process
       creep.travelTo(target);
       return;
     }
+
+    const container = this.roomData().containers[0];
+    if(this.templeStorage?.store.getUsedCapacity() === 0 && container.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
+    {
+      if(creep.pos.isNearTo(container))
+        creep.withdraw(container, RESOURCE_ENERGY);
+    }
+
 
     const oneAmount = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER;
     if(creep.store.getUsedCapacity() <= oneAmount)
