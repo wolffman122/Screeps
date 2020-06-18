@@ -43,7 +43,8 @@ interface Flag {
       gcl: number
       test: string;
       diagnoseMemory
-      despositTypes: DepositConstant[];
+      depositTypes: DepositConstant[];
+      basicCommodities: ResourceConstant[];
     }
   }
 
@@ -288,12 +289,15 @@ interface Flag {
     hostileCreepIds?: string[];
     barType?: CommodityConstant;
     powerHarvesting?: boolean;
+    startedCommands?: boolean;
     commands?: Command[];
     commandIndex?: number;
     componentsReady?: boolean;
     factoryEmpty?: boolean;
+    factoryPreviousAmount?: number;
     commoditiesForLevel?: CommodityConstant[];
-    commodityToMake?: CommodityConstant;
+    commoditiesToMake?: CommodityConstant[];
+    commoditiesIndex?: number;
     roads?: {
       [sourceId: string]: boolean
     };
@@ -681,7 +685,10 @@ interface Flag {
     }
     shutDownTransfers: {
       [roomName: string]: boolean
-    }
+    },
+    factoryLevelRoomList?: {
+      [level: number]: string[]}
+    },
   }
 
   interface TerminalManagementProcessMetaData

@@ -57,7 +57,8 @@ global.conLog = (message: string) => {
 }
 
 global.test = "Is this global working";
-global.despositTypes = [RESOURCE_MIST, RESOURCE_BIOMASS, RESOURCE_METAL, RESOURCE_SILICON];
+global.depositTypes = [RESOURCE_MIST, RESOURCE_BIOMASS, RESOURCE_METAL, RESOURCE_SILICON];
+global.basicCommodities = [RESOURCE_WIRE, RESOURCE_CELL, RESOURCE_ALLOY, RESOURCE_CONDENSATE];
 global[1] = {commodity: RESOURCE_EXTRACT, rooms:['E56S43']};
 
 global.diagnoseMemory = function() {

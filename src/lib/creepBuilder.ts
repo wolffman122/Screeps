@@ -406,7 +406,7 @@ export const CreepBuilder = {
     'worker': 16,
     'upgrader': 32,
     'defender': 49,
-    'spinner': 14,
+    'spinner': 22,
     'holdmover': 50,
     'mineralHarvester': 48,
     'remoteWorker': 48,

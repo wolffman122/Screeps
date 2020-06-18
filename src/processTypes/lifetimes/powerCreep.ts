@@ -36,6 +36,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     if(!flag)
       flag = Game.flags['RemoteFlee-' + this.metaData.roomName];
 
+    // Renew power creep.
     if(powerCreep.ticksToLive < 200)
     {
       if(!powerCreep.pos.isNearTo(this.powerSpawn))
@@ -47,6 +48,41 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    const level = powerCreep.powers[PWR_OPERATE_STORAGE].level
+    const increaseAmount = POWER_INFO[PWR_OPERATE_STORAGE].effect[level - 1];
+    const regularStorageAmount = storage.store.getCapacity() - increaseAmount;
+    const storageEffect = storage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE && e.ticksRemaining < 10);
+    console.log(this.name, 'Storage work', storage.store.getCapacity(), level, increaseAmount, storage.store.getUsedCapacity() > regularStorageAmount - 50000);
+    if(((storage.store.getFreeCapacity() < 50000 && !storage.effects?.length) || (storageEffect?.length && storage.store.getUsedCapacity() > regularStorageAmount - 50000))
+      &&  powerCreep.powers[PWR_OPERATE_STORAGE] && powerCreep.powers[PWR_GENERATE_OPS]?.level >= 3)
+    {
+      if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) < 100)
+      {
+        console.log(this.name, 1)
+        if(!powerCreep.pos.isNearTo(storage))
+          powerCreep.moveTo(storage);
+        else
+          powerCreep.withdraw(storage, RESOURCE_OPS);
+      }
+      else
+      {
+        console.log(this.name, 2)
+        if(!powerCreep.pos.inRangeTo(storage, 3))
+        {
+          console.log(this.name, 3)
+          powerCreep.moveTo(storage, {range: 3});
+        }
+        else
+        {
+          const ret = powerCreep.usePower(PWR_OPERATE_STORAGE, storage);
+          console.log(this.name, 'Storage ret', ret);
+        }
+      }
+
+      return;
+    }
+
+    // Turn power on in the room
     if(!room.controller.isPowerEnabled)
     {
       if(!powerCreep.pos.isNearTo(room.controller))
@@ -58,6 +94,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    // Factory initial
     if(!factory.level && powerCreep.powers[PWR_OPERATE_FACTORY]
       && (powerCreep.store[RESOURCE_OPS] ?? 0) >= 300)
     {
@@ -69,6 +106,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    // Maintain factory
     if(this.metaData.turnOnFactory && !powerCreep.powers[PWR_OPERATE_FACTORY].cooldown)
     {
       if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) < 100 && storage.store.getUsedCapacity(RESOURCE_OPS) >= 100)
@@ -91,6 +129,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    // Operate Extensions
     if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown < 10
       && powerCreep.store[RESOURCE_OPS] >= 2)
     {
@@ -118,6 +157,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
+    // Regen sources
     if(powerCreep.powers[PWR_REGEN_SOURCE]?.cooldown < 15)
     {
       const sources = this.roomData().sources.filter(s =>
@@ -156,6 +196,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
+    // Generate ops
     if(powerCreep.powers[PWR_GENERATE_OPS].cooldown === 0
       && powerCreep.store.getFreeCapacity() > 0)
     {
@@ -164,6 +205,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    // Empty ops
     if(powerCreep.store.getFreeCapacity() === 0)
     {
       powerCreep.say('📉');
