@@ -19,10 +19,9 @@ export class AlleyObservationManagementProcess extends Process
     const termnial = room.terminal;
     const storage = room.storage;
     const checkRoom = Game.rooms[this.metaData.checkRoom];
-    if(termnial?.store.getFreeCapacity() > 50000 && (storage?.store[RESOURCE_ENERGY] > (KEEP_AMOUNT * 1.2) ?? false))
+    if(termnial?.store.getFreeCapacity() > 10000 && (storage?.store.getUsedCapacity(RESOURCE_ENERGY) > (KEEP_AMOUNT * 1.2) ?? false))
     {
       let results;
-
       if(checkRoom)
         results = this.checkTheRoom(checkRoom);
 
