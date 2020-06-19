@@ -8,7 +8,6 @@ import { MineralManagementProcess } from 'processTypes/management/mineral';
 import { skRoomManagementProcess } from './management/skroom';
 import { TowerHealProcess } from './buildingProcesses/towerHeal';
 import { PowerHarvestingManagement } from './management/powerHarvesting';
-import { ObservationManagementProcess } from './management/observation';
 import { WorldMap } from 'lib/WorldMap';
 import { AlleyObservationManagementProcess } from './management/alleyObservation';
 

@@ -79,7 +79,6 @@ import { DefendProcess } from 'processTypes/creepActions/defend';
 import { HolderDefenderLifetimeProcess } from 'processTypes/empireActions/lifetimes/holderDefender';
 import { BusterLifetimeProcess } from 'processTypes/empireActions/lifetimes/buster';
 import { StrongHoldDestructionProcess } from 'processTypes/management/strongHoldDestruction';
-import { ObservationManagementProcess } from 'processTypes/management/observation'
 import { AutomaticHoldManagementProcess } from 'processTypes/management/automaticHold'
 import { StripManagementProcess } from 'processTypes/management/strip'
 import { StripperLifetimeProcess } from 'processTypes/lifetimes/stripper'
@@ -169,7 +168,6 @@ const processTypes = <{[type: string]: any}>{
   'defend': DefendProcess,
   'busterlf': BusterLifetimeProcess,
   'shdp': StrongHoldDestructionProcess, // 35
-  'omp': ObservationManagementProcess,
   'strip': StripManagementProcess,
   'stripper': StripperLifetimeProcess,
   'ahmp': AutomaticHoldManagementProcess,
