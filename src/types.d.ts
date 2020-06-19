@@ -406,14 +406,12 @@ interface Flag {
       [container: string]: number
     }
 
-    builderCreeps: string[]
-    dismantlerCreeps: string[]
-    workerCreeps: string[]
-    defenderCreeps: string[]
+    builderCreeps?: string[]
+    dismantlerCreeps?: string[]
+    defenderCreeps?: string[]
     coreBuster: string[]
     flagName: string
-    increasing: boolean
-    enemiesPresent: boolean
+    enemiesPresent?: boolean
   }
 
   interface AutomaticHoldManagementProcessMetaData
@@ -935,6 +933,8 @@ interface PowerCreepLifetimeProcessMetaData
   powerCreep: string,
   roomName: string,
   turnOnFactory?: boolean,
+  templeStoragePower?: boolean,
+  templeStorageId?: string
 }
 
 interface AlleyObservationManagementProcessMetaData

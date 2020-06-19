@@ -27,11 +27,6 @@ export class HoldRoomOptManagementProcess extends Process
     if(!this.metaData.dismantlerCreeps)
       this.metaData.dismantlerCreeps = [];
 
-    if(!this.metaData.workerCreeps)
-    {
-      this.metaData.workerCreeps = [];
-    }
-
     if(!this.metaData.distroCreeps)
     {
       this.metaData.distroCreeps = {};
