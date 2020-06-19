@@ -841,18 +841,26 @@ interface Flag {
 
   interface SKRoomManagementProcessMetaData
   {
+    moveFlag: boolean,
     mineralMining: boolean,
+    centerSKMining: boolean,
     miningFlag: string,
+    centerMiningFlag: string,
     invaders: boolean,
     flagName: string,
     roomName: string,
     skRoomName: string,
+    centerRoomName: string,
+    scoutName?: string,
+    vision: boolean,
     scanIndex: number,
+    keepScanning: boolean,
+    coreInfo?: CoreInfo,
     locations: {
       [types: string]: any[]
     },
     devils: string[],
-    builderCreeps?: string[],
+    builderCreeps: string[],
     //workerCreeps: string[],
     distroCreeps: {
       [container: string]: string[]
@@ -869,9 +877,12 @@ interface Flag {
     miningDistance?: number
     centerMiningDistance?: number
     miner: string[]
+    centerMiner: string[]
     minerHauler: string[],
-    logginCount?: number,
+    loggingAverage: number,
+    logginCount: number,
     coreInSK: boolean,
+    invaderFailCount: number,
   }
 
   interface ObservationManagementProcessMetaData

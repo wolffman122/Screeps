@@ -16,12 +16,16 @@ export class skRoomManagementProcess extends Process
   skFlag: Flag;
   skRoomName: string;
   skRoom: Room;
+  locations: {
+      [type: string]: string[]
+  };
   lairs: StructureKeeperLair[];
   sources: Source[];
   invaders: boolean;
   mineral: Mineral;
   coreInSk: boolean;
   centerFlag: Flag;
+
 
   ensureMetaData()
   {
@@ -161,6 +165,7 @@ export class skRoomManagementProcess extends Process
         else
         {
           this.metaData.invaders = false;
+          this.metaData.invaderFailCount = 0;
           this.invaders = false;
         }
       }
@@ -1573,7 +1578,7 @@ export class skRoomManagementProcess extends Process
 
                         roads[sourceContainer.id] = true;
 
-
+                      
                     }
                   }
                 }
