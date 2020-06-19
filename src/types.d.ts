@@ -598,14 +598,11 @@ interface Flag {
     labDistros: string[],
     idlePosition: RoomPosition;
     command?: Command;
-    labCount: number;
     reagentLabIds?: string[];
     productLabIds?: string[];
     lastCommandTick: number;
     checkProcessTick: number;
     labProcess?: LabProcess;
-    processFlag?: string;
-    testMessage?: string;
     fillTowers?: boolean;
   }
 

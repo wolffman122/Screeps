@@ -1,7 +1,7 @@
 import { Utils } from "lib/utils";
 import { LabDistroLifetimeProcess } from "../lifetimes/labDistro";
 import { Process } from "os/process";
-import { REAGENT_LIST, PRODUCT_LIST_WITH_AMOUNTS, PRODUCTION_AMOUNT, MINERALS_RAW, PRODUCTION_STORAGE_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { REAGENT_LIST, PRODUCT_LIST_WITH_AMOUNTS, MINERALS_RAW, PRODUCTION_STORAGE_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
 import { LoDashImplicitNumberArrayWrapper } from "lodash";
 
 export class LabManagementProcess extends Process
@@ -19,7 +19,6 @@ export class LabManagementProcess extends Process
   powerSpawn?: StructurePowerSpawn;
   room: Room;
   nuker?: StructureNuker;
-  processFlag?: Flag;
   logName: string;
   logOn: boolean;
 
@@ -28,11 +27,6 @@ export class LabManagementProcess extends Process
     if(!this.metaData.labDistros)
     {
       this.metaData.labDistros = [];
-    }
-
-    if(this.metaData.processFlag)
-    {
-      this.processFlag = Game.flags[this.metaData.processFlag];
     }
   }
 
@@ -47,6 +41,9 @@ export class LabManagementProcess extends Process
     this.logName = "labm-E22S52";
 
     this.room = Game.rooms[this.metaData.roomName];
+    if(!this.room)
+      console.log(this.name, 'SHOULD NOT BE RUNNING');
+
     if(this.room.memory.shutdown)
     {
       this.completed = true;
@@ -860,7 +857,7 @@ export class LabManagementProcess extends Process
       if(this.storage.store[productInfo.res] >= PRODUCTION_STORAGE_AMOUNT)
         continue;
 
-      if(store[productInfo.res] >= PRODUCTION_AMOUNT)
+      if(store[productInfo.res] >= productInfo.amount)
       {
         continue;
       }
@@ -868,7 +865,7 @@ export class LabManagementProcess extends Process
 
 
       return this.generateProcess({mineralType: productInfo.res,
-        amount: PRODUCTION_AMOUNT + LABDISTROCAPACITY - (store[productInfo.res] || 0) });
+        amount: productInfo.amount + LABDISTROCAPACITY - (store[productInfo.res] || 0) });
     }
 
     store = this.gatherStorageInventory();
