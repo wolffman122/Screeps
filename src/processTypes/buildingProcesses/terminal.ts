@@ -53,7 +53,7 @@ export class TerminalManagementProcess extends Process
             {
               console.log(this.name, 'TEMPLE ROOM')
               if(r.controller?.level === 8)
-                return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 900000) && r.controller?.my &&
+                return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < r.storage.store.getCapacity() * .95) && r.controller?.my &&
                   r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
               else if(r.controller?.level >= 6)
                 return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 600000) && r.controller?.my &&
@@ -61,7 +61,7 @@ export class TerminalManagementProcess extends Process
             }
             else
             {
-              return ((r.storage.store.energy < 290000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+              return ((r.storage.store.energy < 500000 || r.storage.store === undefined) && r.controller && r.controller.my &&
                 r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity && !r.memory.templeRoom);
             }
           }

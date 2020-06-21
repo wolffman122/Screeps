@@ -79,16 +79,16 @@ export function initRoomPrototype() {
         }
     });
 
-    Room.prototype.findStructures = function(structureType: string): Structure[]
+    Room.prototype.findStructures = function(structureType: string)//: Structure[]
     {
-        if(Memory.structures === undefined)
-            Memory.structures = {};
+        // if(Memory.structures === undefined)
+        //     Memory.structures = {};
 
-        if(!Memory.structures[this.name])
-        {
-            Memory.structures[this.name] = _.groupBy(this.find(FIND_STRUCTURES), (s: Structure) => s.structureType);
-        }
-        return Memory.structures[this.name][structureType] || [];
+        // if(!Memory.structures[this.name])
+        // {
+        //     Memory.structures[this.name] = _.groupBy(this.find(FIND_STRUCTURES), (s: Structure) => s.structureType);
+        // }
+        // return Memory.structures[this.name][structureType] || [];
     };
 }
 

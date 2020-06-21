@@ -9,9 +9,9 @@ export class MinetalTerminalManagementProcess extends Process
   {
     this.completed = true;
     return;
-      }
+  }
 }
-export const ENERGY_KEEP_AMOUNT = 400000;
+export const ENERGY_KEEP_AMOUNT = 71000;
 export const KEEP_AMOUNT = 10000;
 export const FACTORY_KEEP_AMOUNT = 6000;
 export const MINERAL_KEEP_AMOUNT = 5000;
@@ -50,7 +50,8 @@ export const PRODUCT_LIST_WITH_AMOUNTS = [
   {res: RESOURCE_LEMERGIUM_OXIDE, amount: 6000},
   {res: RESOURCE_ZYNTHIUM_HYDRIDE, amount: 6000},
   {res: RESOURCE_ZYNTHIUM_OXIDE, amount: 6000},
-  
+  {res: RESOURCE_GHODIUM_HYDRIDE, amount: 1000},
+
   {res: RESOURCE_GHODIUM_ACID, amount: 6000},
   {res: RESOURCE_LEMERGIUM_ACID, amount: 6000},
   {res: RESOURCE_UTRIUM_ACID, amount: 6000},

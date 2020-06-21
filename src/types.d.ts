@@ -1049,8 +1049,8 @@ interface BankData
 }
  interface Room
  {
-  findStructures<T>(structureType: string): T[];
-  findStructures<T>(structureType: string): Structure[];
+  //findStructures<T>(structureType: string): T[];
+  findStructures<T>(structureType: string); //Structure[];
    coords: RoomCoord
  }
 

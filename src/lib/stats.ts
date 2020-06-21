@@ -341,9 +341,9 @@ export const Stats = {
               }
             }
 
-            for(let i = 0; i < global.despositTypes.length; i++)
+            for(let i = 0; i < global.depositTypes.length; i++)
             {
-              const depositType = global.despositTypes[i];
+              const depositType = global.depositTypes[i];
               // if(depositType === RESOURCE_MIST)
               // {
               //   if(room.storage?.store.getUsedCapacity(depositType) > storageMost)

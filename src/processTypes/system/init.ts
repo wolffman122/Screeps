@@ -33,6 +33,15 @@ export class InitProcess extends Process{
       this.kernel.limit = (Game.cpu.limit + 500) - 20
     }
 
+    if(Game.time % 555 === 0)
+    {
+      for(var flag in Memory.flags)
+      {
+        if(!Game.flags[flag])
+          delete Memory.flags[flag];
+      }
+    }
+    
     for(var name in Memory.creeps){
       if(!Game.creeps[name]){
         delete Memory.creeps[name]
@@ -190,7 +199,7 @@ export class InitProcess extends Process{
     }
 
     this.kernel.addProcessIfNotExist(PowerManagement, 'powerm', 50, {});
-    this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});
+    //this.kernel.addProcessIfNotExist(ReportProcess, 'report', 10, {});
     this.kernel.addProcessIfNotExist(SuspensionProcess, 'suspension-master', 99, {master: true})
     this.kernel.addProcessIfNotExist(FlagWatcherProcess, 'flag-watcher', 98, {})
     this.kernel.addProcessIfNotExist(MarketManagementProcess, 'market', 20, {});

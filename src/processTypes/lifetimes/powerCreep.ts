@@ -48,13 +48,15 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 1)
     const level = powerCreep.powers[PWR_OPERATE_STORAGE].level
     const increaseAmount = POWER_INFO[PWR_OPERATE_STORAGE].effect[level - 1];
     const regularStorageAmount = storage.store.getCapacity() - increaseAmount;
     const storageEffect = storage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE && e.ticksRemaining < 10);
     console.log(this.name, 'Storage work', storage.store.getCapacity(), level, increaseAmount, storage.store.getUsedCapacity() > regularStorageAmount - 50000);
     if(((storage.store.getFreeCapacity() < 50000 && !storage.effects?.length) || (storageEffect?.length && storage.store.getUsedCapacity() > regularStorageAmount - 50000))
-      &&  powerCreep.powers[PWR_OPERATE_STORAGE] && powerCreep.powers[PWR_GENERATE_OPS]?.level >= 3)
+      &&  !powerCreep.powers[PWR_OPERATE_STORAGE].cooldown && powerCreep.powers[PWR_GENERATE_OPS]?.level >= 3)
     {
       if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) < 100)
       {
@@ -82,6 +84,8 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 2)
     // Turn power on in the room
     if(!room.controller.isPowerEnabled)
     {
@@ -94,6 +98,8 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 3)
     // Factory initial
     if(!factory.level && powerCreep.powers[PWR_OPERATE_FACTORY]
       && (powerCreep.store[RESOURCE_OPS] ?? 0) >= 300)
@@ -106,6 +112,55 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 4)
+    if(this.metaData.templeStoragePower && powerCreep.ticksToLive > 100 && powerCreep.powers[PWR_OPERATE_STORAGE]?.cooldown < 50)
+    {
+      const templeStorage = <StructureTerminal>Game.getObjectById(this.metaData.templeStorageId);
+      if(!templeStorage?.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length)
+      {
+        const controller = templeStorage.room.controller;
+        if(!controller?.isPowerEnabled)
+        {
+          if(!powerCreep.pos.isNearTo(controller))
+            powerCreep.moveTo(controller);
+          else
+            powerCreep.enableRoom(controller);
+
+          return;
+        }
+
+        if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
+        {
+          console.log(this.name, 'Temple storage', 1)
+          if(!powerCreep.pos.inRangeTo(templeStorage, 3))
+            powerCreep.moveTo(templeStorage, {range: 3});
+          else
+          {
+
+            const ret = powerCreep.usePower(PWR_OPERATE_STORAGE, templeStorage)
+            console.log(this.name, 'Temple storage', 2, ret)
+            if(ret === OK)
+            {
+              this.metaData.templeStorageId = undefined;
+              this.metaData.templeStoragePower = undefined;
+            }
+          }
+        }
+        else
+        {
+          if(!powerCreep.pos.isNearTo(storage))
+            powerCreep.moveTo(storage);
+          else
+            powerCreep.withdraw(storage, RESOURCE_OPS, POWER_INFO[PWR_OPERATE_STORAGE].ops);
+        }
+
+        return;
+      }
+    }
+
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 5)
     // Maintain factory
     if(this.metaData.turnOnFactory && !powerCreep.powers[PWR_OPERATE_FACTORY].cooldown)
     {
@@ -129,6 +184,8 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 6)
     // Operate Extensions
     if(powerCreep.powers[PWR_OPERATE_EXTENSION]?.cooldown < 10
       && powerCreep.store[RESOURCE_OPS] >= 2)
@@ -157,6 +214,8 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 7)
     // Regen sources
     if(powerCreep.powers[PWR_REGEN_SOURCE]?.cooldown < 15)
     {
@@ -186,6 +245,8 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 8)
     // Go Generate ops in sk room
     if(powerCreep.store.getUsedCapacity() !== 0)
     {
@@ -196,15 +257,19 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       }
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 9)
     // Generate ops
     if(powerCreep.powers[PWR_GENERATE_OPS].cooldown === 0
       && powerCreep.store.getFreeCapacity() > 0)
     {
-      powerCreep.usePower(PWR_GENERATE_OPS);
-      powerCreep.say('📀');
+      const ret = powerCreep.usePower(PWR_GENERATE_OPS);
+      powerCreep.say('📀' + ret);
       return;
     }
 
+    if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 10)
     // Empty ops
     if(powerCreep.store.getFreeCapacity() === 0)
     {

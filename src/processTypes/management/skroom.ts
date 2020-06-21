@@ -533,15 +533,22 @@ export class skRoomManagementProcess extends Process
   ////////////////////////////////////////////////////////////
   DevilActions(devil: Creep)
   {
+    if(devil.name === 'E56S44-devil-27283263')
+      console.log(this.name, 'Devil Actions', 1)
+
     let strSay = '';
     if(!devil.memory.boost)
     {
+      if(devil.name === 'E56S44-devil-27283263')
+      console.log(this.name, 'Devil Actions', 2)
       if(this.name === 'skrmp-E36S34')
         console.log(this.name, 'DA', 1)
       devil.boostRequest([RESOURCE_LEMERGIUM_OXIDE, RESOURCE_KEANIUM_OXIDE], false);
       return;
     }
 
+    if(devil.name === 'E56S44-devil-27283263')
+      console.log(this.name, 'Devil Actions', 3)
     if(this.name === 'skrmp-E36S34')
         console.log(this.name, 'DA', 2)
     if(!devil.memory.distance)
@@ -1578,7 +1585,7 @@ export class skRoomManagementProcess extends Process
 
                         roads[sourceContainer.id] = true;
 
-                      
+
                     }
                   }
                 }

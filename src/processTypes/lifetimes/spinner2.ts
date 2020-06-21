@@ -84,11 +84,13 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     if(!this.factory?.level || this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E56S43'
       || this.metaData.roomName === 'E58S52')
     {
-      if(!this.factory?.level && (this.terminal.store.getUsedCapacity(RESOURCE_MIST) || this.storage.store.getUsedCapacity(RESOURCE_MIST)))
-        console.log(this.name, 'Should be making mist');
-      console.log(this.name, 'Factory Start', this.room.memory.commandIndex, this.room.memory.commands?.length, )
+      // if(!this.factory?.level && (this.terminal.store.getUsedCapacity(RESOURCE_MIST) || this.storage.store.getUsedCapacity(RESOURCE_MIST)))
+      //   //console.log(this.name, 'Should be making mist');
+      if(this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E56S43'
+      || this.metaData.roomName === 'E58S52')
+        //console.log(this.name, 'Factory Start', this.room.memory.commandIndex, this.room.memory.commands?.length, )
       // this.FactoryEmpty(RESOURCE_CONDENSATE);
-      // this.room.memory.commands = undefined;
+      this.room.memory.commands = undefined;
       // this.room.memory.commandIndex = 0;
       // this.room.memory.startedCommands = undefined;
       // this.room.memory.commoditiesIndex = 0;
@@ -96,96 +98,102 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
       if(!this.room.memory.commands?.length)
       {
-        ////console.log(this.name, 'Time to start checking for commands');
+        //////console.log(this.name, 'Time to start checking for commands');
         this.room.memory.commandIndex = 0;
         this.room.memory.commoditiesIndex = 0;
         this.room.memory.commands = this.FactoryWork();
-        ////console.log(this.name, 'Time to start checking for commands', 1, this.room.memory.commands?.length)
+        //////console.log(this.name, 'Time to start checking for commands', 1, this.room.memory.commands?.length)
       }
-      else if(this.room.memory.commandIndex === this.room.memory.commands?.length)
-      {
-        for(let c of this.room.memory.commoditiesToMake)
-          ////console.log(this.name, c);
+      // else if(this.room.memory.commandIndex === this.room.memory.commands?.length)
+      // {
+      //   for(let c of this.room.memory.commoditiesToMake)
+      //     //////console.log(this.name, c);
 
-        ////console.log(this.name, 'Factory Empty/Reset', 1, this.room.memory.commoditiesIndex, this.room.memory.commoditiesToMake.length, this.room.memory.commoditiesToMake[this.room.memory.commoditiesIndex])
-        if(!this.factory.cooldown)
-        {
-          const comToMake = this.room.memory.commoditiesToMake[this.room.memory.commoditiesIndex];
-          if(COMMODITIES[comToMake]?.level && this.factory.effects.filter(e => e.effect = PWR_OPERATE_FACTORY)?.length === 0)
-          {
-            const powerProcess = this.kernel.getProcessByName('pclf-' + this.metaData.roomName + '-Operator')
-            if(powerProcess instanceof PowerCreepLifetimeProcess)
-            {
-              powerProcess.metaData.turnOnFactory = true;
-            }
+      //   //////console.log(this.name, 'Factory Empty/Reset', 1, this.room.memory.commoditiesIndex, this.room.memory.commoditiesToMake.length, this.room.memory.commoditiesToMake[this.room.memory.commoditiesIndex])
+      //   if(!this.factory.cooldown)
+      //   {
+      //     const comToMake = this.room.memory.commoditiesToMake[this.room.memory.commoditiesIndex];
+      //     if(COMMODITIES[comToMake]?.level && this.factory.effects.filter(e => e.effect = PWR_OPERATE_FACTORY)?.length === 0
+      //     && Object.keys(COMMODITIES[comToMake].components).length <= Object.keys(this.factory.store).length)
+      //     {
+      //       const powerProcess = this.kernel.getProcessByName('pclf-' + this.metaData.roomName + '-Operator')
+      //       if(powerProcess instanceof PowerCreepLifetimeProcess)
+      //       {
+      //         powerProcess.metaData.turnOnFactory = true;
+      //       }
 
-            return;
-          }
+      //       return;
+      //     }
 
-          if(this.room.memory.commoditiesToMake?.length === this.room.memory.commoditiesIndex)
-          {
-            this.FactoryEmpty(this.room.memory.commoditiesToMake[this.room.memory.commoditiesIndex-1]);
-            if(this.factory.store.getUsedCapacity() === 0)
-            {
-              this.room.memory.commands = undefined;
-              this.room.memory.commandIndex = 0;
-              this.room.memory.startedCommands = undefined;
-              this.room.memory.commoditiesIndex = 0;
-              this.room.memory.commoditiesToMake = undefined;
-            }
-            return;
-          }
-          else if(this.factory.produce(comToMake) === ERR_NOT_ENOUGH_RESOURCES)
-          {
-            ////console.log(this.name, 'Factory empty/reset', 1.2, this.room.memory.commoditiesIndex)
-            if(this.room.memory.commoditiesIndex < comToMake.length)
-              this.room.memory.commoditiesIndex++;
-          }
-        }
-      }
-      else if(this.room.memory.startedCommands || (!this.room.memory.startedCommands && this.creep.store.getUsedCapacity() === 0))
-      {
-        console.log(this.name, 'Factory start commands', this.room.memory.commandIndex)
-        this.room.memory.startedCommands = true;
-        let commandIndex = this.room.memory.commandIndex;
-        let command = this.room.memory.commands[commandIndex];
+      //     if(this.room.memory.commoditiesToMake?.length === this.room.memory.commoditiesIndex)
+      //     {
+      //       this.FactoryEmpty(this.room.memory.commoditiesToMake[this.room.memory.commoditiesIndex-1]);
+      //       if(this.factory.store.getUsedCapacity() === 0)
+      //       {
+      //         this.room.memory.commands = undefined;
+      //         this.room.memory.commandIndex = 0;
+      //         this.room.memory.startedCommands = undefined;
+      //         this.room.memory.commoditiesIndex = 0;
+      //         this.room.memory.commoditiesToMake = undefined;
+      //       }
+      //       return;
+      //     }
+      //     else if(this.factory.produce(comToMake) === ERR_NOT_ENOUGH_RESOURCES)
+      //     {
+      //       //////console.log(this.name, 'Factory empty/reset', 1.2, this.room.memory.commoditiesIndex)
+      //       if(this.room.memory.commoditiesIndex < comToMake.length)
+      //         this.room.memory.commoditiesIndex++;
+      //     }
+      //   }
+      // }
+      // else if(this.room.memory.startedCommands || (!this.room.memory.startedCommands && this.creep.store.getUsedCapacity() === 0))
+      // {
+      //   //console.log(this.name, 'Factory start commands', this.room.memory.commandIndex)
+      //   this.room.memory.startedCommands = true;
+      //   let commandIndex = this.room.memory.commandIndex;
+      //   let command = this.room.memory.commands[commandIndex];
 
-        console.log(this.name, 'Factory start commandIndex', commandIndex, this.room.memory.commands.length, command, command.resourceType)
-        console.log(this.name, 'Empty creep', this.creep.store.getUsedCapacity(), this.creep.store.getUsedCapacity(command.resourceType))
-        // Empty creep.
-        if(this.creep.store.getUsedCapacity() !== this.creep.store.getUsedCapacity(command.resourceType))
-        {
-          console.log(this.name, 'Empty creep', 1)
-          this.creep.transferEverything(this.storage);
-          return;
-        }
+      //   //console.log(this.name, 'Factory start commandIndex', commandIndex, this.room.memory.commands.length, command, command.resourceType)
+      //   if(this.metaData.roomName === 'E56S43')
+      //   {
+      //     for(let c of this.room.memory.commands)
+      //       //console.log(this.name, c.resourceType, c.amount, c.origin);
+      //   }
+      //   //console.log(this.name, 'Empty creep', this.creep.store.getUsedCapacity(), this.creep.store.getUsedCapacity(command.resourceType))
+      //   // Empty creep.
+      //   if(this.creep.store.getUsedCapacity() !== this.creep.store.getUsedCapacity(command.resourceType))
+      //   {
+      //     //console.log(this.name, 'Empty creep', 1)
+      //     this.creep.transferEverything(this.storage);
+      //     return;
+      //   }
 
-        console.log(this.name, 'Factory', 1)
-        if(this.creep.store.getUsedCapacity() === 0)
-        {
-          const origin = <Structure>Game.getObjectById(command.origin);
-          const amount = (this.creep.store.getCapacity() > command.amount) ? command.amount : this.creep.store.getCapacity();
-          this.creep.withdraw(origin, command.resourceType, amount);
-          return;
-        }
-        else if(this.creep.store.getUsedCapacity() > 0)
-        {
-          const destination = <Structure>Game.getObjectById(command.destination);
-          const amount = this.creep.store.getUsedCapacity();
-          if(this.creep.transfer(destination, command.resourceType) === OK)
-          {
-            command.amount -= amount;
-            if(command.amount === 0)
-            {
-              this.room.memory.commandIndex++;
-            }
-            else
-              this.room.memory.commands[commandIndex] = command;
-          }
+      //   //console.log(this.name, 'Factory', 1)
+      //   if(this.creep.store.getUsedCapacity() === 0)
+      //   {
+      //     const origin = <Structure>Game.getObjectById(command.origin);
+      //     const amount = (this.creep.store.getCapacity() > command.amount) ? command.amount : this.creep.store.getCapacity();
+      //     this.creep.withdraw(origin, command.resourceType, amount);
+      //     return;
+      //   }
+      //   else if(this.creep.store.getUsedCapacity() > 0)
+      //   {
+      //     const destination = <Structure>Game.getObjectById(command.destination);
+      //     const amount = this.creep.store.getUsedCapacity();
+      //     if(this.creep.transfer(destination, command.resourceType) === OK)
+      //     {
+      //       command.amount -= amount;
+      //       if(command.amount === 0)
+      //       {
+      //         this.room.memory.commandIndex++;
+      //       }
+      //       else
+      //         this.room.memory.commands[commandIndex] = command;
+      //     }
 
-          return;
-        }
-      }
+      //     return;
+      //   }
+      // }
     }
 
     if(this.room.memory.spinnerDump)
@@ -693,20 +701,23 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
           if(this.terminal.store.getUsedCapacity(commodity) + this.storage.store.getUsedCapacity(commodity) < 1000)
           {
             let haveAllComponents = true;
-            ////console.log(this.name, 'FW lvl', commodity)
+            //////console.log(this.name, 'FW lvl', commodity)
             numberOfMakes = Math.floor(POWER_INFO[PWR_OPERATE_FACTORY].duration / data.cooldown);
             for(const c in data.components)
             {
-              ////console.log(this.name, 'FW lvl 2', c, numberOfMakes, data.components[c])
+              ////if(this.metaData.roomName === 'E58S52')
+                //console.log(this.name, 'FW lvl 2', c, numberOfMakes, data.components[c])
               const component = c as ResourceConstant;
               const totalInStore = this.storage.store.getUsedCapacity(component) + this.terminal.store.getUsedCapacity(component);
               const componentAmountNeeded = numberOfMakes * data.components[c];
               if(totalInStore < componentAmountNeeded)
               {
-                ////console.log(this.name, 'FW lvl 3 SubComponent check')
+                ////if(this.metaData.roomName === 'E58S52')
+                  //console.log(this.name, 'FW lvl 3 SubComponent check', commodity, component)
                 if(haveAllComponents && !COMMODITIES[component].level)
                 {
-                  ////console.log(this.name, 'FW lvl 3.1', component, componentAmountNeeded);
+                  ////if(this.metaData.roomName === 'E58S52')
+                    //console.log(this.name, 'FW lvl 3.1', component, componentAmountNeeded);
                   const subData = COMMODITIES[(component as CommodityConstant)];
                   const subNumberOfMakes = Math.ceil(componentAmountNeeded / subData.amount);
                   let haveAllSubComponents = true;
@@ -715,17 +726,23 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
                     const subComponent = subC as ResourceConstant;
                     const subTotalInStore = this.storage.store.getUsedCapacity(subComponent) + this.terminal.store.getUsedCapacity(subComponent);
                     const subComponentAmountNeeded = subNumberOfMakes * subData.components[subC];
-                    ////console.log(this.name, 'FW lvel 3.1', subComponent, subTotalInStore, subComponentAmountNeeded);
+                    //if(this.metaData.roomName === 'E58S52')
+                      //console.log(this.name, 'FW lvel 3.1', subComponent, subTotalInStore, subComponentAmountNeeded);
                     if(subTotalInStore < subComponentAmountNeeded)
                     {
+                      //if(this.metaData.roomName === 'E58S52')
+                        //console.log(this.name, 'FW lvel 3.11')
                       haveAllComponents = false;
                       haveAllSubComponents = false;
                     }
                   }
 
+                  //if(this.metaData.roomName === 'E58S52')
+                      //console.log(this.name, 'FW lvel 3.12', haveAllComponents, component, subNumberOfMakes, checkCommodities.indexOf({res: component, amount: subNumberOfMakes}));
                   if(haveAllSubComponents && checkCommodities.indexOf({res: component, amount: subNumberOfMakes}) === -1)
                   {
-                    ////console.log(this.name, 'FW lvl 3.2', component);
+                    //if(this.metaData.roomName === 'E58S52')
+                      //console.log(this.name, 'FW lvl 3.2', component);
                     checkCommodities.push({res: component, amount: subNumberOfMakes});
                   }
                 }
@@ -734,40 +751,49 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
               }
             }
 
+            //if(this.metaData.roomName === 'E58S52')
+              //console.log(this.name, 'FW Test', commodity, haveAllComponents);
+
             if(haveAllComponents)
             {
-              ////console.log(this.name, 'FW 4', commodity);
+              //////console.log(this.name, 'FW 4', commodity);
               checkCommodities.push({res: commodity, amount: numberOfMakes})
             }
           }
         }
       }
 
+      //if(this.metaData.roomName === 'E58S52')
+        //console.log(this.name, 'CheckCommodities length', checkCommodities.length)
       let commands: Command[] = [];
       for(let checkCom of checkCommodities)
       {
-        ////console.log(this.name, 'Factory lvl', 2, checkCom);
+        //if(this.metaData.roomName === 'E58S52')
+          //console.log(this.name, 'Factory check commodities', checkCom.res, checkCom.amount);
         const data = COMMODITIES[(checkCom.res as CommodityConstant)];
         for(const c in data.components)
         {
           const component = c as ResourceConstant;
           const terminalAmount = this.terminal.store.getUsedCapacity(component);
-          const storageAmount = this.terminal.store.getUsedCapacity(component);
+          const storageAmount = this.storage.store.getUsedCapacity(component);
           const amountNeeded = checkCom.amount * data.components[c];
           if(terminalAmount + storageAmount > amountNeeded)
+          {
             commands = commands.concat(this.GenerateCommands(terminalAmount, storageAmount, amountNeeded, component));
+          }
+
         }
       }
 
-      ////console.log(this.name, 'Factory lvl', 3, commands.length)
+      //console.log(this.name, 'Factory lvl', 3, commands.length)
       for(let command of commands)
       {
-        ////console.log(this.name, command.resourceType, command.amount, command.origin);
+        //console.log(this.name, command.resourceType, command.amount, command.origin);
       }
 
       if(commands.length)
       {
-        ////console.log(this.name, 'Factory lvl', 3, commands.length)
+        //////console.log(this.name, 'Factory lvl', 3, commands.length)
 
         if(!this.room.memory.commoditiesToMake)
           this.room.memory.commoditiesToMake = [];
@@ -785,7 +811,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       let deposit: ResourceConstant;
       for(const d of global.depositTypes)
       {
-        ////console.log(this.name, 'FactoryWork', d);
+        //////console.log(this.name, 'FactoryWork', d);
         // Find commodity to make by one of its components
         for(const commodity in COMMODITIES)
         {
@@ -806,7 +832,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
       const numberOfMakes = Math.ceil(100 / commidtyAmount)
       const totalDepositAmount = numberOfMakes * depositAmount;
-      ////console.log(this.name, 'FW', 0, commodityToMake, commidtyAmount, numberOfMakes, totalDepositAmount);
+      //////console.log(this.name, 'FW', 0, commodityToMake, commidtyAmount, numberOfMakes, totalDepositAmount);
 
       const totalDepositInStore = this.terminal.store.getUsedCapacity(deposit) + this.storage.store.getUsedCapacity(deposit);
       if(totalDepositInStore >= totalDepositAmount)
@@ -819,7 +845,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
           ////consolee.log(this.name, 'FW', 1, totalAmount, component);
           const terminalAmount = this.terminal.store.getUsedCapacity(component);
           const storageAmount = this.storage.store.getUsedCapacity(component);
-          ////console.log(this.name, 'FW', 2, component, 'terminal', terminalAmount, 'storage', storageAmount)
+          //////console.log(this.name, 'FW', 2, component, 'terminal', terminalAmount, 'storage', storageAmount)
           if(terminalAmount + storageAmount < totalAmount)
           {
             // Need to make some more of this component or we are sunk
@@ -836,7 +862,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
               ////consolee.log(this.name, 'FW', 5, subTotalAmount, subComponent);
               const subTerminalAmount = this.terminal.store.getUsedCapacity(subComponent);
               const subStorageAmount = this.storage.store.getUsedCapacity(subComponent);
-              ////console.log(this.name, 'FW', 6, subComponent, 'terminal', subTerminalAmount, 'storage', subStorageAmount);
+              //////console.log(this.name, 'FW', 6, subComponent, 'terminal', subTerminalAmount, 'storage', subStorageAmount);
               if(subTerminalAmount + subStorageAmount < subTotalAmount)
                 haveEverything = false;
               else
@@ -846,9 +872,9 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
                   if(commoditiesToMake.indexOf(component as CommodityConstant) === -1)
                     commoditiesToMake.push(component as CommodityConstant);
                   const retCommands = this.GenerateCommands(subTerminalAmount, subStorageAmount, subTotalAmount, subComponent)
-                  ////console.log(this.name, 'FW', 6.1, retCommands.length)
+                  //////console.log(this.name, 'FW', 6.1, retCommands.length)
                   commands = commands.concat(retCommands);
-                  ////console.log(this.name, 'FW', 6.2, commands.length);
+                  //////console.log(this.name, 'FW', 6.2, commands.length);
                 }
               }
             }
@@ -861,7 +887,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
                 commoditiesToMake.push(commodityToMake as CommodityConstant);
               ////consolee.log(this.name, 'FW', 2.1)
               commands = commands.concat(this.GenerateCommands(terminalAmount, storageAmount, totalAmount, component));
-              ////console.log(this.name, 'FW', 2.2, commands.length)
+              //////console.log(this.name, 'FW', 2.2, commands.length)
             }
           }
         }
@@ -871,7 +897,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
         {
           for(let command of commands)
           {
-            ////console.log(this.name, 'command', command.resourceType, command.amount, command.origin);
+            //////console.log(this.name, 'command', command.resourceType, command.amount, command.origin);
           }
 
           let rawCommands = commands.reverse();
@@ -887,10 +913,10 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
           commands = rawCommands;
 
-          ////console.log(this.name, 'Second commands');
+          //////console.log(this.name, 'Second commands');
           for(let command of commands)
           {
-            ////console.log(this.name, 'command', command.resourceType, command.amount, command.origin);
+            //////console.log(this.name, 'command', command.resourceType, command.amount, command.origin);
           }
         }
       }
@@ -900,7 +926,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     if(haveEverything)
     {
       this.room.memory.commoditiesToMake = commoditiesToMake;
-      return commands;
+      //return commands;
     }
   }
 
@@ -909,19 +935,28 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
     let commands: Command[] = [];
     if(terminalAmount > totalAmount)
     {
-      commands.push({destination: this.factory.id, resourceType: component, origin: this.terminal.id, amount: totalAmount});
-      totalAmount = 0;
+      if(totalAmount > 0)
+      {
+        commands.push({destination: this.factory.id, resourceType: component, origin: this.terminal.id, amount: totalAmount});
+        totalAmount = 0;
+      }
     }
     else
     {
-      commands.push({destination: this.factory.id, resourceType: component, origin: this.terminal.id, amount: terminalAmount});
-      totalAmount -= terminalAmount;
+      if(terminalAmount > 0)
+      {
+        commands.push({destination: this.factory.id, resourceType: component, origin: this.terminal.id, amount: terminalAmount});
+        totalAmount -= terminalAmount;
+      }
     }
 
     if(totalAmount > 0 && storageAmount > totalAmount)
     {
-      commands.push({destination: this.factory.id, resourceType: component, origin: this.storage.id, amount: totalAmount});
-      totalAmount = 0;
+      if(totalAmount > 0)
+      {
+        commands.push({destination: this.factory.id, resourceType: component, origin: this.storage.id, amount: totalAmount});
+        totalAmount = 0;
+      }
     }
 
     return commands

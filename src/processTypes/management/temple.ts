@@ -1,6 +1,7 @@
 import { Process } from "os/process";
 import { Utils } from "lib/utils";
 import { PRODUCTION_AMOUNT } from "processTypes/buildingProcesses/mineralTerminal";
+import { PowerCreepLifetimeProcess } from "processTypes/lifetimes/powerCreep";
 
 export class TempleProcess extends Process
 {
@@ -131,17 +132,31 @@ export class TempleProcess extends Process
           if(distroAmount == 2)
              this.metaData.upgraders2 = this.spawnCreeps(upgraderAmount, this.metaData.upgraders2, 'templeUpgrader');
           else
-            this.metaData.upgraders2 = Utils.clearDeadCreeps(this.metaData.upgraders2)
+            this.metaData.upgraders2 = Utils.clearDeadCreeps(this.metaData.upgraders2);
 
           //distroAmount = 2;
         }
-        else if(controller.level === 8
-          && this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeStorage.store.getCapacity() * .9)
-          // && this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeTerminal.store.getCapacity() * .9)
+        else if(controller.level === 8)
         {
-          this.metaData.claimed = false;
-          controller.unclaim();
-          return;
+          console.log(this.name, 'Lvl 8 code')
+          if(!this.templeStorage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length)
+          {
+            console.log(this.name, 'Turn on power for storage');
+            const pclf = this.kernel.getProcessByName('pclf-' + this.feedRoom.name + '-Operator');
+            if(pclf instanceof PowerCreepLifetimeProcess)
+            {
+              console.log(this.name, 'PCLF storage turn on');
+              pclf.metaData.templeStoragePower = true;
+              pclf.metaData.templeStorageId = this.templeStorage.id;
+            }
+          }
+          else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeStorage.store.getCapacity() * .9)
+          // && this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeTerminal.store.getCapacity() * .9)
+          {
+            this.metaData.claimed = false;
+            controller.unclaim();
+            return;
+          }
         }
       }
     }
@@ -651,9 +666,15 @@ export class TempleProcess extends Process
           && this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
           creep.withdraw(this.templeTerminal, RESOURCE_ENERGY);
         else if(this.templeTerminal.store.getUsedCapacity(RESOURCE_ENERGY) >=  creep.store.getCapacity())
+        {
+          console.log(this.name, 'DA', 1)
           creep.withdraw(this.templeTerminal, RESOURCE_ENERGY);
+        }
         else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getCapacity())
+        {
+          console.log(this.name, 'DA', 2)
           creep.withdraw(this.templeStorage, RESOURCE_ENERGY);
+        }
       }
 
       return;
@@ -716,7 +737,10 @@ export class TempleProcess extends Process
           if(!creep.pos.isEqualTo(distroFlag))
             creep.travelTo(distroFlag);
           else
+          {
+            console.log(this.name, 'DA', 3)
             creep.withdraw(this.templeTerminal, RESOURCE_ENERGY);
+          }
 
           return;
         }

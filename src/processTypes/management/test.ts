@@ -47,14 +47,14 @@ export class TestProcessManagement extends Process
         }
       }
 
-      if(this.metaData.followers.length < 1)
-      {
-        if(spawn.spawnCreep([MOVE], 'test2-' + Game.time) === OK)
-        {
-          this.metaData.followers.push('test2-' + Game.time);
-          return;
-        }
-      }
+      // if(this.metaData.followers.length < 1)
+      // {
+      //   if(spawn.spawnCreep([MOVE], 'test2-' + Game.time) === OK)
+      //   {
+      //     this.metaData.followers.push('test2-' + Game.time);
+      //     return;
+      //   }
+      // }
     }
 
     for(let i = 0; i < this.metaData.leaders.length; i++)
@@ -64,19 +64,22 @@ export class TestProcessManagement extends Process
         this.LeaderActions(creep);
     }
 
-    for(let i = 0; i < this.metaData.followers.length; i++)
-    {
-      const creep = Game.creeps[this.metaData.followers[i]];
-      if(creep)
-        this.FollowerActions(creep);
-    }
+    // for(let i = 0; i < this.metaData.followers.length; i++)
+    // {
+    //   const creep = Game.creeps[this.metaData.followers[i]];
+    //   if(creep)
+    //     this.FollowerActions(creep);
+    // }
 
   }
 
   private LeaderActions(creep: Creep)
   {
-    if(!creep.pos.isEqualTo(this.target))
-      creep.travelTo(this.target);
+    // const target = new RoomPosition(25,25, 'E56S42')
+    // if(!global.creepTravel)
+    //   global.creepTravel = {};
+
+    // if(global.creepTravel[creep.name] == "")
   }
 
   private FollowerActions(creep: Creep)

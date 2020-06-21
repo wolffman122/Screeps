@@ -6,6 +6,12 @@ export class ReportProcess extends Process
 
     run()
     {
+      this.completed = true;
+      return;
+    }
+
+    test ()
+    {
         let report: {
             [roomName: string]: {
                 mineralType: string;

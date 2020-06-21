@@ -8,7 +8,11 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
 
     let creep = this.getCreep()
 
-    if(!creep){ return }
+    if(!creep)
+    {
+      this.completed = true;
+      return;
+    }
 
     if(creep.room.memory.shutdown)
     {

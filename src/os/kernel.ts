@@ -264,13 +264,15 @@ export class Kernel{
   loadProcessTable(){
     let kernel = this
 
+    let oldPCount = 0;
     _.forEach(Memory.wolffOS.processTable, function(entry){
-      // Old process clean up code
+      //Old process clean up code
       //
       //
       // let time = +entry.name.split('-')[3];
-      // if(time < 22000000)
+      // if(time < 27280000)
       // {
+      //   oldPCount++;
       //   console.log('Problem old processes', entry.name, entry.type);
       //   if(entry.type  === 'lhlf' || entry.type  === 'hlf')
       //     return;
@@ -283,6 +285,8 @@ export class Kernel{
         kernel.processTable[entry.name] = new Process(entry, kernel)
       }
     })
+
+    console.log('Old Process Count', oldPCount)
   }
 
   loadIpcMessages()

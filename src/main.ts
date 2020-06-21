@@ -119,10 +119,6 @@ initRoomPrototype();
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
-  if(Game.time === 25852130)
-    global.diagnoseMemory();
-  else
-  {
   if(Game.time % 2000 === 0)
   {
     for(var name in Memory.creeps)
@@ -134,7 +130,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
       }
     }
   }
-  let creep: Creep
 
   // Load Memory from the global object if it is there and up to date.
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){
@@ -173,6 +168,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
   Traveler.activeStructureMatrixCache = undefined;
   Traveler.creepMatrixCache = undefined;
   //Traveler.resetStructureMatrix();
-  }
+
 
 });

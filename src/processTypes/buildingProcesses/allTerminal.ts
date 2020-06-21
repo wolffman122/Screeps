@@ -71,42 +71,138 @@ export class AllTerminalManagementProcess extends Process
                     let terminal = r.terminal;
                     if(terminal?.my)
                     {
-                        // Factory stuff
-                        // const factory = this.roomInfo(r.name).factory;
-                        // if(factory?.level)
-                        // {
-                        //     console.log(this.name, 'Factory level', factory.level, 'room', r.name);
-                        // }
-                        // else if(factory)
-                        // {
-                        //     for(let c of Object.keys(COMMODITIES))
-                        //     {
-                        //         if(MINERALS_RAW.indexOf(<MineralConstant>c) === -1
-                        //             && c !== RESOURCE_ENERGY
-                        //             && c !== RESOURCE_GHODIUM)
-                        //         {
-                        //             console.log(this.name, c, 'level', COMMODITIES[c].level);
-                        //             if(terminal.store.getUsedCapacity(<CommodityConstant>c) >= 1000
-                        //             && factory.level === COMMODITIES[c].level)
-                        //             {
-                        //                 if(this.metaData.commoditiesToMove[c] === undefined)
-                        //                     this.metaData.commoditiesToMove[c] = [];
+                      // Factory stuff
+                      const factory = this.roomInfo(r.name).factory;
+                      if(r.name === 'E55S47')
+                        console.log(this.name, 'Factory pre test', factory, factory.level)
+                      if(factory?.level)
+                      {
+                        if(r.name === 'E55S47')
+                          console.log(this.name, 'Factory level test')
+                        // List setup
+                        if(!this.metaData.factoryLevelRoomList)
+                        {
+                          console.log(this.name, 'Factory room list false')
+                          this.metaData.factoryLevelRoomList = {}
+                        }
+                        else
+                        {
+                          if(!this.metaData.factoryLevelRoomList[factory.level])
+                          {
+                            this.metaData.factoryLevelRoomList[factory.level] = [];
+                            if(this.metaData.factoryLevelRoomList[factory.level].indexOf(r.name) === -1)
+                              this.metaData.factoryLevelRoomList[factory.level].push(r.name);
+                          }
+                          else
+                          {
+                            if(this.metaData.factoryLevelRoomList[factory.level].indexOf(r.name) === -1)
+                              this.metaData.factoryLevelRoomList[factory.level].push(r.name);
+                          }
+                        }
 
-                        //                 const index = _.findIndex(this.metaData.commoditiesToMove[c], (ra) => {
-                        //                     ra.roomName === r.name
-                        //                 });
+                        if(r.memory.commoditiesForLevel)
+                        {
+                          const commoditiesForLevel = r.memory.commoditiesForLevel;
+                          for(let i = 0; i < commoditiesForLevel.length; i++)
+                          {
+                            const commodity = commoditiesForLevel[i];
+                            for(const c in COMMODITIES[commodity].components)
+                            {
+                              const component = <ResourceConstant>c;
+                              if(COMMODITIES[component].level)
+                              {
+                                // TODO if we get multiple rooms of same level, find one closest;
+                                const sourceRoom = this.metaData.factoryLevelRoomList[COMMODITIES[component].level][0];
+                                const sourceTerminal = Game.rooms[sourceRoom].terminal;
+                                const destTerminal = Game.rooms[r.name].terminal;
+                                const destStorage = Game.rooms[r.name].storage;
+                                if(destTerminal?.store.getUsedCapacity(component) + destStorage?.store.getUsedCapacity(component) < 1000)
+                                {
+                                  if(sourceTerminal?.store.getUsedCapacity(component) >= 1000 && !sourceTerminal.cooldown)
+                                  {
+                                    console.log(this.name, r.name, commodity, component, 'Sent from', sourceRoom);
+                                    if(sourceTerminal.send(component, 1000, r.name) === OK)
+                                      break;
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                      else if(factory)
+                      {
+                        if(r.name === 'E55S47')
+                          console.log(this.name, 'Factory no level test')
+                        //if(r.name === 'E55S47')
+                        {
+                          let sent = false;
+                          //console.log(this.name, 'Testing E55S47')
+                          for(const c of Object.keys(COMMODITIES))
+                          {
+                            const commodity = <ResourceConstant>c;
+                            if(Object.keys(COMMODITIES[commodity].components).length === 3 && COMMODITIES[commodity].level === undefined)
+                            {
+                              //console.log(this.name, 'Finding base commodities', commodity, COMMODITIES[commodity].level);
+                              if(terminal.store.getUsedCapacity(commodity) > 0 && !terminal.cooldown)
+                              {
+                                if(commodity === RESOURCE_CONDENSATE)
+                                  console.log(this.name, 'Full Terms of ', commodity, terminal.room.name);
+                                if(this.metaData.factoryLevelRoomList)
+                                {
+                                  for(const level in this.metaData.factoryLevelRoomList)
+                                  {
+                                    for(const roomName of this.metaData.factoryLevelRoomList[level])
+                                    {
+                                      const recTerminal = Game.rooms[roomName].terminal;
+                                      if(commodity === RESOURCE_CONDENSATE)
+                                        console.log(this.name, 'Sending room', terminal.room.name, terminal.store.getUsedCapacity(commodity), 'Reciving room', roomName, recTerminal?.store.getUsedCapacity(commodity));
+                                      if(recTerminal?.store.getUsedCapacity(commodity) < 1000)
+                                      {
+                                        let amountNeeded = 1000 - recTerminal.store.getUsedCapacity(commodity);
+                                        if(recTerminal.store.getFreeCapacity() > 0 && amountNeeded)
+                                        {
+                                          amountNeeded = (terminal.store.getUsedCapacity(commodity) > amountNeeded) ? amountNeeded : terminal.store.getUsedCapacity(commodity);
+                                          if(terminal.send(commodity, amountNeeded, roomName) === OK)
+                                          {
+                                            sent = true;
+                                            console.log(this.name, 'Sending', commodity, 'from', terminal.room.name, 'to', roomName, amountNeeded);
+                                            break;
+                                          }
+                                        }
+                                      }
+                                    }
+                                    if(sent)
+                                      break;
+                                  }
+                                  if(sent)
+                                    break;
+                                }
+                              }
+                            }
+                          //             && factory.level === COMMODITIES[c].level)
+                          //             {
+                          //                 if(this.metaData.commoditiesToMove[c] === undefined)
+                          //                     this.metaData.commoditiesToMove[c] = [];
 
-                        //                 if(index !== -1)
-                        //                 {
-                        //                     let data = this.metaData.commoditiesToMove[c][index];
-                        //                     if(data.amount !== amount)
-                        //                     {}
-                        //                 }
-                        //             }
-                        //         }
+                          //                 const index = _.findIndex(this.metaData.commoditiesToMove[c], (ra) => {
+                          //                     ra.roomName === r.name
+                          //                 });
 
-                        //     }
-                        // }
+                          //                 if(index !== -1)
+                          //                 {
+                          //                     let data = this.metaData.commoditiesToMove[c][index];
+                          //                     if(data.amount !== amount)
+                          //                     {}
+                          //                 }
+                          //             }
+
+                          }
+                        }
+                      }
+
+                      if(r.name === 'E55S47')
+                          console.log(this.name, 'Factory after test')
 
                         _.forEach(resources, (s) => {
                             //console.log(this.name, s);
