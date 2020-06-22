@@ -51,7 +51,8 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
 
     if((this.powerSpawn?.store[RESOURCE_ENERGY] ?? 0) > 0
-      && (this.powerSpawn?.store[RESOURCE_POWER] ?? 0) > 0)
+      && (this.powerSpawn?.store[RESOURCE_POWER] ?? 0) > 0
+      && this.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT * 1.1)
       this.powerSpawn.processPower();
 
     if(!this.room.memory.barType)
