@@ -18,6 +18,9 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       return;
     }
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 1)
+
     this.terminal = creep.room.terminal;
     this.storage = creep.room.storage;
     this.powerSpawn = this.roomData().powerSpawn;
@@ -29,14 +32,15 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     // Room energy full parts
     if(_.sum(creep.carry) === 0 && creep.room.energyAvailable === creep.room.energyCapacityAvailable)
     {
-
+      if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 2)
       const minContainer = this.kernel.data.roomData[creep.room.name].mineralContainer;
       if(minContainer && minContainer.store.getUsedCapacity() > 0)
       {
         if(creep.pos.isNearTo(minContainer))
           creep.withdrawEverything(minContainer);
         else
-          creep.travelTo(minContainer, {range: 1});
+          creep.moveTo(minContainer, {range: 1});
 
         return;
       }
@@ -45,7 +49,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         && this.powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) === 0)
       {
         if(!creep.pos.isNearTo(this.terminal))
-          creep.travelTo(this.terminal);
+          creep.moveTo(this.terminal);
         else
           creep.withdraw(this.terminal, RESOURCE_POWER, 100);
 
@@ -75,7 +79,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
             if(creep.pos.isNearTo(this.storage))
               creep.withdraw(this.storage, RESOURCE_ENERGY);
             else
-              creep.pushyTravelTo(this.storage, {range: 1});
+              creep.moveTo(this.storage, {range: 1});
 
             return;
         }
@@ -88,7 +92,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           if(creep.pos.isNearTo(sourceContainer))
             creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           else
-            creep.travelTo(sourceContainer, {range: 1});
+            creep.moveTo(sourceContainer, {range: 1});
 
           return;
         }
@@ -98,7 +102,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         {
           let target = creep.pos.findClosestByPath(ruins);
           if(!creep.pos.isNearTo(target))
-            creep.travelTo(target);
+            creep.moveTo(target);
           else
             creep.withdrawEverything(target);
 
@@ -115,7 +119,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           if(creep.name === 'em-m-E36S33-25790836')
             console.log(this.name, 'Dropped problem', target.id);
           if(!creep.pos.isNearTo(target))
-            creep.pushyTravelTo(target);
+            creep.moveTo(target);
           else
             creep.pickup(target);
 
@@ -134,7 +138,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           if(creep.pos.isNearTo(target))
             creep.withdraw(target, RESOURCE_ENERGY);
           else
-            creep.travelTo(target, {range: 1});
+            creep.moveTo(target, {range: 1});
 
           return;
         }
@@ -145,7 +149,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           {
             creep.say('🏟');
             if(!creep.pos.isNearTo(this.storage))
-              creep.travelTo(this.storage);
+              creep.moveTo(this.storage);
             else
               creep.withdraw(this.storage, RESOURCE_ENERGY);
 
@@ -158,7 +162,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
             if(creep.pos.isNearTo(this.terminal))
               creep.withdrawEverything(this.terminal);
             else
-              creep.pushyTravelTo(this.terminal, {range: 1});
+              creep.moveTo(this.terminal, {range: 1});
 
             return;
           }
@@ -173,7 +177,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
             if(creep.pos.isNearTo(this.terminal))
               creep.withdrawEverything(this.terminal);
             else
-              creep.pushyTravelTo(this.terminal, {range: 1});
+              creep.moveTo(this.terminal, {range: 1});
 
             return;
           }
@@ -193,7 +197,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           if(creep.pos.isNearTo(sourceContainer))
             creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           else
-            creep.travelTo(sourceContainer, {range: 1});
+            creep.moveTo(sourceContainer, {range: 1});
 
           return;
         }
@@ -210,7 +214,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
               return;
             }
 
-            creep.pushyTravelTo(this.terminal, {range: 1});
+            creep.moveTo(this.terminal, {range: 1});
             return;
           }
         }
@@ -225,7 +229,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
           {
             if(!creep.pos.inRangeTo(container, 1))
             {
-              creep.travelTo(container);
+              creep.moveTo(container);
               return;
             }
             else
@@ -244,7 +248,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
                   return;
               }
 
-              creep.pushyTravelTo(this.storage, {range: 1});
+              creep.moveTo(this.storage, {range: 1});
               return;
             }
           }
@@ -257,7 +261,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     if(creep.store.getUsedCapacity(RESOURCE_POWER) > 0 && (this.powerSpawn?.store.getFreeCapacity(RESOURCE_POWER) ?? 0) > creep.store.getUsedCapacity(RESOURCE_POWER))
     {
       if(!creep.pos.isNearTo(this.powerSpawn))
-        creep.travelTo(this.powerSpawn);
+        creep.moveTo(this.powerSpawn);
       else
         creep.transfer(this.powerSpawn, RESOURCE_POWER);
 
@@ -269,6 +273,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       <never[]>this.kernel.data.roomData[creep.room.name].extensions
     )
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 3)
     if(creep.room.energyAvailable > creep.room.energyCapacityAvailable * .95)
     {
       targets = [].concat(
@@ -290,6 +296,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
     })
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 4)
     // Drop off at terminal if creep is carrying anything but energy.
     if(this.terminal?.my && _.sum(creep.carry) != creep.carry.energy)
     {
@@ -299,12 +307,14 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
       else
       {
-        creep.pushyTravelTo(this.terminal);
+        creep.moveTo(this.terminal);
       }
       return;
     }
 
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 5)
     if(this.storage && _.sum(creep.carry) != creep.carry.energy)
     {
       creep.say('T🏟')
@@ -314,17 +324,19 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         return;
       }
 
-      creep.pushyTravelTo(this.storage);
+      creep.moveTo(this.storage);
       return;
 
     }
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 6)
     if(deliverTargets.length === 0){
       if(this.storage?.my)
       {
         targets = [].concat(
           <never[]>this.kernel.data.roomData[creep.room.name].labs,
-          <never[]>[this.kernel.data.roomData[creep.room.name].controllerContainer]
+          //<never[]>[this.kernel.data.roomData[creep.room.name].controllerContainer]
         )
       }
       else
@@ -347,6 +359,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       })
     }
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 7)
     if(deliverTargets.length === 0 && this.kernel.data.roomData[creep.room.name].nuker)
     {
       let nuker = this.kernel.data.roomData[creep.room.name].nuker;
@@ -356,6 +370,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
     }
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 8)
     if(deliverTargets.length === 0 && this.powerSpawn)
     {
 
@@ -365,32 +381,89 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
     }
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 9)
     if(deliverTargets.length === 0 && this.storage?.my)
     {
       deliverTargets = <never[]>[this.storage];
     }
 
-    let controllerContainer = this.kernel.data.roomData[creep.room.name].controllerContainer;
-    if(creep.carry.energy == creep.carryCapacity && deliverTargets.length === 0 && controllerContainer && controllerContainer.store.energy < controllerContainer.storeCapacity)
-    {
-      let targets = [].concat(
-        <never[]>[this.kernel.data.roomData[creep.room.name].controllerContainer]
-      )
+    // let controllerContainer = this.kernel.data.roomData[creep.room.name].controllerContainer;
+    // if(creep.carry.energy == creep.carryCapacity && deliverTargets.length === 0 && controllerContainer && controllerContainer.store.energy < controllerContainer.storeCapacity)
+    // {
+    //   let targets = [].concat(
+    //     <never[]>[this.kernel.data.roomData[creep.room.name].controllerContainer]
+    //   )
 
-      deliverTargets = targets;
-    }
+    //   deliverTargets = targets;
+    // }
 
     let target = creep.pos.findClosestByPath(deliverTargets)
 
-    if(target){
-      if(!creep.pos.inRangeTo(target, 1))
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 10, target)
+    if(target)
+    {
+      if(target.structureType !== STRUCTURE_STORAGE)
+        creep.memory.atPlace = false;
+
+      if(!creep.pos.inRangeTo(target, 1) && !creep.memory.atPlace)
       {
-        creep.pushyTravelTo(target);
+        if(creep.name === 'em-m-E28S33-27504732')
+          console.log(this.name, 'Distro Prob', 10.1, target)
+        creep.moveTo(target);
         return;
       }
 
       if(target.structureType == STRUCTURE_STORAGE)
       {
+        let standPos: RoomPosition;
+        let range = 4;
+        if(creep.room.name === 'E45S57')
+            range = 5;
+
+        if(!creep.memory.standPos && target.structureType === STRUCTURE_STORAGE)
+        {
+           const rPos = creep.pos.getOpenPositions(target.pos, range, {avoidCreeps: true, avoidFlags: true,
+            avoidStructures: [STRUCTURE_EXTENSION, STRUCTURE_TERMINAL, STRUCTURE_STORAGE, STRUCTURE_FACTORY, STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_LINK, STRUCTURE_ROAD]});
+          standPos = creep.memory.standPos = creep.pos.findClosestByRange(rPos);
+          creep.memory.standPos = standPos;
+        }
+        else
+        {
+          standPos = new RoomPosition(creep.memory.standPos.x, creep.memory.standPos.y, creep.memory.standPos.roomName);
+
+          const lCreeps = standPos.lookFor(LOOK_CREEPS);
+          if(lCreeps.length)
+          {
+            if(lCreeps[0].name !== creep.name)
+            {
+              console.log(this.name, 'StandPOS', 1, standPos.lookFor(LOOK_CREEPS)[0]);
+              const rPos = creep.pos.getOpenPositions(target.pos, range, {avoidCreeps: true, avoidFlags: true,
+                avoidStructures: [STRUCTURE_EXTENSION, STRUCTURE_TERMINAL, STRUCTURE_STORAGE, STRUCTURE_FACTORY, STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_LINK, STRUCTURE_ROAD]});
+              standPos = creep.memory.standPos = creep.pos.findClosestByRange(rPos);
+              creep.memory.standPos = standPos;
+            }
+          }
+        }
+
+        if(sourceContainer.store.getUsedCapacity() > creep.store.getCapacity() * .9)
+        {
+          if(!creep.pos.isNearTo(target))
+            creep.moveTo(target);
+          else
+            creep.transferEverything(target);
+
+          return;
+        }
+
+        if(!creep.pos.isEqualTo(standPos))
+        {
+          creep.memory.atPlace = true;
+          creep.moveTo(standPos);
+          return;
+        }
+
         this.suspend = 5;
         return;
       }
@@ -411,13 +484,15 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       this.suspend = 5
     }
 
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 11)
     if(creep.ticksToLive! < 60 && _.sum(creep.carry) > 0)
     {
       if(this.storage)
       {
         if(!creep.pos.inRangeTo(this.storage, 1))
         {
-            creep.pushyTravelTo(this.storage);
+            creep.moveTo(this.storage);
             return;
         }
 
@@ -440,5 +515,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       this.completed = true;
       return;
     }
+
+    if(creep.name === 'em-m-E28S33-27504732')
+      console.log(this.name, 'Distro Prob', 12)
   }
 }
