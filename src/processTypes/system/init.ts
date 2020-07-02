@@ -41,7 +41,7 @@ export class InitProcess extends Process{
           delete Memory.flags[flag];
       }
     }
-    
+
     for(var name in Memory.creeps){
       if(!Game.creeps[name]){
         delete Memory.creeps[name]
@@ -63,6 +63,15 @@ export class InitProcess extends Process{
     // }
 
     let rampartAverages: {roomName: string, average: number}[] = [];
+
+    if(Game.time % 50 === 0)
+    {
+      for(let room in Memory.rooms)
+      {
+        if(!Game.rooms[room])
+          delete Memory.rooms[room];
+      }
+    }
 
     _.forEach(Game.rooms, function(room){
 

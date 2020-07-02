@@ -35,10 +35,11 @@ export class LabManagementProcess extends Process
   if(this.metaData.shutdownLabs)
     return;
 
-  if(Game.cpu.bucket < 7000)
+  if(Game.cpu.bucket < 4000)
       return;
+
     this.logOn = false;
-    this.logName = "labm-E22S52";
+    this.logName = "labm-E56S43";
 
     this.room = Game.rooms[this.metaData.roomName];
     if(!this.room)
@@ -83,6 +84,8 @@ export class LabManagementProcess extends Process
         this.productLabs = this.findProductLabs();
       }
 
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'Run', 2)
       this.labProcess = this.findLabProcess();
       if(this.labProcess)
       {
@@ -93,6 +96,8 @@ export class LabManagementProcess extends Process
         this.kernel.data.labProcesses[target]++;
       }
 
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'Run', 3, this.metaData.labDistros.length)
       this.metaData.labDistros = Utils.clearDeadCreeps(this.metaData.labDistros);
       if(this.metaData.labDistros.length === 0)
       {
@@ -102,8 +107,21 @@ export class LabManagementProcess extends Process
         }
       }
 
-      if(this.metaData.labDistros.length < 1 && (this.labProcess || Object.keys(this.room.memory.boostRequests).length))
+      const powerCreep = Game.powerCreeps[this.room.name + '-Operator'];
+      if(this.name === this.logName && this.logOn)
       {
+        console.log(this.name, 'Run', 4, this.metaData.labDistros.length < 1, (this.labProcess || (this.room.memory.boostRequests &&Object.keys(this.room.memory.boostRequests).length)), powerCreep === undefined)
+        console.log((this.metaData.labDistros.length < 1 &&
+        (((this.labProcess || (this.room.memory.boostRequests &&Object.keys(this.room.memory.boostRequests).length)))
+        || powerCreep !== undefined)))
+      }
+
+      if(this.metaData.labDistros.length < 1 &&
+        (((this.labProcess || (this.room.memory.boostRequests &&Object.keys(this.room.memory.boostRequests).length)))
+        || powerCreep !== undefined))
+      {
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'Run', 4.1)
         this.metaData.command = undefined;
         let creepName = 'lab-d-' + this.metaData.roomName + '-' + Game.time;
         let spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'labDistro', creepName, {});
@@ -114,13 +132,15 @@ export class LabManagementProcess extends Process
       }
       else if(this.metaData.labDistros.length > 0)
       {
+        if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'Run', 4.2)
         this.creep = Game.creeps[this.metaData.labDistros[0]];
 
         if(this.creep)
         {
           if(this.creep.room.name !== this.metaData.roomName)
           {
-            this.creep.travelTo(new RoomPosition(25, 25, this.metaData.roomName));
+            this.creep.moveTo(new RoomPosition(25, 25, this.metaData.roomName));
             return;
           }
 
@@ -128,11 +148,15 @@ export class LabManagementProcess extends Process
         }
       }
 
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'Run', 5)
       if(this.labProcess)
       {
         this.doSynthesis();
       }
 
+      if(this.name === this.logName && this.logOn)
+        console.log(this.name, 'Run', 6)
       this.checkBoostRequests();
     }
   }
@@ -158,7 +182,7 @@ export class LabManagementProcess extends Process
         else
         {
           this.creep.say('🏦1');
-          this.creep.travelTo(this.terminal!);
+          this.creep.moveTo(this.terminal!);
         }
         return;
       }
@@ -169,7 +193,7 @@ export class LabManagementProcess extends Process
         if(this.creep.pos.isNearTo(generalContainer) && _.sum(this.creep.carry) < this.creep.carryCapacity)
           this.creep.withdrawEverything(generalContainer);
         else
-          this.creep.travelTo(generalContainer);
+          this.creep.moveTo(generalContainer);
 
         return;
       }
@@ -227,13 +251,13 @@ export class LabManagementProcess extends Process
         {
           strSay = '🏦*';
           this.creep.say(strSay);
-          this.creep.travelTo(destination!);
+          this.creep.moveTo(destination!);
         }
       }
       else
       {
         this.creep.say('3');
-        this.creep.travelTo(origin!);
+        this.creep.moveTo(origin!);
       }
       return; // early
     }
@@ -254,7 +278,7 @@ export class LabManagementProcess extends Process
     {
       strSay += '4';
       this.creep.say(strSay);
-      this.creep.travelTo(destination!);
+      this.creep.moveTo(destination!);
     }
   }
 

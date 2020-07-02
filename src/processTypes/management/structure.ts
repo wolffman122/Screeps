@@ -40,7 +40,7 @@ export class StructureManagementProcess extends Process{
     }
 
     let room = Game.rooms[this.metaData.roomName];
-    if(room.memory.shutdown)
+    if(room.memory.shutdown || room.memory.templeRoom)
     {
       this.completed = true;
       return;
@@ -121,45 +121,62 @@ export class StructureManagementProcess extends Process{
       }
       else if(room.controller?.level === 8)
       {
-        if(!this.metaData.shutDownRamparts)
+        if(room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT * .8)
         {
-          let count: number;
-          if(this.metaData.upgradeType === 0)
-            count = 1;
-          else if(this.metaData.upgradeType === 1)
-            count = 2;
-          else if(this.metaData.upgradeType === -1)
-            count = 0;
-
-          if(!room.memory.pauseUpgrading && this.metaData.upgradeType >= 0
-            && room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < ENERGY_KEEP_AMOUNT)
-            count = 0;
-
-          if(room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9)
-            count = 1;
-
-          if(this.name === 'sm-E35S51')
-            console.log(this.name, 'Rampart count', count, this.metaData.upgradeType);
-          let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
-          let spawned = false;
-          if(this.metaData.repairCreeps.length < count)
-            spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
-          // else if(this.metaData.repairCreeps.length < 1)
-          //   spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'worker', creepName, {});
-
-          if(spawned)
+          if(!this.metaData.shutDownRamparts)
           {
-            //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
-            let boosts: string[] = [];
-            //if(count === 2 || (room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9))
-              //boosts.push(RESOURCE_LEMERGIUM_HYDRIDE)
-            this.metaData.repairCreeps.push(creepName);
+            let count: number;
+            if(this.metaData.upgradeType === 0)
+              count = 1;
+            else if(this.metaData.upgradeType === 1)
+              count = 2;
+            else if(this.metaData.upgradeType === -1)
+              count = 0;
 
-            this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
-              creep: creepName,
-              roomName: this.metaData.roomName,
-              boosts: boosts,
-            });
+            if(!room.memory.pauseUpgrading && this.metaData.upgradeType >= 0
+              && room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < ENERGY_KEEP_AMOUNT)
+              count = 0;
+
+            if(room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9)
+              count = 1;
+
+            if(this.name === 'sm-E35S51')
+              console.log(this.name, 'Rampart count', count, this.metaData.upgradeType);
+            let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
+            let spawned = false;
+            if(this.metaData.repairCreeps.length < count)
+            {
+              if(this.metaData.rampartCheckTime === undefined
+                || this.metaData.rampartCheckTime < Game.time - 1000)
+              {
+                const ramparts = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
+                if(ramparts.length)
+                {
+                  this.metaData.rampartCheckTime = Game.time;
+                  const sum = _.sum(ramparts, 'hits');
+                  const average = sum / ramparts.length;
+                  if(average < 20000000)
+                  {
+                    spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
+
+                    if(spawned)
+                    {
+                      //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
+                      let boosts: string[] = [];
+                      //if(count === 2 || (room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9))
+                        //boosts.push(RESOURCE_LEMERGIUM_HYDRIDE)
+                      this.metaData.repairCreeps.push(creepName);
+
+                      this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
+                        creep: creepName,
+                        roomName: this.metaData.roomName,
+                        boosts: boosts,
+                      });
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

@@ -68,7 +68,7 @@ export class EnergyManagementProcess extends Process{
 
 
     let room = Game.rooms[this.metaData.roomName];
-    if(room?.memory.shutdown)
+    if(room?.memory.shutdown || room?.memory.templeRoom)
     {
       this.completed = true;
       return;
@@ -342,8 +342,8 @@ export class EnergyManagementProcess extends Process{
           let upgraders = 0;
           switch(this.metaData.roomName)
           {
-            case 'E22S52':
-              upgraders = 3;
+            case 'E28S33':
+              upgraders = 2;
               break;
             default:
               upgraders = 1;

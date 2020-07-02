@@ -20,8 +20,8 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
       return;
     }
 
-    if(creep.name === 'em-E36S38-25754790')
-      console.log(this.name, 'exists')
+    if(creep.name === 'em-E27S38-27341448' || creep.name === 'em-E27S38-27341548')
+      console.log(this.name, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!exists')
 
     if(_.sum(creep.carry) === 0 || creep.memory.filling)
     {

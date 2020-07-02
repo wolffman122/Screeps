@@ -15,7 +15,7 @@ export class PowerManagement extends Process
         const powerSpawn = this.roomInfo(roomName).powerSpawn;
         if(powerSpawn)
         {
-          //if(roomName !== 'E37S46')
+          if(roomName !== 'E58S52')
           {
             if(p.spawn(powerSpawn) === OK)
             {

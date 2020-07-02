@@ -25,7 +25,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
     this.storage = creep.room.storage;
     this.powerSpawn = this.roomData().powerSpawn;
 
-    let sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer) as StructureContainer;
+
     // if(sourceContainer)
     //   console.log(this.name, 'Source Containers need to go');
 
@@ -57,16 +57,60 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       }
     }
 
+    const sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
     // Empty Creep
     if(creep.store.getUsedCapacity() === 0 && creep.ticksToLive! > 50)
     {
-      if(this.metaData.roomName === 'E22S52')
-        console.log(this.name, 'Empty', 1)
-      if(creep.memory.storageDelivery == true)
+
+      if(creep.memory.storageDelivery)
       {
-        creep.memory.storageDelivery = false;
-        creep.say('😴1');
-        return;
+        const towers = this.roomData().towers.filter(t => (t.store[RESOURCE_ENERGY] ?? 0) < TOWER_CAPACITY * .8);
+        const labs = this.roomData().labs.filter(l => (l.store[RESOURCE_ENERGY] ?? 0) < LAB_ENERGY_CAPACITY);
+        if(creep.room.energyAvailable < creep.room.energyCapacityAvailable
+          || towers.length || labs.length || sourceContainer.store.getUsedCapacity() >= creep.store.getCapacity())
+          creep.memory.storageDelivery = false;
+
+        if(this.storage && creep.memory.storageDelivery)
+        {
+          let standPos: RoomPosition;
+          let range = 4;
+          if(creep.room.name === 'E45S57')
+              range = 5;
+
+          if(!creep.memory.standPos)
+          {
+            const rPos = creep.pos.getOpenPositions(this.storage.pos, range, {avoidCreeps: true, avoidFlags: true,
+              avoidStructures: [STRUCTURE_EXTENSION, STRUCTURE_TERMINAL, STRUCTURE_STORAGE, STRUCTURE_FACTORY, STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_LINK, STRUCTURE_ROAD]});
+            standPos = creep.memory.standPos = creep.pos.findClosestByRange(rPos);
+            creep.memory.standPos = standPos;
+          }
+          else
+          {
+            standPos = new RoomPosition(creep.memory.standPos.x, creep.memory.standPos.y, creep.memory.standPos.roomName);
+
+            const lCreeps = standPos.lookFor(LOOK_CREEPS);
+            if(lCreeps.length)
+            {
+              if(lCreeps[0].name !== creep.name)
+              {
+                const rPos = creep.pos.getOpenPositions(this.storage.pos, range, {avoidCreeps: true, avoidFlags: true,
+                  avoidStructures: [STRUCTURE_EXTENSION, STRUCTURE_TERMINAL, STRUCTURE_STORAGE, STRUCTURE_FACTORY, STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_LINK, STRUCTURE_ROAD]});
+                standPos = creep.memory.standPos = creep.pos.findClosestByRange(rPos);
+                creep.memory.standPos = standPos;
+              }
+            }
+          }
+
+          creep.say('😴');
+          if(!creep.pos.isEqualTo(standPos))
+          {
+            creep.moveTo(standPos);
+            return;
+          }
+
+          this.suspend = 5;
+          return;
+        }
       }
 
       // Source Link routine
@@ -88,7 +132,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         if(sourceContainer?.store.getUsedCapacity(RESOURCE_ENERGY) > creep.store.getCapacity()
           && !creep.room.memory.seigeDetected)
         {
-          creep.say('🕋');
+          creep.say('🕋2');
           if(creep.pos.isNearTo(sourceContainer))
             creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           else
@@ -188,12 +232,9 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
         if(this.metaData.roomName === 'E22S52')
         console.log(this.name, 'Empty', 2)
         // Non source link rooms
-        const sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
         if(sourceContainer?.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getCapacity())
         {
-          if(this.metaData.roomName === 'E22S52')
-        console.log(this.name, 'Empty', 3)
-          creep.say('🕋');
+          creep.say('🕋1');
           if(creep.pos.isNearTo(sourceContainer))
             creep.withdraw(sourceContainer, RESOURCE_ENERGY);
           else
@@ -201,60 +242,31 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
           return;
         }
-        else if(this.storage?.my && this.terminal && !this.terminal?.my)
-        {
-          if(this.metaData.roomName === 'E22S52')
-        console.log(this.name, 'Empty', 4)
-          if(this.terminal.store.getUsedCapacity() > 0)
-          {
-            creep.say('👹🏦');
-            if(creep.pos.isNearTo(this.terminal))
-            {
-              creep.withdrawEverything(this.terminal);
-              return;
-            }
-
-            creep.moveTo(this.terminal, {range: 1});
-            return;
-          }
-        }
         else if(this.storage?.my)
         {
-          if(this.metaData.roomName === 'E22S52')
-        console.log(this.name, 'Empty', 5)
-          if(creep.name === 'em-m-E37S46-23897868')
-            console.log(this.name, 'Distro problem', 1, '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-          let container = this.kernel.data.roomData[creep.pos.roomName].generalContainers[0];
-          if(container && _.sum(container.store) > 0)
+          if(this.storage.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getCapacity())
           {
-            if(!creep.pos.inRangeTo(container, 1))
-            {
-              creep.moveTo(container);
-              return;
-            }
+            creep.say('🏟');
+            if(!creep.pos.isNearTo(this.storage))
+              creep.moveTo(this.storage);
             else
-            {
-              creep.withdrawEverything(container);
-              return;
-            }
-          }
-          else
-          {
-            if(this.storage?.store.energy > creep.carryCapacity)
-            {
-              if(creep.pos.isNearTo(this.storage))
-              {
-                  creep.withdraw(this.storage, RESOURCE_ENERGY);
-                  return;
-              }
+              creep.withdraw(this.storage, RESOURCE_ENERGY);
 
-              creep.moveTo(this.storage, {range: 1});
-              return;
+            return;
+          }
+          else if(this.terminal?.my)
+          {
+            if(this.terminal.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getCapacity())
+            {
+              creep.say('🏦');
+              if(!creep.pos.isNearTo(this.terminal))
+                creep.moveTo(this.terminal);
+              else
+                creep.withdraw(this.terminal, RESOURCE_ENERGY);
+            return;
             }
           }
         }
-        if(this.metaData.roomName === 'E22S52')
-        console.log(this.name, 'Empty', 6)
       }
     }
 
@@ -404,10 +416,8 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
       console.log(this.name, 'Distro Prob', 10, target)
     if(target)
     {
-      if(target.structureType !== STRUCTURE_STORAGE)
-        creep.memory.atPlace = false;
-
-      if(!creep.pos.inRangeTo(target, 1) && !creep.memory.atPlace)
+      creep.say('T', true);
+      if(!creep.pos.inRangeTo(target, 1))
       {
         if(creep.name === 'em-m-E28S33-27504732')
           console.log(this.name, 'Distro Prob', 10.1, target)
@@ -417,62 +427,11 @@ export class DistroLifetimeOptProcess extends LifetimeProcess{
 
       if(target.structureType == STRUCTURE_STORAGE)
       {
-        let standPos: RoomPosition;
-        let range = 4;
-        if(creep.room.name === 'E45S57')
-            range = 5;
-
-        if(!creep.memory.standPos && target.structureType === STRUCTURE_STORAGE)
-        {
-           const rPos = creep.pos.getOpenPositions(target.pos, range, {avoidCreeps: true, avoidFlags: true,
-            avoidStructures: [STRUCTURE_EXTENSION, STRUCTURE_TERMINAL, STRUCTURE_STORAGE, STRUCTURE_FACTORY, STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_LINK, STRUCTURE_ROAD]});
-          standPos = creep.memory.standPos = creep.pos.findClosestByRange(rPos);
-          creep.memory.standPos = standPos;
-        }
-        else
-        {
-          standPos = new RoomPosition(creep.memory.standPos.x, creep.memory.standPos.y, creep.memory.standPos.roomName);
-
-          const lCreeps = standPos.lookFor(LOOK_CREEPS);
-          if(lCreeps.length)
-          {
-            if(lCreeps[0].name !== creep.name)
-            {
-              console.log(this.name, 'StandPOS', 1, standPos.lookFor(LOOK_CREEPS)[0]);
-              const rPos = creep.pos.getOpenPositions(target.pos, range, {avoidCreeps: true, avoidFlags: true,
-                avoidStructures: [STRUCTURE_EXTENSION, STRUCTURE_TERMINAL, STRUCTURE_STORAGE, STRUCTURE_FACTORY, STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_LINK, STRUCTURE_ROAD]});
-              standPos = creep.memory.standPos = creep.pos.findClosestByRange(rPos);
-              creep.memory.standPos = standPos;
-            }
-          }
-        }
-
-        if(sourceContainer.store.getUsedCapacity() > creep.store.getCapacity() * .9)
-        {
-          if(!creep.pos.isNearTo(target))
-            creep.moveTo(target);
-          else
-            creep.transferEverything(target);
-
-          return;
-        }
-
-        if(!creep.pos.isEqualTo(standPos))
-        {
-          creep.memory.atPlace = true;
-          creep.moveTo(standPos);
-          return;
-        }
-
-        this.suspend = 5;
+        creep.memory.storageDelivery = true;
+        creep.transferEverything(target);
         return;
       }
-      else
-      {
-        creep.memory.storageDelivery = false;
-      }
 
-      creep.say('T🏟2');
       if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL)
       {
         return;

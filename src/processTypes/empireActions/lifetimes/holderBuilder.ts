@@ -14,8 +14,6 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
     let creep = this.getCreep();
     let room = flag.room;
 
-    if(creep.name === 'hrm-build-E34S51-25539475')
-          console.log(this.name, 'Problem', 0,creep.memory.atPlace);
     if(!creep || !flag)
     {
       this.completed = true;
@@ -24,8 +22,6 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
 
     if(!creep.memory.atPlace)
     {
-      if(creep.name === 'hrm-build-E34S51-25539475')
-          console.log(this.name, 'Problem', 0.1);
       if(!creep.pos.inRangeTo(flag, 3))
         creep.travelTo(flag);
       else
@@ -37,17 +33,36 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
     {
       const sources = this.kernel.data.roomData[flag.room.name].sources.filter(s => s.energy > 0);
       const source = creep.pos.findClosestByRange(sources);
-      if(creep.name === 'hrm-build-E34S51-25539475')
-          console.log(this.name, 'Problem', 0.2);
       if(_.sum(creep.carry) === 0 || !creep.memory.full)
       {
+        if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 0.1)
         creep.memory.full = false;
-        if(creep.name === 'hrm-build-E34S51-25539475')
-          console.log(this.name, 'Problem', 1);
         if(this.kernel.data.roomData[flag.room.name].containers.length > 0)
         {
-          if(creep.name === 'hrm-build-E34S51-25539475')
-          console.log(this.name, 'Problem', 2);
+          const ruins = creep.room.find(FIND_RUINS, {filter: r => r.store.getUsedCapacity(RESOURCE_ENERGY) > 0});
+          if(ruins.length)
+          {
+            if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 2)
+            const ruin = creep.pos.findClosestByPath(ruins);
+            if(!creep.pos.isNearTo(ruin))
+              creep.travelTo(ruin);
+            else
+            {
+              if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 3)
+              if(creep.withdraw(ruin, RESOURCE_ENERGY) === OK)
+                creep.memory.full = true;
+            }
+
+            if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 4)
+            return;
+          }
+          
+          if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 0.2)
           let structures = flag.room!.find(FIND_HOSTILE_STRUCTURES);
           if(structures)
           {
@@ -205,13 +220,13 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
         }
         else
         {
-          if(creep.name === 'hrm-build-E47S51-9302311')
-          {
-            console.log(this.name, "In the ROOM", 3);
-          }
+          if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 0.3)
           let structures = creep.room!.find(FIND_HOSTILE_STRUCTURES);
-          if(structures)
+          if(structures.length)
           {
+            if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 0.4, structures)
             let targets = structures.filter(s => {
               return ((s.structureType === STRUCTURE_LINK || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_LAB) && s.energy > 50);
             });
@@ -285,6 +300,31 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess
               }
             }
           }
+
+          if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 1)
+          const ruins = creep.room.find(FIND_RUINS, {filter: r => r.store.getUsedCapacity(RESOURCE_ENERGY) > 0});
+          if(ruins.length)
+          {
+            if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 2)
+            const ruin = creep.pos.findClosestByPath(ruins);
+            if(!creep.pos.isNearTo(ruin))
+              creep.travelTo(ruin);
+            else
+            {
+              if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 3)
+              if(creep.withdraw(ruin, RESOURCE_ENERGY) === OK)
+                creep.memory.full = true;
+            }
+
+            if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 4)
+            return;
+          }
+          if(creep.name === 'hrm-build-E38S36-27409648')
+            console.log(this.name, 'ruins', 5)
 
           if(!creep.pos.isNearTo(source))
             creep.travelTo(source);

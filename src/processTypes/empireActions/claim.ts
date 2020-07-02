@@ -42,6 +42,8 @@ export class ClaimProcess extends Process{
     console.log('Claim Process', 1)
     let creep = Game.creeps[this.metaData.creep]
 
+    if(Game.rooms[flag.room.name]?.controller?.owner?.username === 'wolffman122')
+      return;
 
     if(!creep)
     {
@@ -89,7 +91,7 @@ export class ClaimProcess extends Process{
               if(creep.pos.isNearTo)
                 creep.memory.flagIndex++;
 
-              creep.travelTo(tFlag);
+              creep.travelTo(tFlag, {allowSK: false, preferHighway: true});
               return;
             }
           }
@@ -150,8 +152,7 @@ export class ClaimProcess extends Process{
 
       if(creep.claimController(room.controller!) === OK)
       {
-        this.completed = true
-        flag.remove();
+        //flag.remove();
       }
     }
   }

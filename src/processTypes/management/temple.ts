@@ -371,13 +371,22 @@ export class TempleProcess extends Process
 
   private HaulerActions(creep: Creep)
   {
+    console.log(this.name, 'ha', 1)
     if(!creep.memory.boost)
     {
+      console.log(this.name, 'ha', 2)
       const feedTerminal = this.feedRoom.terminal;
       if(feedTerminal?.store.getUsedCapacity(RESOURCE_CATALYZED_KEANIUM_ACID) >= 100)
+      {
+        console.log(this.name, 'ha', 3)
         creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_KEANIUM_ACID], false);
+      }
       else
+      {
+        console.log(this.name, 'ha', 4)
         creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE/*, RESOURCE_CATALYZED_KEANIUM_ACID*/], false);
+      }
+      
       return;
     }
 
@@ -852,16 +861,16 @@ export class TempleProcess extends Process
           return;
         }
 
-        const roads = this.roomData().roads.filter(r => r.hits < r.hitsMax);
-        if(roads.length)
-        {
-          const road = _.min(roads, 'hits');
-          if(road)
-          {
-            tower.repair(road);
-            return;
-          }
-        }
+        // const roads = this.roomData().roads.filter(r => r.hits < r.hitsMax);
+        // if(roads.length)
+        // {
+        //   const road = _.min(roads, 'hits');
+        //   if(road)
+        //   {
+        //     tower.repair(road);
+        //     return;
+        //   }
+        // }
 
         if(Game.time % 1000 >= 555 && Game.time % 1000 <= 575)
         {

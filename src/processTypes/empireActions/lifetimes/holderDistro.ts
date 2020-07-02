@@ -29,6 +29,9 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
       return;
     }
 
+    if(creep.name === 'hrm-m-E38S36-27410948')
+          console.log(this.name, 'Ruin trouble', 3.0, this.metaData.ruinCheck)
+
     const fleeFlag = Game.flags['RemoteFlee-'+this.metaData.spawnRoom];
 
     // Setup for road complete
@@ -68,14 +71,38 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
     const sourceContainer = Game.getObjectById<StructureContainer>(this.metaData.sourceContainer);
     if(sourceContainer)
     {
-      if(creep.store.getUsedCapacity() === 0 && creep.ticksToLive! > 100)
+      if((creep.store.getUsedCapacity() === 0 || !creep.memory.full) && creep.ticksToLive! > 100)
       {
+        if(creep.name === 'hrm-m-E38S36-27410948')
+          console.log(this.name, 'Ruin trouble', 3, this.metaData.ruinCheck)
+        if(creep.store.getFreeCapacity() === 0)
+          creep.memory.full = true;
+
+        if(!this.metaData.ruinCheck && creep.room.name !== this.metaData.spawnRoom
+          && sourceContainer.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getCapacity() * .9)
+        {
+          const ruins = creep.room.find(FIND_RUINS, {filter: r => r.store.getUsedCapacity() > 0});
+          if(ruins.length)
+          {
+            const ruin = creep.pos.findClosestByRange(ruins);
+            if(!creep.pos.isNearTo(ruin))
+              creep.travelTo(ruin);
+            else
+              creep.withdrawEverything(ruin);
+          }
+          else
+            this.metaData.ruinCheck = true;
+
+          return;
+        }
+
         if(!creep.pos.inRangeTo(sourceContainer, 1))
         {
           // Test code
           if(mineRoom.name === 'E44S49' || mineRoom.name === 'E49S49' || mineRoom.name === 'E36S41'
           || mineRoom.name === 'E41S33' || mineRoom.name === 'E23S52' || mineRoom.name === 'E22S53'
-          || mineRoom.name === 'E34S51' || mineRoom.name === 'E37S47')
+          || mineRoom.name === 'E34S51' || mineRoom.name === 'E37S47' || mineRoom.name === 'E38S36'
+          || spawnRoom.name === 'E28S33' || spawnRoom.name === 'E42S53' || spawnRoom.name === 'E45S53')
           {
             let holdData: HoldRoomData;
             if(!flag.memory.holdData)
@@ -85,7 +112,6 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
             if(creep.room.name === mineRoom.name && !creep.pos.isNearTo(sourceContainer))
             {
-
               console.log(this.name, creep.name, 'Hold Data', !holdData.roads[sourceContainer.id]);
               let roomPositions: RoomPosition[] = [];
               if(!holdData.roads[sourceContainer.id])
@@ -114,7 +140,19 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
 
         }
 
-        const resource = <Resource[]>sourceContainer.pos.lookFor(RESOURCE_ENERGY)
+        const resource = <Resource[]>sourceContainer.pos.findInRange(FIND_DROPPED_RESOURCES, 3)
+        const tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 5, {filter: t=> t.store.getUsedCapacity() > 0});
+        if(tombstones.length)
+        {
+          const tombstone = creep.pos.findClosestByPath(tombstones);
+          if(!creep.pos.isNearTo(tombstone))
+            creep.travelTo(tombstone);
+          else
+            creep.withdrawEverything(tombstone);
+
+          return;
+        }
+
         if(resource.length > 0)
         {
           let withdrawAmount = creep.store.getCapacity() - creep.store.getUsedCapacity() - resource[0].amount;
@@ -150,18 +188,21 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
               return;
             }
           }
-          this.suspend = 20;
+          //this.suspend = 20;
           return;
         }
       }
       else if(creep.store.getUsedCapacity() === 0 && creep.room.name !== this.metaData.spawnRoom)
       {
+        if(creep.name === 'hrm-m-E38S36-27410302')
+          console.log(this.name, 'Ruin trouble', 4)
         if(creep.pos.isNearTo(sourceContainer))
           creep.withdraw(sourceContainer, RESOURCE_ENERGY);
       }
     }
 
-
+    if(creep.name === 'hrm-m-E38S36-27410302')
+      console.log(this.name, 'Ruin trouble', 5)
     if(creep.store.getFreeCapacity() === 0 || creep.memory.full)
     {
       creep.memory.full = true;
@@ -238,7 +279,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess
         return;
       }
 
-      this.suspend = 2;
+      //this.suspend = 2;
     }
 
 

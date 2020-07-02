@@ -17,23 +17,17 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       return
     }
 
+    console.log(this.name, creep.pos);
     if(!creep.memory.boost)
     {
       creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_LEMERGIUM_ACID], false);
       return;
     }
 
-    let flag = Game.flags['Claim-10-E39S35'];
     let baseFlagName;
     let numberOfFlags;
     let spawnRoom;
 
-    if(flag && flag.name.split('-').length === 3)
-    {
-      baseFlagName = flag.name.split('-')[0];
-      numberOfFlags = +flag.name.split('-')[1];
-      spawnRoom = flag.name.split('-')[2];
-    }
 
     if(numberOfFlags !== undefined)
       {
@@ -78,12 +72,14 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       return;
     }*/
 
+    const flags = creep.room.find(FIND_FLAGS, {filter: f => f.color === COLOR_BLUE && f.secondaryColor === COLOR_BLUE});
+
     console.log(this.name, creep.memory.filling)
     if(_.sum(creep.carry) === 0 || creep.memory.filling)
     {
       creep.memory.filling = true;
 
-      if(creep.pos.roomName == site.pos.roomName)
+      if(creep.pos.roomName == site?.pos?.roomName || flags.length)
       {
         let structures = site.room!.find(FIND_HOSTILE_STRUCTURES);
         if(structures)
@@ -200,6 +196,14 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
           creep.travelTo(target, {range: 3})
         else
           creep.build(target);
+      }
+      else
+      {
+        const spawn = this.roomInfo(creep.room.name).spawns[0];
+        if((spawn?.store[RESOURCE_ENERGY ?? 0] === 0) &&!creep.pos.isNearTo(spawn))
+          creep.travelTo(spawn);
+        else
+          creep.transfer(spawn, RESOURCE_ENERGY);
       }
     }
 

@@ -21,13 +21,14 @@ export const Stats = {
     Memory.stats['cpu.bucket'] = Game.cpu.bucket
     Memory.stats['cpu.kernelLimit'] = kernel.limit
     Memory.stats['memory.size'] = RawMemory.get().length
+    Memory.stats['memory.roomCount'] = Object.keys(Memory.rooms).length;
     Memory.stats['market.credits'] = Game.market.credits
 
     Memory.stats['gpl.level'] = Game.gpl.level;
     Memory.stats['gpl.progress'] = Game.gpl.progress;
     Memory.stats['gpl.progressTotal'] = Game.gpl.progressTotal;
     Memory.stats['gpl.nextLevel'] = Game.gpl.level * 2000 + 1000;
-
+    
     Memory.stats['processes.counts.total'] = Object.keys(kernel.processTable).length
     Memory.stats['processes.counts.run'] = kernel.execOrder.length
     Memory.stats['processes.counts.suspend'] = kernel.suspendCount

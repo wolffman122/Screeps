@@ -45,6 +45,10 @@ interface Flag {
       diagnoseMemory
       depositTypes: DepositConstant[];
       basicCommodities: ResourceConstant[];
+      bucketTotal: number;
+      bucketCount: number;
+      sizeOf: (object: any) => number;
+
     }
   }
 
@@ -57,7 +61,7 @@ interface Flag {
   interface RoomData{
     [name: string]: any
     constructionSites: ConstructionSite[]
-    containers: StructureContainer[]
+    containers?: StructureContainer[]
     extensions: StructureExtension[]
     extractor: StructureExtractor | undefined
     nuker?: StructureNuker
@@ -68,7 +72,6 @@ interface Flag {
     generalContainers: StructureContainer[]
     mineral: Mineral | undefined
     labs: StructureLab[]
-    roads: StructureRoad[]
     spawns: StructureSpawn[]
     sources: Source[]
     sourceContainers: StructureContainer[]
@@ -83,8 +86,6 @@ interface Flag {
     towers: StructureTower[]
     enemySpawns: StructureSpawn[]
     enemyExtensions: StructureExtension[]
-    ramparts: StructureRampart[]
-    walls: StructureWall[]
     links: StructureLink[]
     sourceLinks: StructureLink[]
     sourceLinkMaps: {[id: string]: StructureLink}
@@ -250,7 +251,6 @@ interface Flag {
     enemyId?: string;
     currentPatternCount?: number;
     currentPatternTimer?: number;
-    rampartCostMatrix?: number[];
     skCostMatrix?: number[];
     miningStopTime?: number;
     pauseUpgrading?: boolean;
@@ -373,6 +373,7 @@ interface Flag {
     dismantleCreeps: string[]
     shutDownRamparts?: boolean
     upgradeType: number // -1 nothing, 0, maintain, 1 upgrade
+    rampartCheckTime?: number
   }
 
   interface HoldRoomManagementProcessMetaData
@@ -409,9 +410,11 @@ interface Flag {
     builderCreeps?: string[]
     dismantlerCreeps?: string[]
     defenderCreeps?: string[]
+    haulerCreeps?: string[]
     coreBuster: string[]
     flagName: string
     enemiesPresent?: boolean
+    ruinCheck?: boolean
   }
 
   interface AutomaticHoldManagementProcessMetaData
@@ -721,7 +724,7 @@ interface Flag {
     sourceContainer: string
     flagName: string
     spawnRoom: string
-    roomData: string
+    ruinCheck: boolean
   }
 
   interface GeneralAttackManagementProcessMetaData
@@ -819,6 +822,7 @@ interface Flag {
   interface TowerRepairProcessMetaData
   {
     roomName: string;
+    roads?: string[];
   }
 
   interface RepairerLifetimeProcessMetaData
@@ -1034,6 +1038,7 @@ interface OpenPositionsOptions
   avoidStructures?: string[],
   avoidTerrain?: number[],
   avoidCreeps?: boolean,
+  avoidFlags?: boolean,
   avoidConstructionSites?: boolean,
 }
 

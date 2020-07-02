@@ -21,7 +21,7 @@ export class DefenderLifetimeProcess extends LifetimeProcess
       this.completed = true;
       return;
     }
-    
+
     console.log(this.name, 0)
     if(creep.name === 'dm-E41S49-21090530')
         console.log(this.name, 'Problems', this.metaData.boosts, creep.memory.boost);
@@ -79,15 +79,15 @@ export class DefenderLifetimeProcess extends LifetimeProcess
         }
 
         console.log(this.name, 'targeting', target);
-        let ret = PathFinder.search(creep.pos, {pos:target.pos, range:1}, {roomCallback: roomName => this.GetCostMatrix(room.name)});
-        if(ret && ret.path)
-        {
-            let retv = creep.moveByPath(ret.path);
-            console.log(this.name, retv, ret.path);
-            return;
-        }
-        else
-          console.log(this.name, 'Problem with moving defense');
+        // let ret = PathFinder.search(creep.pos, {pos:target.pos, range:1}, {roomCallback: roomName => this.GetCostMatrix(room.name)});
+        // if(ret && ret.path)
+        // {
+        //     let retv = creep.moveByPath(ret.path);
+        //     console.log(this.name, retv, ret.path);
+        //     return;
+        // }
+        // else
+        //   console.log(this.name, 'Problem with moving defense');
 
       }
       else
@@ -173,9 +173,9 @@ export class DefenderLifetimeProcess extends LifetimeProcess
     }
   }
 
-  GetCostMatrix(roomName: string): boolean | CostMatrix
-  {
-      const room = Game.rooms[roomName];
-      return PathFinder.CostMatrix.deserialize(room.memory.rampartCostMatrix);
-  }
+  // GetCostMatrix(roomName: string): boolean | CostMatrix
+  // {
+  //     const room = Game.rooms[roomName];
+  //     return PathFinder.CostMatrix.deserialize(room.memory.rampartCostMatrix);
+  // }
 }

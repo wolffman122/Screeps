@@ -14,7 +14,7 @@ export class  MineralManagementProcess extends Process
   {
     if(this.name === 'minerals-E58S52')
       console.log(this.name, '!!!!!!!!!!!!!!!!!!!!!')
-    if(Game.cpu.bucket < 8000)
+    if(Game.cpu.bucket < 4000)
       return;
     if(!this.kernel.data.roomData[this.metaData.roomName])
     {

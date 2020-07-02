@@ -20,7 +20,7 @@ export class RoomDataProcess extends Process{
 
   metaData: RoomDataMeta
   fields = [
-    'constructionSites', 'containers', 'extensions', 'generalContainers', 'labs', 'roads', 'spawns', 'sources', 'sourceContainers', 'towers', 'ramparts', 'walls',
+    'constructionSites', 'containers', 'extensions', 'generalContainers', 'labs', 'spawns', 'sources', 'sourceContainers', 'towers',
     'enemySpawns', 'enemyExtensions', 'links', 'sourceLinks', 'lairs'
   ]
 
@@ -31,17 +31,18 @@ export class RoomDataProcess extends Process{
   mapObjectFields = [ 'skSourceContainerMaps' ]
 
   singleFields = [
-    'lastVision', 'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
+    'extractor', 'mineral', 'storageLink', 'controllerLink', 'controllerContainer', 'mineralContainer',
     'nuker', 'observer', 'powerBank', 'factory'
   ]
 
   run()
   {
+
     let room = Game.rooms[this.metaData.roomName]
     if(room === undefined)
     {
       if(Memory.rooms[this.metaData.roomName])
-        Memory.rooms[this.metaData.roomName].cache = {};
+        delete Memory.rooms[this.metaData.roomName];
       this.completed;
       return;
     }
@@ -165,49 +166,49 @@ export class RoomDataProcess extends Process{
       //   });
       // }
 
-      if(room.memory.rampartCostMatrix === undefined)
-      {
-        let rampartCost = new PathFinder.CostMatrix;
+      // if(room.memory.rampartCostMatrix === undefined)
+      // {
+      //   // let rampartCost = new PathFinder.CostMatrix;
 
-        for(let x = 0; x < 50; x++)
-          for(let y = 0; y < 50; y++)
-            rampartCost.set(x, y, 0xff);
+      //   // for(let x = 0; x < 50; x++)
+      //   //   for(let y = 0; y < 50; y++)
+      //   //     rampartCost.set(x, y, 0xff);
 
-        const centerFlag = Game.flags['Center-'+room.name];
-        room.find(FIND_STRUCTURES, {filter: t => t.pos.inRangeTo(centerFlag, 6) }).forEach(function(s) {
-          if(s.structureType === STRUCTURE_RAMPART)
-          {
-            let look = s.pos.look()
-            look = _.filter(look, (l) => l.type === LOOK_STRUCTURES);
+      //   // const centerFlag = Game.flags['Center-'+room.name];
+      //   // room.find(FIND_STRUCTURES, {filter: t => t.pos.inRangeTo(centerFlag, 6) }).forEach(function(s) {
+      //   //   if(s.structureType === STRUCTURE_RAMPART)
+      //   //   {
+      //   //     let look = s.pos.look()
+      //   //     look = _.filter(look, (l) => l.type === LOOK_STRUCTURES);
 
-            if(look.length === 1)
-              rampartCost.set(s.pos.x, s.pos.y, 2);
-            else
-            {
-              _.forEach(look, (l) => {
-                let st = l.structure;
-                if(st.structureType === STRUCTURE_ROAD)
-                  rampartCost.set(st.pos.x, st.pos.y, 1);
+      //   //     if(look.length === 1)
+      //   //       rampartCost.set(s.pos.x, s.pos.y, 2);
+      //   //     else
+      //   //     {
+      //   //       _.forEach(look, (l) => {
+      //   //         let st = l.structure;
+      //   //         if(st.structureType === STRUCTURE_ROAD)
+      //   //           rampartCost.set(st.pos.x, st.pos.y, 1);
 
-              })
-            }
-          }
-          else if(s.structureType === STRUCTURE_ROAD)
-          {
-            rampartCost.set(s.pos.x, s.pos.y, 1);
-          }
-          else
-          {
-            rampartCost.set(s.pos.x, s.pos.y, 0xff);
-          }
-        });
+      //   //       })
+      //   //     }
+      //   //   }
+      //   //   else if(s.structureType === STRUCTURE_ROAD)
+      //   //   {
+      //   //     rampartCost.set(s.pos.x, s.pos.y, 1);
+      //   //   }
+      //   //   else
+      //   //   {
+      //   //     rampartCost.set(s.pos.x, s.pos.y, 0xff);
+      //   //   }
+      //   // });
 
-        room.memory.rampartCostMatrix = rampartCost.serialize();
-      }
-      else
-      {
-        //room.memory.rampartCostMatrix = undefined;
-      }
+      //   // room.memory.rampartCostMatrix = rampartCost.serialize();
+      // }
+      // else
+      // {
+      //   delete room.memory.rampartCostMatrix;
+      // }
     }
 
     if(this.metaData.roomName === 'E37S45')
@@ -401,10 +402,6 @@ export class RoomDataProcess extends Process{
       });
     }
 
-    let roads = <StructureRoad[]>_.filter(structures, function(structure){
-      return (structure.structureType === STRUCTURE_ROAD)
-    })
-
     let labs = <StructureLab[]>_.filter(myStructures, function(structure){
       return (structure.structureType === STRUCTURE_LAB && structure.isActive());
     })
@@ -414,7 +411,6 @@ export class RoomDataProcess extends Process{
 
 
     let roomData: RoomData = {
-      lastVision: Number,
       constructionSites: <ConstructionSite[]>room.find(FIND_CONSTRUCTION_SITES),
       containers: containers,
       extensions: <StructureExtension[]>_.filter(myStructures, function(structure){
@@ -441,7 +437,6 @@ export class RoomDataProcess extends Process{
       generalContainers: generalContainers,
       mineral: <Mineral>room.find(FIND_MINERALS)[0],
       labs: labs,
-      roads: roads,
       spawns: <StructureSpawn[]>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_SPAWN)
       }),
@@ -464,12 +459,6 @@ export class RoomDataProcess extends Process{
       skSourceContainerMaps: skSourceContainerMaps,
       towers: <StructureTower[]>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_TOWER)
-      }),
-      ramparts: <StructureRampart[]>_.filter(myStructures, function(s){
-        return (s.structureType === STRUCTURE_RAMPART);
-      }),
-      walls: <StructureWall[]>_.filter(structures, function(s){
-        return (s.structureType === STRUCTURE_WALL);
       }),
       links: generalLinks,
       sourceLinks: sourceLinks,
@@ -512,11 +501,7 @@ export class RoomDataProcess extends Process{
     })
 
     _.forEach(this.singleFields, function(field){
-      if(field === 'lastVision')
-      {
-          room.memory.cache[field] = Game.time;
-      }
-      else if(roomData[field])
+      if(roomData[field])
       {
         if(roomData[field].id)
         {
@@ -537,7 +522,6 @@ export class RoomDataProcess extends Process{
     }
 
     let roomData: RoomData = {
-      lastVision: Number,
       constructionSites: [],
       containers: [],
       extensions: [],
@@ -550,7 +534,6 @@ export class RoomDataProcess extends Process{
       generalContainers: [],
       mineral: undefined,
       labs: [],
-      roads: [],
       spawns: [],
       sources: [],
       sourceContainers: [],
@@ -559,8 +542,6 @@ export class RoomDataProcess extends Process{
       towers: [],
       enemySpawns: [],
       enemyExtensions: [],
-      ramparts: [],
-      walls: [],
       links: [],
       sourceLinks: [],
       sourceLinkMaps: <{[id: string]: StructureLink}>{},

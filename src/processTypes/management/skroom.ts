@@ -87,7 +87,7 @@ export class skRoomManagementProcess extends Process
     if(this.name === 'skrmp-E45S54')
       console.log(this.name, 'Problem', 1, this.metaData.coreInSK)
 
-    if(Game.cpu.bucket < 7000)
+    if(Game.cpu.bucket < 4000)
       return;
     this.centerFlag = Game.flags['Center-'+this.metaData.roomName];
 

@@ -61,7 +61,7 @@ export class TerminalManagementProcess extends Process
             }
             else
             {
-              return ((r.storage.store.energy < 500000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+              return ((r.storage.store.energy < 620000 || r.storage.store === undefined) && r.controller && r.controller.my &&
                 r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity && !r.memory.templeRoom);
             }
           }

@@ -223,8 +223,12 @@ export class PowerHarvestingManagement extends Process
 
   private AttackerActions(creep: Creep)
   {
+    if(creep.name === 'powerAttacker-E41S50-27438168')
+      console.log(this.name, 'PA', 1)
     if(this.metaData.suicideSequence)
     {
+      if(creep.name === 'powerAttacker-E41S50-27438168')
+      console.log(this.name, 'PA', 2)
       const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
       if(!creep.pos.isNearTo(spawn))
         creep.travelTo(spawn, {preferHighway: true, allowHostile: false});
@@ -244,9 +248,14 @@ export class PowerHarvestingManagement extends Process
 
       return;
     }
+
+    if(creep.name === 'powerAttacker-E41S50-27438168')
+      console.log(this.name, 'PA', 3)
     //console.log(this.name, 'AA', 1, creep.memory.boost, creep.name, creep.pos, this.metaData.suicideSequence)
     if(!creep.memory.boost)
     {
+      if(creep.name === 'powerAttacker-E41S50-27438168')
+      console.log(this.name, 'PA', 4)
       //console.log(this.name, 'AA', 2)
       creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
         RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
@@ -254,6 +263,8 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
+    if(creep.name === 'powerAttacker-E41S50-27438168')
+      console.log(this.name, 'PA', 5)
     //console.log(this.name, 'AA', 3)
     const healer = Game.creeps[this.metaData.healers[0]];
 

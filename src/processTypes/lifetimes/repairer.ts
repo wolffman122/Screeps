@@ -124,7 +124,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       // If the creep has been refilled
       const repairableObjects = <RepairTarget[]>[].concat(
         <never[]>this.kernel.data.roomData[this.metaData.roomName].containers,
-        <never[]>this.kernel.data.roomData[this.metaData.roomName].roads
+        //<never[]>this.kernel.data.roomData[this.metaData.roomName].roads
       )
 
       if(towers.length === 0)
@@ -195,7 +195,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       {
         if(creep.name === 'sm-E41S32-25419534')
           console.log(this.name, 1);
-        const ramparts = this.kernel.data.roomData[this.metaData.roomName].ramparts;
+        const ramparts = <StructureRampart[]>room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
         if(ramparts.length)
         {
           if(creep.name === 'sm-E41S32-25419534')

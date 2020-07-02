@@ -110,8 +110,11 @@ RoomPosition.prototype.getOpenPositions = function(origin_pos: RoomPosition, ran
         avoidStructures: [],
         avoidTerrain: ['wall'],
         avoidCreeps: false,
+        avoidFlags: true,
         avoidConstructionSites: false,
     });
+
+    console.log('GetOpenPositions', opts);
     let open_positions = [];
 
     let room_name = origin_pos.roomName;
@@ -191,6 +194,14 @@ RoomPosition.prototype.getOpenPositions = function(origin_pos: RoomPosition, ran
                 if (has_blocker) {
                     continue;
                 }
+            }
+
+            if(opts.avoidFlags)
+            {
+              has_blocker = false;
+              results = room.lookForAt(LOOK_FLAGS,ch_x,ch_y);
+              if(results.length)
+                break;
             }
 
             if (opts.avoidConstructionSites) {
