@@ -76,7 +76,7 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
 
     if(!this.creep.pos.isEqualTo(this.djFlag))
     {
-      this.creep.travelTo(this.djFlag)
+      this.creep.moveTo(this.djFlag)
       this.creep.say('T');
       return;
     }

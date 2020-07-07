@@ -188,9 +188,9 @@ export class LabManagementProcess extends Process
       }
 
       const generalContainer = this.roomData().generalContainers[0];
-      if(generalContainer && _.sum(generalContainer.store) > 0)
+      if(generalContainer && generalContainer.store.getUsedCapacity() > 0)
       {
-        if(this.creep.pos.isNearTo(generalContainer) && _.sum(this.creep.carry) < this.creep.carryCapacity)
+        if(this.creep.pos.isNearTo(generalContainer) && this.creep.store.getUsedCapacity() < this.creep.carryCapacity)
           this.creep.withdrawEverything(generalContainer);
         else
           this.creep.moveTo(generalContainer);
@@ -210,7 +210,7 @@ export class LabManagementProcess extends Process
       console.log(this.name, 2)
     ////////////// Do the command actions ///////////////////////
     let strSay: string;
-    if(_.sum(this.creep.carry) === 0)
+    if(this.creep.store.getUsedCapacity() === 0)
     {
       if(this.name === this.logName && this.logOn)
       console.log(this.name, 3)
@@ -468,7 +468,7 @@ export class LabManagementProcess extends Process
     if(!this.metaData.command && Game.time > this.metaData.lastCommandTick + 10)
     {
 
-      if(_.sum(this.creep.carry) === 0)
+      if(this.creep.store.getUsedCapacity() === 0)
       {
         if(this.name === this.logName && this.logOn)
           console.log(this.name, 'AccessCommand', 2)
@@ -604,7 +604,7 @@ export class LabManagementProcess extends Process
             const index = labNeeds.indexOf(lab.mineralType);
             const pLab = this.productLabs[index];
             if(pLab.mineralType === lab.mineralType
-              && pLab.store.getFreeCapacity() > lab.mineralAmount)
+              && pLab.store.getFreeCapacity(lab.mineralType) > lab.mineralAmount)
               return {origin: lab.id, destination: pLab.id, resourceType: lab.mineralType };
           }
         }

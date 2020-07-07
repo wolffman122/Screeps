@@ -5,14 +5,17 @@
   "main": "index.js",
   "//": "If you add or change the names of destinations in screeps.json, make sure you update these scripts to reflect the changes",
   "scripts": {
-    "lint": "tslint \"src/**/*.ts\"",
-    "push-main": "rollup -c --dest main",
-    "push-pserver": "rollup -c --dest pserver",
-    "push-sim": "rollup -c --dest sim",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch-main": "rollup -cw --dest main",
-    "watch-pserver": "rollup -cw --dest pserver",
-    "watch-sim": "rollup -cw --dest sim"
+    "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
+    "build": "rollup -c",
+    "push-main": "rollup -c --environment DEST:main",
+    "push-pserver": "rollup -c --environment DEST:pserver",
+    "push-sim": "rollup -c --environment DEST:sim",
+    "test": "npm run test-unit",
+    "test-unit": "rollup -c rollup.test-unit-config.js && mocha dist/test-unit.bundle.js",
+    "test-integration": "echo 'See docs/in-depth/testing.md for instructions on enabling integration tests'",
+    "watch-main": "rollup -cw --environment DEST:main",
+    "watch-pserver": "rollup -cw --environment DEST:pserver",
+    "watch-sim": "rollup -cw --environment DEST:sim"
   },
   "repository": {
     "type": "git",
@@ -24,19 +27,39 @@
     "url": "https://github.com/screepers/screeps-typescript-starter/issues"
   },
   "homepage": "https://github.com/screepers/screeps-typescript-starter#readme",
+  "engines": {
+    "node": "10.x"
+  },
   "devDependencies": {
-    "@types/lodash": "^3.10.1",
-    "@types/screeps": "^3.0.0",
-    "rollup-plugin-clean": "^1.0.0",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "rollup-plugin-screeps": "^0.1.2",
-    "rollup-plugin-typescript2": "^0.11.0",
-    "tslint": "^5.20.1",
-    "typescript": "^3.7.4"
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-multi-entry": "^3.0.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "@types/chai": "^4.1.6",
+    "@types/lodash": "3.10.2",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^13.13.1",
+    "@types/screeps": "^3.1.0",
+    "@types/sinon": "^5.0.5",
+    "@types/sinon-chai": "^3.2.0",
+    "chai": "^4.2.0",
+    "lodash": "^3.10.1",
+    "mocha": "^5.2.0",
+    "prettier": "^2.0.4",
+    "rollup": "^2.6.1",
+    "rollup-plugin-buble": "^0.19.8",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-nodent": "^0.2.2",
+    "rollup-plugin-screeps": "^1.0.0",
+    "rollup-plugin-typescript2": "^0.27.0",
+    "sinon": "^6.3.5",
+    "sinon-chai": "^3.2.0",
+    "ts-node": "^8.8.2",
+    "tslint": "^6.1.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.3.0",
+    "typescript": "^3.8.3"
   },
   "dependencies": {
-    "rollup": "^0.55.3",
     "source-map": "~0.6.1"
   }
 }

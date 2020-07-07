@@ -3,7 +3,7 @@ interface Creep
   fixMyRoad(): boolean;
   transferEverything(target: Creep|StructureContainer|StructureStorage|StructureTerminal|StructureFactory): number;
   withdrawEverything(target: any): number;
-  withdrawEverythingBut(target: any, res: ResourceConstant): number;
+  withdrawEverythingBut(target: any, res: ResourceConstant): number|undefined;
   yieldRoad(target: {pos: RoomPosition}, allowSwamps: boolean): number;
   idleOffRoad(anchor: {pos: RoomPosition}, maintainDistance: boolean): number;
   getFlags(identifier: string, max: Number): Flag[]

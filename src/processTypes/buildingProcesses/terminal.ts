@@ -62,7 +62,7 @@ export class TerminalManagementProcess extends Process
             else
             {
               return ((r.storage.store.energy < 620000 || r.storage.store === undefined) && r.controller && r.controller.my &&
-                r.terminal.my && _.sum(r.terminal.store) < r.terminal.storeCapacity && !r.memory.templeRoom);
+                r.terminal.my && r.terminal.store.getUsedCapacity() < r.terminal.storeCapacity && !r.memory.templeRoom);
             }
           }
           else
@@ -135,7 +135,7 @@ export class TerminalManagementProcess extends Process
 
           if(r.controller && r.controller.my && r.terminal && r.storage)
           {
-            return (_.sum(r.storage.store) === r.storage.storeCapacity);
+            return (r.storage.store.getUsedCapacity() === r.storage.storeCapacity);
           }
           return false;
         })
@@ -184,7 +184,7 @@ export class TerminalManagementProcess extends Process
             }
             else if(f.storage)
             {
-              lRooms.push({name: f.name, amount: _.sum(f.terminal!.store), storeAmount: f.storage.store.energy});
+              lRooms.push({name: f.name, amount: f.terminal!.store.getUsedCapacity(), storeAmount: f.storage.store.energy});
             }
           });
 

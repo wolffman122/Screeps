@@ -28,7 +28,7 @@ export const Stats = {
     Memory.stats['gpl.progress'] = Game.gpl.progress;
     Memory.stats['gpl.progressTotal'] = Game.gpl.progressTotal;
     Memory.stats['gpl.nextLevel'] = Game.gpl.level * 2000 + 1000;
-    
+
     Memory.stats['processes.counts.total'] = Object.keys(kernel.processTable).length
     Memory.stats['processes.counts.run'] = kernel.execOrder.length
     Memory.stats['processes.counts.suspend'] = kernel.suspendCount
@@ -214,7 +214,7 @@ export const Stats = {
           if(room.storage){
             storageEnergy += room.storage.store.energy;
             Memory.stats['rooms.' + roomName + '.storage.energy'] = room.storage.store.energy
-            Memory.stats['rooms.' + roomName + '.storage.minerals'] = _.sum(room.storage.store) - room.storage.store.energy;
+            Memory.stats['rooms.' + roomName + '.storage.minerals'] = room.storage.store.getUsedCapacity() - room.storage.store.energy;
           }
           else
           {
@@ -226,7 +226,7 @@ export const Stats = {
           {
             terminalEnergy += room.terminal.store.energy;
             Memory.stats['rooms.' + roomName + '.terminal.energy'] = room.terminal.store.energy
-            Memory.stats['rooms.' + roomName + '.terminal.minerals'] = _.sum(room.terminal.store) - room.terminal.store.energy;
+            Memory.stats['rooms.' + roomName + '.terminal.minerals'] = room.terminal.store.getUsedCapacity() - room.terminal.store.energy;
 
             // Total Production boost amounts in terminals.
             let terminal = room.terminal;

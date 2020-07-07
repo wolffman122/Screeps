@@ -145,9 +145,20 @@ export class TempleProcess extends Process
             const pclf = this.kernel.getProcessByName('pclf-' + this.feedRoom.name + '-Operator');
             if(pclf instanceof PowerCreepLifetimeProcess)
             {
-              console.log(this.name, 'PCLF storage turn on');
-              pclf.metaData.templeStoragePower = true;
-              pclf.metaData.templeStorageId = this.templeStorage.id;
+              const powerCreep = Game.powerCreeps[pclf.metaData.powerCreep];
+              if(powerCreep?.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops
+                || powerCreep.room.storage?.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
+              {
+                console.log(this.name, 'PCLF storage turn on');
+                pclf.metaData.templeStoragePower = true;
+                pclf.metaData.templeStorageId = this.templeStorage.id;
+              }
+              else
+              {
+                this.metaData.claimed = false;
+                controller.unclaim();
+                return;
+              }
             }
           }
           else if(this.templeStorage.store.getUsedCapacity(RESOURCE_ENERGY) >= this.templeStorage.store.getCapacity() * .9)
@@ -386,7 +397,7 @@ export class TempleProcess extends Process
         console.log(this.name, 'ha', 4)
         creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE/*, RESOURCE_CATALYZED_KEANIUM_ACID*/], false);
       }
-      
+
       return;
     }
 

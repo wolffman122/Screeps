@@ -5,14 +5,23 @@
     "hostname": "screeps.com",
     "port": 443,
     "path": "/",
-    "branch": "main"
+    "branch": "dev"
   },
   "sim": {
-    "token": "TOKEN",
+    "token": "YOUR_TOKEN",
     "protocol": "https",
     "hostname": "screeps.com",
     "port": 443,
     "path": "/",
     "branch": "sim"
+  },
+  "pserver": {
+    "email": "username",
+    "password": "Password",
+    "protocol": "http",
+    "hostname": "1.2.3.4",
+    "port": 21025,
+    "path": "/",
+    "branch": "main"
   }
 }

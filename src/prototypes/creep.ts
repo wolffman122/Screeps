@@ -44,7 +44,7 @@ Creep.prototype.withdrawEverything = function(target: any)
   return ERR_NOT_ENOUGH_RESOURCES;
 }
 
-Creep.prototype.withdrawEverythingBut = function (target: any, res: ResourceConstant)
+Creep.prototype.withdrawEverythingBut = function (target: any, res: ResourceConstant) : number|undefined
 {
   if(!(target instanceof StructureLab))
   {
@@ -61,6 +61,8 @@ Creep.prototype.withdrawEverythingBut = function (target: any, res: ResourceCons
       }
     }
   }
+
+  return undefined;
 }
 
 Creep.prototype.yieldRoad = function(target: {pos: RoomPosition}, allowSwamps = true): number

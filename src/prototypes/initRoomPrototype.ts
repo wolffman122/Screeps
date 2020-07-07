@@ -17,48 +17,48 @@ export function initRoomPrototype() {
         }
     });
 
-    StructureObserver.prototype._observeRoom = StructureObserver.prototype.observeRoom;
+    // StructureObserver.prototype._observeRoom = StructureObserver.prototype.observeRoom;
 
-    StructureObserver.prototype.observeRoom = function(roomName: string, purpose = "unknown", override = false): ScreepsReturnCode
-    {
-       let makeObservation = (observation: Observation): ScreepsReturnCode => {
-           this.observation;
-           this.room.memory.observation = observation;
-           this.alreadyObserved = true;
-           return this._observeRoom(observation.roomName);
-       };
+    // StructureObserver.prototype.observeRoom = function(roomName: string, purpose = "unknown", override = false): ScreepsReturnCode
+    // {
+    //    let makeObservation = (observation: Observation): ScreepsReturnCode => {
+    //        this.observation;
+    //        this.room.memory.observation = observation;
+    //        this.alreadyObserved = true;
+    //        return this._observeRoom(observation.roomName);
+    //    };
 
-       if(override)
-       {
-           return makeObservation({roomName: roomName, purpose: purpose});
-       }
-       else
-       {
-           //console.log('observe', 1)
-           if(!this.room.memory.obsQueue)
-           {
-            //console.log('observe', 2)
-               this.room.memory.obsQueue = [];
-           }
-           let queue = this.room.memory.obsQueue as Observation[];
-           if(!_.find(queue, (item) => item.purpose === purpose))
-           {
-            //console.log('observe', 3)
-               queue.push({purpose: purpose, roomName: roomName});
-           }
-           if(!this.alreadyObserved)
-           {
-               const item = queue.shift();
-            //console.log('observe', 4, item.purpose, item.room, item.roomName)
-               return makeObservation(item);
-           }
-           else
-           {
-            //console.log('observe', 5)
-               return OK;
-           }
-       }
-    };
+    //    if(override)
+    //    {
+    //        return makeObservation({roomName: roomName, purpose: purpose});
+    //    }
+    //    else
+    //    {
+    //        //console.log('observe', 1)
+    //        if(!this.room.memory.obsQueue)
+    //        {
+    //         //console.log('observe', 2)
+    //            this.room.memory.obsQueue = [];
+    //        }
+    //        let queue = this.room.memory.obsQueue as Observation[];
+    //        if(!_.find(queue, (item) => item.purpose === purpose))
+    //        {
+    //         //console.log('observe', 3)
+    //            queue.push({purpose: purpose, roomName: roomName});
+    //        }
+    //        if(!this.alreadyObserved)
+    //        {
+    //            const item = queue.shift();
+    //         //console.log('observe', 4, item.purpose, item.room, item.roomName)
+    //            return makeObservation(item);
+    //        }
+    //        else
+    //        {
+    //         //console.log('observe', 5)
+    //            return OK;
+    //        }
+    //    }
+    // };
 
     Object.defineProperty(StructureObserver.prototype, "observation", {
         get: function() {

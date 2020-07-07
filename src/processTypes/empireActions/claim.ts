@@ -42,7 +42,7 @@ export class ClaimProcess extends Process{
     console.log('Claim Process', 1)
     let creep = Game.creeps[this.metaData.creep]
 
-    if(Game.rooms[flag.room.name]?.controller?.owner?.username === 'wolffman122')
+    if(Game.rooms[flag.room?.name]?.controller?.owner?.username === 'wolffman122')
       return;
 
     if(!creep)

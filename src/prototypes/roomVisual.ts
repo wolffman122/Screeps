@@ -523,7 +523,7 @@ RoomVisual.prototype.speech = function(text, x, y, opts={}) {
 }
 
 
-RoomVisual.prototype.animatedPosition = function (x, y, opts={}) {
+RoomVisual.prototype.animatedPosition = function (x, y, opts?: AnimatedPositionOptions) {
 
   let color = !!opts.color ? opts.color : 'blue'
   let opacity = !!opts.opacity ? opts.opacity : 0.5

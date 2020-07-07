@@ -54,19 +54,22 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     const increaseAmount = POWER_INFO[PWR_OPERATE_STORAGE].effect[level - 1];
     const regularStorageAmount = storage.store.getCapacity() - increaseAmount;
     const storageEffect = storage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE && e.ticksRemaining < 10);
-    console.log(this.name, 'Storage work', storage.store.getCapacity(), level, increaseAmount, storage.store.getUsedCapacity() > regularStorageAmount - 50000);
+    console.log(this.name, 'Storage workED', storage.store.getCapacity(), level, increaseAmount, storage.store.getUsedCapacity() > regularStorageAmount - 50000);
     if(((storage.store.getFreeCapacity() < 50000 && !storage.effects?.length) || (storageEffect?.length && storage.store.getUsedCapacity() > regularStorageAmount - 50000))
       &&  !powerCreep.powers[PWR_OPERATE_STORAGE].cooldown && powerCreep.powers[PWR_GENERATE_OPS]?.level >= 3)
     {
-      if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) < 100)
+      if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) < 100
+        && storage.store.getUsedCapacity(RESOURCE_OPS) >= 100)
       {
         console.log(this.name, 1)
         if(!powerCreep.pos.isNearTo(storage))
           powerCreep.moveTo(storage);
         else
           powerCreep.withdraw(storage, RESOURCE_OPS);
+
+        return;
       }
-      else
+      else if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= 100)
       {
         console.log(this.name, 2)
         if(!powerCreep.pos.inRangeTo(storage, 3))
@@ -79,13 +82,13 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
           const ret = powerCreep.usePower(PWR_OPERATE_STORAGE, storage);
           console.log(this.name, 'Storage ret', ret);
         }
-      }
 
-      return;
+        return;
+      }
     }
 
     if(this.metaData.roomName === 'E37S46')
-      console.log(this.name, 2)
+      console.log(this.name, 2.1)
     // Turn power on in the room
     if(!room.controller.isPowerEnabled)
     {
@@ -116,12 +119,18 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       console.log(this.name, 4)
     if(this.metaData.templeStoragePower && powerCreep.ticksToLive > 100 && powerCreep.powers[PWR_OPERATE_STORAGE]?.cooldown < 50)
     {
+      if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 4.1)
       const templeStorage = <StructureTerminal>Game.getObjectById(this.metaData.templeStorageId);
       if(!templeStorage?.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length)
       {
+        if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 4.2)
         const controller = templeStorage.room.controller;
         if(!controller?.isPowerEnabled)
         {
+          if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 4.3)
           if(!powerCreep.pos.isNearTo(controller))
             powerCreep.moveTo(controller);
           else
@@ -130,6 +139,8 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
           return;
         }
 
+        if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 4.4)
         if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
         {
           console.log(this.name, 'Temple storage', 1)
@@ -146,16 +157,18 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
               this.metaData.templeStoragePower = undefined;
             }
           }
+
+          return;
         }
-        else
+        else if(storage.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
         {
           if(!powerCreep.pos.isNearTo(storage))
             powerCreep.moveTo(storage);
           else
             powerCreep.withdraw(storage, RESOURCE_OPS, POWER_INFO[PWR_OPERATE_STORAGE].ops);
-        }
 
-        return;
+          return;
+        }
       }
     }
 
@@ -219,18 +232,22 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     // Regen sources
     if(powerCreep.powers[PWR_REGEN_SOURCE]?.cooldown < 15)
     {
+      if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 7.1)
       const sources = this.roomData().sources.filter(s =>
         {
-          if(s.effects?.length === 0)
+          if(s.effects === undefined)
             return true;
           else
           {
-            const effect = s.effects.filter(e => e.effect === PWR_REGEN_SOURCE && e.ticksRemaining < 15);
-            if(effect.length)
+            const effect = s.effects?.filter(e => e.effect === PWR_REGEN_SOURCE && e.ticksRemaining < 15);
+            if(effect?.length)
               return true;
           }
         });
 
+        if(this.metaData.roomName === 'E37S46')
+      console.log(this.name, 7.2)
       if(sources.length)
       {
         let target = powerCreep.pos.findClosestByPath(sources);

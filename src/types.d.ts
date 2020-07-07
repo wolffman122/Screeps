@@ -106,9 +106,7 @@ interface Flag {
   interface DeliveryTarget extends Structure{
     energy: number
     energyCapacity: number
-    store: {
-      [resource: string]: number
-    }
+    store: Store<RESOURCE_ENERGY | MineralConstant | MineralCompoundConstant, false>;
     storeCapacity: number
   }
 
@@ -1040,6 +1038,14 @@ interface OpenPositionsOptions
   avoidCreeps?: boolean,
   avoidFlags?: boolean,
   avoidConstructionSites?: boolean,
+}
+
+interface AnimatedPositionOptions
+{
+  color?: number,
+  opacity?: number,
+  radius?: number,
+  frames?: number,
 }
 
 interface BankData
