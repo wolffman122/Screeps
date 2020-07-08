@@ -69,7 +69,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
 
         return;
       }
-      else if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= 100)
+      else if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= 100 && !this.metaData.templeStoragePower)
       {
         console.log(this.name, 2)
         if(!powerCreep.pos.inRangeTo(storage, 3))
@@ -117,7 +117,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
 
     if(this.metaData.roomName === 'E37S46')
       console.log(this.name, 4)
-    if(this.metaData.templeStoragePower && powerCreep.ticksToLive > 100 && powerCreep.powers[PWR_OPERATE_STORAGE]?.cooldown < 50)
+    if(this.metaData.templeStoragePower && powerCreep.ticksToLive > 100 && powerCreep.powers[PWR_OPERATE_STORAGE]?.cooldown < 100)
     {
       if(this.metaData.roomName === 'E37S46')
       console.log(this.name, 4.1)

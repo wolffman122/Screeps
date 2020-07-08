@@ -134,12 +134,32 @@ export class TempleProcess extends Process
           else
             this.metaData.upgraders2 = Utils.clearDeadCreeps(this.metaData.upgraders2);
 
-          //distroAmount = 2;
+          if(controller.progress / controller.progressTotal > .98)
+          {
+            if(!this.templeStorage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length
+              || this.templeStorage.effects?.filter(e =>e.effect === PWR_OPERATE_STORAGE && e.ticksRemaining < 200).length)
+            {
+              console.log(this.name, 'Turn on power for storage');
+              const pclf = this.kernel.getProcessByName('pclf-' + this.feedRoom.name + '-Operator');
+              if(pclf instanceof PowerCreepLifetimeProcess)
+              {
+                const powerCreep = Game.powerCreeps[pclf.metaData.powerCreep];
+                if(powerCreep?.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops
+                  || powerCreep.room.storage?.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
+                {
+                  console.log(this.name, 'PCLF storage turn on');
+                  pclf.metaData.templeStoragePower = true;
+                  pclf.metaData.templeStorageId = this.templeStorage.id;
+                }
+              }
+            }
+          }
         }
         else if(controller.level === 8)
         {
           console.log(this.name, 'Lvl 8 code')
-          if(!this.templeStorage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length)
+          if(!this.templeStorage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length
+            || this.templeStorage.effects?.filter(e =>e.effect === PWR_OPERATE_STORAGE && e.ticksRemaining < 200).length)
           {
             console.log(this.name, 'Turn on power for storage');
             const pclf = this.kernel.getProcessByName('pclf-' + this.feedRoom.name + '-Operator');
