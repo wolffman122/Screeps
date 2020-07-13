@@ -140,22 +140,28 @@ export class StructureManagementProcess extends Process{
             if(room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9)
               count = 1;
 
-            if(this.name === 'sm-E35S51')
-              console.log(this.name, 'Rampart count', count, this.metaData.upgradeType);
             let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
             let spawned = false;
             if(this.metaData.repairCreeps.length < count)
             {
+              let building = false;
+              const sites = this.roomData().constructionSites.filter(cs => cs.structureType === STRUCTURE_RAMPART);
+              if(sites.length)
+              {
+                this.metaData.rampartCheckTime = undefined;
+                building = true;
+              }
+
               if(this.metaData.rampartCheckTime === undefined
                 || this.metaData.rampartCheckTime < Game.time - 1000)
               {
                 const ramparts = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
-                if(ramparts.length)
+                if(ramparts.length || building)
                 {
                   this.metaData.rampartCheckTime = Game.time;
                   const sum = _.sum(ramparts, 'hits');
                   const average = sum / ramparts.length;
-                  if(average < 20000000)
+                  if(average < 22000000 || building)
                   {
                     spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
 
