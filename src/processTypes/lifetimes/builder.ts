@@ -51,8 +51,8 @@ export class BuilderLifetimeProcess extends LifetimeProcess {
                 })[0];
               }
               else {
-                const containers = this.roomInfo(creep.room.name).sourceContainers.filter(sc => sc.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
-                if(containers.length)
+                const containers = this.roomInfo(creep.room.name).sourceContainers.filter(sc => sc.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getCapacity());
+                if(creep.room.energyAvailable === creep.room.energyCapacityAvailable && containers.length)
                 {
                   const container = creep.pos.findClosestByPath(containers);
                   if(!creep.pos.isNearTo(container))
@@ -62,7 +62,7 @@ export class BuilderLifetimeProcess extends LifetimeProcess {
 
                   return;
                 }
-                
+
                 let sources = creep.room.find(FIND_SOURCES);
                 let source = creep.pos.findClosestByPath(sources);
                 if (source) {
