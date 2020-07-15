@@ -252,6 +252,7 @@ interface Flag {
     skCostMatrix?: number[];
     miningStopTime?: number;
     pauseUpgrading?: boolean;
+    upgradingBCFull?: boolean;
     upgradingTick?: number;
     fullEnergyCount?: number;
     specialMining?: boolean;
@@ -536,7 +537,8 @@ interface Flag {
   {
     creep: string
     flagName: string,
-    site: string
+    site: string,
+    spawnRoomName: string
   }
 
   interface HoldWorkerLifetimeProcessMetaData
