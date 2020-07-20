@@ -7,14 +7,16 @@ export class BuilderLifetimeProcess extends LifetimeProcess {
 
   run() {
     let creep = this.getCreep()
-
+    let centerFlag  = Game.flags['Center-' + creep.room.name];
     if (!creep) { return }
     if (creep.room.memory.shutdown) {
       this.completed = true;
       return;
     }
 
-    if (creep.name === 'sm-E41S41-11147991') {
+
+    if (creep.name === 'sm-E41S41-11147991')
+    {
       console.log(this.name, '22222')
     }
 
@@ -115,7 +117,7 @@ export class BuilderLifetimeProcess extends LifetimeProcess {
     }
 
     // If the creep has been refilled
-    let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
+    let target = centerFlag.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
 
     if (target) {
       if (!creep.pos.inRangeTo(target, 3))
