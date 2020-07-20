@@ -24,12 +24,15 @@ export class HarvesterLifetimeProcess extends LifetimeProcess {
     if (creep.store.getUsedCapacity() === 0 || creep.memory.filling) {
       creep.memory.filling = true;
       let source = <Source>Game.getObjectById(this.metaData.source)
-      if (source) {
+      if (source)
+      {
         let targetPos = source.pos
         let targetRange = 1
 
-        if (this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id]) {
-          if (creep.getActiveBodyparts(WORK) >= 6) {
+        if (this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id])
+        {
+          if (creep.getActiveBodyparts(WORK) >= 6)
+          {
             targetPos = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id].pos
             if (!creep.pos.isEqualTo(targetPos)) {
               creep.travelTo(targetPos);
@@ -44,7 +47,8 @@ export class HarvesterLifetimeProcess extends LifetimeProcess {
         if (!creep.pos.inRangeTo(targetPos, targetRange)) {
           creep.travelTo(targetPos);
         }
-        else {
+        else
+        {
           let container = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id];
           if (container) {
             if (container.store.getUsedCapacity() == container.storeCapacity) {
