@@ -59,12 +59,12 @@ export class TerminalManagementProcess extends Process
                 return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < r.storage.store.getCapacity() * .95) && r.controller?.my &&
                   r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
               else if(r.controller?.level >= 6)
-                return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 800000) && r.controller?.my &&
+                return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 650000) && r.controller?.my &&
                   r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
             }
             else
             {
-              return ((r.storage.store.energy < 520000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+              return ((r.storage.store.energy < 600000 || r.storage.store === undefined) && r.controller && r.controller.my &&
                 r.terminal.my && r.terminal.store.getUsedCapacity() < r.terminal.storeCapacity && !r.memory.templeRoom);
             }
           }
