@@ -18,15 +18,32 @@ export class UpgradeDistroLifetimeProcess extends LifetimeProcess {
       return;
     }
 
-    creep.say("P " + this.metaData.numberOfDropPickups, true);
+    if(creep.room.controller?.level === 8 && creep.room.memory.pauseUpgrading)
+    {
+      const container = this.roomData().generalContainers[0];
+      if(!creep.pos.isEqualTo(container))
+        creep.moveTo(container);
+      else
+        creep.suicide();
 
-    if (creep.ticksToLive < 50 && creep.store.getUsedCapacity() > 0) {
-      let storage = creep.room.storage;
-      if (storage) {
-        if (creep.pos.inRangeTo(storage, 1))
-          creep.transferEverything(storage);
-        else
-          creep.travelTo(storage);
+      return;
+    }
+
+    if (creep.ticksToLive < 50) {
+      if(creep.store.getUsedCapacity() > 0) {
+        let storage = creep.room.storage;
+        if (storage) {
+          if (creep.pos.inRangeTo(storage, 1))
+            creep.transferEverything(storage);
+          else
+            creep.travelTo(storage);
+        }
+      }
+      else
+      {
+        creep.suicide();
+        this.completed = true;
+        return;
       }
     }
 

@@ -298,13 +298,17 @@ export class EnergyManagementProcess extends Process{
 
               if(count < 1)
               {
+                let max = 32;
+                if(room.controller?.level === 3)
+                  max = 15;
+
                 let creepName = 'em-m-' + proc.metaData.roomName + '-' + Game.time
                 let spawned = Utils.spawn(
                   proc.kernel,
                   proc.metaData.roomName,
                   'mover',
                   creepName,
-                  {}
+                  {max: max}
                 )
 
                 if(spawned){
@@ -327,6 +331,8 @@ export class EnergyManagementProcess extends Process{
             console.log(this.name, 'Pause Upgrading work', room.memory.pauseUpgrading, Game.time, room.memory.upgradingTick + 25000)
           if(room.controller.ticksToDowngrade <= 100000)
             room.memory.pauseUpgrading = false;
+          else if(room.storage.store.getUsedCapacity() === room.storage.store.getCapacity())
+            room.memory.pauseUpgrading = true;
         }
 
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
@@ -342,8 +348,8 @@ export class EnergyManagementProcess extends Process{
           let upgraders = 0;
           switch(this.metaData.roomName)
           {
-            case 'E28S33':
-              upgraders = 3;
+            case 'E16S51':
+              upgraders = 5;
               break;
             default:
               upgraders = 1;
@@ -493,8 +499,8 @@ export class EnergyManagementProcess extends Process{
 
             switch(this.metaData.roomName)
             {
-              case 'E28S33':
-                upgradeDistroAmount = 2;
+              case 'E16S51':
+                upgradeDistroAmount = 5;
                 break;
               default:
                 upgradeDistroAmount = 1;
@@ -506,7 +512,7 @@ export class EnergyManagementProcess extends Process{
               upgradeDistroAmount = 0;
             }
 
-            if(count < upgradeDistroAmount /*&& !seige*/)
+            if(count < upgradeDistroAmount && this.metaData.upgradeCreeps.length)
             {
               let creepName = 'em-ud-' + proc.metaData.roomName + '-' + Game.time;
               let spawned = false;
@@ -523,12 +529,18 @@ export class EnergyManagementProcess extends Process{
               }
               else
               {
+                let max = 48;
+                if(room.controller?.level === 3)
+                  max = 15;
+                else if(room.controller?.level === 6)
+                  max = 45;
+
                 spawned = Utils.spawn(
                   proc.kernel,
                   proc.metaData.roomName,
                   'bigMover',
                   creepName,
-                  {max: 48}
+                  {max: max}
                 );
               }
 

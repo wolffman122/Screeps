@@ -17,12 +17,11 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess {
       if (container) {
         if (container.store.getUsedCapacity() >= creep.carryCapacity)    // TODO not sure if this is the best way either.
         {
-          if (creep.pos.inRangeTo(container, 1)) {
+          if (!creep.pos.inRangeTo(container, 1))
+            creep.moveTo(container, {range: 1});
+          else
             creep.withdrawEverything(container);
-            return;
-          }
 
-          creep.moveTo(container);
           return;
         }
         else {

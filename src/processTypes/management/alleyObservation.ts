@@ -15,6 +15,12 @@ export class AlleyObservationManagementProcess extends Process
 
   run()
   {
+    if (this.name === 'aompE39S35')
+    {
+      this.completed = true;
+      return;
+    }
+    console.log(this.name, 'Running');
     const room = Game.rooms[this.metaData.roomName];
     const termnial = room.terminal;
     const storage = room.storage;
@@ -46,22 +52,26 @@ export class AlleyObservationManagementProcess extends Process
       {
         const powerBank = <StructurePowerBank>checkRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
 
-        if(powerBank?.ticksToDecay > 3500 && powerBank?.power > 1500)
+        if(powerBank?.ticksToDecay > 4000 && powerBank?.power > 1500)
         {
           if(!this.kernel.hasProcess('powhm-' + checkRoom.name))
           {
             console.log('Spawn power retrieval', checkRoom.name, powerBank.ticksToDecay);
-            //if(checkRoom.name === 'E3740')
+            //if(checkRoom.name === 'E47S50' || checkRoom.name === 'E40S36' checkRoom.name === 'E40S28')
             {
               const spawnRoomName = Utils.nearestRoom(checkRoom.name);
-              if(spawnRoomName !== '')
+              const spawnRoom = Game.rooms[spawnRoomName];
+              if(spawnRoom?.terminal.store.getUsedCapacity(RESOURCE_POWER) < 2000)
               {
-                Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
-                this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
-                  roomName: checkRoom.name,
-                  spawnRoomName: spawnRoomName,
-                  powerBankId: powerBank.id
-                })
+                if(spawnRoomName !== '')
+                {
+                  Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
+                  this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
+                    roomName: checkRoom.name,
+                    spawnRoomName: spawnRoomName,
+                    powerBankId: powerBank.id
+                  })
+                }
               }
             }
 
@@ -111,20 +121,25 @@ export class AlleyObservationManagementProcess extends Process
   checkTheRoom(room: Room)
   {
     let retValue: ReturnEnum;
-
-
     const deposits = room.find(FIND_DEPOSITS).filter(d => !d.lastCooldown);
-    if(this.metaData.roomName === 'E35S51')
-      console.log(this.name, room.name, 'Double deposit', deposits)
     if(deposits.length)
     {
       if(deposits[0].lastCooldown < 20)
         retValue = ReturnEnum.Deposits;
     }
 
-    let powerBanks = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK});
+    const powerBanks = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK});
     if(powerBanks.length)
-      retValue |= ReturnEnum.Power;
+    {
+      const creeps = room.find(FIND_HOSTILE_CREEPS);
+      if(creeps.length)
+        console.log(this.name, 'Power', room.name, 'hostilecreeps', creeps.length);
+      else
+      {
+        console.log(this.name, 'Power', room.name, 'time to harvest');
+        retValue |= ReturnEnum.Power;
+      }
+    }
 
     return retValue;
   }

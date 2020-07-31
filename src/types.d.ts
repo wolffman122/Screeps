@@ -656,6 +656,15 @@ interface Flag {
     flagName: string
   }
 
+  interface PortalClaimProcessMetaData
+  {
+    roomName?: string;
+    flagName: string;
+    claimCreeps?: string[];
+
+  }
+
+
   interface roomAmounts
   {
     roomName: string,

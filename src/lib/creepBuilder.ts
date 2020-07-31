@@ -20,7 +20,7 @@ export const CreepBuilder = {
 
     if(creepType === 'vision')
     {
-      console.log('Vision problems 1')
+      return [MOVE];
     }
     if(creepType === 'bigWorker')
     {

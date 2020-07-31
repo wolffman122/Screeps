@@ -14,30 +14,35 @@ export class MarketManagementProcess extends Process
 
   run()
   {
-    let buying = true;
-    const barRooms: {
-      [bar: string]: string[]
-    } = {};
-    console.log(this.name, 'Filter Rooms');
-    const catRooms = _.filter(Game.rooms, (r) => {
-      if(r.memory.barType && r.controller?.my && r.terminal?.store[r.memory.barType] >= FACTORY_KEEP_AMOUNT)
-      {
-        if(!barRooms[r.memory.barType])
-          barRooms[r.memory.barType]  = [];
-
-        barRooms[r.memory.barType].push(r.name);
-      }
-    })
-
-    this.metaData.roomWithResource = catRooms.map(r => r.name);
-
-    console.log(this.name, 'Rooms that have bars', this.metaData.roomWithResource.length)
-    let totalTransactions = 0;
-    if(buying)
+    if(Game.time % 25 === 0)
     {
-      console.log(this.name, 'Buying');
-      if(Game.time % 6 === 0)
+      let buying = true;
+      const barRooms: {
+        [bar: string]: string[]
+      } = {};
+      console.log(this.name, 'Filter Rooms');
+      const catRooms = _.filter(Game.rooms, (r) => {
+        if(r.memory.barType && r.controller?.my && r.terminal?.store.getUsedCapacity(r.memory.barType) >= FACTORY_KEEP_AMOUNT)
+        {
+          if(!barRooms[r.memory.barType])
+            barRooms[r.memory.barType]  = [];
+
+          barRooms[r.memory.barType].push(r.name);
+        }
+      })
+
+      this.metaData.roomWithResource = catRooms.map(r => r.name);
+
+      console.log(this.name, 'Rooms that have bars')
+      for(let r in barRooms)
       {
+        console.log(this.name, r, barRooms[r]);
+      }
+
+      let totalTransactions = 0;
+      if(buying)
+      {
+        console.log(this.name, 'Buying');
         console.log(this.name, 'Bar Rooms')
         for(let b in barRooms)
         {
@@ -45,6 +50,7 @@ export class MarketManagementProcess extends Process
           console.log(this.name, bar, barRooms[bar].length);
           let roomDistance: RoomDistance = {};
           const orders = this.getBuyOrders(bar);
+          orders.sort((a, b) => (a.price > b.price) ? -1 : 1);
           console.log(this.name, 'Orders for', bar, orders.length);
 
           for(let i = 0; i < orders.length; i++)
@@ -65,7 +71,7 @@ export class MarketManagementProcess extends Process
                   console.log(this.name, 4)
                   const cost = Game.market.calcTransactionCost(order.amount, order.roomName, sourceRoom.name)
                   console.log(this.name, 'Cost', cost);
-                  if(cost < 5000)
+                  if(cost < 10000)
                   {
                     console.log(this.name, 5)
                     const ret = Game.market.deal(order.id, order.amount, sourceRoom.name);
@@ -82,20 +88,20 @@ export class MarketManagementProcess extends Process
           }
         }
       }
-    }
-    else
-    {
-      if(Game.time % 105 === 0)
+      else
       {
-        for(let b in barRooms)
+        if(Game.time % 105 === 0)
         {
-          const bar = b as CommodityConstant;
-          this.AnalyzeMarket(bar);
-          const orders = this.getSellOrders(bar);
-
-          for(let i = 0; i < orders.length; i++)
+          for(let b in barRooms)
           {
-            const order = orders[i]
+            const bar = b as CommodityConstant;
+            this.AnalyzeMarket(bar);
+            const orders = this.getSellOrders(bar);
+
+            for(let i = 0; i < orders.length; i++)
+            {
+              const order = orders[i]
+            }
           }
         }
       }

@@ -116,7 +116,8 @@ export class RoomDataProcess extends Process{
           if(this.metaData.roomName === 'E35S51' || this.metaData.roomName === 'E35S41'
             || this.metaData.roomName === 'E46S51' || this.metaData.roomName === 'E51S49'
             || this.metaData.roomName === 'E48S49' || this.metaData.roomName === 'E38S39'
-            || this.metaData.roomName === 'E41S49' || this.metaData.roomName === 'E41S32')
+            || this.metaData.roomName === 'E41S49' || this.metaData.roomName === 'E41S32'
+            || this.metaData.roomName === 'E26S29')
           {
             this.kernel.addProcessIfNotExist(AlleyObservationManagementProcess, 'aomp' + this.metaData.roomName, 25, {
               roomName: this.metaData.roomName

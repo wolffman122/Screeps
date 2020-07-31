@@ -19,6 +19,7 @@ import { StripManagementProcess } from './management/strip';
 import { Utils } from 'lib/utils';
 import { TestProcessManagement } from './management/test';
 import { TempleProcess } from './management/temple';
+import { PortalClaimProcess } from './empireActions/portalClaim';
 
 export class FlagWatcherProcess extends Process
 {
@@ -60,6 +61,12 @@ export class FlagWatcherProcess extends Process
   {
     console.log('Blue 2', flag.pos.roomName, flag.name);
     this.kernel.addProcessIfNotExist(ClaimProcess, 'claim-' + flag.name, 20, { targetRoom: flag.pos.roomName, flagName: flag.name});
+  }
+
+  // blue grey
+  portalTravel(flag: Flag)
+  {
+    this.kernel.addProcessIfNotExist(PortalClaimProcess, 'portal-claim-' + flag.name, 20, {flagName: flag.name});
   }
 
   // blue yellow
@@ -158,6 +165,10 @@ export class FlagWatcherProcess extends Process
               proc.TempleRoom(flag);
             case COLOR_RED:
               proc.helpRoom(flag);
+              break;
+            case COLOR_GREY:
+              console.log("Portal Work");
+              proc.portalTravel(flag);
               break;
           }
           break;

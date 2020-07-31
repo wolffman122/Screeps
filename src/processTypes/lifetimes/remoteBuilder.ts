@@ -169,8 +169,9 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess {
       }
     }
 
+    console.log(this.name, 1)
     const spawn = this.roomInfo(creep.room.name).spawns[0];
-    if (spawn?.store.getUsedCapacity(RESOURCE_ENERGY) < spawn.store.getCapacity(RESOURCE_ENERGY)) {
+    if (spawn?.store.getUsedCapacity(RESOURCE_ENERGY) < spawn?.store.getCapacity(RESOURCE_ENERGY)) {
       if (!creep.pos.isNearTo(spawn))
         creep.travelTo(spawn);
       else
@@ -179,12 +180,15 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess {
       return;
     }
 
-
-    if (site) {
+    console.log(this.name, 2)
+    if (site)
+    {
       if (!creep.pos.inRangeTo(site, 3))
         creep.travelTo(site, { range: 3 });
       else
         creep.build(site);
+
+      return;
     }
     else {
       let target = this.roomInfo(creep.room.name).constructionSites[0];
@@ -205,6 +209,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess {
       }
     }
 
+    console.log(this.name, 3)
     const controller = creep.room.controller;
     if(!creep.pos.inRangeTo(controller, 3))
       creep.travelTo(controller, {range: 3});

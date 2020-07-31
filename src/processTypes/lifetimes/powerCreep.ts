@@ -48,7 +48,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       return;
     }
 
-    const level = powerCreep.powers[PWR_OPERATE_STORAGE].level
+    const level = powerCreep.powers[PWR_OPERATE_STORAGE]?.level
     const increaseAmount = POWER_INFO[PWR_OPERATE_STORAGE].effect[level - 1];
     const regularStorageAmount = storage.store.getCapacity() - increaseAmount;
     const storageEffect = storage.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE && e.ticksRemaining < 10);
@@ -98,7 +98,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     }
 
     // Factory initial
-    if(!factory.level && powerCreep.powers[PWR_OPERATE_FACTORY]
+    if(!factory?.level && powerCreep.powers[PWR_OPERATE_FACTORY]
       && (powerCreep.store[RESOURCE_OPS] ?? 0) >= 300)
     {
       if(!powerCreep.pos.inRangeTo(factory, 3))

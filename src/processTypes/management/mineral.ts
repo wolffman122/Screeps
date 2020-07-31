@@ -39,6 +39,13 @@ export class  MineralManagementProcess extends Process
       this.completed = true;
       return;
     }
+
+    if(mineral.mineralAmount === 0 && this.metaData.mineralHarvesters.length === 0 && this.metaData.mineralHaulers.length === 0)
+    {
+      this.completed = true;
+      return;
+    }
+    
     if(this.name === 'minerals-E58S52')
       console.log(this.name, 2)
 
@@ -99,7 +106,6 @@ export class  MineralManagementProcess extends Process
           case 'E38S46':
           case 'E58S52':
           case 'E55S48':
-          case 'E36S38':
           case 'E41S38':
           case 'E32S44':
           case 'E41S38':
@@ -118,6 +124,7 @@ export class  MineralManagementProcess extends Process
           case 'E38S39':
             this.harvesters = 3;
             break;
+          case 'E36S38':
           case 'E36S43':
           case 'E39S35':
           case 'E38S59':

@@ -90,6 +90,7 @@ import { DepositMiningManagementProcess } from 'processTypes/management/depositM
 import { Spinner2LifeTimeProcess } from 'processTypes/lifetimes/spinner2'
 import { TransferManagementProcess } from 'processTypes/management/transfer'
 import { TempleProcess } from 'processTypes/management/temple'
+import { PortalClaimProcess } from 'processTypes/empireActions/portalClaim'
 
 
 
@@ -177,7 +178,8 @@ const processTypes = <{[type: string]: any}>{
   'aomp': AlleyObservationManagementProcess, // 25
   'dmmp': DepositMiningManagementProcess, // 24
   'tmp': TransferManagementProcess, // 20
-  'temple': TempleProcess // 60
+  'temple': TempleProcess, // 60
+  'portal-claim': PortalClaimProcess, // 20
 }
 
 interface KernelData{
@@ -365,6 +367,9 @@ export class Kernel{
 
   /** Run the highest priority process in the process table */
   runProcess(){
+    if(Game.shard.name === 'shard2')
+      console.log("On Shard 2 *****************************")
+      
     let process = this.getHighestProcess()
     let cpuUsed = Game.cpu.getUsed()
     let faulted = false

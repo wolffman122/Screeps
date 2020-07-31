@@ -126,19 +126,20 @@ export class StructureManagementProcess extends Process{
           if(!this.metaData.shutDownRamparts)
           {
             let count: number;
-            if(this.metaData.upgradeType === 0)
-              count = 1;
-            else if(this.metaData.upgradeType === 1)
+
+            if (room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT + 10000)
               count = 2;
-            else if(this.metaData.upgradeType === -1)
-              count = 0;
-
-            if(!room.memory.pauseUpgrading && this.metaData.upgradeType >= 0
-              && room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < ENERGY_KEEP_AMOUNT)
-              count = 0;
-
-            if(room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9)
+            else if (room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9)
               count = 1;
+
+            if(!room.memory.pauseUpgrading)
+            {
+              if(room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < ENERGY_KEEP_AMOUNT)
+                count = 0;
+            }
+
+            if(room.name === 'E26S29')
+              console.log(this.name, 'Repair count', count, room.memory.pauseUpgrading, room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT + 10000);
 
             let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
             let spawned = false;
@@ -161,7 +162,7 @@ export class StructureManagementProcess extends Process{
                   this.metaData.rampartCheckTime = Game.time;
                   const sum = _.sum(ramparts, 'hits');
                   const average = sum / ramparts.length;
-                  if(average < 22000000 || building)
+                  if(average < 23000000 || building)
                   {
                     spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
 

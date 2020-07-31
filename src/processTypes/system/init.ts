@@ -113,7 +113,7 @@ export class InitProcess extends Process{
         }
 
         if(!proc.kernel.getProcessByName('em-' + room.name)){
-          proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 50, {
+          proc.kernel.addProcess(EnergyManagementProcess, 'em-' + room.name, 55, {
             roomName: room.name
           })
         }

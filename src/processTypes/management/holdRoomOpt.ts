@@ -91,7 +91,7 @@ export class HoldRoomOptManagementProcess extends Process
     {
       if(flag.name === 'E28S33-Hold-E28S32')
         console.log(this.name, 1);
-      
+
       let enemiesPresent = false;
       if(flag?.memory.enemies || this.metaData.enemiesPresent)
       {
@@ -365,7 +365,8 @@ export class HoldRoomOptManagementProcess extends Process
                     this.metaData.builderCreeps.push(creepName);
                     this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
                       creep: creepName,
-                      flagName: this.metaData.flagName
+                      flagName: this.metaData.flagName,
+                      spawnRoomName: spawnRoomName,
                     })
                   }
                 }
@@ -389,7 +390,8 @@ export class HoldRoomOptManagementProcess extends Process
                     this.metaData.builderCreeps.push(creepName);
                     this.kernel.addProcess(HoldBuilderLifetimeProcess, 'holdBuilderlf-' + creepName, 25, {
                       creep: creepName,
-                      flagName: this.metaData.flagName
+                      flagName: this.metaData.flagName,
+                      spawnRoomName: spawnRoomName,
                     })
                   }
                 }

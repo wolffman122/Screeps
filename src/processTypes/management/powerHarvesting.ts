@@ -37,8 +37,6 @@ export class PowerHarvestingManagement extends Process
   run()
   {
     console.log(this.name, 'Running');
-    if(this.name === 'powhm-E46S50')
-      console.log(this.name, 'where is this process');
     this.ensureMetaData();
 
     if((this.metaData.suicideSequence && Game.time > this.metaData.decayTime)
@@ -223,11 +221,11 @@ export class PowerHarvestingManagement extends Process
 
   private AttackerActions(creep: Creep)
   {
-    if(creep.name === 'powerAttacker-E41S50-27438168')
+    if (creep.name === 'powerAttacker-E36S50-28116813')
       console.log(this.name, 'PA', 1)
     if(this.metaData.suicideSequence)
     {
-      if(creep.name === 'powerAttacker-E41S50-27438168')
+      if(creep.name === 'powerAttacker-E36S50-28116813')
       console.log(this.name, 'PA', 2)
       const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
       if(!creep.pos.isNearTo(spawn))
@@ -249,12 +247,12 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
-    if(creep.name === 'powerAttacker-E41S50-27438168')
-      console.log(this.name, 'PA', 3)
+    if(creep.name === 'powerAttacker-E36S50-28116813')
+      console.log(this.name, 'PA', 3, creep.memory.boost)
     //console.log(this.name, 'AA', 1, creep.memory.boost, creep.name, creep.pos, this.metaData.suicideSequence)
     if(!creep.memory.boost)
     {
-      if(creep.name === 'powerAttacker-E41S50-27438168')
+      if(creep.name === 'powerAttacker-E36S50-28116813')
       console.log(this.name, 'PA', 4)
       //console.log(this.name, 'AA', 2)
       creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
@@ -263,7 +261,7 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
-    if(creep.name === 'powerAttacker-E41S50-27438168')
+    if(creep.name === 'powerAttacker-E36S50-28116813')
       console.log(this.name, 'PA', 5)
     //console.log(this.name, 'AA', 3)
     const healer = Game.creeps[this.metaData.healers[0]];
@@ -283,9 +281,8 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
-    if(!creep.pos.isNearTo(healer))
-      creep.travelTo(healer);
-    else
+
+    if(creep.pos.isNearTo(healer))
     {
       //console.log(this.name, 'AA', this.powerBank);
       if(this.powerBank?.pos.findInRange(FIND_HOSTILE_CREEPS, 1).length && !creep.pos.isNearTo(this.powerBank))

@@ -89,6 +89,9 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess {
       }
       else
       {
+        if (creep.name === 'hrm-build-E27S28-27937946')
+          console.log(this.name, 1);
+
         const constructionSites = this.roomInfo(room.name).constructionSites;
         if(creep.name === 'hrm-build-E26S28-27705127')
           console.log(this.name, 1, constructionSites.length);
@@ -111,6 +114,44 @@ export class HoldBuilderLifetimeProcess extends LifetimeProcess {
             return;
           }
         }
+        else if(creep.room.name === room.name)
+        {
+          let sources = this.kernel.data.roomData[flag.room.name].sources;
+          let sourceContainersMaps = this.kernel.data.roomData[flag.room.name].sourceContainerMaps;
+
+          if (sources.length)
+          {
+            let missingConatiners = sources.filter(s => {
+              return (!sourceContainersMaps[s.id])
+            });
+
+            if (missingConatiners.length)
+            {
+              let openSpaces = missingConatiners[0].pos.openAdjacentSpots(true);
+              if (openSpaces.length)
+              {
+                let clearConstruction = false;
+                let openSpace = openSpaces[0];
+                const look = openSpace.look();
+                _.forEach(look, (l) => {
+                  if (LOOK_CONSTRUCTION_SITES === l.type)
+                    clearConstruction = true;
+                });
+
+                if (clearConstruction)
+                {
+                  creep.travelTo(openSpace);
+                  return;
+                }
+
+                missingConatiners[0].room.createConstructionSite(openSpace.x, openSpace.y, STRUCTURE_CONTAINER);
+              }
+            }
+          }
+        }
+        else
+          creep.travelTo(flag);
+          
       }
     }
   }

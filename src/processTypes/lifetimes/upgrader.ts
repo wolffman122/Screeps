@@ -1,6 +1,7 @@
 import { LifetimeProcess } from '../../os/process'
 import { Utils } from '../../lib/utils'
 import { LABDISTROCAPACITY } from '../management/lab';
+import { ControllerAttackLifetimeProcess } from './controllerAttack';
 
 export class UpgraderLifetimeProcess extends LifetimeProcess {
   type = 'ulf'
@@ -14,6 +15,17 @@ export class UpgraderLifetimeProcess extends LifetimeProcess {
       this.completed = true;
       return;
     }
+
+    // if(Game.rooms[this.metaData.roomName].controller?.level === 8 && this.roomData.mem)
+    // {
+    //   const container = this.roomData().generalContainers[0];
+    //   if(!creep.pos.isEqualTo(container))
+    //     creep.moveTo(container);
+    //   else
+    //     creep.suicide();
+
+    //   return;
+    // }
 
     creep.room.memory.pauseUpgrading = true;
 

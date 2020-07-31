@@ -39,7 +39,7 @@ export class LabManagementProcess extends Process
       return;
 
     this.logOn = false;
-    this.logName = "labm-E56S43";
+    this.logName = "labm-E35S51";
 
     this.room = Game.rooms[this.metaData.roomName];
     if(!this.room)

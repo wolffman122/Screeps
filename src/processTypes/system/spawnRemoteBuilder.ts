@@ -23,7 +23,7 @@ export class SpawnRemoteBuilderProcess extends Process{
 
     // if(spawnRoom === undefined)
     //   spawnRoom = Utils.nearestRoom(this.metaData.roomName, 500);
-    spawnRoom = 'E28S33';
+    spawnRoom = 'E22S52';
 
     if(!this.kernel.hasProcess('rblf-rb-' + site)){
       let spawned = Utils.spawn(

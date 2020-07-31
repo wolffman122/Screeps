@@ -204,17 +204,17 @@ Creep.prototype.getFlags = function(identifier: string, max: Number): Flag[]
 
 Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolean): any
 {
-  if(this.name === 'powerAttacker-E41S50-27438168')
+  if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 1);
   let totalBoosts = boosts.length;
   let boosted = true;
   for(let boost of boosts)
   {
-    if(this.name === 'powerAttacker-E41S50-27438168')
+    if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 2, totalBoosts);
     if(this.memory[boost])
     {
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 3);
       totalBoosts--;
       continue;
@@ -224,86 +224,95 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
 
     if(room)
     {
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
+      {
         console.log('Defense', 4, room.memory.boostRequests, Object.keys(room.memory.boostRequests).length);
+        for(const br in room.memory.boostRequests)
+        {
+          const Br = room.memory.boostRequests[br];
+          console.log('Defense', Br.amount, Br.flagName, Br.requesterIds);
+        }
+      }
+      
       let requests = room.memory.boostRequests;
       if(!requests)
       {
-        if(this.name === 'powerAttacker-E41S50-27438168')
+        if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 5);
         this.memory[boost] = true;
         continue;
       }
 
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 4.1)
       if(!requests[boost])
       {
-        if(this.name === 'powerAttacker-E41S50-27438168')
+        if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 6);
         requests[boost] = { flagName: undefined, requesterIds: [] };
       }
 
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 4.2)
       // check if already boosted
       let boostedPart = _.find(this.body, {boost: boost});
       if(boostedPart)
       {
-        if(this.name === 'powerAttacker-E41S50-27438168')
+        if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 7);
         this.memory[boost] = true;
         requests[boost!].requesterIds = _.pull(requests[boost].requesterIds, this.id);
         continue;
       }
 
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 4.3)
       boosted = false;
       if(!_.include(requests[boost].requesterIds, this.id))
       {
-        if(this.name === 'powerAttacker-E41S50-27438168')
+        if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 8);
         requests[boost].requesterIds.push(this.id);
       }
 
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 4.4)
       if(this.spawning)
         continue;
 
-        if(this.name === 'powerAttacker-E41S50-27438168')
-        console.log('Defense', 4.5, requests[boost].flagName)
+      if(this.name === 'powerAttacker-E36S50-28116813')
+        console.log('Defense', 4.5, requests[boost].flagName!)
+
       let flag = Game.flags[requests[boost].flagName!];
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 4.51, flag)
       if(!flag)
       {
         continue;
       }
 
-      if(this.name === 'powerAttacker-E41S50-27438168')
+      if(this.name === 'powerAttacker-E36S50-28116813')
         console.log('Defense', 4.6)
       let lab = flag.pos.lookForStructures(STRUCTURE_LAB) as StructureLab;
 
       if(lab.mineralType === boost && lab.mineralAmount >= LABDISTROCAPACITY && lab.energy >= LABDISTROCAPACITY)
       {
-        if(this.name === 'powerAttacker-E41S50-27438168')
+        if(this.name === 'powerAttacker-E36S50-28116813')
           console.log('Defense', 10);
 
         if(this.pos.isNearTo(lab))
         {
-          if(this.name === 'powerAttacker-E41S50-27438168')
+          if(this.name === 'powerAttacker-E36S50-28116813')
             console.log('Defense', 101);
           let ret = lab.boostCreep(this);
-          if(this.name === 'powerAttacker-E41S50-27438168')
+          if(this.name === 'powerAttacker-E36S50-28116813')
             console.log('Defense', 101, ret);
           return OK;
         }
         else
         {
           let ret = this.travelTo(lab);
-          if(this.name === 'powerAttacker-E41S50-27438168')
+          if(this.name === 'powerAttacker-E36S50-28116813')
             console.log('Defense', 102, ret, lab.pos, lab.id);
           return ERR_BUSY;
         }
