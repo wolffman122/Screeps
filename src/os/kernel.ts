@@ -229,7 +229,8 @@ export class Kernel{
     }
 
     this.loadProcessTable()
-    this.loadIpcMessages();
+    if(Game.shard.name !== 'shard2')
+      this.loadIpcMessages();
 
     this.addProcess(InitProcess, 'init', 99, {})
   }
@@ -367,9 +368,6 @@ export class Kernel{
 
   /** Run the highest priority process in the process table */
   runProcess(){
-    if(Game.shard.name === 'shard2')
-      console.log("On Shard 2 *****************************")
-      
     let process = this.getHighestProcess()
     let cpuUsed = Game.cpu.getUsed()
     let faulted = false

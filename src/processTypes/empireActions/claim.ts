@@ -7,152 +7,177 @@ export class ClaimProcess extends Process{
   type = 'claim'
 
   run(){
-    let flag = Game.flags[this.metaData.flagName]
-    let baseFlagName;
-    let numberOfFlags;
-    let spawnRoom;
-    let throughPortal = false;
-
-    if(this.metaData.flagName.split('-').length === 4)
+    const creep = Game.creeps[this.metaData.flagName];
+    // New shard claiming
+    if(creep)
     {
-      baseFlagName = this.metaData.flagName.split('-')[0];
-      numberOfFlags = +this.metaData.flagName.split('-')[1];
-      spawnRoom = this.metaData.flagName.split('-')[2];
-      throughPortal = true;
-    }
-    if(this.metaData.flagName.split('-').length === 3)
-    {
-      baseFlagName = this.metaData.flagName.split('-')[0];
-      numberOfFlags = +this.metaData.flagName.split('-')[1];
-      spawnRoom = this.metaData.flagName.split('-')[2];
-    }
-    else if(this.metaData.flagName.split('-').length > 1)
-    {
-      baseFlagName = this.metaData.flagName.split('-')[0];
-      numberOfFlags = +this.metaData.flagName.split('-')[1];
-    }
-
-    this.log('Claim Process')
-    if(!flag){
-      this.completed = true
-
-      return
-    }
-
-    console.log('Claim Process', 1)
-    let creep = Game.creeps[this.metaData.creep]
-
-    if(Game.rooms[flag.room?.name]?.controller?.owner?.username === 'wolffman122')
-      return;
-
-    if(!creep)
-    {
-      let creepName = 'claim-' + this.metaData.targetRoom + '-' + Game.time
-      let spawned = false;
-      if(spawnRoom === undefined)
+      const claimRoomName = creep.name.split('-')[1];
+      if(creep.room.name !== claimRoomName)
       {
-        console.log('Claim Process', 2)
-        spawnRoom = Utils.nearestRoom(this.metaData.targetRoom, 600);
+        console.log(this.name, 1, claimRoomName);
+        const pos = new RoomPosition(25, 25, claimRoomName);
+        if(!creep.pos.isNearTo(pos))
+          creep.travelTo(pos);
+
+        return;
       }
-
-      spawned = Utils.spawn(
-        this.kernel,
-        spawnRoom,
-        'claimer',
-        creepName,
-        {}
-      );
-
-
-      if(spawned)
+      else
       {
-        this.metaData.creep = creepName
+        const claimRoom = Game.rooms[creep.name.split('-')[1]];
+
       }
 
       return;
     }
-
-
-    let room = flag.room;
-    if(!room)
+    else
     {
-      if(throughPortal)
+      let flag = Game.flags[this.metaData.flagName]
+      let baseFlagName;
+      let numberOfFlags;
+      let spawnRoom;
+      let throughPortal = false;
+
+      if(this.metaData.flagName.split('-').length === 4)
       {
-        if(numberOfFlags && baseFlagName)
+        baseFlagName = this.metaData.flagName.split('-')[0];
+        numberOfFlags = +this.metaData.flagName.split('-')[1];
+        spawnRoom = this.metaData.flagName.split('-')[2];
+        throughPortal = true;
+      }
+      if(this.metaData.flagName.split('-').length === 3)
+      {
+        baseFlagName = this.metaData.flagName.split('-')[0];
+        numberOfFlags = +this.metaData.flagName.split('-')[1];
+        spawnRoom = this.metaData.flagName.split('-')[2];
+      }
+      else if(this.metaData.flagName.split('-').length > 1)
+      {
+        baseFlagName = this.metaData.flagName.split('-')[0];
+        numberOfFlags = +this.metaData.flagName.split('-')[1];
+      }
+
+      this.log('Claim Process')
+      if(!flag){
+        this.completed = true
+
+        return
+      }
+
+      console.log('Claim Process', 1)
+      let creep = Game.creeps[this.metaData.creep]
+
+      if(Game.rooms[flag.room?.name]?.controller?.owner?.username === 'wolffman122')
+        return;
+
+      if(!creep)
+      {
+        let creepName = 'claim-' + this.metaData.targetRoom + '-' + Game.time
+        let spawned = false;
+        if(spawnRoom === undefined)
         {
-          if(!creep.memory.flagIndex)
-            creep.memory.flagIndex = 1;
+          console.log('Claim Process', 2)
+          spawnRoom = Utils.nearestRoom(this.metaData.targetRoom, 600);
+        }
 
-          if(creep.memory.flagIndex <= numberOfFlags)
+        spawned = Utils.spawn(
+          this.kernel,
+          spawnRoom,
+          'claimer',
+          creepName,
+          {}
+        );
+
+
+        if(spawned)
+        {
+          this.metaData.creep = creepName
+        }
+
+        return;
+      }
+
+
+      let room = flag.room;
+      if(!room)
+      {
+        if(throughPortal)
+        {
+          if(numberOfFlags && baseFlagName)
           {
-            let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
-            if(tFlag)
-            {
-              if(creep.pos.isNearTo)
-                creep.memory.flagIndex++;
+            if(!creep.memory.flagIndex)
+              creep.memory.flagIndex = 1;
 
-              creep.travelTo(tFlag, {allowSK: false, preferHighway: true});
+            if(creep.memory.flagIndex <= numberOfFlags)
+            {
+              let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
+              if(tFlag)
+              {
+                if(creep.pos.isNearTo)
+                  creep.memory.flagIndex++;
+
+                creep.travelTo(tFlag, {allowSK: false, preferHighway: true});
+                return;
+              }
+            }
+            else
+            {
+              creep.travelTo(flag);
+              return;
+            }
+          }
+        }
+        else
+        {
+          console.log(this.name, 2)
+          if(numberOfFlags !== undefined && baseFlagName !== undefined)
+          {
+            this.log('Here now');
+            if(creep.memory.flagIndex === undefined)
+            {
+              creep.memory.flagIndex = 1;
+            }
+
+            if(creep.memory.flagIndex <= numberOfFlags)
+            {
+              let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
+              if(tFlag)
+              {
+                this.log('Here now 2 ' + tFlag.name);
+                if(creep.pos.isNearTo(tFlag))
+                {
+                  //tFlag.remove();
+                  creep.memory.flagIndex++;
+                }
+
+                creep.travelTo(tFlag);
+                return;
+              }
+            }
+            else
+            {
+              creep.travelTo(flag, {preferHighway: true, allowHostile: false});
               return;
             }
           }
           else
           {
-            creep.travelTo(flag);
+            creep.travelTo(flag, {preferHighway: true});
             return;
           }
         }
       }
       else
       {
-        console.log(this.name, 2)
-        if(numberOfFlags !== undefined && baseFlagName !== undefined)
+        console.log(this.name, 3)
+        if(!creep.pos.inRangeTo(room.controller!, 1))
         {
-          this.log('Here now');
-          if(creep.memory.flagIndex === undefined)
-          {
-            creep.memory.flagIndex = 1;
-          }
-
-          if(creep.memory.flagIndex <= numberOfFlags)
-          {
-            let tFlag = Game.flags[baseFlagName + '-' + creep.memory.flagIndex];
-            if(tFlag)
-            {
-              this.log('Here now 2 ' + tFlag.name);
-              if(creep.pos.isNearTo(tFlag))
-              {
-                //tFlag.remove();
-                creep.memory.flagIndex++;
-              }
-
-              creep.travelTo(tFlag);
-              return;
-            }
-          }
-          else
-          {
-            creep.travelTo(flag, {preferHighway: true, allowHostile: false});
-            return;
-          }
+          creep.travelTo(room.controller!);
         }
-        else
+
+        if(creep.claimController(room.controller!) === OK)
         {
-          creep.travelTo(flag, {preferHighway: true});
-          return;
+          //flag.remove();
         }
-      }
-    }
-    else
-    {
-      console.log(this.name, 3)
-      if(!creep.pos.inRangeTo(room.controller!, 1))
-      {
-        creep.travelTo(room.controller!);
-      }
-
-      if(creep.claimController(room.controller!) === OK)
-      {
-        //flag.remove();
       }
     }
   }

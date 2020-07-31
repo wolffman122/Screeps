@@ -120,6 +120,8 @@ initRoomPrototype();
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
+  if(Game.shard.name === 'shard2')
+    console.log('******************* SHARD 2 **************************', 1);
 
   if(Game.cpu.bucket > 9800)
   {
@@ -182,6 +184,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
     //kernel.removeOldProcesses();
   }
 
+  if (Game.shard.name === 'shard2')
+  console.log(' SHARD 2 ', 2);
+  
   console.log('Start Kernel run process');
   // While the kernel is under the CPU limit
   while(kernel.underLimit() && kernel.needsToRun()){

@@ -98,7 +98,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     }
 
     // Factory initial
-    if(!factory?.level && powerCreep.powers[PWR_OPERATE_FACTORY]
+    if(!factory.level && powerCreep.powers[PWR_OPERATE_FACTORY]
       && (powerCreep.store[RESOURCE_OPS] ?? 0) >= 300)
     {
       if(!powerCreep.pos.inRangeTo(factory, 3))

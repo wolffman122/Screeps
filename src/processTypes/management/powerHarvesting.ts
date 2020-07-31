@@ -46,7 +46,7 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
-    console.log(this.name, 'Power harvesting', this.metaData.startTime, this.metaData.spawnRoomName, this.metaData.powerBankId);
+    //console.log(this.name, 'Power harvesting', this.metaData.startTime, this.metaData.spawnRoomName, this.metaData.powerBankId);
     if(this.metaData.startTime + 6000 < Game.time)
     {
       this.completed = true;
@@ -59,7 +59,7 @@ export class PowerHarvestingManagement extends Process
 
     // if(this.name === 'powhm-E40S33')
     //   this.metaData.haulerDone = true;
-    console.log(this.name, 'should be done', this.metaData.haulers.length, this.metaData.haulerDone)
+    //console.log(this.name, 'should be done', this.metaData.haulers.length, this.metaData.haulerDone)
     if(this.metaData.haulers.length === 0 && this.metaData.haulerDone)
     {
       this.completed = true;
@@ -82,7 +82,7 @@ export class PowerHarvestingManagement extends Process
     if(this.powerBank)
     {
       const roomDistance = Game.map.getRoomLinearDistance(this.metaData.spawnRoomName, this.metaData.roomName);
-      console.log(this.name, 'Room distance', roomDistance)
+      //console.log(this.name, 'Room distance', roomDistance)
       if(this.metaData.previousPowerBankHits)
       {
         const diff = this.metaData.previousPowerBankHits - this.powerBank.hits;

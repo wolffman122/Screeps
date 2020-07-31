@@ -99,7 +99,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess {
               holdData = flag.memory.holdData;
 
             if (creep.room.name === mineRoom.name && !creep.pos.isNearTo(sourceContainer)) {
-              console.log(this.name, creep.name, 'Hold Data', !holdData.roads[sourceContainer.id]);
+              //console.log(this.name, creep.name, 'Hold Data', !holdData.roads[sourceContainer.id]);
               let roomPositions: RoomPosition[] = [];
               if (!holdData.roads[sourceContainer.id]) {
                 console.log(this.name, 'Should not be running this code');

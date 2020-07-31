@@ -20,7 +20,7 @@ export class AlleyObservationManagementProcess extends Process
       this.completed = true;
       return;
     }
-    console.log(this.name, 'Running');
+    //console.log(this.name, 'Running');
     const room = Game.rooms[this.metaData.roomName];
     const termnial = room.terminal;
     const storage = room.storage;

@@ -15,6 +15,7 @@ import { AllTerminalManagementProcess } from 'processTypes/buildingProcesses/all
 import { PowerHarvestingManagement } from 'processTypes/management/powerHarvesting';
 import { PowerManagement } from 'processTypes/management/power'
 import { TransferManagementProcess } from 'processTypes/management/transfer'
+import { ClaimProcess } from 'processTypes/empireActions/claim'
 
 /*
 
@@ -48,20 +49,6 @@ export class InitProcess extends Process{
       }
     }
 
-    let gRooms = Object.keys(Game.rooms);
-    let mRooms: string[] = []
-    // if(Memory.rooms)
-    //   mRooms = Object.keys(Memory.rooms);
-
-    // let observedRooms = _.difference(mRooms, gRooms);
-    // if(observedRooms.length)
-    // {
-    //   _.forEach(observedRooms, (or) => {
-    //     if(!Game.rooms[or])
-    //       Memory.rooms[or] = undefined;
-    //   })
-    // }
-
     let rampartAverages: {roomName: string, average: number}[] = [];
 
     if(Game.time % 50 === 0)
@@ -71,6 +58,17 @@ export class InitProcess extends Process{
         if(!Game.rooms[room])
           delete Memory.rooms[room];
       }
+    }
+
+    if(Object.keys(Game.creeps).length == 1)
+    {
+      const creep = Game.creeps[Object.keys(Game.creeps)[0]];
+      if(creep)
+      {
+        this.kernel.addProcessIfNotExist(ClaimProcess, 'claim-' + creep.name, 20, {flagName: creep.name});
+      }
+      this.completed = true;
+      return;
     }
 
     _.forEach(Game.rooms, function(room){
