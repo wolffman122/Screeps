@@ -51,7 +51,21 @@ export class StructureManagementProcess extends Process{
       let constructionSites = _.filter(this.kernel.data.roomData[this.metaData.roomName].constructionSites, (cs) => {
         return (cs.my && cs.structureType != STRUCTURE_RAMPART);
       })
-      let numBuilders = _.min([Math.ceil(constructionSites.length / 10), 3, constructionSites.length])
+
+      const constructionLeft = constructionSites.reduce((a, b) => +a + +b.progressTotal, 0) - constructionSites.reduce((a,b) => +a + +b.progress, 0);
+      if(this.metaData.roomName === 'E29S26')
+        console.log(this.name, 'Total construction', constructionLeft);
+
+      let numBuilders = 0;
+      if(constructionLeft > 0)
+        numBuilders = 1;
+      else if(constructionLeft > 3000)
+        numBuilders = 2;
+      else if(constructionLeft > 6000)
+        numBuilders = 4;
+
+      if (this.metaData.roomName === 'E29S26')
+        console.log(this.name, 'Num builders', numBuilders, this.metaData.buildCreeps.length);
 
       this.metaData.buildCreeps = Utils.clearDeadCreeps(this.metaData.buildCreeps)
       this.metaData.repairCreeps = Utils.clearDeadCreeps(this.metaData.repairCreeps)
