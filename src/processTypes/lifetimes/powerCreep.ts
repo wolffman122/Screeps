@@ -220,7 +220,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
     {
       const sources = this.roomData().sources.filter(s =>
         {
-          if(s.effects === undefined)
+          if(s.effects === undefined || s.effects?.length === 0)
             return true;
           else
           {
