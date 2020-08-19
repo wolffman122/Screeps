@@ -45,7 +45,8 @@ export class BuilderLifetimeProcess extends LifetimeProcess {
               if (structures.length > 0)
               {
                 target = _.filter(structures, (s) => {
-                  if (s.structureType === STRUCTURE_LAB || s.structureType === STRUCTURE_LINK)
+                  if (s.structureType === STRUCTURE_LAB || s.structureType === STRUCTURE_LINK
+                    || s.structureType === STRUCTURE_TOWER)
                     return (s.energy > 0);
                   else if (s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_TERMINAL)
                     return (s.store.energy > 0);
@@ -67,20 +68,23 @@ export class BuilderLifetimeProcess extends LifetimeProcess {
                   return;
                 }
 
-                let sources = creep.room.find(FIND_SOURCES);
-                let source = creep.pos.findClosestByPath(sources);
-                if (source)
+                const  sources = creep.room.find(FIND_SOURCES, {filter: s => s.energy > 0});
+                if(sources.length)
                 {
-                  if (creep.name === 'sm-E41S41-11147991')
+                  const source = creep.pos.findClosestByPath(sources);
+                  if (source)
                   {
-                    console.log(this.name, '4')
-                  }
-                  this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-                    creep: creep.name,
-                    source: source.id
-                  });
+                    if (creep.name === 'sm-E41S41-11147991')
+                    {
+                      console.log(this.name, '4')
+                    }
+                    this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+                      creep: creep.name,
+                      source: source.id
+                    });
 
-                  return;
+                    return;
+                  }
                 }
               }
             }
@@ -99,7 +103,7 @@ export class BuilderLifetimeProcess extends LifetimeProcess {
       }
       else
       {
-        let source = creep.pos.findClosestByPath(FIND_SOURCES)[0];
+        let source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: s => s.energy > 0})[0];
         if (source)
         {
           this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {

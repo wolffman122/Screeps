@@ -16,7 +16,7 @@ export const CreepBuilder = {
     const containers = room.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_CONTAINER});
 
     let emergancy = ((creepType === 'harvester' || creepType === 'pHarvester' || creepType === 'pBigHarvester') && creepCount < 2)
-      || (creepType === 'mover' && creepCount < 4) || (room.storage && containers.length < 1);
+      || (creepType === 'mover' && creepCount < 4) || (room.storage?.my && containers.length < 1);
 
     if(creepType === 'vision')
     {
@@ -214,8 +214,16 @@ export const CreepBuilder = {
     {
       return memory.body;
     }
+    else if(creepType === 'allWork')
+    {
+      return [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+        WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+        WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+        WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK,
+        MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+    }
 
-      let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
+    let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
 
     if(emergancy){

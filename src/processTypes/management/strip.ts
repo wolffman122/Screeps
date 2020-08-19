@@ -42,7 +42,7 @@ export class StripManagementProcess extends Process
             let spawned = Utils.spawn(
                 this.kernel,
                 spawnRoom,
-                'skMinerHauler',
+                'shHauler',
                 creepName,
                 {}
             );

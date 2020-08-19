@@ -26,7 +26,7 @@ export class DismantleLifetimeProcess extends LifetimeProcess
     let boost = this.metaData.flag.split('-')[2];
     if(boost === 'boost' && !creep.memory.boost)
     {
-      creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ACID], false);
+      creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYZED_ZYNTHIUM_ACID], false);
       return;
     }
 
@@ -41,7 +41,7 @@ export class DismantleLifetimeProcess extends LifetimeProcess
     }
     else
     {
-      creep.travelTo(flag, {preferHighway: true});
+      creep.travelTo(flag, {allowHostile: false});
       return;
     }
   }

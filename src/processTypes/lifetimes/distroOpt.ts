@@ -68,7 +68,7 @@ export class DistroLifetimeOptProcess extends LifetimeProcess {
         if (this.storage && creep.memory.storageDelivery) {
           let standPos: RoomPosition;
           let range = 4;
-          if (creep.room.name === 'E45S57' || creep.room.name === 'E48S56' || creep.room.name === 'E51S49' || creep.room.name === 'E32S44')
+          if (creep.room.name === 'E45S57' || creep.room.name === 'E48S56' || creep.room.name === 'E51S49' || creep.room.name === 'E32S44' || creep.room.name === 'E38S39')
             range = 5;
 
           if (!creep.memory.standPos)

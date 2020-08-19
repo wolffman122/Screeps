@@ -59,7 +59,7 @@ export const Utils = {
 
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
     let body = CreepBuilder.design(creepType, Game.rooms[roomName], memory)
-    
+
     let spawns = kernel.data.roomData[roomName].spawns
     let outcome = false
 
@@ -141,11 +141,11 @@ export const Utils = {
       _.forEach(Game.rooms, function(room){
         if(room.controller && room.controller.my){
           if(room.energyCapacityAvailable > minSpawnEnergy){
-            let path = new RoomPathFinder(sourceRoom, room.name).results()
+            const dist = Game.map.getRoomLinearDistance(sourceRoom, room.name, false);
 
-            if(path.length < bestDistance)
+            if(dist < bestDistance)
             {
-              bestDistance = path.length;
+              bestDistance = dist;
               bestRoom = room.name;
             }
           }

@@ -20,11 +20,12 @@ export class DepositMiningManagementProcess extends Process
 
   run()
   {
-    this.completed = true;
-    return;
-  }
-  test()
-  {
+    if(this.metaData.roomName === 'E35S51')
+    {
+      this.completed = true;
+      return;
+    }
+
     this.ensureMetaData();
 
     console.log(this.name, 'Should be stopping spawn room', this.metaData.roomName, this.metaData.haulerDone, this.metaData.harvesterDone
@@ -107,6 +108,10 @@ export class DepositMiningManagementProcess extends Process
           room.memory.depositType = target.depositType;
           mining = true;
         }
+      }
+      else
+      {
+        this.metaData.harvesterDone = true;
       }
     }
 

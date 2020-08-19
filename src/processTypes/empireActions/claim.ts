@@ -56,7 +56,6 @@ export class ClaimProcess extends Process{
         numberOfFlags = +this.metaData.flagName.split('-')[1];
       }
 
-      this.log('Claim Process')
       if(!flag){
         this.completed = true
 

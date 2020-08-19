@@ -90,7 +90,7 @@ export class HoldDistroLifetimeProcess extends LifetimeProcess {
             || spawnRoom.name === 'E28S33' || spawnRoom.name === 'E42S53' || spawnRoom.name === 'E45S53'
             || spawnRoom.name === 'E51S49' || spawnRoom.name === 'E55S48' || spawnRoom.name === 'E38S39'
             || spawnRoom.name === 'E37S43' || spawnRoom.name === 'E48S56' || spawnRoom.name === 'E26S29'
-            || spawnRoom.name === 'E16S51')
+            || spawnRoom.name === 'E16S51' || spawnRoom.name === 'E29S26')
           {
             let holdData: HoldRoomData;
             if (!flag.memory.holdData)

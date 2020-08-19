@@ -31,6 +31,7 @@ export class DismantleManagementProcess extends Process
     if(room)
     {
       let look = flag.pos.look();
+      console.log(this.name, 1)
       if(look.length === 1)
       {
           flag.remove();
@@ -48,8 +49,10 @@ export class DismantleManagementProcess extends Process
 
     numberOfDismantlers = Math.min(numberOfDismantlers, 3);
 
+    console.log(this.name, 2)
     if(this.metaData.dismantleCreeps.length < numberOfDismantlers)
     {
+      console.log(this.name, 3)
       let creepName = 'dm-' + flag.pos.roomName + '-' + Game.time;
       let spawned = false;
       this.log('Metadata ' + flag + 2 + flag.pos.roomName)
@@ -60,23 +63,22 @@ export class DismantleManagementProcess extends Process
         spawned = Utils.spawn(
           this.kernel,
           deliverRoom,
-          'dismantler',
+          'allWork',
           creepName,
-          {
-            addition: 'dismantleCarry',
-            max: 45
-          }
+          {}
         )
       }
       else
       {
+        console.log(this.name, 4);
         spawned = Utils.spawn(
           this.kernel,
           deliverRoom,
-          'dismantler',
+          'allWork',
           creepName,
           {}
         )
+        console.log(this.name, 5);
       }
 
       if(spawned)

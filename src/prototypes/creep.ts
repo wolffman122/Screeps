@@ -233,7 +233,7 @@ Creep.prototype.boostRequest = function(boosts: string[], allowUnboosted: boolea
           console.log('Defense', Br.amount, Br.flagName, Br.requesterIds);
         }
       }
-      
+
       let requests = room.memory.boostRequests;
       if(!requests)
       {

@@ -194,6 +194,18 @@ export class Spinner2LifeTimeProcess extends LifetimeProcess
       return;
     }
 
+    if (this.terminal?.store[RESOURCE_POWER] < 1000
+      && (this.storage?.store[RESOURCE_POWER] ?? 0) > 1000) {
+      if (this.TransferToTerminal(RESOURCE_POWER))
+        return;
+    }
+
+    let powerAmount = this.terminal?.store[RESOURCE_POWER] - 1000
+    if (powerAmount > 0 && this.storage?.store.getFreeCapacity() > 3000) {
+      this.TransferToStorage(RESOURCE_POWER, 1000);
+      return;
+    }
+
     const bar = this.room.memory.barType
     const onecomp = Object.keys(COMMODITIES[bar].components)[0];
     const twocomp = Object.keys(COMMODITIES[bar].components)[1];

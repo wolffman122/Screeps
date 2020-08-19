@@ -139,7 +139,7 @@ export class StructureManagementProcess extends Process{
         {
           if(!this.metaData.shutDownRamparts)
           {
-            let count: number;
+            let count = 0;
 
             if (room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT + 10000)
               count = 2;
@@ -152,14 +152,20 @@ export class StructureManagementProcess extends Process{
                 count = 0;
             }
 
-            if(room.name === 'E26S29')
+            let building = false;
+            if (room.name === 'E26S29' || room.name === 'E16S51')
+            {
+              count = 2;
+              building = true;
               console.log(this.name, 'Repair count', count, room.memory.pauseUpgrading, room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT + 10000);
+            }
 
             let creepName = 'sm-' + this.metaData.roomName + '-' + Game.time
             let spawned = false;
             if(this.metaData.repairCreeps.length < count)
             {
-              let building = false;
+              if (room.name === 'E26S29' || room.name === 'E16S51')
+                console.log(this.name, 1)
               const sites = this.roomData().constructionSites.filter(cs => cs.structureType === STRUCTURE_RAMPART);
               if(sites.length)
               {
@@ -168,8 +174,11 @@ export class StructureManagementProcess extends Process{
               }
 
               if(this.metaData.rampartCheckTime === undefined
-                || this.metaData.rampartCheckTime < Game.time - 1000)
+                || this.metaData.rampartCheckTime < Game.time - 1000
+                || room.name === 'E26S29' || room.name === 'E16S51')
               {
+                if (room.name === 'E26S29')
+                  console.log(this.name, 2)
                 const ramparts = room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_RAMPART});
                 if(ramparts.length || building)
                 {
@@ -182,8 +191,11 @@ export class StructureManagementProcess extends Process{
 
                     if(spawned)
                     {
-                      //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
                       let boosts: string[] = [];
+                      if(room.name === 'E26S29')
+                        boosts.push(RESOURCE_LEMERGIUM_ACID);
+                      //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
+
                       //if(count === 2 || (room.storage.store.getUsedCapacity() > room.storage.store.getCapacity() * .9))
                         //boosts.push(RESOURCE_LEMERGIUM_HYDRIDE)
                       this.metaData.repairCreeps.push(creepName);

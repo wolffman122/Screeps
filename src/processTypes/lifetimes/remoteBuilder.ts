@@ -71,7 +71,7 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess {
       creep.memory.filling = true;
 
       if (creep.pos.roomName == site?.pos?.roomName || flags.length) {
-        let structures = site.room!.find(FIND_HOSTILE_STRUCTURES);
+        let structures = creep.room!.find(FIND_HOSTILE_STRUCTURES);
         if (structures) {
           let targets = _.filter(structures, (s) => {
             return ((s.structureType === STRUCTURE_LINK || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_LAB) && s.energy > 0);

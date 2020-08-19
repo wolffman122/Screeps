@@ -921,6 +921,7 @@ interface StripperLifetimeProcessMetaData {
   creep: string
   roomName: string
   flagName: string
+  deliveryRoom: string
 }
 
 interface FlagWatcherProcessMetaData {

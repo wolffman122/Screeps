@@ -33,20 +33,20 @@ export class AlleyObservationManagementProcess extends Process
 
       if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
       {
-        // if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
-        // {
-        //   const spawnRoomName = Utils.nearestRoom(checkRoom.name)
-        //   if(spawnRoomName !== '')
-        //   {
-        //     Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
-        //     this.kernel.addProcessIfNotExist(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
-        //       roomName: spawnRoomName,
-        //       targetRoomName: checkRoom.name
-        //     });
-        //   }
+        if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
+        {
+          const spawnRoomName = Utils.nearestRoom(checkRoom.name)
+          if(spawnRoomName !== '')
+          {
+            Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
+            this.kernel.addProcessIfNotExist(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
+              roomName: spawnRoomName,
+              targetRoomName: checkRoom.name
+            });
+          }
 
-        //   return;
-        // }
+          return;
+        }
       }
       else if((results & ReturnEnum.Power) === ReturnEnum.Power)
       {

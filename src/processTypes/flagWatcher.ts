@@ -35,6 +35,7 @@ export class FlagWatcherProcess extends Process
     }
   }
 
+  // Purpele prupel
   remoteDismantleFlag(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(DismantleManagementProcess, 'dmp' + flag.name, 40, {flagName: flag.name});
