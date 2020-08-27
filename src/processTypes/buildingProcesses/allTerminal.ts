@@ -1,6 +1,7 @@
 import { Process } from "os/process";
 import { TerminalManagementProcess } from "./terminal";
 import { ENERGY_KEEP_AMOUNT, MINERALS_RAW, REAGENT_LIST, KEEP_AMOUNT } from "./mineralTerminal";
+import { forEach } from "lodash";
 
 export class AllTerminalManagementProcess extends Process
 {
@@ -73,12 +74,8 @@ export class AllTerminalManagementProcess extends Process
                     {
                       // Factory stuff
                       const factory = this.roomInfo(r.name).factory;
-                      if(r.name === 'E55S47')
-                        console.log(this.name, 'Factory pre test', factory, factory.level)
                       if(factory?.level)
                       {
-                        if(r.name === 'E55S47')
-                          console.log(this.name, 'Factory level test')
                         // List setup
                         if(!this.metaData.factoryLevelRoomList)
                         {
@@ -97,36 +94,6 @@ export class AllTerminalManagementProcess extends Process
                           {
                             if(this.metaData.factoryLevelRoomList[factory.level].indexOf(r.name) === -1)
                               this.metaData.factoryLevelRoomList[factory.level].push(r.name);
-                          }
-                        }
-
-                        if(r.memory.commoditiesForLevel)
-                        {
-                          const commoditiesForLevel = r.memory.commoditiesForLevel;
-                          for(let i = 0; i < commoditiesForLevel.length; i++)
-                          {
-                            const commodity = commoditiesForLevel[i];
-                            for(const c in COMMODITIES[commodity].components)
-                            {
-                              const component = <ResourceConstant>c;
-                              if(COMMODITIES[component].level)
-                              {
-                                // TODO if we get multiple rooms of same level, find one closest;
-                                const sourceRoom = this.metaData.factoryLevelRoomList[COMMODITIES[component].level][0];
-                                const sourceTerminal = Game.rooms[sourceRoom].terminal;
-                                const destTerminal = Game.rooms[r.name].terminal;
-                                const destStorage = Game.rooms[r.name].storage;
-                                if(destTerminal?.store.getUsedCapacity(component) + destStorage?.store.getUsedCapacity(component) < 1000)
-                                {
-                                  if(sourceTerminal?.store.getUsedCapacity(component) >= 1000 && !sourceTerminal.cooldown)
-                                  {
-                                    console.log(this.name, r.name, commodity, component, 'Sent from', sourceRoom);
-                                    if(sourceTerminal.send(component, 1000, r.name) === OK)
-                                      break;
-                                  }
-                                }
-                              }
-                            }
                           }
                         }
                       }
@@ -201,7 +168,7 @@ export class AllTerminalManagementProcess extends Process
                         }
                       }
 
-                      if(r.name === 'E55S47')
+                      if(r.name === 'E37S46')
                           console.log(this.name, 'Factory after test')
 
                         _.forEach(resources, (s) => {
@@ -370,5 +337,68 @@ export class AllTerminalManagementProcess extends Process
                 }
             })
         }
+
+      if(Game.time % 12 === 0)
+        this.FactoryInventory()
     }
+
+  FactoryInventory()
+  {
+    if(this.metaData.factoryLevelRoomList)
+    {
+      const factoryRoomLevelList = this.metaData.factoryLevelRoomList;
+      for (const level in factoryRoomLevelList)
+      {
+        console.log(this.name, 'Level', level)
+        for(const room of factoryRoomLevelList[level])
+        {
+          console.log(this.name, 'Room', room);
+          const receivingRoom = Game.rooms[room];
+          for(const commodity of receivingRoom.memory.commoditiesForLevel)
+          {
+            const data = COMMODITIES[commodity];
+            const numberOfMakes = Math.floor(POWER_INFO[PWR_OPERATE_FACTORY].cooldown / data.cooldown);
+            console.log(this.name, 'Commodity', commodity, '# of Makes', numberOfMakes)
+            for(const com in data.components)
+            {
+              const component = com as ResourceConstant;
+              if(COMMODITIES[component].level)
+              {
+                const componentAmount = data.components[component];
+                const amountNeeded = componentAmount * numberOfMakes;
+                const terminal = receivingRoom.terminal;
+                const storage = receivingRoom.storage;
+                if(terminal && storage)
+                {
+                  console.log(this.name, '\tcomponents', component, 'Component Amount', componentAmount, 'Amount needed', amountNeeded)
+                  const roomAmount = terminal.store.getUsedCapacity(component) + storage.store.getUsedCapacity(component);
+                  if(roomAmount < amountNeeded)
+                  {
+                    console.log(this.name, '\t\tNeed to find some', component);
+                    const findData = COMMODITIES[component];
+                    const lvlRooms = factoryRoomLevelList[findData.level];
+                    for(let sName of lvlRooms)
+                    {
+                      console.log(this.name, '\t\t\tLooking in', sName);
+                      const sendRoom = Game.rooms[sName];
+                      if(sendRoom.terminal)
+                      {
+                        const terminal = sendRoom.terminal;
+                        if(!terminal.cooldown && terminal.store.getUsedCapacity(component) >= amountNeeded)
+                        {
+                          const ret = terminal.send(component, amountNeeded, room);
+                          console.log(this.name, '\t\t\t', sName, 'sending', component, 'to', room, 'Retern Value', ret);
+                        }
+                      }
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
