@@ -273,7 +273,7 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
 
       if(sources.length)
       {
-        let target = powerCreep.pos.findClosestByPath(sources);
+        let target = powerCreep.pos.findClosestByRange(sources);
 
         powerCreep.say('RS');
         if(!powerCreep.pos.inRangeTo(target, 3))
