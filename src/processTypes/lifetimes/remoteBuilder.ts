@@ -6,6 +6,11 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess {
   metaData: RemoteBuilderLifetimeProcessMetaData
 
   run() {
+    this.completed = true;
+    return;
+  }
+  test()
+  {
     console.log(this.name, 'Life time remote22222222222222222222222222222222222222222222222222222222222222222222222')
     const cpu = Game.cpu.getUsed();
     let creep = this.getCreep()

@@ -6,6 +6,10 @@ export class SpawnRemoteBuilderProcess extends Process{
   type = "spawnRemoteBuilder"
 
   run(){
+    this.completed = true;
+    return;
+  }
+  test() {
     let site = this.metaData.site
     console.log(this.name, 'Remote life time111111111111111111111111111111111111111111111111111111111111111111111111111111');
     let flag;

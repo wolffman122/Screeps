@@ -53,19 +53,16 @@ export class StructureManagementProcess extends Process{
       })
 
       const constructionLeft = constructionSites.reduce((a, b) => +a + +b.progressTotal, 0) - constructionSites.reduce((a,b) => +a + +b.progress, 0);
-      if(this.metaData.roomName === 'E29S26')
-        console.log(this.name, 'Total construction', constructionLeft);
-
       let numBuilders = 0;
-      if(constructionLeft > 0)
+      if(constructionLeft > 0 && constructionLeft <= 3000)
         numBuilders = 1;
-      else if(constructionLeft > 3000)
+      else if(constructionLeft > 3000 && constructionLeft <= 6000)
         numBuilders = 2;
       else if(constructionLeft > 6000)
         numBuilders = 4;
 
-      if (this.metaData.roomName === 'E29S26')
-        console.log(this.name, 'Num builders', numBuilders, this.metaData.buildCreeps.length);
+      if(numBuilders > 0 && (!room.storage || room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) < 50000))
+        numBuilders = 1;
 
       this.metaData.buildCreeps = Utils.clearDeadCreeps(this.metaData.buildCreeps)
       this.metaData.repairCreeps = Utils.clearDeadCreeps(this.metaData.repairCreeps)
@@ -135,7 +132,9 @@ export class StructureManagementProcess extends Process{
       }
       else if(room.controller?.level === 8)
       {
-        if(room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT * .8)
+        if(room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) >= ENERGY_KEEP_AMOUNT * .8
+          ||
+          room.name === 'E16S51' || room.name === 'E29S26' || room.name === 'E31S26')
         {
           if(!this.metaData.shutDownRamparts)
           {
@@ -153,7 +152,7 @@ export class StructureManagementProcess extends Process{
             }
 
             let building = false;
-            if (room.name === 'E26S29' || room.name === 'E16S51')
+            if (room.name === 'E16S51' || room.name === 'E29S26' || room.name === 'E31S26')
             {
               count = 2;
               building = true;
@@ -164,7 +163,7 @@ export class StructureManagementProcess extends Process{
             let spawned = false;
             if(this.metaData.repairCreeps.length < count)
             {
-              if (room.name === 'E26S29' || room.name === 'E16S51')
+              if (room.name === 'E16S51' || room.name === 'E29S26' || room.name === 'E31S26')
                 console.log(this.name, 1)
               const sites = this.roomData().constructionSites.filter(cs => cs.structureType === STRUCTURE_RAMPART);
               if(sites.length)
@@ -175,7 +174,7 @@ export class StructureManagementProcess extends Process{
 
               if(this.metaData.rampartCheckTime === undefined
                 || this.metaData.rampartCheckTime < Game.time - 1000
-                || room.name === 'E26S29' || room.name === 'E16S51')
+                || room.name === 'E16S51' || room.name === 'E29S26' || room.name === 'E31S26')
               {
                 if (room.name === 'E26S29')
                   console.log(this.name, 2)
@@ -185,14 +184,14 @@ export class StructureManagementProcess extends Process{
                   this.metaData.rampartCheckTime = Game.time;
                   const sum = _.sum(ramparts, 'hits');
                   const average = sum / ramparts.length;
-                  if(average < 23000000 || building)
+                  if(average < 24000000 || building)
                   {
                     spawned = Utils.spawn(this.kernel, this.metaData.roomName, 'bigWorker', creepName, {});
 
                     if(spawned)
                     {
                       let boosts: string[] = [];
-                      if(room.name === 'E26S29')
+                      if (room.name === 'E29S26' || room.name === 'E31S26')
                         boosts.push(RESOURCE_LEMERGIUM_ACID);
                       //let boosts = []; //upgrading ? [RESOURCE_LEMERGIUM_HYDRIDE] : [];
 

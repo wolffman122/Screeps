@@ -20,7 +20,7 @@ export class DepositMiningManagementProcess extends Process
 
   run()
   {
-    if(this.metaData.roomName === 'E35S51')
+    if(this.metaData.roomName === 'E38S35')
     {
       this.completed = true;
       return;

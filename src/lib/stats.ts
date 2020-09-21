@@ -27,6 +27,7 @@ export const Stats = {
     Memory.stats['gpl.level'] = Game.gpl.level;
     Memory.stats['gpl.progress'] = Game.gpl.progress;
     Memory.stats['gpl.progressTotal'] = Game.gpl.progressTotal;
+    Memory.stats['gpl.powerProcessed'] = global.powerProcessed;
     Memory.stats['gpl.nextLevel'] = Game.gpl.level * 2000 + 1000;
 
     Memory.stats['processes.counts.total'] = Object.keys(kernel.processTable).length
@@ -215,6 +216,10 @@ export const Stats = {
             storageEnergy += room.storage.store.energy;
             Memory.stats['rooms.' + roomName + '.storage.energy'] = room.storage.store.energy
             Memory.stats['rooms.' + roomName + '.storage.minerals'] = room.storage.store.getUsedCapacity() - room.storage.store.energy;
+            if(room.storage.store.getUsedCapacity(RESOURCE_OPS) > 0)
+            {
+              Memory.stats['rooms.' + roomName + '.storage.ops'] = room.storage.store.getUsedCapacity(RESOURCE_OPS);
+            }
           }
           else
           {

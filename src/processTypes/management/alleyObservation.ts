@@ -25,96 +25,101 @@ export class AlleyObservationManagementProcess extends Process
     const termnial = room.terminal;
     const storage = room.storage;
     const checkRoom = Game.rooms[this.metaData.checkRoom];
-    if(termnial?.store.getFreeCapacity() > 10000 && (storage?.store.getUsedCapacity(RESOURCE_ENERGY) > (KEEP_AMOUNT * 1.2) ?? false))
+    const roomStatus = Game.map.getRoomStatus(this.metaData.checkRoom);
+    if(this.metaData.checkRoom !== 'E38S35')
     {
-      let results;
-      if(checkRoom)
-        results = this.checkTheRoom(checkRoom);
-
-      if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
+      if(termnial?.store.getFreeCapacity() > 10000 && (storage?.store.getUsedCapacity(RESOURCE_ENERGY) > (KEEP_AMOUNT * 1.2) ?? false))
       {
-        if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
-        {
-          const spawnRoomName = Utils.nearestRoom(checkRoom.name)
-          if(spawnRoomName !== '')
-          {
-            Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
-            this.kernel.addProcessIfNotExist(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
-              roomName: spawnRoomName,
-              targetRoomName: checkRoom.name
-            });
-          }
+        let results;
+        if(checkRoom)
+          results = this.checkTheRoom(checkRoom);
 
-          return;
-        }
-      }
-      else if((results & ReturnEnum.Power) === ReturnEnum.Power)
-      {
-        const powerBank = <StructurePowerBank>checkRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
+        // if((results & ReturnEnum.Deposits) === ReturnEnum.Deposits)
+        // {
+        //   if(!this.kernel.hasProcess('dmmp-' + checkRoom.name))
+        //   {
+        //     const spawnRoomName = Utils.nearestRoom(checkRoom.name)
+        //     if(spawnRoomName !== '')
+        //     {
+        //       Game.notify('Deposit Mining starting in ' + checkRoom.name + ' Game time ' + Game.time);
+        //       this.kernel.addProcessIfNotExist(DepositMiningManagementProcess, 'dmmp-' + checkRoom.name, this.priority - 1, {
+        //         roomName: spawnRoomName,
+        //         targetRoomName: checkRoom.name
+        //       });
+        //     }
 
-        if(powerBank?.ticksToDecay > 4000 && powerBank?.power > 1500)
+        //     return;
+        //   }
+        // }
+        // else
+        if((results & ReturnEnum.Power) === ReturnEnum.Power)
         {
-          if(!this.kernel.hasProcess('powhm-' + checkRoom.name))
+          const powerBank = <StructurePowerBank>checkRoom.find(FIND_STRUCTURES, {filter: s => s.structureType === STRUCTURE_POWER_BANK})[0];
+
+          if(powerBank?.ticksToDecay > 4000 && powerBank?.power > 1500)
           {
-            console.log('Spawn power retrieval', checkRoom.name, powerBank.ticksToDecay);
-            //if(checkRoom.name === 'E47S50' || checkRoom.name === 'E40S36' checkRoom.name === 'E40S28')
+            if(!this.kernel.hasProcess('powhm-' + checkRoom.name))
             {
-              const spawnRoomName = Utils.nearestRoom(checkRoom.name);
-              const spawnRoom = Game.rooms[spawnRoomName];
-              if(spawnRoom?.terminal.store.getUsedCapacity(RESOURCE_POWER) < 2000)
+              console.log('Spawn power retrieval', checkRoom.name, powerBank.ticksToDecay);
+              //if(checkRoom.name === 'E47S50' || checkRoom.name === 'E40S36' checkRoom.name === 'E40S28')
               {
-                if(spawnRoomName !== '')
+                const spawnRoomName = Utils.nearestRoom(checkRoom.name);
+                const spawnRoom = Game.rooms[spawnRoomName];
+                if(spawnRoom?.terminal.store.getUsedCapacity(RESOURCE_POWER) < 2000)
                 {
-                  Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
-                  this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
-                    roomName: checkRoom.name,
-                    spawnRoomName: spawnRoomName,
-                    powerBankId: powerBank.id
-                  })
+                  if(spawnRoomName !== '')
+                  {
+                    Game.notify('PowerBank mission starting in ' + checkRoom.name + ' Gam.time ' + Game.time);
+                    this.kernel.addProcessIfNotExist(PowerHarvestingManagement, 'powhm-' + checkRoom.name, this.priority - 1, {
+                      roomName: checkRoom.name,
+                      spawnRoomName: spawnRoomName,
+                      powerBankId: powerBank.id
+                    })
+                  }
                 }
               }
-            }
 
-            return;
+              return;
+            }
           }
         }
+        else if(results === (ReturnEnum.Deposits & ReturnEnum.Power))
+        {
+          console.log('Spawn both');
+        }
+
+        const observer = this.roomData().observer;
+        const coord = WorldMap.getRoomCoordinates(this.metaData.roomName);
+        let horizontalScan = false;
+        let verticalScan = false;
+        // if(this.metaData.roomName === 'E41S32')
+        // {
+        //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
+        //     verticalScan = true;
+
+        //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
+        //     horizontalScan = true;
+        // }
+        // else
+        {
+          if(coord.x % 10 === 1 || coord.x % 10 === 9)
+            verticalScan = true;
+
+          if(coord.y % 10 === 1 || coord.y % 10 === 9)
+            horizontalScan = true;
+        }
+
+        if(this.metaData.scanRooms === undefined)
+          this.metaData.scanRooms = this.generateRoomList(coord, horizontalScan, verticalScan);
+
+        this.metaData.lastCanTick = Game.time;
+        const scanRoom = this.metaData.scanRooms[this.metaData.scanIndex++];
+        if(this.metaData.scanIndex >= this.metaData.scanRooms.length)
+          this.metaData.scanIndex = 0;
+
+        if(observer.observeRoom(scanRoom) === OK)
+          this.metaData.checkRoom = scanRoom;
       }
-      else if(results === (ReturnEnum.Deposits & ReturnEnum.Power))
-      {
-        console.log('Spawn both');
-      }
-
-      const observer = this.roomData().observer;
-      const coord = WorldMap.getRoomCoordinates(this.metaData.roomName);
-      let horizontalScan = false;
-      let verticalScan = false;
-      // if(this.metaData.roomName === 'E41S32')
-      // {
-      //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
-      //     verticalScan = true;
-
-      //   if(coord.x % 10 <= 2 || coord.y % 10 >= 8)
-      //     horizontalScan = true;
-      // }
-      // else
-      {
-        if(coord.x % 10 === 1 || coord.x % 10 === 9)
-          verticalScan = true;
-
-        if(coord.y % 10 === 1 || coord.y % 10 === 9)
-          horizontalScan = true;
-      }
-
-      if(this.metaData.scanRooms === undefined)
-        this.metaData.scanRooms = this.generateRoomList(coord, horizontalScan, verticalScan);
-
-      this.metaData.lastCanTick = Game.time;
-      const scanRoom = this.metaData.scanRooms[this.metaData.scanIndex++];
-      if(this.metaData.scanIndex >= this.metaData.scanRooms.length)
-        this.metaData.scanIndex = 0;
-
-      if(observer.observeRoom(scanRoom) === OK)
-        this.metaData.checkRoom = scanRoom;
     }
   }
 

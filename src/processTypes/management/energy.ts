@@ -329,11 +329,15 @@ export class EnergyManagementProcess extends Process{
         {
           if(this.name === 'em-E36S38')
             console.log(this.name, 'Pause Upgrading work', room.memory.pauseUpgrading, Game.time, room.memory.upgradingTick + 25000)
-          if(room.controller.ticksToDowngrade <= 110000)
+          if(room.controller.ticksToDowngrade <= 180000)
             room.memory.pauseUpgrading = false;
           else if(room.storage.store.getUsedCapacity() === room.storage.store.getCapacity())
-            room.memory.pauseUpgrading = true;
+            room.memory.pauseUpgrading = false;
+          else if(room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 1000000)
+            room.memory.pauseUpgrading = false;
         }
+
+        room.memory.pauseUpgrading = false;
 
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
@@ -348,8 +352,8 @@ export class EnergyManagementProcess extends Process{
           let upgraders = 0;
           switch(this.metaData.roomName)
           {
-            case 'E29S26':
-              upgraders = 1;
+            case 'E31S26':
+              upgraders = 5;
               break;
             default:
               upgraders = 1;
@@ -499,7 +503,7 @@ export class EnergyManagementProcess extends Process{
 
             switch(this.metaData.roomName)
             {
-              case 'E16S51':
+              case 'E31S26':
                 upgradeDistroAmount = 5;
                 break;
               default:

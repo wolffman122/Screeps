@@ -32,7 +32,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess {
     if (creep.name === 'em-u-E22S52-26910075')
       console.log(this.name, 'Problem upgrader');
 
-    if (!creep.memory.boost && this.metaData.boosts) {
+    if (!creep.memory.boost && this.metaData.boosts?.length) {
       if (creep.name === 'em-u-E22S52-26910075')
         console.log(this.name, 'Problem upgrader', 1)
       creep.boostRequest(this.metaData.boosts, this.metaData.allowUnboosted);

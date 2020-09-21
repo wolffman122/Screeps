@@ -48,6 +48,7 @@ interface Flag {
       bucketTotal: number;
       bucketCount: number;
       sizeOf: (object: any) => number;
+      powerProcessed: number;
 
     }
   }
@@ -217,6 +218,8 @@ interface Flag {
       full?: boolean;
       standPos?: RoomPosition;
       idlePos?: string;
+      leader?: boolean;
+      squadPath?: {path: string};
   }
 
   interface PowerCreepMemory
@@ -353,6 +356,8 @@ interface Flag {
     attackers: string[],
     healers: string[],
     flagName: string,
+    rollCallGood: boolean,
+    squadPoint?: string,
   }
 
   interface SquadAttackerLifetimeProcessMetaData

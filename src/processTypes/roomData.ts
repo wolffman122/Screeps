@@ -48,6 +48,22 @@ export class RoomDataProcess extends Process{
     }
     else
     {
+      const storage = room.storage;
+      const terminal = room.terminal
+      if(storage?.my)
+      {
+        room.store = storage.store;
+        // if(terminal?.my)
+        // {
+        //   for(let res in terminal.store)
+        //   {
+        //     const resource = res as ResourceConstant;
+        //     if(storage.store.getUsedCapacity(resource) > 0)
+        //       storage.store[resource] =
+        //   }
+        // }
+      }
+
       room.memory.lastVision = Game.time;
     }
 

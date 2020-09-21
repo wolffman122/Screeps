@@ -30,8 +30,8 @@ export class MineralDistroLifetimeProcess extends LifetimeProcess {
             return;
           }
 
-          creep.idleOffRoad(container, true);
-          this.suspend = 10;
+          // creep.idleOffRoad(container, true);
+          // this.suspend = 10;
           return;
         }
       }

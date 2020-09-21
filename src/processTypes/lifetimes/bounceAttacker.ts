@@ -22,7 +22,7 @@ export class BounceAttackerLifetimeProcess extends LifetimeProcess
             this.completed = true;
             return;
         }
-        console.log(this.name, 'running')
+        console.log(this.name, 'running', flag.pos);
 
         if(creep.hits < creep.hitsMax * .50)
         {

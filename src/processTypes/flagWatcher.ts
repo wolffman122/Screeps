@@ -126,6 +126,7 @@ export class FlagWatcherProcess extends Process
     this.kernel.addProcessIfNotExist(HelpManagementProcess, 'hmp-' + spawnRoom, 35, {flagName: flag.name});
   }
 
+  // Brown & purple
   SquadAttack(flag: Flag)
   {
     this.kernel.addProcessIfNotExist(SquadManagementProcess, 'sqm-' + flag.name, 31, {flagName: flag.name});

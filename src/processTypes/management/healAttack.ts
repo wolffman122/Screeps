@@ -56,7 +56,7 @@ export class HealAttackProcess extends Process
     }
 
     console.log(this.name, 6)
-    let roomCreeps = <Creep[]>creep.room.find(FIND_CREEPS);
+    let roomCreeps = <Creep[]>creep.room.find(FIND_MY_CREEPS);
 
     let hurtCreeps = _.filter(roomCreeps, (c) => {
       return (c.hits < c.hitsMax && c.my);

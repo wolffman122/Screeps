@@ -45,7 +45,7 @@ export class  MineralManagementProcess extends Process
       this.completed = true;
       return;
     }
-    
+
     if(this.name === 'minerals-E58S52')
       console.log(this.name, 2)
 
@@ -122,6 +122,8 @@ export class  MineralManagementProcess extends Process
           case 'E35S41':
           case 'E58S52':
           case 'E38S39':
+          case 'E58S44':
+          case 'E31S26':
             this.harvesters = 3;
             break;
           case 'E36S38':
@@ -132,6 +134,7 @@ export class  MineralManagementProcess extends Process
           case 'E41S32':
           case 'E48S56':
           case 'E22S52':
+          case 'E29S26':
             this.harvesters = 4;
             break;
           default:
