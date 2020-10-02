@@ -21,6 +21,10 @@ export class AlleyObservationManagementProcess extends Process
       return;
     }
     //console.log(this.name, 'Running');
+
+    if(Game.cpu.bucket < 5500)
+      return;
+      
     const room = Game.rooms[this.metaData.roomName];
     const termnial = room.terminal;
     const storage = room.storage;

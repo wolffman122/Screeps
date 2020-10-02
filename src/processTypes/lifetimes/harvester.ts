@@ -8,6 +8,7 @@ export class HarvesterLifetimeProcess extends LifetimeProcess {
 
     let creep = this.getCreep()
 
+    console.log(this.name, creep.name);
     if (!creep) {
       this.completed = true;
       return;

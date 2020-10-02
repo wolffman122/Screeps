@@ -35,9 +35,6 @@ export class LabManagementProcess extends Process
   if(this.metaData.shutdownLabs)
     return;
 
-  if(Game.cpu.bucket < 4000)
-      return;
-
     this.logOn = false;
     this.logName = "labm-E35S51";
 

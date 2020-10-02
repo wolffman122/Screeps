@@ -21,6 +21,12 @@ export const Utils = {
     })
   },
 
+  inflateRooms: function(list: string[]): Room[]{
+    return _.transform(list, function(result, entry) {
+      result.push(Game.rooms[entry]);
+    })
+  },
+
   creepPreSpawnCount: function(list: string[], extraTime?: number): Number
   {
     let creeps = _.transform(list, function(result, entry){

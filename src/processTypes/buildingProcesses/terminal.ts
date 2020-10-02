@@ -1,3 +1,5 @@
+import { close } from "fs";
+import { Utils } from "lib/utils";
 import { Process } from "os/process";
 import { ENERGY_KEEP_AMOUNT, KEEP_AMOUNT } from "./mineralTerminal";
 
@@ -55,16 +57,16 @@ export class TerminalManagementProcess extends Process
               if(r.controller?.level === 8)
                 return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < r.storage.store.getCapacity() * .95) && r.controller?.my &&
                   r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
-              if(r.controller?.level === 7 && r.controller.progress / r.controller.progressTotal > .9)
+              if(r.controller?.level === 7 && r.controller.progress / r.controller.progressTotal > .85)
                 return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < r.storage.store.getCapacity() * .95) && r.controller?.my &&
                   r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
               else if(r.controller?.level >= 6)
                 return ((r.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 650000) && r.controller?.my &&
-                  r.terminal?.my && r.terminal.store.getUsedCapacity() < r.terminal.store.getCapacity());
+                  r.terminal?.my && r.terminal?.store.getUsedCapacity() < r.terminal?.store.getCapacity());
             }
             else
             {
-              return ((r.storage.store.energy < 500000 || r.storage.store === undefined) && r.controller && r.controller.my &&
+              return ((r.storage.store.energy < 375000 || r.storage.store === undefined) && r.controller && r.controller.my &&
                 r.terminal.my && r.terminal.store.getUsedCapacity() < r.terminal.storeCapacity && !r.memory.templeRoom);
             }
           }
@@ -183,7 +185,7 @@ export class TerminalManagementProcess extends Process
           _.forEach(lowRooms, (f) => {
             if(f.memory.templeRoom)
             {
-              lRooms.push({name: f.name, amount: 0, storeAmount: 0});
+              lRooms.push({name: f.name, amount: f.terminal?.store.getFreeCapacity(), storeAmount: 0});
             }
             else if(f.storage)
             {
@@ -202,51 +204,49 @@ export class TerminalManagementProcess extends Process
 
           //console.log(this.name, "Getting further")
 
-          if(fRooms.length > 0)
+          if(fRooms.length > 0 && lRooms.length > 0)
           {
-            let retVal = -1;
-            let index = 0;
 
-            do
+            let lRoomIndex = 0;
+            const fullRoomNames = fRooms.map(r => r.name);
+            const fullRooms = Utils.inflateRooms(fullRoomNames);
+
+            for(let i = 0; i < lRooms.length; i++)
             {
-              let room = Game.rooms[fRooms[index].name];
-
-              if((this.metaData.shutDownTransfers[room.name] ?? false))
-              {
-                index++;
-                continue;
-              }
-
-              if(room)
-              {
-                if(room.terminal && room.terminal.cooldown === 0)
+              let minDistance = 999;
+              let closestRoomName = "";
+              fullRooms.forEach( (fr: Room) => {
+                const terminal = fr.terminal;
+                if(!terminal?.cooldown)
                 {
-                  console.log(this.name, room.name, 'sending to', lRooms[0].name, lRooms[0].amount);
-                  let amount = 300000 - lRooms[0].amount;
-                  console.log(this.name, "amount", amount);
-                  if(amount > 50000)
+                  const distance = Game.map.getRoomLinearDistance(lRooms[i].name, fr.name, true);
+                  if(distance < minDistance)
                   {
-                    amount = 50000;
+                    minDistance = distance;
+                    closestRoomName = fr.name;
                   }
-                  let cost = Game.market.calcTransactionCost(amount, room.name, lRooms[0].name);
-                  if((cost + amount) < room.terminal.store.energy)
-                  {
-                    retVal = room.terminal.send(RESOURCE_ENERGY, amount, lRooms[0].name);
-                    console.log(this.name, room.name, "to", lRooms[0].name, retVal);
-                    if(retVal === OK)
-                    {
-                      const minRoom = Game.rooms[lRooms[0].name];
-                      this.metaData.sendStrings[room.name] = 'Send Information: To ' + minRoom.name + ' Energy ' + amount + ' : ' + Game.time;
-                      this.metaData.receiveStr[minRoom.name] = 'Recieved Information: From ' + room.name + ' Energy ' + amount + ' : ' + Game.time;
-                    }
-                  }
-                  else
-                    index++;
                 }
-                else index++;
+              });
+
+              if(minDistance != 999)
+              {
+                const sendingRoom = Game.rooms[closestRoomName];
+                const terminal = sendingRoom.terminal;
+                const lRoom = lRooms[i];
+                let amount = lRoom.amount;
+                if(amount > 50000)
+                {
+                  const cost = Game.market.calcTransactionCost(50000, lRooms[i].name, closestRoomName);
+                  if(cost > 25000)
+                    amount = 75000 - cost
+                  else
+                    amount = 50000
+                }
+
+                const ret = terminal.send(RESOURCE_ENERGY, amount, lRoom.name);
+                console.log(this.name, sendingRoom.name, 'sending to', lRoom.name, 'amount', amount, 'ret', ret);
               }
-              console.log(this.name, index, fRooms.length);
-            } while (retVal != 0 || index >= fRooms.length);
+            }
           }
         }
 

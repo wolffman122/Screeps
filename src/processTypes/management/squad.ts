@@ -38,11 +38,11 @@ export class SquadManagementProcess extends Process
   }
 
   public run()
-  // {
-  //   this.completed = true;
-  //   return;
-  // }
-  // test()
+  {
+    this.completed = true;
+    return;
+  }
+  test()
   {
     console.log(this.name, '!!!!!!!!!!!!!!!!!!!!!!! SQUAD TESTING !!!!!!!!!!!!!!!!!!!!!!!!');
     this.ensureMetaData();

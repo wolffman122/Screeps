@@ -4,7 +4,6 @@ import {Utils} from '../../lib/utils'
 import {HarvesterLifetimeProcess} from '../lifetimes/harvester'
 import {UpgraderLifetimeProcess} from '../lifetimes/upgrader'
 import { SpinnerLifetimeProcess } from 'processTypes/lifetimes/spinner';
-import { LinkHarvesterLifetimeProcess } from 'processTypes/lifetimes/linkHarvester';
 import { UpgradeDistroLifetimeProcess } from 'processTypes/lifetimes/upgradeDistro';
 import { DistroLifetimeOptProcess } from '../lifetimes/distroOpt';
 import { AutomaticHoldManagementProcess } from './automaticHold'
@@ -150,8 +149,6 @@ export class EnergyManagementProcess extends Process{
             }
           }
 
-
-
           let openSpots = source.pos.openAdjacentSpots(true);
           if(openSpots.length === 1)
           {
@@ -207,14 +204,7 @@ export class EnergyManagementProcess extends Process{
           _.forEach(creeps, function(creep){
             if(sourceLinks.length === 2)
             {
-              if(!proc.kernel.hasProcess('lhlf-' + creep.name))
-              {
-                proc.kernel.addProcess(LinkHarvesterLifetimeProcess, 'lhlf-' + creep.name, 49, {
-                  creep: creep.name,
-                  roomName: room.name,
-                  source: source.id
-                })
-              }
+              proc.LinkHarvesting(creep, source);
             }
             else
             {
@@ -337,7 +327,6 @@ export class EnergyManagementProcess extends Process{
             room.memory.pauseUpgrading = false;
         }
 
-        room.memory.pauseUpgrading = false;
 
         if(!room.memory.pauseUpgrading || room.controller.level < 8)
         {
@@ -402,51 +391,15 @@ export class EnergyManagementProcess extends Process{
             }
 
             if(spawned)
-            {
-              this.metaData.upgradeCreeps.push(creepName)
-
-              if(Game.rooms[proc.metaData.roomName].controller!.level >= 8 && proc.kernel.hasProcess('labm-' + proc.metaData.roomName))
-              {
-                // const upgradeRooms = ['E52S46', 'E45S57']
-                // if(_.indexOf(upgradeRooms, proc.metaData.roomName) >= 0)
-                // {
-                  let boosts = [RESOURCE_CATALYZED_GHODIUM_ACID];
-
-                  this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                    creep: creepName,
-                    roomName: proc.metaData.roomName,
-                    boosts: boosts,
-                    allowUnboosted: true
-                  })
-                // }
-                // else
-                // {
-                //   this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                //     creep: creepName,
-                //     roomName: proc.metaData.roomName
-                //   });
-                // }
-              }
-              else if(room.controller.level < 8 && room.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB}).length >= 3)
-              {
-                let boosts = [];
-                boosts.push(RESOURCE_CATALYZED_GHODIUM_ACID)
-                this.kernel.addProcessIfNotExist(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                  creep: creepName,
-                  roomName: proc.metaData.roomName,
-                  boosts: boosts,
-                  allowUnboosted: false
-                })
-              }
-              else
-              {
-                this.kernel.addProcess(UpgraderLifetimeProcess, 'ulf-' + creepName, 30, {
-                  creep: creepName,
-                  roomName: proc.metaData.roomName
-                });
-              }
-            }
+              this.metaData.upgradeCreeps.push(creepName);
           }
+        }
+
+        for(let i = 0; i < this.metaData.upgradeCreeps.length; i++)
+        {
+          const boosts = [RESOURCE_CATALYZED_GHODIUM_ACID];
+          const creep = Game.creeps[this.metaData.upgradeCreeps[i]];
+          proc.UpgradeController(creep, boosts, true);
         }
 
         if(this.name === 'em-E37S46')
@@ -620,13 +573,185 @@ export class EnergyManagementProcess extends Process{
     }
   }
 
-  // processPower(room: Room)
-  // {
-  //   const powerSpawn = this.kernel.data.roomData[this.metaData.roomName].powerSpawn;
-  //   if(powerSpawn?.store.getUsedCapacity(RESOURCE_POWER) !== 0)
-  //   {
-  //     powerSpawn.processPower();
-  //     return;
-  //   }
-  // }
+  private LinkHarvesting(creep: Creep, source: Source)
+  {
+    if(source.energy === 0)
+      return;
+
+    if (this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id])
+    {
+      const link = this.kernel.data.roomData[source.room.name].sourceLinkMaps[source.id];
+      if (creep.store.getUsedCapacity() == creep.store.getCapacity())
+      {
+        if ((link.store[RESOURCE_ENERGY] ?? 0) !== link.store.getCapacity(RESOURCE_ENERGY))
+        {
+          if (!creep.pos.isNearTo(link))
+            creep.travelTo(link);
+          else
+            creep.transfer(link, RESOURCE_ENERGY);
+        }
+        else
+        {
+          if (link.cooldown === 0)
+          {
+            const extensions = this.kernel.data.roomData[creep.room.name].extensions.filter(e => (e.store[RESOURCE_ENERGY] ?? 0) !== e.store.getCapacity(RESOURCE_ENERGY));
+            if (extensions.length)
+            {
+              const extension = creep.pos.findClosestByPath(extensions);
+              if (!creep.pos.isNearTo(extension))
+                creep.travelTo(extension);
+              else
+                creep.transfer(extension, RESOURCE_ENERGY);
+            }
+          }
+        }
+
+        return;
+      }
+
+      if (!creep.pos.isNearTo(source))
+      {
+        creep.travelTo(source);
+        return;
+      }
+
+      if (creep.store.getFreeCapacity() > 0 && link.store.getUsedCapacity(RESOURCE_ENERGY) || 0 < 800)
+        creep.harvest(source);
+    }
+  }
+
+  private UpgradeController(creep: Creep, boosts: ResourceConstant[], allowUnboosted: boolean)
+  {
+    creep.room.memory.pauseUpgrading = true;
+
+    console.log(this.name, 'Upgrading', creep.memory.boost, boosts)
+    if (!creep.memory.boost && boosts?.length)
+    {
+      console.log(this.name, 'Upgrading', 1, allowUnboosted);
+      creep.boostRequest(boosts, allowUnboosted);
+      return;
+    }
+
+    console.log(this.name, 'Upgrading', 2);
+
+    if (creep.store.getUsedCapacity() === 0)
+    {
+      let controllerLink = this.kernel.data.roomData[creep.pos.roomName].controllerLink;
+
+      if (controllerLink)
+      {
+        if (controllerLink && controllerLink.energy > 500)
+        {
+          if (!creep.pos.isNearTo(controllerLink))
+            creep.travelTo(controllerLink);
+          else
+            creep.withdraw(controllerLink, RESOURCE_ENERGY);
+
+          return;
+        }
+      }
+
+      if (this.kernel.data.roomData[creep.room.name].controllerContainer)
+      {
+        let controller = creep.room.controller;
+        if (controller?.sign?.username !== "wolffman122")
+        {
+          if (creep.pos.isNearTo(controller))
+          {
+            creep.signController(controller, "[YP] Territory");
+            return;
+          }
+
+          creep.travelTo(controller);
+          return;
+        }
+
+        let target = this.kernel.data.roomData[creep.room.name].controllerContainer;
+        if (target)
+        {
+          if (this.metaData.openSpaces === undefined)
+          {
+            const openSpaces = target.pos.openAdjacentSpots(false);
+            let flag = Game.flags['Center-' + this.metaData.roomName];
+            let maxDistance = 0;
+            let position = flag.pos;
+            _.forEach(openSpaces, (os) => {
+              let range = flag.pos.getRangeTo(os);
+              if (range > maxDistance) {
+                maxDistance = range;
+                position = os;
+              }
+            })
+
+            this.metaData.openSpaces = position;
+          }
+          else
+          {
+            let pos = new RoomPosition(this.metaData.openSpaces.x, this.metaData.openSpaces.y, this.metaData.roomName);
+            if (creep.pos.isEqualTo(pos))
+              creep.withdraw(target, RESOURCE_ENERGY);
+            else
+            {
+              const look = pos.look();
+              _.forEach(look, (l) => {
+                if (l.type === LOOK_CREEPS)
+                  this.metaData.openSpaces = undefined;
+              })
+
+              creep.travelTo(pos);
+              return;
+            }
+          }
+        }
+      }
+      else // No controller contianer
+      {
+        let strSay = '🔼';
+        let target = Utils.withdrawTarget(creep, this);
+
+        if (!creep.pos.isNearTo(target))
+          creep.travelTo(target);
+        else
+        {
+          creep.withdraw(target, RESOURCE_ENERGY);
+          strSay += '🏧';
+        }
+
+        creep.say(strSay);
+        return
+      }
+    }
+
+    // If the creep has been refilled
+    if (!creep.pos.inRangeTo(creep.room.controller!, 3))
+    {
+      creep.travelTo(creep.room.controller!, { range: 3 });
+    }
+    else
+    {
+      let strSay = '🔼';
+      creep.upgradeController(creep.room.controller!);
+
+      if (creep.store.getUsedCapacity() <= creep.getActiveBodyparts(WORK))
+      {
+        let target;
+
+        if (this.roomData().controllerLink && this.roomData().controllerLink.energy >= creep.store.getCapacity())
+          target = this.roomData().controllerLink;
+        else if (this.roomData().controllerContainer)
+          target = this.roomData().controllerContainer;
+
+        if (target)
+        {
+          if (creep.pos.isNearTo(target))
+          {
+            strSay += '🏧';
+            creep.withdraw(target, RESOURCE_ENERGY);
+          }
+        }
+      }
+
+      creep.say(strSay);
+    }
+  }
 }

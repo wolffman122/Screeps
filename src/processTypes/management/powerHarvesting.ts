@@ -36,6 +36,11 @@ export class PowerHarvestingManagement extends Process
 
   run()
   {
+    this.completed = true;
+    return;
+  }
+  test()
+  {
     console.log(this.name, 'Running');
     this.ensureMetaData();
 
@@ -93,15 +98,15 @@ export class PowerHarvestingManagement extends Process
       this.metaData.previousPowerBankHits = this.powerBank.hits;
     }
 
-    console.log(this.name, 'SPAWN HAULERS', spawnHaulers);
+    //console.log(this.name, 'SPAWN HAULERS', spawnHaulers);
     if(this.powerBank?.power && spawnHaulers)
     {
       numberOfHaulers = 1;
-      console.log(this.name, this.powerBank?.power, this.powerBank.hits)
+      //console.log(this.name, this.powerBank?.power, this.powerBank.hits)
       if(!this.metaData.powerBankPos)
         this.metaData.powerBankPos = this.powerBank.pos.x + ',' + this.powerBank.pos.y;
 
-        console.log(this.name, 'haul' ,1)
+      //console.log(this.name, 'haul' ,1)
       let amount = this.powerBank.power;
 
       const unBoostedCarryParts =  Math.ceil(amount / CARRY_CAPACITY); // 2000
@@ -185,7 +190,7 @@ export class PowerHarvestingManagement extends Process
         this.AttackerActions(creep);
     }
 
-    console.log(this.name, 5)
+    //console.log(this.name, 5)
     for(let i = 0; i < this.metaData.healers.length; i++)
     {
       const creep = Game.creeps[this.metaData.healers[i]];
@@ -193,13 +198,13 @@ export class PowerHarvestingManagement extends Process
         this.HealerActions(creep);
     }
 
-    console.log(this.name, 'haul' ,2, numberOfHaulers, boostLevel);
-      for(let i = 0; i < this.metaData.haulers.length; i++)
-      {
-        const creep = Game.creeps[this.metaData.haulers[i]];
-        if(creep)
-          this.HaulerActions(creep, boostLevel);
-      }
+    //console.log(this.name, 'haul' ,2, numberOfHaulers, boostLevel);
+    for(let i = 0; i < this.metaData.haulers.length; i++)
+    {
+      const creep = Game.creeps[this.metaData.haulers[i]];
+      if(creep)
+        this.HaulerActions(creep, boostLevel);
+    }
   }
 
   private SpawnCreeps(amount: number, creeps: string[], type: string): string[]
@@ -221,12 +226,12 @@ export class PowerHarvestingManagement extends Process
 
   private AttackerActions(creep: Creep)
   {
-    if (creep.name === 'powerAttacker-E36S50-28116813')
-      console.log(this.name, 'PA', 1)
+    //if (creep.name === 'powerAttacker-E36S50-28116813')
+      //console.log(this.name, 'PA', 1)
     if(this.metaData.suicideSequence)
     {
-      if(creep.name === 'powerAttacker-E36S50-28116813')
-      console.log(this.name, 'PA', 2)
+      //if(creep.name === 'powerAttacker-E36S50-28116813')
+        //console.log(this.name, 'PA', 2)
       const spawn = this.roomInfo(this.metaData.spawnRoomName).spawns[0];
       if(!creep.pos.isNearTo(spawn))
         creep.travelTo(spawn, {preferHighway: true, allowHostile: false});
@@ -247,13 +252,13 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
-    if(creep.name === 'powerAttacker-E36S50-28116813')
-      console.log(this.name, 'PA', 3, creep.memory.boost)
+    // if(creep.name === 'powerAttacker-E36S50-28116813')
+    //   console.log(this.name, 'PA', 3, creep.memory.boost)
     //console.log(this.name, 'AA', 1, creep.memory.boost, creep.name, creep.pos, this.metaData.suicideSequence)
     if(!creep.memory.boost)
     {
-      if(creep.name === 'powerAttacker-E36S50-28116813')
-      console.log(this.name, 'PA', 4)
+      // if(creep.name === 'powerAttacker-E36S50-28116813')
+      // console.log(this.name, 'PA', 4)
       //console.log(this.name, 'AA', 2)
       creep.boostRequest([RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
         RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
@@ -261,8 +266,8 @@ export class PowerHarvestingManagement extends Process
       return;
     }
 
-    if(creep.name === 'powerAttacker-E36S50-28116813')
-      console.log(this.name, 'PA', 5)
+    // if(creep.name === 'powerAttacker-E36S50-28116813')
+    //   console.log(this.name, 'PA', 5)
     //console.log(this.name, 'AA', 3)
     const healer = Game.creeps[this.metaData.healers[0]];
 
@@ -390,7 +395,7 @@ export class PowerHarvestingManagement extends Process
 
   private HaulerActions(creep: Creep, boostLevel: number)
   {
-    console.log(this.name, 'haul', 0.1, creep.pos)
+    //console.log(this.name, 'haul', 0.1, creep.pos)
     if(!creep.memory.boost)
     {
       let boosts: string[] = [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE];
@@ -458,14 +463,14 @@ export class PowerHarvestingManagement extends Process
       }
 
       let strSay = "Resource";
-      console.log(this.name, 'haul res', 1)
+      //console.log(this.name, 'haul res', 1)
       const resources = room.find(FIND_DROPPED_RESOURCES).filter((d) => d.amount > 0);
       strSay += resources.length;
-      console.log(this.name, 'haul res', 1, resources.length)
+      //console.log(this.name, 'haul res', 1, resources.length)
       if(resources.length)
       {
 
-        console.log(this.name, 'haul res', 1)
+        //console.log(this.name, 'haul res', 1)
         const resource = creep.pos.findClosestByPath(resources);
         if(!creep.pos.isNearTo(resource))
         {
@@ -485,13 +490,13 @@ export class PowerHarvestingManagement extends Process
       creep.memory.full = true;
     }
 
-    console.log(this.name, 'haul', 1)
+    //console.log(this.name, 'haul', 1)
     let pos: RoomPosition;
     if(this.powerBank)
       pos = this.powerBank.pos;
     else
     {
-      console.log(this.name, 'haul', 2)
+      //console.log(this.name, 'haul', 2)
       const x = +this.metaData.powerBankPos.split(',')[0];
       const y = +this.metaData.powerBankPos.split(',')[1];
       pos = new RoomPosition(x, y, this.metaData.roomName);

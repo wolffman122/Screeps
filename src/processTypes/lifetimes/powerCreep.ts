@@ -136,65 +136,77 @@ export class PowerCreepLifetimeProcess extends LifetimeProcess
       console.log(this.name, 4, this.metaData.templeStoragePower, powerCreep.ticksToLive > 100, powerCreep.powers[PWR_OPERATE_STORAGE]?.cooldown < 100)
     if(this.metaData.templeStoragePower && powerCreep.ticksToLive > 100 && powerCreep.powers[PWR_OPERATE_STORAGE]?.cooldown < 100)
     {
-      if(this.metaData.roomName === 'E58S52')
-      console.log(this.name, 4.1)
-      const templeStorage = <StructureTerminal>Game.getObjectById(this.metaData.templeStorageId);
-      if(!templeStorage?.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length)
+      if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= 100)
       {
         if(this.metaData.roomName === 'E58S52')
-      console.log(this.name, 4.2)
-        const controller = templeStorage.room.controller;
-        if(!controller?.isPowerEnabled)
+        console.log(this.name, 4.1)
+        const templeStorage = <StructureTerminal>Game.getObjectById(this.metaData.templeStorageId);
+        if(!templeStorage?.effects?.filter(e => e.effect === PWR_OPERATE_STORAGE).length)
         {
           if(this.metaData.roomName === 'E58S52')
-      console.log(this.name, 4.3)
-          if(!powerCreep.pos.isNearTo(controller))
-            powerCreep.moveTo(controller);
-          else
-            powerCreep.enableRoom(controller);
-
-          return;
-        }
-
-        if(this.metaData.roomName === 'E58S52')
-      console.log(this.name, 4.4)
-        if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
-        {
-          console.log(this.name, 'Temple storage', 1)
-          if(!powerCreep.pos.inRangeTo(templeStorage, 3))
-            powerCreep.moveTo(templeStorage, {range: 3});
-          else
+        console.log(this.name, 4.2)
+          const controller = templeStorage.room.controller;
+          if(!controller?.isPowerEnabled)
           {
+            if(this.metaData.roomName === 'E58S52')
+        console.log(this.name, 4.3)
+            if(!powerCreep.pos.isNearTo(controller))
+              powerCreep.moveTo(controller);
+            else
+              powerCreep.enableRoom(controller);
 
-            const ret = powerCreep.usePower(PWR_OPERATE_STORAGE, templeStorage)
-            console.log(this.name, 'Temple storage', 2, ret)
-            if(ret === OK)
-            {
-              this.metaData.templeStorageId = undefined;
-              this.metaData.templeStoragePower = undefined;
-            }
+            return;
           }
 
-          return;
-        }
-        else if(storage.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
-        {
-          if(!powerCreep.pos.isNearTo(storage))
-            powerCreep.moveTo(storage);
-          else
-            powerCreep.withdraw(storage, RESOURCE_OPS, POWER_INFO[PWR_OPERATE_STORAGE].ops);
+          if(this.metaData.roomName === 'E58S52')
+        console.log(this.name, 4.4)
+          if(powerCreep.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
+          {
+            console.log(this.name, 'Temple storage', 1)
+            if(!powerCreep.pos.inRangeTo(templeStorage, 3))
+              powerCreep.moveTo(templeStorage, {range: 3});
+            else
+            {
 
-          return;
-        }
-        else if (terminal.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
-        {
-          if (!powerCreep.pos.isNearTo(terminal))
-            powerCreep.moveTo(terminal);
-          else
-            powerCreep.withdraw(terminal, RESOURCE_OPS, POWER_INFO[PWR_OPERATE_STORAGE].ops);
+              const ret = powerCreep.usePower(PWR_OPERATE_STORAGE, templeStorage)
+              console.log(this.name, 'Temple storage', 2, ret)
+              if(ret === OK)
+              {
+                this.metaData.templeStorageId = undefined;
+                this.metaData.templeStoragePower = undefined;
+              }
+            }
 
-          return;
+            return;
+          }
+          else if(storage.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
+          {
+            if(!powerCreep.pos.isNearTo(storage))
+              powerCreep.moveTo(storage);
+            else
+              powerCreep.withdraw(storage, RESOURCE_OPS, POWER_INFO[PWR_OPERATE_STORAGE].ops);
+
+            return;
+          }
+          else if (terminal.store.getUsedCapacity(RESOURCE_OPS) >= POWER_INFO[PWR_OPERATE_STORAGE].ops)
+          {
+            if (!powerCreep.pos.isNearTo(terminal))
+              powerCreep.moveTo(terminal);
+            else
+              powerCreep.withdraw(terminal, RESOURCE_OPS, POWER_INFO[PWR_OPERATE_STORAGE].ops);
+
+            return;
+          }
         }
+      }
+      else
+      {
+        if(!powerCreep.pos.isNearTo(storage))
+          powerCreep.moveTo(storage);
+        else
+          powerCreep.withdraw(storage, RESOURCE_OPS, 100);
+
+        return;
       }
     }
 

@@ -339,6 +339,7 @@ interface Flag {
     visionCreeps: string[]
     upgradePrespawn?: boolean
     upgradeDistroPrespawn?: boolean
+    openSpaces?: RoomPosition
   }
 
   interface DistroLifetimeOptProcessMetaData
@@ -627,6 +628,7 @@ interface Flag {
     upgraders2: string[];
     distros: string[];
     openSpaces?: {x:number, y:number};
+    clearInvaderCore?: boolean
 
   }
 
